@@ -1,0 +1,43 @@
+# CREDITS
+
+간합이 쓰는 서드파티 자산과 라이선스. 라이브러리나 폰트나 에셋을 추가하면 **같은 커밋에서** 이 파일에 한 줄을 더한다.
+
+채택 판정과 조사 근거는 `docs/LIBRARIES.md` 상단 판정표를 따른다.
+
+## 라이브러리
+
+| 이름 | 라이선스 | 적용 위치 | 링크 |
+|---|---|---|---|
+| React | MIT | 전 앱 | https://github.com/facebook/react |
+| React Router | MIT | 전 앱 라우팅 | https://github.com/remix-run/react-router |
+| Vite | MIT | 전 앱 빌드 | https://github.com/vitejs/vite |
+| Tailwind CSS | MIT | 전 앱 유틸리티 | https://github.com/tailwindlabs/tailwindcss |
+| lucide-react | ISC | 전 앱 아이콘 | https://github.com/lucide-icons/lucide |
+| GSAP | GreenSock 표준 "No Charge" 라이선스 | presentation 스크롤 연출 전반(ScrollTrigger, SplitText) | https://github.com/greensock/GSAP |
+| Lenis | MIT | presentation 스무스 스크롤 | https://github.com/darkroomengineering/lenis |
+| Socket.IO | MIT | arena, controller, server 실시간 릴레이 | https://github.com/socketio/socket.io |
+| Express | MIT | server HTTP와 헬스체크 | https://github.com/expressjs/express |
+| magnetic-elements | MIT | presentation demo 섹션 CTA 자석 인력 | https://github.com/ToonRombaut/magnetic-elements |
+
+## 폰트
+
+| 이름 | 라이선스 | 적용 위치 | 링크 |
+|---|---|---|---|
+| Pretendard Variable | SIL Open Font License 1.1 | 전 앱 본문과 제목 | https://github.com/orioncactus/pretendard |
+
+## 대기 중
+
+brand 작업에서 확정되면 그때 추가한다.
+
+- Tubes Cursor — CC BY-NC-SA. brand 히어로 배경 후보. **비상업 조건이므로 도입 전 대회 제출물의 상업성 여부를 확인할 것.** 채택 시 푸터 크레딧 필수(COMPONENTS.md CreditFooter)
+- liquidGL — `vendor/liquidGL`에 반입만 해 둔 상태. brand 제품 상세 카드 후보. 판정표는 ybouane/liquidglass(MIT)를 1순위로 둔다
+- honzaap/SlashSaber — CC BY-4.0. arena WebGL 승격 시 참고하면 출처 표기 필수
+
+## 사용하지 않기로 한 것
+
+라이선스 문제로 코드를 가져오지 않는다. 개념 참고만 한다.
+
+- ZiCog/madgwick.js — LICENSE 파일 없음. 기본적으로 사용 불가
+- EmmaPoliakova/WebRTCSmartphoneController — LICENSE 파일 없음. 기본적으로 사용 불가
+- naughtyduk/glitchGL — 개인 무료와 상업 유료 듀얼 라이선스
+- Muggleee/liquid-glass — README에만 MIT 표기, 정식 LICENSE 파일 없음
