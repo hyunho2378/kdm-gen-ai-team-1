@@ -6,7 +6,10 @@
 
 import * as THREE from 'three';
 import { colors, motion } from '../../tokens.js';
+import { OUTCOME, OWNER } from '../judge.js';
 import { thrustEase } from './canvas2d/geometry.js';
+import { createComposer } from './three/post.js';
+import { createTrailRibbon } from './three/trail.js';
 import {
   CAMERA,
   SWORD_POSES,
@@ -18,6 +21,8 @@ import {
   distFromD,
 } from './three/scene.js';
 
+// ARENA_SCENE 4절 사양값. 후처리는 전체 화면 렌더 타깃을 여러 장 잡으므로
+// 실기 60fps가 안 나오면 감축 사다리에서 가장 먼저 내릴 후보이기도 하다.
 const DPR_CAP = 2;
 const BUDGET = motion.budget;
 
@@ -36,6 +41,13 @@ export function createThreeRenderer() {
   let opponent = null;
   let canvas = null;
   let onLost = null;
+  let post = null;
+  let meTrail = null;
+  let aiTrail = null;
+
+  const camWorld = new THREE.Vector3();
+  const tipWorld = new THREE.Vector3();
+  const aiTipWorld = new THREE.Vector3();
 
   let w = 0;
   let h = 0;
@@ -144,6 +156,13 @@ export function createThreeRenderer() {
       opponent.position.set(0, 0.85, -4);
       scene.add(opponent);
 
+      // 궤적 리본 2개. 소유 색은 v2 확정 매핑이다(내 검 red, AI blue).
+      meTrail = createTrailRibbon({ core: colors.trail.self, glow: colors.trail.selfGlow });
+      aiTrail = createTrailRibbon({ core: colors.trail.ai, glow: colors.trail.aiGlow });
+      scene.add(meTrail.mesh, aiTrail.mesh);
+
+      post = createComposer(renderer, scene, camera);
+
       void dev;
       this.resize();
     },
@@ -157,6 +176,7 @@ export function createThreeRenderer() {
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      post?.setSize(w, h);
     },
 
     render(gameState, fx, dtRender) {
@@ -168,10 +188,35 @@ export function createThreeRenderer() {
 
       poseSword(gameState);
 
-      // fx는 V4d에서 소비한다. 지금은 계약만 받는다.
-      void fx;
+      // 검끝 월드 좌표를 리본에 먹인다. 검이 카메라의 자식이라 월드 변환이 필요하다.
+      camera.updateMatrixWorld();
+      sword.tipMarker.getWorldPosition(tipWorld);
+      meTrail.push(tipWorld);
 
-      renderer.render(scene, camera);
+      // AI 검끝은 V4c 빌보드에서 온다. 지금은 상대 앞 오프셋 포인트가 자리를 지킨다.
+      aiTipWorld.set(
+        opponent.position.x - 0.18,
+        opponent.position.y + 0.25,
+        opponent.position.z + 0.35 + 0.5 * (gameState.aiLunge ?? 0)
+      );
+      aiTrail.push(aiTipWorld);
+
+      meTrail.update(dtRender);
+      aiTrail.update(dtRender);
+
+      camera.getWorldPosition(camWorld);
+      meTrail.build(camWorld);
+      aiTrail.build(camWorld);
+
+      // 명중 순간 해당 리본의 최근 구간을 흰 코어로 굳힌다. 나머지 연출은 V4d에서 붙는다.
+      for (const e of fx) {
+        if (e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE) {
+          (e.owner === OWNER.ME ? meTrail : aiTrail).markHit();
+        }
+      }
+
+      // delta를 반드시 넘긴다. V4d ShockWave가 이 값으로 물결을 진행시킨다.
+      post.render(dtRender);
     },
 
     /** 연속 채널 주입. 판별 유니온만 받는다(ARENA_SCENE 3절). */
@@ -186,7 +231,11 @@ export function createThreeRenderer() {
       background?.setImage(image);
     },
     clear() {
-      // V4b 리본이 붙으면 여기서 비운다.
+      meTrail?.clear();
+      aiTrail?.clear();
+    },
+    segmentCount() {
+      return (meTrail?.segmentCount() ?? 0) + (aiTrail?.segmentCount() ?? 0);
     },
     getFps() {
       return fps;
@@ -196,6 +245,9 @@ export function createThreeRenderer() {
     },
 
     dispose() {
+      post?.dispose();
+      meTrail?.dispose();
+      aiTrail?.dispose();
       scene?.traverse((o) => {
         o.geometry?.dispose?.();
         if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose?.());
@@ -210,6 +262,9 @@ export function createThreeRenderer() {
       background = null;
       opponent = null;
       canvas = null;
+      post = null;
+      meTrail = null;
+      aiTrail = null;
     },
   };
 }

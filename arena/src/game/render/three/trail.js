@@ -1,0 +1,171 @@
+// 책임: 검끝 궤적 리본. 이 프로젝트의 모티프이자 화면의 주인공이다.
+//
+// ribbon-geometry를 쓰지 않는다. 그 라이브러리는 생성자 전용이라 in-place 갱신이 없고
+// 폭이 단일 상수여서 나이별 폭 감쇠를 못 한다. 매 프레임 BufferGeometry를 새로 만들면
+// 240 세그먼트 x 60fps 만큼 가비지가 쌓인다(파티클을 풀링한 것과 같은 이유로 피한다).
+// 그래서 버퍼를 미리 잡아 두고 제자리에서 갱신한다. 할당은 생성 시 한 번뿐이다.
+//
+// 색은 tokens에서만 온다. 셰이더 유니폼에도 HEX를 적지 않는다.
+// 정점 색 attribute를 itemSize 4로 두면 three가 알파까지 읽는다(USE_COLOR_ALPHA). 커스텀 셰이더가 필요 없다.
+
+import * as THREE from 'three';
+import { colors, motion } from '../../../tokens.js';
+
+const MAX = motion.budget.trailMaxSegments;
+const LIFE_MS = 520;
+// 명중 순간 흰 코어로 굳히는 최근 구간 길이
+const HIT_SEGMENTS = 18;
+
+export function createTrailRibbon({ core, glow, width = 0.045 }) {
+  const coreColor = new THREE.Color(core);
+  const glowColor = new THREE.Color(glow);
+  const hitColor = new THREE.Color(colors.trail.hit);
+
+  // 링 버퍼. points[i]는 { pos, age, hit }
+  const points = [];
+  for (let i = 0; i < MAX; i += 1) {
+    points.push({ pos: new THREE.Vector3(), age: 0, hit: false, live: false });
+  }
+  let head = 0; // 다음에 쓸 자리
+  let count = 0;
+
+  const positions = new Float32Array(MAX * 2 * 3);
+  const vcolors = new Float32Array(MAX * 2 * 4);
+  const indices = new Uint16Array((MAX - 1) * 6);
+  for (let i = 0; i < MAX - 1; i += 1) {
+    const a = i * 2;
+    indices.set([a, a + 1, a + 2, a + 2, a + 1, a + 3], i * 6);
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(vcolors, 4));
+  geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+  geometry.setDrawRange(0, 0);
+
+  const material = new THREE.MeshBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    toneMapped: false, // 가산 발광이 톤매핑에 눌리지 않게 한다
+  });
+
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.frustumCulled = false; // 리본은 카메라 앞을 스치므로 컬링에 잘못 걸린다
+
+  const tangent = new THREE.Vector3();
+  const toCam = new THREE.Vector3();
+  const side = new THREE.Vector3();
+  const tmpColor = new THREE.Color();
+
+  /** 오래된 것부터 순서대로 훑는다. 링 버퍼를 시간순 배열처럼 읽는 헬퍼다. */
+  function at(k) {
+    return points[(head - count + k + MAX * 2) % MAX];
+  }
+
+  return {
+    mesh,
+
+    push(v) {
+      const p = points[head];
+      p.pos.copy(v);
+      p.age = 0;
+      p.hit = false;
+      p.live = true;
+      head = (head + 1) % MAX;
+      count = Math.min(count + 1, MAX);
+    },
+
+    /** 명중 순간의 최근 구간을 흰 코어로 굳힌다. JUDGE 동안 유지된다. */
+    markHit() {
+      for (let k = Math.max(0, count - HIT_SEGMENTS); k < count; k += 1) at(k).hit = true;
+    },
+
+    update(dtSec) {
+      const dt = dtSec * 1000;
+      for (let k = 0; k < count; k += 1) at(k).age += dt;
+      // 수명이 다한 앞쪽을 버린다. 명중으로 굳은 구간은 남긴다.
+      while (count > 1) {
+        const oldest = at(0);
+        if (oldest.age <= LIFE_MS || oldest.hit) break;
+        oldest.live = false;
+        count -= 1;
+      }
+    },
+
+    /** 카메라를 향하도록 리본 폭 방향을 잡고 버퍼를 제자리에서 갱신한다. */
+    build(cameraPos) {
+      if (count < 2) {
+        geometry.setDrawRange(0, 0);
+        return;
+      }
+
+      for (let k = 0; k < count; k += 1) {
+        const p = at(k);
+        const prev = at(Math.max(0, k - 1));
+        const next = at(Math.min(count - 1, k + 1));
+
+        tangent.copy(next.pos).sub(prev.pos);
+        if (tangent.lengthSq() < 1e-10) tangent.set(0, 0, -1);
+        tangent.normalize();
+
+        toCam.copy(cameraPos).sub(p.pos).normalize();
+        side.crossVectors(tangent, toCam);
+        if (side.lengthSq() < 1e-10) side.set(1, 0, 0);
+        side.normalize();
+
+        const life = Math.max(0, 1 - p.age / LIFE_MS);
+        const recency = count > 1 ? k / (count - 1) : 1; // 최근일수록 1
+        // 나이와 최신도로 폭이 감쇠한다. 명중 구간은 굵게 고정한다.
+        const w = p.hit ? width * 1.9 : width * (0.18 + 0.82 * recency * life);
+        const a = p.hit ? 1 : (0.35 + 0.65 * life) * recency;
+
+        const o = k * 6;
+        positions[o] = p.pos.x + side.x * w;
+        positions[o + 1] = p.pos.y + side.y * w;
+        positions[o + 2] = p.pos.z + side.z * w;
+        positions[o + 3] = p.pos.x - side.x * w;
+        positions[o + 4] = p.pos.y - side.y * w;
+        positions[o + 5] = p.pos.z - side.z * w;
+
+        // 코어는 소유 색, 가장자리는 잔광 색. 명중 구간만 흰색으로 덮는다.
+        tmpColor.copy(p.hit ? hitColor : coreColor).lerp(glowColor, p.hit ? 0 : 0.35);
+        const c = k * 8;
+        vcolors[c] = tmpColor.r;
+        vcolors[c + 1] = tmpColor.g;
+        vcolors[c + 2] = tmpColor.b;
+        vcolors[c + 3] = a;
+        vcolors[c + 4] = tmpColor.r;
+        vcolors[c + 5] = tmpColor.g;
+        vcolors[c + 6] = tmpColor.b;
+        vcolors[c + 7] = a;
+      }
+
+      geometry.attributes.position.needsUpdate = true;
+      geometry.attributes.color.needsUpdate = true;
+      geometry.setDrawRange(0, (count - 1) * 6);
+    },
+
+    clear() {
+      count = 0;
+      head = 0;
+      for (const p of points) {
+        p.live = false;
+        p.hit = false;
+        p.age = 0;
+      }
+      geometry.setDrawRange(0, 0);
+    },
+
+    segmentCount() {
+      return count;
+    },
+
+    dispose() {
+      geometry.dispose();
+      material.dispose();
+    },
+  };
+}

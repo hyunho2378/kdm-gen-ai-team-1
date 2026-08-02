@@ -94,11 +94,23 @@
   - 검증: 셀프테스트 6/6, **기준 서명 완전 일치**, 2D와 three 양 경로 5점 완주,
     폴백 3경로(URL, WebGL 생성 실패, 컨텍스트 손실) 전부 2D 전환과 경기 지속 확인
   - 검끝 화면 좌표 실측이 설계값과 일치(휴식 67%/61% 대 67.9%/65.0%, 가드 57%/19% 대 57.9%/23.0%)
+- P-C 승격 V4b 궤적 리본과 블룸 (확인 대기)
+  - 궤적 리본 2개 자체 구현. 사전 할당 BufferGeometry 제자리 갱신, 정점 색 itemSize 4로 알파까지 전달
+  - ribbon-geometry 미채택. 생성자 전용이라 in-place 갱신이 없고 폭이 단일 상수다.
+    매 프레임 지오메트리 재생성은 파티클을 풀링한 것과 같은 이유로 피했다. 의존성 제거, CREDITS 정정
+  - 나이별 폭과 알파 감쇠, 명중 시 최근 18구간 흰 코어 고정. 리본은 카메라를 향해 폭 방향을 잡는다
+  - postprocessing 컴포저 도입. RenderPass → EffectPass(Bloom). render(delta)로 delta 전달 구조 확정
+  - **Bloom 초기값 확정(ARENA_SCENE 15절 미해결 해소): threshold 0.42, smoothing 0.28,
+    intensity 1.15, radius 0.62, resolutionScale 0.5, kernelSize MEDIUM**
+  - 실측: 하늘 영역 평균 휘도 6.4/255로 배경이 뜨지 않는다. 궤적 최대 176/255로 발광 확인
+  - 셀프테스트 6/6, 기준 서명 일치 유지
 
 ## 진행중
-- **승격 V4 세션 1/3.** 완료 서브단계: V0, V1, V2, V3, V4a
-  - 다음: V4b 궤적 리본과 블룸. 확인 대기 중
+- **승격 V4 세션 2/3.** 완료 서브단계: V0, V1, V2, V3, V4a, V4b
+  - 다음: V4c 상대 빌보드와 거리 매핑. 확인 대기 중
   - judge.js와 machine.js와 opponents.js는 승격 내내 수정 금지(현재까지 무변경 유지)
+  - **V4c 착수 전 실기 fps 확인이 필요하다.** 헤드리스 소프트웨어 렌더링에서 후처리 도입 후
+    60 → 10fps로 떨어졌다. GPU 없는 환경의 한계인지 실제 비용인지 실기에서 갈라야 한다
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록
