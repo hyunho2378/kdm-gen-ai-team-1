@@ -9,6 +9,31 @@ import { subscribe } from './lib/motionMode.js';
 import Section from './components/Section.jsx';
 import ProgressRail from './components/ProgressRail.jsx';
 import StageBackground from './components/StageBackground.jsx';
+import Reveal from './components/Reveal.jsx';
+import { LineageDiagram, TrajectoryToDataDiagram } from './components/diagrams/Diagrams.jsx';
+import CoverSection from './sections/CoverSection.jsx';
+import InteractionsSection from './sections/InteractionsSection.jsx';
+import WorkflowSection from './sections/WorkflowSection.jsx';
+import OutputsSection from './sections/OutputsSection.jsx';
+import DemoSection from './sections/DemoSection.jsx';
+
+// 섹션 id별 본문. cover는 제목 연출을 직접 소유하므로 Section의 기본 렌더를 쓰지 않는다.
+const BODY = {
+  background: () => (
+    <Reveal style={{ marginTop: 40, maxWidth: 640 }}>
+      <LineageDiagram />
+    </Reveal>
+  ),
+  insight: () => (
+    <Reveal style={{ marginTop: 40, maxWidth: 640 }}>
+      <TrajectoryToDataDiagram />
+    </Reveal>
+  ),
+  interactions: () => <InteractionsSection />,
+  'ai-workflow': () => <WorkflowSection />,
+  outputs: () => <OutputsSection />,
+  demo: () => <DemoSection />,
+};
 
 export default function App() {
   useEffect(() => {
@@ -38,16 +63,19 @@ export default function App() {
       <StageBackground />
       <ProgressRail />
       <main>
-        {SECTIONS.map((s, i) => (
-          <Section
-            key={s.id}
-            id={s.id}
-            label={s.label}
-            title={s.title}
-            lead={s.lead}
-            titleAs={i === 0 ? 'h1' : 'h2'}
-          />
-        ))}
+        {SECTIONS.map((s) => {
+          if (s.id === 'cover') {
+            return (
+              <Section key={s.id} id={s.id} label={s.label} renderTitle={() => <CoverSection data={s} />} />
+            );
+          }
+          const Body = BODY[s.id];
+          return (
+            <Section key={s.id} id={s.id} label={s.label} title={s.title} lead={s.lead} reveal>
+              {Body ? <Body /> : null}
+            </Section>
+          );
+        })}
       </main>
     </>
   );

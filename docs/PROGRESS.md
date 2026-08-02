@@ -47,9 +47,22 @@
   - lib/scroll.js Lenis + gsap ticker 동기, lagSmoothing 0. reduced면 Lenis 미기동(네이티브 스크롤)
   - Section 8종(IA 2절 id와 1:1), ProgressRail, StageBackground 전역 1회
   - content/sections.js 카피 단일 원천. lorem 없음, 팀 확정분은 TODO 카피 4곳
+- tokens 타이포 clamp 상한 상향 (단독 커밋 00dd3ed)
+  - title 3rem → 4.25rem, display 6rem → 8.5rem. tracking과 leading은 유지
+  - 재검증: 4앱 빌드 성공. 제목 1920 이상에서 48 → 68px, arena display 96 → 136px
+  - arena MATCH_END ChromeText를 1024와 3840에서 실제로 띄워 확인. 넘침 0, 가로 스크롤 0
+  - DESIGN 4절 타이포 표도 같은 값으로 갱신(사양과 코드 불일치 방지)
+- P-A A2 섹션 콘텐츠와 등장 연출 (확인 대기)
+  - 확정 카피 4곳 문자 그대로 반영(cover 정의와 부제, background 문제 진술, insight 근거, concept 서사)
+  - Reveal 컴포넌트가 등장의 유일한 통로. ScrollTrigger once로 재진입 재실행 차단
+  - cover만 SplitText 글자 단위 1회. 다른 섹션 글자 분해 0건 실측
+  - interactions pin 스크롤 4스텝. reduced motion과 lg 미만은 세로 나열 폴백
+  - 자체 제작 SVG 도식 6종. 원본 영상과 사진 미사용
+  - WorkflowRow, 산출물 3종 카드, DemoCta. VITE_ARENA_URL 미설정은 콘솔 경고만
+  - 검증: 8섹션 렌더, 재진입 opacity 1.00 유지, 등장 역행 프레임 0, 9개 폭 가로 스크롤 0
 
 ## 진행중
-- (P-A A1 종료. A2 착수 전 확인 대기)
+- (P-A A2 종료. A3 스크롤 궤적 라인 착수 전 확인 대기)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 다음 작업
@@ -66,10 +79,15 @@
 - arena favicon.ico 404. 네 앱 공통으로 favicon이 없다. PHASE 2 배포 정리에서 함께 처리
 - arena fps 실기 확인이 남았다. 측정이 헤드리스 소프트웨어 렌더링이었다.
   발표 노트북에서 1분 교전 육안 확인을 PHASE 2 리허설에 포함
-- **shared/tokens.js 수정 제안 (읽기 전용이라 P-A가 직접 고치지 않음).**
-  typography.title의 clamp 상한이 3rem(48px)이라 1920, 2560, 3840에서 제목 크기가 48px로 고정된다.
-  RESPONSIVE 4K 절의 "본문 텍스트가 상대적으로 작아 보이지 않을 것"에 걸린다. display도 6rem에서 멈춘다.
-  상한을 올리거나 vw 계수를 키우는 편이 맞다. 단독 커밋으로 반영 후 네 앱 재검증 필요
+- **TODO 카피: ai-workflow 4행의 "AI가 한 것"과 "사람이 판단한 것".** 팀만 아는 내용이라 비워 두었고
+  화면에는 "확정 예정"으로 정직하게 드러난다. content/sections.js의 WORKFLOW 배열을 채우면 된다
+- outputs 3종 카드의 캡처 이미지 미확보. 지금은 "캡처 예정" 플레이스홀더다.
+  arena와 brand 화면이 나오면 OutputsSection의 캡처 슬롯을 교체한다
+- presentation/src/content/rules.js는 arena judge.js RULES의 사본이다(간합 유효 범위 35~55).
+  앱 독립 배포 원칙상 arena를 import하지 않아 생긴 중복이다. shared/tokens.js로 승격하면 사라진다.
+  judge.js를 고치면 이 파일도 같이 고쳐야 한다
+- 좁은 폭(320, 390)에서 뷰포트보다 긴 섹션의 본문이 하단 고정 레일 아래를 지나간다.
+  고정 내비의 정상 동작이라 레일 배경을 불투명 bg.raised로 두어 가린다. 레이아웃 버그 아님
 - presentation ProgressRail 구조 결정: md(768) 미만은 우측 세로 레일이 본문 제목을 덮어(320, 390 실측)
   하단 가로 행 4개씩 2줄로 전환한다. 320에 44px 타깃 8개를 한 줄로 넣으면 352px라 넘치기 때문
 - presentation 레일 라벨은 hover와 focus에서만 뜬다. 상시 노출하면 768~1440에서 본문을 덮는다(실측).

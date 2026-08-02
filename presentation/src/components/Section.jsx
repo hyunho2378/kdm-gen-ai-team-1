@@ -4,12 +4,24 @@
 import { colors, spacing, typography, breakpoints } from '../tokens.js';
 import { useMediaQuery } from '../lib/useMediaQuery.js';
 import { RAIL_RESERVE_PX } from './ProgressRail.jsx';
+import Reveal from './Reveal.jsx';
 
 // md 미만에서 ProgressRail이 하단 가로 행(4개씩 2줄)이 된다. 그만큼 아래를 비운다.
 const RAIL_BOTTOM_CLEARANCE = 112;
 
-export default function Section({ id, label, title, lead, children, titleAs: TitleTag = 'h2', renderTitle }) {
+export default function Section({
+  id,
+  label,
+  title,
+  lead,
+  children,
+  titleAs: TitleTag = 'h2',
+  renderTitle,
+  reveal = false,
+}) {
   const railIsVertical = useMediaQuery(`(min-width: ${breakpoints.md}px)`);
+  // 제목과 본문을 한 묶음으로 스태거 등장시킨다. cover는 자체 연출을 쓰므로 감싸지 않는다.
+  const HeadWrap = reveal ? Reveal : 'div';
 
   return (
     <section
@@ -30,59 +42,60 @@ export default function Section({ id, label, title, lead, children, titleAs: Tit
         marginInline: 'auto',
       }}
     >
-      <p
-        style={{
-          margin: 0,
-          fontFamily: typography.family,
-          fontSize: typography.hud.size,
-          fontWeight: typography.hud.weight,
-          letterSpacing: typography.hud.tracking,
-          lineHeight: typography.hud.leading,
-          color: colors.text.dim,
-          textTransform: 'uppercase',
-        }}
-      >
-        {label}
-      </p>
-
-      {renderTitle ? (
-        renderTitle()
-      ) : (
-        <TitleTag
-          style={{
-            margin: `${spacing.unit * 2}px 0 0`,
-            fontFamily: typography.family,
-            fontSize: typography.title.size,
-            fontWeight: typography.title.weight,
-            letterSpacing: typography.title.tracking,
-            lineHeight: typography.title.leading,
-            color: colors.text.primary,
-            wordBreak: 'keep-all',
-            maxWidth: '20ch',
-          }}
-        >
-          {title}
-        </TitleTag>
-      )}
-
-      {lead ? (
+      <HeadWrap>
         <p
           style={{
-            margin: `${spacing.unit * 3}px 0 0`,
+            margin: 0,
             fontFamily: typography.family,
-            fontSize: typography.body.size,
-            fontWeight: typography.body.weight,
-            letterSpacing: typography.body.tracking,
-            lineHeight: typography.body.leading,
-            color: colors.text.secondary,
-            maxWidth: '72ch',
-            wordBreak: 'keep-all',
+            fontSize: typography.hud.size,
+            fontWeight: typography.hud.weight,
+            letterSpacing: typography.hud.tracking,
+            lineHeight: typography.hud.leading,
+            color: colors.text.dim,
+            textTransform: 'uppercase',
           }}
         >
-          {lead}
+          {label}
         </p>
-      ) : null}
 
+        {renderTitle ? null : (
+          <TitleTag
+            style={{
+              margin: `${spacing.unit * 2}px 0 0`,
+              fontFamily: typography.family,
+              fontSize: typography.title.size,
+              fontWeight: typography.title.weight,
+              letterSpacing: typography.title.tracking,
+              lineHeight: typography.title.leading,
+              color: colors.text.primary,
+              wordBreak: 'keep-all',
+              maxWidth: '20ch',
+            }}
+          >
+            {title}
+          </TitleTag>
+        )}
+
+        {lead ? (
+          <p
+            style={{
+              margin: `${spacing.unit * 3}px 0 0`,
+              fontFamily: typography.family,
+              fontSize: typography.body.size,
+              fontWeight: typography.body.weight,
+              letterSpacing: typography.body.tracking,
+              lineHeight: typography.body.leading,
+              color: colors.text.secondary,
+              maxWidth: '72ch',
+              wordBreak: 'keep-all',
+            }}
+          >
+            {lead}
+          </p>
+        ) : null}
+      </HeadWrap>
+
+      {renderTitle ? renderTitle() : null}
       {children}
     </section>
   );

@@ -73,10 +73,13 @@ export default function ProgressRail() {
               flexDirection: 'row',
               flexWrap: 'wrap',
               justifyContent: 'center',
+              // border-box면 보더 2px 때문에 4개가 못 들어가 3줄로 접힌다. 내용 폭을 그대로 쓴다.
+              boxSizing: 'content-box',
               width: NARROW_RAIL_WIDTH,
               maxWidth: 'calc(100vw - 32px)',
               gap: 0,
-              background: colors.bg.overlay,
+              // 본문이 아래로 지나가므로 반투명이 아니라 불투명 판넬로 가린다
+              background: colors.bg.raised,
               borderRadius: radius.lg,
               border: `1px solid ${colors.line.default}`,
             }

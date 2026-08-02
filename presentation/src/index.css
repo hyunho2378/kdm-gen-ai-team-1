@@ -23,6 +23,19 @@ body {
   outline-offset: 2px;
 }
 
+/* 스크린리더 전용. pin 스텝 전환처럼 시각으로만 알리는 변화를 음성으로도 알린다. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* MOTION 4절: press는 scale(0.97). hover에는 scale을 쓰지 않는다. */
 .ganhap-btn:active {
   transform: scale(0.97);
