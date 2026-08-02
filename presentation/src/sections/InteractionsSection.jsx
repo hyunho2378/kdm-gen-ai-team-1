@@ -98,6 +98,8 @@ export default function InteractionsSection() {
       pin: true,
       pinSpacing: true,
       scrub: true,
+      // 이 pin이 문서 높이를 바꾸므로 다른 트리거보다 먼저 재계산되어야 한다(ScrollTrail이 이 높이에 의존).
+      refreshPriority: 1,
       onUpdate: (self) => {
         const i = Math.min(
           INTERACTIONS.length - 1,
