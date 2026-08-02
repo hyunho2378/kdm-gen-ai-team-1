@@ -37,8 +37,19 @@
   - 검증: 셀프테스트 6/6, 결정성 서명 일치, 5점 완주 양방향, 실브라우저 1분 교전 p50 59.9fps
   - 시간 팽창 지속 1200ms와 쿨다운 8000ms 실측, reduced motion 비활성 확인
   - C4 웹캠 지표 주입 인터페이스(shouldDilate의 extra 인자) 선반영
+  - 명중 4분기 규칙 승인 완료. COMPONENTS.md judge 항목으로 승격(사양 확정)
+  - 패리가 phase를 멈추지 않도록 수정. 리포스트 윈도우가 만료되던 버그 해소
+- P-A A1 presentation 스크롤 엔진과 8섹션 골격 (확인 대기)
+  - gsap 3.15 + lenis 1.3 도입. @bsmnt/scrollytelling은 채택하지 않음
+    (React 18 peer는 맞으나 2024-02 이후 배포 정지, Radix portal과 slot 의존 2개를 끌고 온다.
+     PITFALLS 서드파티 절대로 발표 중 죽으면 복구가 없어 ScrollTrigger 직접 제어로 간다)
+  - lib/motionMode.js 전역 분기 유틸. 이 트랙의 모든 연출은 이 파일을 거친다
+  - lib/scroll.js Lenis + gsap ticker 동기, lagSmoothing 0. reduced면 Lenis 미기동(네이티브 스크롤)
+  - Section 8종(IA 2절 id와 1:1), ProgressRail, StageBackground 전역 1회
+  - content/sections.js 카피 단일 원천. lorem 없음, 팀 확정분은 TODO 카피 4곳
 
 ## 진행중
+- (P-A A1 종료. A2 착수 전 확인 대기)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 다음 작업
@@ -52,12 +63,16 @@
 - 루트 package.json "type": "module" 유지 필요(shared ESM 로드)
 - hello의 방 코드 필드: SERVER.md는 room, 기존 골격은 code. 서버가 room ?? code로 둘 다 받는다.
   클라이언트 구현 시 room으로 통일하고 code 폴백을 제거할 것
-- **승인 대기: C1 판정 규칙 보강분.** 사양은 "유효 범위 안이면 명중 판정 진입"까지만 정하고
-  그 다음을 비워 두었다. 무조건 명중으로 두면 스페이스 연타로 6.9초에 5점이 나고 AI가 공격할 틈이
-  없어 FEINT 판독, 가드, 리포스트, 시간 팽창이 전부 죽는다(실측). judge.js resolveThrust에
-  "상대가 열린 순간에만 명중"(RECOVER 또는 FEINT 예고 중) 규칙을 넣었다. 되돌리려면 그 switch 블록만
-  지우고 HIT을 무조건 반환하면 된다. COMPONENTS.md와 DESIGN.md 수정은 필요 없다
-- SKILL.md 세션 블록 1번 줄이 CLAUDE.md로만 적혀 있어 루트에서 못 찾는다 → docs/CLAUDE.md로 정정 완료
 - arena favicon.ico 404. 네 앱 공통으로 favicon이 없다. PHASE 2 배포 정리에서 함께 처리
+- arena fps 실기 확인이 남았다. 측정이 헤드리스 소프트웨어 렌더링이었다.
+  발표 노트북에서 1분 교전 육안 확인을 PHASE 2 리허설에 포함
+- **shared/tokens.js 수정 제안 (읽기 전용이라 P-A가 직접 고치지 않음).**
+  typography.title의 clamp 상한이 3rem(48px)이라 1920, 2560, 3840에서 제목 크기가 48px로 고정된다.
+  RESPONSIVE 4K 절의 "본문 텍스트가 상대적으로 작아 보이지 않을 것"에 걸린다. display도 6rem에서 멈춘다.
+  상한을 올리거나 vw 계수를 키우는 편이 맞다. 단독 커밋으로 반영 후 네 앱 재검증 필요
+- presentation ProgressRail 구조 결정: md(768) 미만은 우측 세로 레일이 본문 제목을 덮어(320, 390 실측)
+  하단 가로 행 4개씩 2줄로 전환한다. 320에 44px 타깃 8개를 한 줄로 넣으면 352px라 넘치기 때문
+- presentation 레일 라벨은 hover와 focus에서만 뜬다. 상시 노출하면 768~1440에서 본문을 덮는다(실측).
+  현재 섹션 표시는 red.light 점과 aria-current가 맡는다
 - arena 선수 실루엣과 배경은 임시 도형과 그라디언트다. 자세 스틸 5포즈 x 2인과 블랙 기조 도장
   이미지가 도착하면 renderer의 setPoses와 setBackgroundImage로 교체한다(인터페이스 준비 완료)

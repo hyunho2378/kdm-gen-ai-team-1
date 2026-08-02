@@ -63,6 +63,18 @@
   phase 8종 소유. IDLE→PAIRING→CALIBRATION→EN_GARDE→EXCHANGE→JUDGE→SCORE→MATCH_END.
 - **judge** `game/judge.js` / 판정(결정적, LLM 없음)
   거리 유효 범위, THRUST 임계, FEINT와 REAL, 리포스트 윈도우 600ms, 쿨다운 350ms.
+  **명중 4분기**: 유효 범위 안 찌르기는 상대가 열린 순간에만 명중한다. 무조건 명중으로 두면
+  연타로 7초에 경기가 끝나고 FEINT 판독과 가드와 리포스트와 시간 팽창이 전부 죽는다(실측).
+  | 상대 상태 | 결과 |
+  |---|---|
+  | RECOVER (공격 내지른 직후) | 명중 |
+  | TELEGRAPH + FEINT (페인트 판독) | 명중 |
+  | TELEGRAPH + REAL | 헛침 `상대 공격`. 가드로 받아야 한다 |
+  | IDLE (대치) | 헛침 `막힘`. 상대 검이 선을 잡고 있다 |
+  득점 경로는 둘이다. 상대 공격을 가드로 받고 600ms 안에 되찌르기(2점), 또는 상대가 내지른
+  직후 준비 동작에 찔러 넣기(1점). 헛침 사유는 PATTERNS 6절대로 6자 이내.
+  **패리는 phase를 멈추지 않는다.** JUDGE 800ms와 SCORE 420ms를 거치면 리포스트 윈도우가
+  열리자마자 만료된다. 판정 문구 표시(showJudge)를 phase와 분리해 둔다.
 - **HUD** `components/hud/HUD.jsx` / DOM 오버레이 루트
   zIndex.sticky~header. 하위: DistanceGauge, ScoreBoard, JudgeText, PhaseBanner, StatusChip 3개.
 - **DistanceGauge** `components/hud/DistanceGauge.jsx`
