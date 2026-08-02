@@ -3,6 +3,7 @@
 
 import { colors, spacing, typography } from '../tokens.js';
 import { ButtonPrimary } from '../components/ui/Button.jsx';
+import Magnetic from '../components/ui/Magnetic.jsx';
 import TrailDivider from '../components/ui/TrailDivider.jsx';
 import Reveal from '../components/Reveal.jsx';
 
@@ -27,14 +28,17 @@ export default function DemoSection() {
         <TrailDivider accent />
       </div>
 
-      <ButtonPrimary
-        large
-        onClick={() => {
-          if (ARENA_URL) window.location.href = ARENA_URL;
-        }}
-      >
-        데모 시작
-      </ButtonPrimary>
+      {/* 자석 인력은 이 사이트에서 여기 한 곳뿐이다. 발표의 목적지라 시선을 끌 이유가 있다 */}
+      <Magnetic>
+        <ButtonPrimary
+          large
+          onClick={() => {
+            if (ARENA_URL) window.location.href = ARENA_URL;
+          }}
+        >
+          데모 시작
+        </ButtonPrimary>
+      </Magnetic>
 
       <p
         style={{

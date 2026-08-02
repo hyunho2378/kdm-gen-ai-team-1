@@ -40,5 +40,8 @@ arena: 방 코드를 display 크기로, QR을 그 옆에. 코드가 주인공이
 ## 11. 모바일 (controller)
 세로 고정. 가로 회전 감지 시 전체 화면 안내 "세로로 돌려서 쥐기". 100vh 금지, 100dvh. 터치 타깃 44px, 입력 면은 화면 하단 절반(엄지 도달권).
 
-## 12. 접근성 공통
+## 12. 한글 텍스트 분해
+한글 SplitText는 word 모드 기본, char는 완성형 글자 단위만, 자소 분리 금지. 긴 문장(body, 문제 진술, 서사)은 분해하지 않는다. char 분해는 cover 워드마크처럼 짧은 디스플레이 텍스트에만 쓴다.
+
+## 13. 접근성 공통
 focus-visible red.light 2px 전 요소. 아이콘 단독 버튼 aria-label. 대비는 DESIGN §13 실측값 준수. keep-all 줄바꿈. reduced motion에서 시간 팽창과 대형 모션 비활성.

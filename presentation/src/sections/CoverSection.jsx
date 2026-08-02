@@ -5,6 +5,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from '../lib/scroll.js';
 import { isReduced, REDUCED_FADE_MS } from '../lib/motionMode.js';
+import { whenBooted } from '../lib/boot.js';
 import { colors, spacing, typography } from '../tokens.js';
 import ChromeText from '../components/ui/ChromeText.jsx';
 import TrailDivider from '../components/ui/TrailDivider.jsx';
@@ -17,34 +18,49 @@ export default function CoverSection({ data }) {
     const el = markRef.current;
     if (!el) return undefined;
 
-    // reduced motion에서는 글자 분해 자체를 하지 않는다. 짧은 페이드로 대체한다.
-    if (isReduced()) {
-      gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: REDUCED_FADE_MS / 1000, ease: 'none' });
-      return undefined;
-    }
-
     let split = null;
     let tween = null;
-    // SplitText는 GSAP 3.13부터 무료다. 실패해도 워드마크는 보여야 하므로 방어한다.
-    import('gsap/SplitText')
-      .then(({ SplitText }) => {
-        gsap.registerPlugin(SplitText);
-        split = new SplitText(el, { type: 'chars' });
-        tween = gsap.from(split.chars, {
-          opacity: 0,
-          yPercent: 40,
-          duration: 0.7,
-          ease: 'power3.out',
-          stagger: 0.06,
+    let cancelled = false;
+
+    // 프리로더가 걷힌 뒤에 시작한다. 먼저 터지면 순서가 뒤집혀 보인다.
+    // 그동안 워드마크를 숨겨 두되, 실패해도 반드시 다시 보이게 한다(PITFALLS 서드파티 절).
+    gsap.set(el, { opacity: 0 });
+
+    whenBooted().then(() => {
+      if (cancelled) return;
+
+      // reduced motion에서는 글자 분해 자체를 하지 않는다. 짧은 페이드로 대체한다.
+      if (isReduced()) {
+        gsap.to(el, { opacity: 1, duration: REDUCED_FADE_MS / 1000, ease: 'none' });
+        return;
+      }
+
+      // SplitText는 GSAP 3.13부터 무료다. 실패해도 워드마크는 보여야 하므로 방어한다.
+      import('gsap/SplitText')
+        .then(({ SplitText }) => {
+          if (cancelled) return;
+          gsap.registerPlugin(SplitText);
+          gsap.set(el, { opacity: 1 });
+          // 한글은 완성형 글자 단위로만 쪼갠다. 자소 분리는 금지다(PATTERNS 13절).
+          split = new SplitText(el, { type: 'chars' });
+          tween = gsap.from(split.chars, {
+            opacity: 0,
+            yPercent: 40,
+            duration: 0.7,
+            ease: 'power3.out',
+            stagger: 0.06,
+          });
+        })
+        .catch(() => {
+          if (!cancelled) gsap.to(el, { opacity: 1, duration: 0.4, ease: 'power3.out' });
         });
-      })
-      .catch(() => {
-        gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power3.out' });
-      });
+    });
 
     return () => {
+      cancelled = true;
       tween?.kill();
       split?.revert();
+      gsap.set(el, { opacity: 1 });
     };
   }, []);
 

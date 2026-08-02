@@ -70,9 +70,18 @@
   - reduced motion에서 전 구간 dashoffset 0(정적 완성), 스크럽 비활성
   - 검증: 스크럽 단조 감소, 9개 폭 본문 겹침 0과 레일 겹침 0과 화면 밖 0,
     non-scaling-stroke로 3840에서도 stroke 2px 유지, 스크롤 중 60fps에 30미만 프레임 0
+- P-A 강화 패스 (라이브러리 전수조사 반영, 확인 대기)
+  - docs/LIBRARIES.md에 조사 원문 배치. 상단에 채택 판정표 삽입. 원문 sha 삽입 전후 동일(무수정)
+  - 루트 CREDITS.md 신설. 지금까지 쓴 것 소급 기록. Tubes Cursor와 liquidGL은 대기 항목으로 명시
+  - Preloader 자체 구현. 검끝 곡선 stroke-dashoffset 그리기, 폰트 준비 시 이탈, 상한 2.5초
+  - lib/boot.js 부팅 신호. cover SplitText가 프리로더 이탈 뒤에 시작한다(실측 순서 확인)
+  - magnetic-elements(MIT 1.1.0) demo CTA 한 곳. 래퍼로 감싸 press scale(0.97)과 공존
+  - PATTERNS 12절에 한글 분해 규칙 추가. cover 워드마크만 char, 자소 분리 0건 실측
+  - 검증: A1~A3 무결(8섹션, 레일 8점, ScrollTrail 단조 감소, 등장 1회성),
+    9개 폭 가로 스크롤 0과 trail 겹침 0, 라이브러리 로드 차단 시 버튼 정상 동작
 
 ## 진행중
-- (P-A A3 종료. A4 폴리시 패스 착수 전 확인 대기)
+- (P-A 강화 패스 종료. 다음은 P-B brand)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 다음 작업
@@ -96,6 +105,10 @@
 - presentation/src/content/rules.js는 arena judge.js RULES의 사본이다(간합 유효 범위 35~55).
   앱 독립 배포 원칙상 arena를 import하지 않아 생긴 중복이다. shared/tokens.js로 승격하면 사라진다.
   judge.js를 고치면 이 파일도 같이 고쳐야 한다
+- **저장소 밖 Web/ 폴더에 별도 git 저장소가 있다.** 커밋 1개("1번째 세팅"), 원격 없음,
+  ganhap을 gitlink(서브모듈, 모드 160000)로 974e2be에 고정해 두었다. 그 커밋은 3분할 때 폐기되어
+  이제 ganhap 이력에 없다. 즉 끊어진 참조다. Web/CREDITS.md도 빈 파일로 남아 있다.
+  진짜 저장소는 ganhap이고 원격도 거기에만 붙어 있다. Web/.git 정리 여부는 사용자 판단 사항
 - 좁은 폭(320, 390)에서 뷰포트보다 긴 섹션의 본문이 하단 고정 레일 아래를 지나간다.
   고정 내비의 정상 동작이라 레일 배경을 불투명 bg.raised로 두어 가린다. 레이아웃 버그 아님
 - presentation ProgressRail 구조 결정: md(768) 미만은 우측 세로 레일이 본문 제목을 덮어(320, 390 실측)

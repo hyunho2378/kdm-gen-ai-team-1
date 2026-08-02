@@ -10,6 +10,7 @@ import Section from './components/Section.jsx';
 import ProgressRail from './components/ProgressRail.jsx';
 import StageBackground from './components/StageBackground.jsx';
 import ScrollTrail from './components/ScrollTrail.jsx';
+import Preloader from './components/Preloader.jsx';
 import Reveal from './components/Reveal.jsx';
 import { LineageDiagram, TrajectoryToDataDiagram } from './components/diagrams/Diagrams.jsx';
 import CoverSection from './sections/CoverSection.jsx';
@@ -61,6 +62,7 @@ export default function App() {
 
   return (
     <>
+      <Preloader />
       <StageBackground />
       <ScrollTrail />
       <ProgressRail />
