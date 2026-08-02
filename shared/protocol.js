@@ -2,7 +2,8 @@
 // arena, controller, server가 이 파일 하나만 참조한다. 문자열 리터럴 직접 사용 금지.
 
 export const MSG = {
-  HELLO: 'hello', ROOM: 'room', PAIRED: 'paired', CALIB: 'calib',
+  HELLO: 'hello', ROOM: 'room', PAIRED: 'paired', PEER_LEFT: 'peer_left', ERROR: 'error',
+  CALIB: 'calib',
   MOTION: 'motion', ACTION: 'action', HAPTIC: 'haptic', STATE: 'state',
 };
 export const ACTION = { THRUST: 'thrust', GUARD: 'guard', ADVANCE: 'advance', RETREAT: 'retreat' };

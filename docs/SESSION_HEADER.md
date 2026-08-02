@@ -8,7 +8,8 @@
 2. docs/PROGRESS.md
 3. docs/DESIGN.md, shared/tokens.js (있으면)
 4. 작업 영역 해당 문서: UI 모션 작업이면 docs/MOTION 절, 레이아웃이면 docs/RESPONSIVE 절 (DESIGN.md 내)
-5. fullstack-product-setup 스킬이 로드 가능하면 SKILL.md
+5. 스킬이 로드 가능하면 .claude/skills/coding/SKILL.md
+주의: 이 스킬 SKILL.md의 name은 fullstack-product-setup이지만 폴더는 coding이다. 경로는 폴더 기준(.claude/skills/coding/).
 
 읽은 뒤 오늘 작업 범위를 한 문단으로 선언하고 시작해라.
 게임 캔버스(arena의 canvas/WebGL)는 transform opacity 규칙의 예외다. 나머지 규율은 전부 유효하다.

@@ -8,7 +8,7 @@ import express from 'express';
 import cors from 'cors';
 import { Server } from 'socket.io';
 import { MSG, ROLE } from '../../shared/protocol.js';
-import { createRoom, joinRoom, leaveRoom, getRoom, peerOf, isPaired, roomCount, sweep } from './rooms.js';
+import { createRoom, joinRoom, leaveRoom, getRoom, peerOf, isPaired, roomCount, sweep, touch } from './rooms.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -30,7 +30,8 @@ const CORS_ORIGINS = (process.env.CORS_ORIGINS ?? '')
 const ORIGINS = CORS_ORIGINS.length > 0 ? CORS_ORIGINS : DEFAULT_ORIGINS;
 
 const RELAY_TYPES = [MSG.CALIB, MSG.MOTION, MSG.ACTION, MSG.HAPTIC, MSG.STATE];
-const SWEEP_INTERVAL_MS = 1000 * 60 * 10;
+// 유휴 방 TTL이 10분이므로 스윕은 그보다 촘촘해야 실제 회수 지연이 짧다
+const SWEEP_INTERVAL_MS = 1000 * 60;
 
 const app = express();
 app.use(cors({ origin: ORIGINS }));
@@ -54,25 +55,26 @@ io.on('connection', (socket) => {
       socket.data.role = ROLE.ARENA;
       socket.data.code = room.code;
       socket.join(room.code);
-      socket.emit(MSG.ROOM, { ok: true, code: room.code });
+      socket.emit(MSG.ROOM, { code: room.code });
       return;
     }
 
     if (role === ROLE.CONTROLLER) {
-      const { room, reason } = joinRoom(payload.code, socket.id);
+      // SERVER.md는 hello의 방 코드 필드를 room으로 규정한다. code는 기존 골격 호환용.
+      const { room, reason } = joinRoom(payload.room ?? payload.code, socket.id);
       if (!room) {
-        socket.emit(MSG.ROOM, { ok: false, code: payload.code ?? null, reason });
+        socket.emit(MSG.ERROR, { reason });
         return;
       }
       socket.data.role = ROLE.CONTROLLER;
       socket.data.code = room.code;
       socket.join(room.code);
-      socket.emit(MSG.ROOM, { ok: true, code: room.code });
-      io.to(room.code).emit(MSG.PAIRED, { paired: isPaired(room), code: room.code });
+      socket.emit(MSG.ROOM, { code: room.code });
+      if (isPaired(room)) io.to(room.code).emit(MSG.PAIRED, {});
       return;
     }
 
-    socket.emit(MSG.ROOM, { ok: false, code: null, reason: 'bad_role' });
+    socket.emit(MSG.ERROR, { reason: 'bad_role' });
   });
 
   // 같은 방 상대에게 그대로 중계한다. 내용을 해석하지 않는다.
@@ -82,18 +84,16 @@ io.on('connection', (socket) => {
       if (!code) return;
       const room = getRoom(code);
       if (!peerOf(room, socket.id)) return;
+      touch(room);
       socket.to(code).emit(type, payload);
     });
   }
 
+  // 재접속에 밀려난 소켓은 leaveRoom이 방을 못 찾으므로 peer_left가 새 소켓을 끊지 않는다.
   socket.on('disconnect', () => {
-    const { room, closed } = leaveRoom(socket.id);
+    const { room } = leaveRoom(socket.id);
     if (!room) return;
-    if (closed) {
-      io.to(room.code).emit(MSG.PAIRED, { paired: false, code: room.code, reason: 'arena_left' });
-      return;
-    }
-    io.to(room.code).emit(MSG.PAIRED, { paired: false, code: room.code, reason: 'controller_left' });
+    io.to(room.code).emit(MSG.PEER_LEFT, {});
   });
 });
 

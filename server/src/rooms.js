@@ -7,9 +7,10 @@ import { randomInt } from 'node:crypto';
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CODE_LENGTH = 4;
 const MAX_CODE_ATTEMPTS = 64;
-const ROOM_TTL_MS = 1000 * 60 * 60 * 3;
+// 유휴 기준 GC. 마지막 활동에서 10분이 지난 방을 비운다(SERVER.md 방 생명주기 4)
+const ROOM_IDLE_MS = 1000 * 60 * 10;
 
-/** code -> { code, arenaId, controllerId, createdAt } */
+/** code -> { code, arenaId, controllerId, createdAt, lastSeenAt } */
 const rooms = new Map();
 
 function randomCode() {
@@ -24,7 +25,8 @@ export function createRoom(arenaId) {
   for (let attempt = 0; attempt < MAX_CODE_ATTEMPTS; attempt += 1) {
     const code = randomCode();
     if (rooms.has(code)) continue;
-    const room = { code, arenaId, controllerId: null, createdAt: Date.now() };
+    const now = Date.now();
+    const room = { code, arenaId, controllerId: null, createdAt: now, lastSeenAt: now };
     rooms.set(code, room);
     return room;
   }
@@ -36,15 +38,23 @@ export function getRoom(code) {
   return rooms.get(code.trim().toUpperCase()) ?? null;
 }
 
-/** 컨트롤러를 방에 연결한다. 실패 사유를 함께 돌려준다. */
+/**
+ * 컨트롤러를 방에 연결한다. 실패 사유를 함께 돌려준다.
+ * 같은 방 재접속을 허용한다(controller 새로고침 복구 경로). 이전 소켓이 아직 살아 있어도
+ * 새 소켓이 슬롯을 넘겨받는다.
+ */
 export function joinRoom(code, controllerId) {
   const room = getRoom(code);
   if (!room) return { room: null, reason: 'not_found' };
-  if (room.controllerId && room.controllerId !== controllerId) {
-    return { room: null, reason: 'occupied' };
-  }
   room.controllerId = controllerId;
+  touch(room);
   return { room, reason: null };
+}
+
+/** 유휴 GC 기준을 갱신한다. 릴레이와 페어링에서 호출한다. */
+export function touch(room, now = Date.now()) {
+  if (room) room.lastSeenAt = now;
+  return room;
 }
 
 /** 소켓이 끊길 때 방에서 제거한다. arena가 나가면 방 자체를 없앤다. */
@@ -77,11 +87,11 @@ export function roomCount() {
   return rooms.size;
 }
 
-/** 오래된 방을 비운다. 메모리 무한 증가를 막는 최소 장치. */
+/** 10분 이상 유휴인 방을 비운다. 메모리 무한 증가를 막는 최소 장치. */
 export function sweep(now = Date.now()) {
   let removed = 0;
   for (const room of rooms.values()) {
-    if (now - room.createdAt > ROOM_TTL_MS) {
+    if (now - room.lastSeenAt > ROOM_IDLE_MS) {
       rooms.delete(room.code);
       removed += 1;
     }

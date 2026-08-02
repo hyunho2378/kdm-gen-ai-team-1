@@ -1,3 +1,5 @@
+> [표준 문서] 이 문서는 프로젝트 무관 공통 표준이다. 간합 고유 규율은 프로젝트 지침과 docs/DESIGN.md가 우선한다. arena의 canvas/WebGL은 transform opacity 규칙의 예외다.
+
 # RESPONSIVE.md — 320~3840px 유동 반응형
 
 ## 브레이크포인트

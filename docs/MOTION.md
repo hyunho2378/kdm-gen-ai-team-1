@@ -1,3 +1,5 @@
+> [표준 문서] 이 문서는 프로젝트 무관 공통 표준이다. 간합 고유 규율은 프로젝트 지침과 docs/DESIGN.md가 우선한다. arena의 canvas/WebGL은 transform opacity 규칙의 예외다.
+
 # MOTION.md — 모션·인터랙션·재질 표준
 
 Apple HIG(Designing Fluid Interfaces, The Details of UI Typography, Principles of Great Design)와 Emil Kowalski의 디자인 엔지니어링 표준을 웹으로 옮긴 것이다. 모션을 넣거나 고칠 때 이 문서의 수치를 그대로 인용하고, 근사치로 대체하지 마라.
