@@ -5,3 +5,6 @@ dist/
 .DS_Store
 *.log
 .vercel
+
+# 제출 서류 (코드와 무관)
+_submission_docs/
