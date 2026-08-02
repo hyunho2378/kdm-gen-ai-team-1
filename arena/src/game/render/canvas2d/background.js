@@ -2,7 +2,7 @@
 // bg.base에서 bg.deep으로 떨어지는 수직 그라디언트 + 방사 비네트 + 낮은 알파 안개 두 겹.
 // 이미지가 도착하면 setImage로 갈아끼운다. 나머지 레이어는 건드리지 않는다.
 
-import { colors } from '../../tokens.js';
+import { colors } from '../../../tokens.js';
 
 export function createBackground() {
   let image = null;

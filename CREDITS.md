@@ -18,6 +18,10 @@
 | Socket.IO | MIT | arena, controller, server 실시간 릴레이 | https://github.com/socketio/socket.io |
 | Express | MIT | server HTTP와 헬스체크 | https://github.com/expressjs/express |
 | magnetic-elements | MIT | presentation demo 섹션 CTA 자석 인력 | https://github.com/ToonRombaut/magnetic-elements |
+| three.js | MIT | arena 1인칭 렌더러 | https://github.com/mrdoob/three.js |
+| postprocessing | Zlib | arena 후처리(Bloom, Afterimage, ShockWave, ChromaticAberration, Vignette, HueSaturation) | https://github.com/pmndrs/postprocessing |
+| ribbon-geometry | MIT | arena 궤적 리본 | https://github.com/yomotsu/ribbon-geometry |
+| 카메라 셰이크 (trauma 방식) | MIT, **로직 포팅** | arena 명중 연출. `three-screenshake`가 npm에 없어(404) `sajmoni/screen-shake`의 trauma 방식을 JS로 포팅 | https://github.com/sajmoni/screen-shake |
 
 ## 폰트
 

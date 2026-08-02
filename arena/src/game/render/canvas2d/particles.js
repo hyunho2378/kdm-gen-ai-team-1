@@ -3,7 +3,7 @@
 // 여기의 Math.random은 시각 산포 전용이다. 판정에 쓰이지 않으므로 결정성을 깨지 않는다.
 // 판정 쪽 난수는 전부 game/rng.js의 시드 난수를 쓴다.
 
-import { colors, motion } from '../../tokens.js';
+import { colors, motion } from '../../../tokens.js';
 
 const HARD_MAX = motion.budget.particleMax;
 

@@ -1,48 +1,53 @@
-// COMPONENTS.md: 렌더 루트. canvas 풀스크린, zIndex.content.
-// 루프는 여기서 돈다. 로직은 engine.update(고정 스텝), 그리기는 renderer.draw(가변).
-// 캔버스는 transform opacity 규칙의 예외 영역이다.
+// COMPONENTS.md: 렌더 루트. 렌더러 구현을 갖지 않고 인터페이스만 붙인다.
+// 루프 주도권은 loop.js가 쥔다. react-three-fiber를 쓰지 않는다.
+//
+// 이 파일이 지키는 순서(ARENA_SCENE 3절):
+//   1. loop.setTimeScale(engine.getTimeScale())   ← 로직 시계 제어. 렌더러로 넘기지 않는다
+//   2. const fx = engine.drainFx()                ← 큐 소비도 여기서. 렌더러의 쓰기 0을 지킨다
+//   3. renderer.render(engine.view, fx, dt)
 
 import { useEffect, useRef } from 'react';
 import { zIndex } from '../tokens.js';
 import { createLoop } from './loop.js';
-import { createRenderer } from './renderer/index.js';
-import { layout } from './renderer/geometry.js';
-import { OUTCOME, OWNER } from './judge.js';
+import { createRenderer } from './render/index.js';
+import { PRESET } from './pose.js';
 
-export default function GameCanvas({ engine, showMeter, onRendererReady }) {
-  const canvasRef = useRef(null);
+export default function GameCanvas({ engine, poseChannel, showMeter, onRendererReady, onFallback }) {
+  const mountRef = useRef(null);
+  // 콜백을 의존성에 넣으면 부모가 리렌더될 때마다 렌더러가 통째로 재생성된다.
+  // 폴백 직후 three가 다시 서면서 전환이 취소되는 버그를 실측으로 확인했다. ref로 고정한다.
+  const readyRef = useRef(onRendererReady);
+  const fallbackRef = useRef(onFallback);
+  readyRef.current = onRendererReady;
+  fallbackRef.current = onFallback;
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return undefined;
+    const mount = mountRef.current;
+    if (!mount) return undefined;
 
-    const renderer = createRenderer(canvas);
-    renderer.resize();
-    onRendererReady?.(renderer);
-
-    let lastTips = null;
+    const renderer = createRenderer(mount, {
+      dev: showMeter,
+      onFallback: (reason) => fallbackRef.current?.(reason),
+    });
+    readyRef.current?.(renderer);
 
     const loop = createLoop({
       update: (stepSec) => engine.update(stepSec),
       render: (_alpha, realDtSec) => {
         loop.setTimeScale(engine.getTimeScale());
-        renderer.update(realDtSec);
-        lastTips = renderer.draw(engine.view, { showMeter }) ?? lastTips;
 
-        // 판정 연출을 캔버스로 옮긴다. engine은 캔버스를 모른다.
-        const fx = engine.drainFx();
-        if (fx.length > 0 && lastTips) {
-          const rect = canvas.getBoundingClientRect();
-          const { scale } = layout(rect.width, rect.height, engine.view.d);
-          for (const e of fx) {
-            if (e.outcome === OUTCOME.PARRY) {
-              renderer.onParry(lastTips.meTip, scale);
-            } else if (e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE) {
-              const tip = e.owner === OWNER.ME ? lastTips.meTip : lastTips.aiTip;
-              renderer.onHit(e.owner, tip, scale);
-            }
-          }
+        // 키보드 모드의 자세 프리셋. 연속 채널은 판정을 거치지 않는다.
+        // 컨트롤러가 붙으면(C3) setQuaternion이 이 값을 덮는다.
+        if (poseChannel) {
+          const v = engine.view;
+          poseChannel.setPreset(
+            v.meGuard ? PRESET.GUARD : v.meLunge > 0.02 ? PRESET.THRUST : PRESET.REST
+          );
+          renderer.setSwordPose(poseChannel.read());
         }
+
+        const fx = engine.drainFx();
+        renderer.render(engine.view, fx, realDtSec);
       },
     });
 
@@ -54,19 +59,20 @@ export default function GameCanvas({ engine, showMeter, onRendererReady }) {
     return () => {
       window.removeEventListener('resize', onResize);
       loop.dispose();
+      renderer.dispose();
     };
-  }, [engine, showMeter, onRendererReady]);
+    // 콜백은 ref로 고정했으므로 의존성에 넣지 않는다. 렌더러는 마운트당 한 번만 선다.
+  }, [engine, poseChannel, showMeter]);
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      ref={mountRef}
       aria-hidden="true"
       style={{
         position: 'fixed',
         inset: 0,
         width: '100%',
         height: '100dvh',
-        display: 'block',
         zIndex: zIndex.content,
       }}
     />

@@ -2,7 +2,7 @@
 // 포즈 5종(대기, 전진, 런지, 가드, 피격) x 2인. 이미지 도착 시 setPoses로 교체한다.
 // 잔상은 오프스크린 누적(renderer/index.js)이 담당한다. 여기서는 현재 프레임만 그린다.
 
-import { colors, motion } from '../../tokens.js';
+import { colors, motion } from '../../../tokens.js';
 import { swordTip, swordHilt } from './geometry.js';
 
 export const POSE = { IDLE: 'IDLE', ADVANCE: 'ADVANCE', LUNGE: 'LUNGE', GUARD: 'GUARD', HIT: 'HIT' };

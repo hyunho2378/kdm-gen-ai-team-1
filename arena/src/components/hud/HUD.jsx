@@ -9,7 +9,7 @@ import ScoreBoard from './ScoreBoard.jsx';
 import JudgeText from './JudgeText.jsx';
 import PhaseBanner from './PhaseBanner.jsx';
 
-export default function HUD({ snapshot, getD, fpsDegraded }) {
+export default function HUD({ snapshot, getD, fpsDegraded, rendererFallback }) {
   const { phase, score, result, school } = snapshot;
   const live = phase === PHASE.EN_GARDE || phase === PHASE.EXCHANGE || phase === PHASE.JUDGE || phase === PHASE.SCORE;
   if (!live) return null;
@@ -38,7 +38,8 @@ export default function HUD({ snapshot, getD, fpsDegraded }) {
             <StatusChip label="컨트롤러" value="없음" degraded />
             <StatusChip label="캠" value="없음" degraded />
           </div>
-          {fpsDegraded ? <StatusChip label="렌더" value="파티클 감축" degraded /> : null}
+          {rendererFallback ? <StatusChip label="렌더" value="호환 렌더" degraded /> : null}
+          {fpsDegraded ? <StatusChip label="성능" value="자동 감축" degraded /> : null}
         </div>
       </div>
 

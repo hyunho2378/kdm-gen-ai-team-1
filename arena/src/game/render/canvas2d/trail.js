@@ -2,7 +2,7 @@
 // 가산 블렌딩(lighter)으로 블랙 무대 위에서 빛으로 읽히게 한다.
 // 세그먼트 상한은 tokens.motion.budget.trailMaxSegments. 초과분은 앞에서 버린다.
 
-import { colors, motion } from '../../tokens.js';
+import { colors, motion } from '../../../tokens.js';
 
 const MAX = motion.budget.trailMaxSegments;
 const LIFE_MS = 520;

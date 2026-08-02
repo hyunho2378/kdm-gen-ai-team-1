@@ -79,12 +79,26 @@
   - PATTERNS 12절에 한글 분해 규칙 추가. cover 워드마크만 char, 자소 분리 0건 실측
   - 검증: A1~A3 무결(8섹션, 레일 8점, ScrollTrail 단조 감소, 등장 1회성),
     9개 폭 가로 스크롤 0과 trail 겹침 0, 라이브러리 로드 차단 시 버튼 정상 동작
+- P-C 승격 V0~V3 설계 확정
+  - LIBRARIES 판정표 arena 행을 승격 확정으로 갱신, DESIGN 9절 1인칭 재작성, COMPONENTS GameCanvas 인터페이스화
+  - V1 경계 보고: 재활용 966줄, 인터페이스화 641줄. 검끝 좌표는 로직이 참조하지 않아 렌더러 소유 확정
+  - ARENA_SCENE.md: 카메라, 프리셋 4자세, 가시성 증명(8자세 전부 프러스텀 안), fx 계약, 폴백 3경로
+  - d 매핑 정정: judge.js가 d를 근접도로 정의하므로 dist(d) = 6.0 - (d/100)*4.4
+  - ARENA_INPUT.md: 이산과 연속 채널 분리, setSwordPose 판별 유니온, 결정성 세 고리 봉쇄
+- P-C 승격 V4a 1인칭 씬 골격 (확인 대기)
+  - three 0.185.1(MIT), postprocessing 6.39.4(Zlib), ribbon-geometry 0.1.0(MIT) 도입. CREDITS 기록
+  - three-screenshake는 npm 404. 셰이크는 trauma 방식 로직 포팅으로 확정
+  - render/ 신설. ThreeRenderer 기본, Canvas2dRenderer 폴백. 기존 renderer/를 render/canvas2d/로 이동(git mv)
+  - game/pose.js 연속 채널 신설. engine이 import하지 않는다
+  - GameCanvas render 콜백 통합. setTimeScale과 drainFx는 GameCanvas 잔류
+  - 검증: 셀프테스트 6/6, **기준 서명 완전 일치**, 2D와 three 양 경로 5점 완주,
+    폴백 3경로(URL, WebGL 생성 실패, 컨텍스트 손실) 전부 2D 전환과 경기 지속 확인
+  - 검끝 화면 좌표 실측이 설계값과 일치(휴식 67%/61% 대 67.9%/65.0%, 가드 57%/19% 대 57.9%/23.0%)
 
 ## 진행중
-- P-C 승격 (V0 문서 정합 + V1 경계 보고) 선점
-  - 소유 파일: arena/ 전체, docs/ 정합 갱신분, CREDITS.md, docs/PROGRESS.md
-  - shared 읽기 전용. judge.js와 machine.js와 opponents.js는 이번 승격 내내 수정 금지
-  - V1은 읽기 전용이다. 코드를 고치지 않는다
+- **승격 V4 세션 1/3.** 완료 서브단계: V0, V1, V2, V3, V4a
+  - 다음: V4b 궤적 리본과 블룸. 확인 대기 중
+  - judge.js와 machine.js와 opponents.js는 승격 내내 수정 금지(현재까지 무변경 유지)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록

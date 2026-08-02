@@ -1,7 +1,7 @@
 // 책임: 선수와 검끝의 좌표 계산. 렌더 레이어들이 공유한다.
 // 판정에 쓰이지 않는다. 판정은 judge.js의 d 하나만 본다.
 
-import { RULES } from '../judge.js';
+import { RULES } from '../../judge.js';
 
 const GROUND = 0.72;      // 바닥선 높이 비율
 const GAP_FAR = 0.62;     // d 최소일 때 두 선수 간 화면 폭 비율

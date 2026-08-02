@@ -3,7 +3,7 @@
 // devicePixelRatio는 2로 상한. 4K에서 픽셀 수가 4배가 되면 예산이 즉시 무너진다.
 // 캔버스는 transform opacity 규칙의 예외 영역이다(DESIGN 9절).
 
-import { colors, motion } from '../../tokens.js';
+import { colors, motion } from '../../../tokens.js';
 import { layout } from './geometry.js';
 import { createBackground } from './background.js';
 import { createFighters } from './fighters.js';

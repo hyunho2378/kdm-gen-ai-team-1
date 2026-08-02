@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createEngine } from './game/engine.js';
+import { createPoseChannel } from './game/pose.js';
 import { attachKeyboard } from './game/input.js';
 import { EV, PHASE } from './game/machine.js';
 import GameCanvas from './game/GameCanvas.jsx';
@@ -22,6 +23,9 @@ export default function App() {
   const rendererRef = useRef(null);
   const [snapshot, setSnapshot] = useState(null);
   const [degraded, setDegraded] = useState(false);
+  const [rendererFallback, setRendererFallback] = useState(false);
+  // 연속 채널. engine과 분리되어 있고 렌더러만 소비한다(ARENA_INPUT 3절).
+  const poseChannel = useMemo(() => createPoseChannel(), []);
 
   const engine = useMemo(
     () =>
@@ -74,13 +78,21 @@ export default function App() {
       <main style={{ minHeight: '100dvh' }}>
         <GameCanvas
           engine={engine}
+          poseChannel={poseChannel}
           showMeter={showMeter}
           onRendererReady={(r) => {
             rendererRef.current = r;
+            setRendererFallback(r.isFallback);
           }}
+          onFallback={() => setRendererFallback(true)}
         />
 
-        <HUD snapshot={snapshot} getD={() => engine.getD()} fpsDegraded={degraded} />
+        <HUD
+          snapshot={snapshot}
+          getD={() => engine.getD()}
+          fpsDegraded={degraded}
+          rendererFallback={rendererFallback}
+        />
         <VignetteOverlay active={snapshot.dilating} />
 
         {phase === PHASE.IDLE ? (
