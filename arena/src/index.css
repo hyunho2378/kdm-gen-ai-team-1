@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { background: #0D1117; color: #F0F3F6; }
+/* 위 두 값은 부트스트랩 시점의 유일한 예외. 첫 페인트 깜빡임 방지용.
+   컴포넌트 레벨에서는 반드시 tokens 경유. */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

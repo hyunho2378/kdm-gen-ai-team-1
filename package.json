@@ -1,0 +1,13 @@
+{
+  "name": "ganhap",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:presentation": "npm --prefix presentation run dev",
+    "dev:brand": "npm --prefix brand run dev",
+    "dev:arena": "npm --prefix arena run dev",
+    "dev:controller": "npm --prefix controller run dev",
+    "dev:server": "npm --prefix server run dev",
+    "build:all": "npm --prefix presentation run build && npm --prefix brand run build && npm --prefix arena run build && npm --prefix controller run build"
+  }
+}
