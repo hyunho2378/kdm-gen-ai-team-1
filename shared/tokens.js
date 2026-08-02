@@ -49,8 +49,9 @@ export const colors = {
 
 export const typography = {
   family: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif",
-  display: { size: 'clamp(2.5rem, 1.2rem + 4.5vw, 6rem)', weight: 800, tracking: '-0.03em', leading: 1.05 },   // 크롬 허용
-  title:   { size: 'clamp(1.75rem, 1.1rem + 2vw, 3rem)',  weight: 700, tracking: '-0.02em', leading: 1.15 },   // 크롬 허용
+  // 상한은 3840 기준으로 잡는다. 6rem과 3rem에서 멈추면 2560과 3840에서 제목이 작아 보인다(RESPONSIVE 4K 절)
+  display: { size: 'clamp(2.5rem, 1.2rem + 6vw, 8.5rem)', weight: 800, tracking: '-0.03em', leading: 1.05 },   // 크롬 허용
+  title:   { size: 'clamp(1.75rem, 1rem + 3vw, 4.25rem)', weight: 700, tracking: '-0.02em', leading: 1.15 },   // 크롬 허용
   heading: { size: 'clamp(1.25rem, 1rem + 0.8vw, 1.75rem)', weight: 600, tracking: '-0.01em', leading: 1.3 },
   body:    { size: 'clamp(1rem, 0.95rem + 0.2vw, 1.125rem)', weight: 400, tracking: '0', leading: 1.7 },
   caption: { size: '0.8125rem', weight: 400, tracking: '0.01em', leading: 1.5 },

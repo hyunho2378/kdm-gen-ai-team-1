@@ -109,14 +109,14 @@ Pretendard Variable 단일. fallback은 -apple-system, BlinkMacSystemFont, sans-
 
 | 역할 | clamp | weight | tracking | leading | 재질 |
 |---|---|---|---|---|---|
-| display | clamp(2.5rem, 1.2rem + 4.5vw, 6rem) | 800 | -0.03em | 1.05 | 크롬 허용 |
-| title | clamp(1.75rem, 1.1rem + 2vw, 3rem) | 700 | -0.02em | 1.15 | 크롬 허용 |
+| display | clamp(2.5rem, 1.2rem + 6vw, 8.5rem) | 800 | -0.03em | 1.05 | 크롬 허용 |
+| title | clamp(1.75rem, 1rem + 3vw, 4.25rem) | 700 | -0.02em | 1.15 | 크롬 허용 |
 | heading | clamp(1.25rem, 1rem + 0.8vw, 1.75rem) | 600 | -0.01em | 1.3 | 플랫만 |
 | body | clamp(1rem, 0.95rem + 0.2vw, 1.125rem) | 400 | 0 | 1.7 | 플랫만 |
 | caption | 0.8125rem | 400 | 0.01em | 1.5 | 플랫만 |
 | hud | clamp(0.875rem, 0.8rem + 0.3vw, 1.125rem) | 600 | 0.06em | 1.2 | 플랫만 |
 
-크기별로 tracking과 leading을 함께 조정한다. 간격은 rem 기반으로 사용자 글자 크기 설정을 존중한다. 레퍼런스처럼 날카로운 디스플레이 워드마크가 필요한 자리는 시각디자이너 SVG 레터링 슬롯으로 비워 둔다.
+크기별로 tracking과 leading을 함께 조정한다. 간격은 rem 기반으로 사용자 글자 크기 설정을 존중한다. display와 title의 상한은 3840 기준이다. 상한을 낮추면 2560과 3840에서 제목이 작아 보인다. 레퍼런스처럼 날카로운 디스플레이 워드마크가 필요한 자리는 시각디자이너 SVG 레터링 슬롯으로 비워 둔다.
 
 ---
 
