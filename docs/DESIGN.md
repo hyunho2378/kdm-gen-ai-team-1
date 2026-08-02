@@ -174,16 +174,37 @@ arena는 캔버스 0, HUD 10~50, 판정과 시간 팽창 비네트 90.
 
 ## 9. arena 렌더링 레이어와 성능 예산
 
-풀 3D 없음. 아래에서 위로 쌓는다.
+**1인칭 three.js가 기본이다.** 3인칭 canvas 2D는 폴백으로 유지한다(삭제하지 않는다).
+시점을 1인칭으로 올린 이유는 둘이다. 컨트롤러가 보내는 쿼터니언이 내 검 자세에 1대1로 꽂히고,
+궤적 리본과 후처리가 GPU로 넘어가 CPU 예산에 여유가 생긴다.
 
-1. 배경: 생성형 도장 이미지 + 안개, 비네트. v2에서 배경 이미지도 블랙 기조로 재생성한다. 네이비 톤 배경 이미지는 폐기 대상.
-2. 선수: 자세 스틸 크로스페이드 + 이전 프레임 낮은 알파 누적 잔상. 실루엣 림 라이트를 steel.edge로 잡아 크롬 느낌을 준다.
-3. 궤적: canvas 2D 또는 WebGL 가산 블렌딩 리본. 내 검 red.light, 상대 blue.light, 명중 코어 화이트 고정. 블랙 배경이라 가산 블렌딩 발색이 v1 네이비보다 좋아진다.
-4. HUD: DOM. 거리 게이지, 점수, 유파, 판정 텍스트.
+세부 씬 사양은 `ARENA_SCENE.md`, 입력 분리는 `ARENA_INPUT.md`를 따른다.
 
-성능 예산(tokens.js motion.budget): targetFps 60, minFps 30, trailMaxSegments 240, particleMax 300, afterimageMax 6, timeDilation scale 0.35 / maxMs 1200 / cooldownMs 8000.
+### 레이어 (안쪽에서 바깥으로)
 
-Chromium 파생 브라우저 WebGL 타이밍 차이 대비 2D 폴백 필수. 캔버스 밖 HUD와 버튼은 transform, opacity 규칙과 44px 터치 타깃을 지킨다.
+1. **배경**: 도장 이미지 평면 + FogExp2(bg.deep 톤). 이미지 도착 전에는 그라디언트 텍스처가 임시로 선다.
+2. **AI 상대**: 정면 선수 스틸 빌보드. 포즈 5종(대기, 전진, 텔레그래프, 런지, 피격)을 평면 2장 크로스페이드로 전환하고 항상 카메라를 향한다. 간합 d를 월드 z로 매핑해 다가오고 물러난다.
+3. **내 검**: 화면 오른쪽 아래 그립의 1인칭 검. 검신은 steel 톤 금속 재질, 검끝에 red.light emissive 마커. 키보드는 프리셋 자세 트윈, 컨트롤러는 쿼터니언 직결.
+4. **궤적 리본**: ribbon-geometry. 내 검 red.light, 상대 blue.light, 명중 코어 화이트 고정. additive blending에 나이 감쇠.
+5. **후처리**: RenderPass → AfterimagePass → EffectPass(Bloom, ChromaticAberration, Vignette, HueSaturation) → ShockWave.
+6. **HUD**: DOM. 이 층만 MOTION 규율이 그대로 적용된다.
+
+### 소유 색
+
+궤적 색은 v2 확정 매핑이다. **내 검 red.light, AI 상대 blue.light, 명중 코어 #FFFFFF.**
+v1에 "내 검 블루"로 적힌 것은 폐기분이고 `tokens.trail`이 진실이다.
+
+### 성능 예산
+
+tokens.js motion.budget: targetFps 60, minFps 30, trailMaxSegments 240, particleMax 300, afterimageMax 6, timeDilation scale 0.35 / maxMs 1200 / cooldownMs 8000.
+
+감축 순서는 파티클 → AfterimagePass damp 하향 → Bloom 해상도 하향이다.
+
+### 폴백
+
+Chromium 파생 브라우저의 WebGL 타이밍 차이와 컨텍스트 손실에 대비해 **2D 폴백이 필수다**.
+생성 실패, `webglcontextlost`, URL 파라미터 `?renderer=2d` 세 경로 전부에서 2D로 살아나야 하고
+StatusChip에 "호환 렌더"를 표시한다. 캔버스 밖 HUD와 버튼은 transform, opacity 규칙과 44px 터치 타깃을 지킨다.
 
 ---
 

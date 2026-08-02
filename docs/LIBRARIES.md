@@ -4,10 +4,14 @@
 > |---|---|---|---|
 > | presentation | magnetic-elements(MIT). 한글 분해는 word 모드 기본 규칙. 프리로더는 자체 구현 | 없음 | SplitType 계열(GSAP SplitText 사용 중이라 중복), react-creative-cursor(brand로), barba(단일 페이지라 개념만) |
 > | brand | ybouane/liquidglass(MIT) 1순위, react-creative-cursor(MIT), magnetic-elements 공용 | drei MeshTransmissionMaterial | glitchGL(듀얼 라이선스, postprocessing GlitchEffect로 대체 가능), Muggleee/liquid-glass(정식 LICENSE 파일 없음) |
-> | arena | sajmoni/screen-shake(MIT, canvas 2D), hitstop 자체 구현 | postprocessing(Zlib), AfterimagePass(MIT), ribbon-geometry(MIT), SlashSaber(CC-BY-4.0, 참고 시 크레딧) | rhy-game(자체 judge 완성으로 불필요), 무라이선스 2종(madgwick.js, WebRTCSmartphoneController) |
+> | arena | **승격 확정.** three.js(MIT), postprocessing(Zlib, AfterimagePass 포함), ribbon-geometry(MIT), three-screenshake(MIT, npm 상태 부실 시 로직 포팅), hitstop 자체 구현 | 없음 | rhy-game(자체 judge 완성으로 불필요), 무라이선스 2종(madgwick.js, WebRTCSmartphoneController), react-three-fiber(loop.js가 루프 주도권을 쥐어야 해서 미도입) |
 > | controller | psiphi75/ahrs(Apache-2.0) C2에서 채택 | 없음 | WebRTC 계열(Socket.io 확정이라 개념만) |
 >
-> 원칙: 돌아가는 canvas 2D 렌더러를 three.js 계열 도입을 위해 뜯지 않는다. WebGL 승격은 전 기능 완성 후 여유가 있을 때만 별도 제안한다.
+> 원칙(갱신): arena는 three.js 1인칭으로 승격한다. 근거는 컨트롤러 쿼터니언이 1인칭 검 자세에 1대1로 꽂히고
+> 궤적 리본과 포스트프로세싱이 GPU로 넘어가 성능 여유가 생긴다는 것이다.
+> 단 **canvas 2D 렌더러를 삭제하지 않는다.** 렌더러 인터페이스 뒤로 옮겨 폴백으로 유지하고,
+> WebGL 실패나 컨텍스트 손실 시 자동 전환한다. 이것이 렌더의 비상 컷이다.
+> SlashSaber(CC-BY-4.0)는 구조를 참고하면 크레딧을 표기한다. 타임박스 3세션, 초과 시 2D 폴백으로 데모를 확정한다.
 
 # GANHAP XR 펜싱 프로젝트 — 재사용 가능한 오픈소스 코드/기법 전수조사 보고서
 

@@ -58,10 +58,21 @@
 ## arena
 
 - **GameCanvas** `game/GameCanvas.jsx` / 렌더 루트
-  canvas 풀스크린, zIndex.content. 레이어: 배경 이미지, 실루엣 크로스페이드 + 잔상, 궤적 리본, 파티클. motion.budget 상한 참조. WebGL 실패 시 2D 폴백.
-- **machine** `game/machine.js` / 상태 머신(컴포넌트 아님)
+  풀스크린 마운트 지점, zIndex.content. **렌더러 구현을 직접 갖지 않고 인터페이스만 붙인다.**
+  루프 주도권은 `game/loop.js`가 그대로 쥔다(react-three-fiber 미도입).
+
+  ```
+  IRenderer: init(mount, tokens), resize(w, h), render(gameState, dtRender),
+             dispose(), setPoses(images), setBackgroundImage(image)
+  ```
+
+  `ThreeRenderer`가 기본이고 `Canvas2dRenderer`(기존 C1 3인칭, 동작 무변경)가 폴백이다.
+  전환 조건 3종: WebGL 컨텍스트 생성 실패, 런타임 `webglcontextlost`, URL `?renderer=2d`.
+  전환 시 StatusChip에 "호환 렌더"를 띄운다. 레이어 구성은 DESIGN 9절과 ARENA_SCENE.md를 따른다.
+  **렌더러는 게임 상태를 읽기만 한다. 쓰기 금지.** 읽어도 되는 필드는 ARENA_SCENE.md의 표에 한정한다.
+- **machine** `game/machine.js` / 상태 머신(컴포넌트 아님) — **렌더러 승격 중 수정 금지**
   phase 8종 소유. IDLE→PAIRING→CALIBRATION→EN_GARDE→EXCHANGE→JUDGE→SCORE→MATCH_END.
-- **judge** `game/judge.js` / 판정(결정적, LLM 없음)
+- **judge** `game/judge.js` / 판정(결정적, LLM 없음) — **렌더러 승격 중 수정 금지**
   거리 유효 범위, THRUST 임계, FEINT와 REAL, 리포스트 윈도우 600ms, 쿨다운 350ms.
   **명중 4분기**: 유효 범위 안 찌르기는 상대가 열린 순간에만 명중한다. 무조건 명중으로 두면
   연타로 7초에 경기가 끝나고 FEINT 판독과 가드와 리포스트와 시간 팽창이 전부 죽는다(실측).

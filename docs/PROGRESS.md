@@ -81,8 +81,20 @@
     9개 폭 가로 스크롤 0과 trail 겹침 0, 라이브러리 로드 차단 시 버튼 정상 동작
 
 ## 진행중
-- (P-A 강화 패스 종료. 다음은 P-B brand)
+- P-C 승격 (V0 문서 정합 + V1 경계 보고) 선점
+  - 소유 파일: arena/ 전체, docs/ 정합 갱신분, CREDITS.md, docs/PROGRESS.md
+  - shared 읽기 전용. judge.js와 machine.js와 opponents.js는 이번 승격 내내 수정 금지
+  - V1은 읽기 전용이다. 코드를 고치지 않는다
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
+
+## 결정 기록
+
+- **arena를 three.js 1인칭으로 승격한다 (V0에서 확정).**
+  근거 둘: 컨트롤러가 보내는 쿼터니언이 1인칭 검 자세에 1대1로 꽂혀 C3 연동이 자연스러워진다.
+  궤적 리본과 후처리가 GPU로 넘어가 CPU 예산에 여유가 생긴다.
+  제약: 게임 로직(machine, judge, opponents, loop, 입력 큐, HUD, 셀프테스트)은 재활용하고 수정하지 않는다.
+  루프 주도권은 loop.js가 쥔다(react-three-fiber 미도입). canvas 2D 렌더러는 삭제하지 않고 폴백으로 유지한다.
+  **타임박스 3세션.** 초과 시 즉시 중단하고 그 시점 상태를 커밋한 뒤 2D 폴백으로 데모를 확정한다.
 
 ## 다음 작업
 - P-C C2 controller 센서 (C1 확인 후 착수). C1 판정 규칙 보강분 승인 여부를 먼저 확인할 것
