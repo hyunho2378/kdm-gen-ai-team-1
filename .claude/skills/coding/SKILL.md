@@ -51,7 +51,7 @@ description: React+Node 풀스택 제품의 초기 세팅과 코딩 규율. 프�
 세션 시작. 작업 전 아래 파일을 순서대로 전부 읽어라.
 
 [표준 — 항상]
-1. CLAUDE.md
+1. docs/CLAUDE.md
 2. .claude/skills/coding/SKILL.md
 주의: 이 스킬 SKILL.md의 name은 fullstack-product-setup이지만 폴더는 coding이다. 경로는 폴더 기준(.claude/skills/coding/).
 3. docs/PITFALLS.md

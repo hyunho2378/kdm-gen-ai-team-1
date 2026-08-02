@@ -6,6 +6,30 @@ html, body { background: #0B0B0E; color: #F2F6FF; }
 /* 위 두 값은 부트스트랩 시점의 유일한 예외. 첫 페인트 깜빡임 방지용.
    컴포넌트 레벨에서는 반드시 tokens 경유. */
 
+/* 값은 전부 src/theme.js가 tokens에서 주입한 CSS 변수다. 여기에 HEX를 적지 마라. */
+
+*:focus-visible {
+  outline: 2px solid var(--red-light);
+  outline-offset: 2px;
+}
+
+/* MOTION 4절: press는 scale(0.97). hover에는 scale을 쓰지 않는다.
+   블랙 배경이라 hover는 배경 변화 대신 보더와 글로우로 표현한다(DESIGN 7절). */
+.ganhap-btn:active {
+  transform: scale(0.97);
+  transition: transform var(--dur-press) var(--ease-out);
+}
+.ganhap-btn-primary:active {
+  background: var(--red-press);
+}
+.ganhap-btn-primary:hover {
+  box-shadow: var(--glow-red);
+  border-color: var(--line-strong);
+}
+.ganhap-btn-ghost:hover {
+  border-color: var(--red-light);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

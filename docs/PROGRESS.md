@@ -26,12 +26,24 @@
   - steel.gradient는 colors 매핑에서 제외, style 경유 전용. tokens.js의 값 자체는 유지
   - 스킬 경로 .claude/skills/coding으로 통일, SESSION_HEADER와 SKILL.md 표기 정정
   - 커밋 3분할: docs+tokens+server / 스킬 배치 / vendor 반입
+- P-C C1 arena 키보드 모드 (트랙 종료, 확인 대기)
+  - loop.js 고정 타임스텝(1/60 누적기) + 가변 렌더, 로직 시계에만 timeScale, 탭 비활성 정지
+  - machine.js phase 8종 순수 전이 함수 + 진입 이탈 훅. 키보드는 PAIRING과 CALIBRATION 건너뜀
+  - judge.js 결정적 판정. 거리 35~55, 쿨다운 350ms, 리포스트 600ms 2점, FEINT 무페널티, REAL 가드 패리
+  - opponents.js 유파 2종(이탈리아 세이버, 프랑스 에페), rng.js mulberry32 시드 난수
+  - renderer/ 4레이어 canvas 2D(배경, 선수 실루엣 + 잔상, 궤적 가산 블렌딩, 파티클 풀링)
+  - HUD DOM 6종 + IDLE, MATCH_END, 1024 미만 차단 화면
+  - 입력 추상화 input.js(키보드와 C3 소켓 action이 같은 큐로 수렴), F9 전 phase 동작
+  - 검증: 셀프테스트 6/6, 결정성 서명 일치, 5점 완주 양방향, 실브라우저 1분 교전 p50 59.9fps
+  - 시간 팽창 지속 1200ms와 쿨다운 8000ms 실측, reduced motion 비활성 확인
+  - C4 웹캠 지표 주입 인터페이스(shouldDilate의 extra 인자) 선반영
 
 ## 진행중
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 다음 작업
-- PHASE 1 착수: P-C arena 키보드 모드 우선(상태머신 + 판정 + 궤적 렌더). P-A, P-B는 계정별 선점 후 병렬
+- P-C C2 controller 센서 (C1 확인 후 착수). C1 판정 규칙 보강분 승인 여부를 먼저 확인할 것
+- P-A presentation / P-B brand는 계정별 선점 후 병렬 착수 가능
 - 배경 이미지 재생성: 네이비 톤 도장 이미지 폐기, 블랙 기조로 생성
 - 시각디자이너 워드마크 SVG 슬롯 전달(크롬 레터링)
 
@@ -40,3 +52,12 @@
 - 루트 package.json "type": "module" 유지 필요(shared ESM 로드)
 - hello의 방 코드 필드: SERVER.md는 room, 기존 골격은 code. 서버가 room ?? code로 둘 다 받는다.
   클라이언트 구현 시 room으로 통일하고 code 폴백을 제거할 것
+- **승인 대기: C1 판정 규칙 보강분.** 사양은 "유효 범위 안이면 명중 판정 진입"까지만 정하고
+  그 다음을 비워 두었다. 무조건 명중으로 두면 스페이스 연타로 6.9초에 5점이 나고 AI가 공격할 틈이
+  없어 FEINT 판독, 가드, 리포스트, 시간 팽창이 전부 죽는다(실측). judge.js resolveThrust에
+  "상대가 열린 순간에만 명중"(RECOVER 또는 FEINT 예고 중) 규칙을 넣었다. 되돌리려면 그 switch 블록만
+  지우고 HIT을 무조건 반환하면 된다. COMPONENTS.md와 DESIGN.md 수정은 필요 없다
+- SKILL.md 세션 블록 1번 줄이 CLAUDE.md로만 적혀 있어 루트에서 못 찾는다 → docs/CLAUDE.md로 정정 완료
+- arena favicon.ico 404. 네 앱 공통으로 favicon이 없다. PHASE 2 배포 정리에서 함께 처리
+- arena 선수 실루엣과 배경은 임시 도형과 그라디언트다. 자세 스틸 5포즈 x 2인과 블랙 기조 도장
+  이미지가 도착하면 renderer의 setPoses와 setBackgroundImage로 교체한다(인터페이스 준비 완료)
