@@ -97,10 +97,19 @@ createPoseChannel() -> {
   setPreset(id),          // 'rest' | 'thrust' | 'guard'
   setQuaternion(q),       // [x, y, z, w], 30Hz
   setCalibration(q0),     // 캘리브레이션 기준 쿼터니언
-  read(),                 // { mode: 'preset' | 'quaternion', presetId, quaternion }
+  read(),                 // 판별 유니온을 돌려준다. 형태는 ARENA_SCENE.md 3절 확정본
   reset(),
 }
 ```
+
+`read()`의 반환은 `renderer.setSwordPose()`의 인자와 **같은 객체**다.
+
+```js
+{ kind: 'preset',     value: 'rest' | 'thrust' | 'guard' }
+{ kind: 'quaternion', value: [x, y, z, w] }   // 캘리브레이션 보정이 이미 적용된 값
+```
+
+`kind`가 유일한 분기 키다. 렌더러는 이 객체만 보고 입력 소스를 모른다.
 
 ### V2 스키마 9개 필드와의 구분
 
@@ -138,11 +147,11 @@ poseChannel (연속)          ─ GameCanvas 소유 ─→ renderer.setSwordPose
 **engine.js는 `pose.js`를 import하지 않는다.** `GameCanvas`가 poseChannel을 들고 있다가
 매 프레임 `renderer.setSwordPose(poseChannel.read())`를 부른다. 이것이 유일한 소비처다.
 
-### IRenderer 변경 요청
+### IRenderer 확정
 
-V2 5절이 `setSwordQuaternion(q)` 슬롯을 예약해 두었다. 키보드 프리셋도 같은 경로로 흘러야 하므로
-**`setSwordPose(pose)`로 일반화**할 것을 요청한다. 인자는 `poseChannel.read()`의 반환값이다.
-승인되면 `ARENA_SCENE.md` 3절 인터페이스 목록에 한 줄 추가한다.
+`setSwordPose(pose)`로 일반화 **승인 완료**. 키보드 프리셋과 컨트롤러 쿼터니언이 같은 경로로 흐르므로
+렌더러가 입력 소스를 모르는 채 검 자세를 그린다. 인자는 `poseChannel.read()`의 반환값이고,
+객체 형태는 `ARENA_SCENE.md` 3절의 판별 유니온이 확정본이다.
 
 ---
 
@@ -174,9 +183,9 @@ V2 5절이 `setSwordQuaternion(q)` 슬롯을 예약해 두었다. 키보드 프�
 
 | 상황 | 연속 채널 | 이산 채널 |
 |---|---|---|
-| 컨트롤러 없음 | `mode: 'preset'`. 키보드가 프리셋을 민다 | 키보드만 |
+| 컨트롤러 없음 | `kind: 'preset'`. 키보드가 프리셋을 민다 | 키보드만 |
 | 컨트롤러 연결, 자세 미수신 | 마지막 프리셋 유지. 첫 쿼터니언 도착 시 전환 | 양쪽 |
-| 연결 중 끊김(`peer_left`) | 즉시 `mode: 'preset'`으로 복귀 | 키보드만 |
+| 연결 중 끊김(`peer_left`) | 즉시 `kind: 'preset'`으로 복귀 | 키보드만 |
 
 **연속 채널이 비어도 경기는 돈다.** 자세는 장식이고 판정은 이산 이벤트만 본다(PATTERNS 8절 우아한 저하).
 
@@ -260,8 +269,8 @@ opponents.js ─→ (입력 모듈 없음)
 
 **연속: 컨트롤러가 우선한다.**
 
-컨트롤러가 연결되어 쿼터니언이 흐르는 동안에는 `mode: 'quaternion'`이고 키보드 프리셋은 무시된다.
-F9를 누르면 `preset`으로 내려온다. 두 자세가 섞이지 않는다.
+컨트롤러가 연결되어 쿼터니언이 흐르는 동안에는 `kind: 'quaternion'`이고 키보드 프리셋은 무시된다.
+F9를 누르면 `kind: 'preset'`으로 내려온다. 두 자세가 섞이지 않는다.
 
 ---
 

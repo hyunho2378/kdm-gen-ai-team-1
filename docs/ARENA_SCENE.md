@@ -77,7 +77,21 @@ IRenderer:
   dispose()
   setPoses(images)
   setBackgroundImage(image)
+  setSwordPose(pose)
 ```
+
+### pose 객체 형태 (판별 유니온, 확정)
+
+```js
+// kind로 분기한다. 렌더러는 이 객체만 보고 입력 소스를 모른다.
+{ kind: 'preset',     value: 'rest' | 'thrust' | 'guard' }
+{ kind: 'quaternion', value: [x, y, z, w] }   // 캘리브레이션 보정이 이미 적용된 값
+```
+
+- `kind === 'preset'` → 렌더러가 5절 프리셋 좌표 사이를 `tokens.motion.thrust` 커브로 트윈한다.
+- `kind === 'quaternion'` → 검 그룹 회전에 직결한다. 트윈하지 않는다(이미 30Hz 스트림이다).
+- 형태를 여기 박아두는 이유는 C3 연결 때 어긋나지 않게 하기 위해서다. V4a에서 즉흥으로 정하지 마라.
+- 값의 출처와 보정 지점은 `ARENA_INPUT.md` 3절을 따른다. 이 인터페이스는 소스를 모른다.
 
 ### 호출 위치 규율
 
@@ -161,7 +175,8 @@ z_ai    = -dist(d)
 
 - **키보드 모드**: 위 프리셋 사이를 `tokens.motion.thrust` 커브로 트윈한다. 이번 승격 범위는 여기까지다.
 - **컨트롤러 모드(C3)**: 캘리브레이션 오프셋을 적용한 쿼터니언을 검 그룹 회전에 직결한다.
-  이번에는 **입력 슬롯만 인터페이스로 파둔다**(`setSwordQuaternion(q)`). 구현은 C3에서 한다.
+  이번에는 **입력 슬롯만 인터페이스로 파둔다**(`setSwordPose({ kind: 'quaternion', value: q })`).
+  실제 연결은 C3에서 한다. 3절의 판별 유니온 형태를 따른다.
 
 ### 찌르기 연출
 
