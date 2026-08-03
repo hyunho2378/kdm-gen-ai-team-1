@@ -284,12 +284,26 @@
     검과 함께 움직여 그럴듯해 보였을 뿐이다. 이제 진짜 칼끝에서 나온다
   - 검증: 되찌르기 링 위치 유지, 셀프테스트 8종, D3 기준 서명 유지, 5점 완주 2D와 three 양 경로
 
+- P-C D5 FUI 히트 마커와 명중 연출 (개편 D0~D5 전체 완료, 확인 대기)
+  - 명중 마커: 팔각 레티클 + 과녁 링 2겹 + red 꺾쇠 4개 + 부위 라벨 + 점수 팝업.
+    D4 되찌르기 링과 같은 시각 문법이고 같은 setFxObserver 통로를 쓴다.
+    실측 포착: "+1 투구"가 상대 머리 위에 정확히 섰다(D5-pre 투영 수정 덕이다)
+  - 데미지 인디케이터: 팔각 프레임의 피격 방향 변이 red.light로 점등 + "피격 몸통" 라벨.
+    **파란 연출 없음.** 경고의 레드라 색 규칙에 맞는다. normal과 reduced 양쪽 포착
+  - 부위 근사: y 1.55 초과 투구, 0.95 초과 몸통, 그 아래 팔다리
+  - 명중 연출: hitstop 70ms(GameCanvas가 loop.setTimeScale(0)을 걸었다 푼다. 렌더러는 시계를 안 만진다),
+    ShockWave(명중 월드 좌표 epicenter, delta 전달), 색수차 250ms sin 반주기, 카메라 셰이크(trauma 포팅)
+  - **EffectPass 병합이 안 되는 조합을 실측으로 만났다.**
+    "Effects that transform UVs are incompatible with convolution effects (ShockWaveEffect)".
+    Bloom은 컨볼루션이고 ShockWave와 색수차는 UV를 옮긴다. 합성 순서는 두고 패스를 셋으로 갈랐다
+  - **그 예외가 던져졌을 때 폴백이 정상 동작해 2D로 경기가 이어졌다.** 검은 화면이 아니라
+    호환 렌더로 내려앉는 것을 실제 사고로 확인한 셈이다
+  - reduced motion: 셰이크와 ShockWave와 색수차를 끄고 hitstop과 흰 코어와 마커(페이드만)는 남긴다
+  - 검증: 셀프테스트 8종, **D3 기준 서명 유지**(hitstop이 판정에 영향 없음을 증명한다),
+    5점 완주 2D와 three 양 경로, 에러 0. 대리 지표 드로우콜 41 → 43(EffectPass +2), 텍스처 31
+
 ## 진행중
-- **P-C D5 투영 + FUI (D5 본편 대기). 트랙 선점.** 실플레이 크리틱 반영. 단계 D0~D5
-  - **D0~D4, D5-pre 완료.** 다음은 D5 본편(FUI 히트 마커, 데미지 인디케이터, 명중 연출). 확인 대기 중
-  - 이후 D2 상대 완성 / D3 AI 다양화와 런지 / D4 막기 시각화 / D5 FUI 히트 마커
-  - D0~D2는 렌더만 건드리므로 기존 기준 서명이 유지돼야 한다.
-    D3은 의도적 게임플레이 변경이라 서명 갱신 절차를 밟는다
+- (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록
@@ -302,6 +316,13 @@
   **타임박스 3세션.** 초과 시 즉시 중단하고 그 시점 상태를 커밋한 뒤 2D 폴백으로 데모를 확정한다.
 
 ## 다음 작업
+- **게임필 개편 D0~D5 전체 완료.** 잔여는 셋이고 다음 방향은 사용자 판단이다.
+  1. **V4e 시간 팽창 시각** — AfterimagePass damp 상승, 채도 하강, 비네트 강화, 300ms 복귀.
+     후처리 뼈대가 이미 서 있어 붙이기만 하면 된다
+  2. **생성 이미지 도착 시 setPoses 교체** — `docs/OPPONENT_IMAGE_SPEC.md`대로 5장.
+     교체 후 SOLE_V와 HEAD_V 실측 재조정과 밝기(선형 0.42 미만) 확인이 필요하다
+  3. **controller C2 센서 + C3 소켓** — 폰을 검으로 쓰는 경로. `setSwordPose` 쿼터니언 슬롯은 이미 파여 있다
+- (구) 상대 검 blue emissive는 D2에서 완료했다(finish 'antique').
 - **상대 검 blue emissive 적용.** 로더와 emissive 함수는 색 인자로 재사용 가능하게 짜 두었다.
   `attachSwordModel(parent, { emissive: colors.trail.ai, ... })` 한 줄이면 되지만
   상대는 빌보드(평면)라 3D 검을 어디에 붙일지가 먼저 정해져야 한다

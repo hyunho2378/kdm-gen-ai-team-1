@@ -11,6 +11,7 @@ import { thrustEase } from './canvas2d/geometry.js';
 import { createComposer } from './three/post.js';
 import { POSE, createOpponent } from './three/opponent.js';
 import { attachSwordModel } from './three/swordModel.js';
+import { createShake } from './three/shake.js';
 import { createSparks } from './three/sparks.js';
 import { createTrailRibbon } from './three/trail.js';
 import {
@@ -36,6 +37,16 @@ const ADVANCE_OUT = 6;
 // 레드는 사건의 색이라 평시 칼날에 상시로 얹지 않는다(DESIGN v2 색 규칙).
 const FLARE_DECAY_SEC = motion.duration.judge / 1000;
 
+/**
+ * 명중 부위. 월드 높이로 근사한다.
+ * 상대 키가 1.9m이므로 투구는 어깨 위, 몸통은 골반에서 어깨, 그 아래가 팔다리다.
+ */
+function bodyPart(y) {
+  if (y > 1.55) return '투구';
+  if (y > 0.95) return '몸통';
+  return '팔다리';
+}
+
 /** 두 좌표를 섞는다. 프리셋 트윈의 최소 단위다. */
 function lerp3(out, a, b, t) {
   out.set(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
@@ -59,6 +70,8 @@ export function createThreeRenderer() {
   let meTrail = null;
   let aiTrail = null;
   let sparks = null;
+  let shake = null;
+  let reducedMotion = false;
   // 화면 좌표가 필요한 연출은 DOM이 그린다. 렌더러는 좌표만 알려 준다(D4 리포스트 링, D5 FUI)
   let onFx = null;
 
@@ -66,6 +79,7 @@ export function createThreeRenderer() {
   const tipWorld = new THREE.Vector3();
   const aiTipWorld = new THREE.Vector3();
   const crossWorld = new THREE.Vector3();
+  const hitWorld = new THREE.Vector3();
   const tmpProj = new THREE.Vector3();
 
   let w = 0;
@@ -152,8 +166,9 @@ export function createThreeRenderer() {
     id: 'three',
     label: '3D',
 
-    init(mount, { dev = false, onContextLost } = {}) {
+    init(mount, { dev = false, reduced = false, onContextLost } = {}) {
       onLost = onContextLost;
+      reducedMotion = reduced;
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
       canvas = renderer.domElement;
@@ -224,6 +239,7 @@ export function createThreeRenderer() {
       scene.add(meTrail.mesh, aiTrail.mesh);
 
       sparks = createSparks(scene);
+      shake = createShake(camera);
 
       post = createComposer(renderer, scene, camera);
 
@@ -302,26 +318,50 @@ export function createThreeRenderer() {
       // 스파크는 월드에 서므로 검끝 월드 좌표를 그대로 쓴다.
       crossWorld.copy(tipWorld);
 
-      // 명중 순간 해당 리본의 최근 구간을 흰 코어로 굳힌다. 나머지 연출은 D5에서 붙는다.
       for (const e of fx) {
-        if (e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE) {
+        const scored = e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE;
+        // 연출이 서는 월드 지점. 내가 넣었으면 상대 몸 위, 내가 맞았으면 상대 검끝이다
+        if (scored && e.owner === OWNER.ME) {
+          hitWorld.set(
+            opponent.group.position.x,
+            Math.min(1.8, Math.max(0.35, tipWorld.y)),
+            opponent.group.position.z + 0.06
+          );
+        } else {
+          hitWorld.copy(scored ? aiTipWorld : crossWorld);
+        }
+
+        if (scored) {
+          // 명중 순간 해당 리본의 최근 구간을 흰 코어로 굳힌다
           (e.owner === OWNER.ME ? meTrail : aiTrail).markHit();
           // 내가 넣었을 때만 칼날이 붉게 터진다. 레드는 사건의 색이다
           if (e.owner === OWNER.ME) flare = 1;
+          // 11절 타임라인. hitstop은 GameCanvas가 로직 시계에 건다
+          post.impact(hitWorld, { reduced: reducedMotion });
+          if (!reducedMotion) shake.kick(e.owner === OWNER.ME ? 0.55 : 0.75);
         }
         if (e.outcome === OUTCOME.PARRY) {
           // 스파크는 흰색에서 steel로 식는다. red를 쓰지 않는다(레드는 득점 전용)
           sparks.burst(crossWorld);
           opponent.knockBack();
         }
-        // 화면 좌표를 얹어 DOM 층으로 넘긴다. 캔버스 밖 연출은 HUD가 그린다
+        // 화면 좌표와 부위를 얹어 DOM 층으로 넘긴다. 캔버스 밖 연출은 HUD가 그린다
         if (onFx) {
-          const p = this.projectToScreen(crossWorld);
-          onFx({ outcome: e.outcome, owner: e.owner, x: p.x, y: p.y, visible: p.visible });
+          const p = this.projectToScreen(hitWorld);
+          onFx({
+            outcome: e.outcome,
+            owner: e.owner,
+            x: p.x,
+            y: p.y,
+            visible: p.visible,
+            part: bodyPart(hitWorld.y),
+            points: e.outcome === OUTCOME.RIPOSTE ? 2 : 1,
+          });
         }
       }
 
       sparks.update(dtRender);
+      if (!reducedMotion) shake.update(dtRender);
 
       if (flare > 0) {
         flare = Math.max(0, flare - dtRender / FLARE_DECAY_SEC);
@@ -366,6 +406,7 @@ export function createThreeRenderer() {
       meTrail?.clear();
       aiTrail?.clear();
       sparks?.clear();
+      shake?.reset();
       flare = 0;
       rapier?.setFlare(0);
       lastD = null;
@@ -401,6 +442,7 @@ export function createThreeRenderer() {
       disposed = true;
       post?.dispose();
       sparks?.dispose();
+      shake?.reset();
       rapier?.dispose();
       opponent?.dispose();
       meTrail?.dispose();
@@ -425,6 +467,7 @@ export function createThreeRenderer() {
       meTrail = null;
       aiTrail = null;
       sparks = null;
+      shake = null;
       onFx = null;
     },
   };

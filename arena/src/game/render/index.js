@@ -19,14 +19,14 @@ export function forced2dFromUrl() {
  * 마운트에 렌더러를 붙이고 핸들을 돌려준다.
  * onFallback은 2D로 내려앉을 때 한 번 불린다(StatusChip 갱신용).
  */
-export function createRenderer(mount, { dev = false, onFallback } = {}) {
+export function createRenderer(mount, { dev = false, reduced = false, onFallback } = {}) {
   let active = null;
   let fellBack = false;
 
   function mount2d(reason) {
     fellBack = true;
     active = createCanvas2dRenderer();
-    active.init(mount, { dev });
+    active.init(mount, { dev, reduced });
     onFallback?.(reason);
   }
 
@@ -45,7 +45,7 @@ export function createRenderer(mount, { dev = false, onFallback } = {}) {
   } else {
     try {
       const three = createThreeRenderer();
-      three.init(mount, { dev, onContextLost: () => swapTo2d('context-lost') });
+      three.init(mount, { dev, reduced, onContextLost: () => swapTo2d('context-lost') });
       active = three;
     } catch (err) {
       // WebGL 생성 실패. 조용히 죽이지 않고 2D로 살린다.

@@ -479,6 +479,22 @@ out = current x (1 - damp) + prev x damp
 
 **`ShockWave`는 render 루프에 `delta`를 반드시 전달한다.** 누락이 흔한 버그다(조사 19절).
 
+### EffectPass 병합이 안 되는 조합 (D5 실측)
+
+10절 초안은 Bloom과 ChromaticAberration과 ShockWave를 **한 EffectPass에 묶는** 것이었다. 안 된다.
+
+```
+Effects that transform UVs are incompatible with convolution effects (ShockWaveEffect)
+```
+
+Bloom은 컨볼루션이고 ShockWave와 ChromaticAberration은 UV를 옮긴다. 병합은 이 라이브러리의 요령이지만
+이 조합에서는 성립하지 않는다. **합성 순서는 그대로 두고 패스만 셋으로 가른다**
+(`EffectPass(bloom)` → `EffectPass(chromatic)` → `EffectPass(shock)`).
+풀스크린 패스가 둘 늘어 드로우콜이 41 → 43이 됐다.
+
+이 예외가 던져졌을 때 **폴백이 정상 동작해 2D 렌더러로 경기가 이어졌다.** 검은 화면이 아니라
+호환 렌더로 내려앉는 것을 실제 사고로 확인한 셈이다(PATTERNS 8절 우아한 저하).
+
 ---
 
 ## 10-1. 막기 시각화와 FUI 층 (D4)
@@ -558,6 +574,25 @@ JUDGE 800ms 안의 타임라인이다. HUD의 `JudgeText`와 동기하며 **HUD�
   CREDITS.md에 "MIT, 로직 포팅"으로 기록한다.
 - **hitstop은 로직 시계만 멈춘다.** `loop.setTimeScale(0)`을 GameCanvas가 70ms 걸었다 푸는 방식이라
   렌더러가 시계를 만지지 않는다(3절 규율 유지).
+
+### FUI 히트 마커와 데미지 인디케이터 (D5)
+
+| 연출 | 조건 | 내용 |
+|---|---|---|
+| 명중 마커 | HIT/RIPOSTE, owner ME | 명중 지점에 팔각 레티클. 팔각 외곽 + 과녁 링 2겹 + red 꺾쇠 4개 + 부위 라벨 + `+1`(리포스트 `+2`) |
+| 데미지 인디케이터 | HIT, owner AI | **파란 연출을 쓰지 않는다.** 팔각 프레임에서 피격 방향 변이 red.light로 점등 + 부위 라벨. 경고의 레드다 |
+
+**명중 지점.** 내가 넣었으면 상대 몸 위(`x, z`는 빌보드, `y`는 내 검끝 높이를 0.35~1.8로 죈 값),
+내가 맞았으면 상대 검끝이다. 부위는 그 높이로 근사한다.
+
+| 높이 | 부위 |
+|---|---|
+| y > 1.55 | 투구 |
+| y > 0.95 | 몸통 |
+| 그 아래 | 팔다리 |
+
+DOM 투영이라 데미지 표시는 피격 지점이 화면 밖이어도 그린다(프레임 가장자리에 서므로).
+명중 마커는 화면 안일 때만 그린다.
 
 ### reduced motion 분기
 

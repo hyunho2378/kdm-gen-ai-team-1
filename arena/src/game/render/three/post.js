@@ -12,15 +12,17 @@
 //   SavePass가 직전 합성 결과를 들고 있고, TextureEffect가 그것을 NORMAL 블렌드로 덮는다.
 //   opacity가 damp이므로 out = current x (1 - damp) + prev x damp. AfterimagePass와 같은 식이다.
 
-import { HalfFloatType } from 'three';
+import { HalfFloatType, Vector2, Vector3 } from 'three';
 import {
   BlendFunction,
   BloomEffect,
+  ChromaticAberrationEffect,
   EffectComposer,
   EffectPass,
   KernelSize,
   RenderPass,
   SavePass,
+  ShockWaveEffect,
   TextureEffect,
 } from 'postprocessing';
 
@@ -53,6 +55,20 @@ export const BLOOM_LOW = { resolutionScale: 0.25, intensity: 0.9 };
  */
 export const AFTERIMAGE = { damp: 0.70, dampDilated: 0.92 };
 
+/**
+ * 명중 연출 상수(D5). ARENA_SCENE 11절 타임라인을 이 값들이 진다.
+ * 색수차는 화면 전체를 흔드는 효과라 피크가 작아야 한다. 0.0022는 1440폭에서 3px 남짓이다.
+ */
+export const IMPACT = {
+  hitstopMs: 70,
+  chromaticPeak: 0.0022,
+  chromaticMs: 250,
+  shockSpeed: 2.4,
+  shockMaxRadius: 0.9,
+  shockWaveSize: 0.16,
+  shockAmplitude: 0.042,
+};
+
 export function createComposer(renderer, scene, camera) {
   // **프레임 버퍼는 반드시 HalfFloat다.** 기본값 8비트로 두면 잔상 되먹임이 양자화에 걸린다.
   //   out = current x 0.3 + prev x 0.7
@@ -79,14 +95,33 @@ export function createComposer(renderer, scene, camera) {
     resolutionScale: BLOOM.resolutionScale,
   });
 
-  // EffectPass는 넘긴 이펙트를 한 셰이더로 병합한다. 패스 수를 줄이는 것이 이 라이브러리의 요령이다.
+  // 명중 연출(D5). 평시에는 둘 다 0이라 화면에 아무 일도 없다.
+  const chromatic = new ChromaticAberrationEffect({ offset: new Vector2(0, 0), radialModulation: false });
+  const shock = new ShockWaveEffect(camera, new Vector3(), {
+    speed: IMPACT.shockSpeed,
+    maxRadius: IMPACT.shockMaxRadius,
+    waveSize: IMPACT.shockWaveSize,
+    amplitude: IMPACT.shockAmplitude,
+  });
+
+  // **셋을 한 패스에 묶을 수 없다.** 실측으로 확인했다.
+  //   "Effects that transform UVs are incompatible with convolution effects (ShockWaveEffect)"
+  // Bloom은 컨볼루션이고 ShockWave와 ChromaticAberration은 UV를 옮긴다.
+  // EffectPass 병합은 이 라이브러리의 요령이지만 이 조합에서는 성립하지 않는다.
+  // 10절 합성 순서는 그대로 두고 패스만 셋으로 가른다.
   const effectPass = new EffectPass(camera, bloom);
   composer.addPass(effectPass);
+  composer.addPass(new EffectPass(camera, chromatic));
+  composer.addPass(new EffectPass(camera, shock));
+
+  let chromaticT = 0;
 
   return {
     composer,
     bloom,
     ghost,
+    chromatic,
+    shock,
     effectPass,
     setSize(w, h) {
       composer.setSize(w, h);
@@ -95,8 +130,26 @@ export function createComposer(renderer, scene, camera) {
     setDamp(v) {
       ghost.blendMode.opacity.value = v;
     },
-    /** delta를 반드시 넘긴다. V4d ShockWave가 이 값에 의존한다. */
+
+    /**
+     * 명중 충격. epicenter는 월드 좌표다.
+     * reduced motion에서는 물결과 색수차를 끄고 hitstop과 흰 코어만 남긴다(11절).
+     */
+    impact(worldPos, { reduced = false } = {}) {
+      if (reduced) return;
+      shock.position.copy(worldPos);
+      shock.explode();
+      chromaticT = 1;
+    },
+
+    /** delta를 반드시 넘긴다. ShockWave가 이 값으로 물결을 진행시킨다. */
     render(deltaSec) {
+      if (chromaticT > 0) {
+        chromaticT = Math.max(0, chromaticT - (deltaSec * 1000) / IMPACT.chromaticMs);
+        // 0에서 솟았다 0으로. sin 반주기라 시작과 끝이 모두 0이다
+        const k = Math.sin(Math.PI * (1 - chromaticT)) * IMPACT.chromaticPeak;
+        chromatic.offset.set(k, k * 0.6);
+      }
       composer.render(deltaSec);
     },
     dispose() {

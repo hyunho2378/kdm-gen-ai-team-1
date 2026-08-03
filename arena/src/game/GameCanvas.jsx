@@ -11,8 +11,10 @@ import { zIndex } from '../tokens.js';
 import { createLoop } from './loop.js';
 import { createRenderer } from './render/index.js';
 import { PRESET } from './pose.js';
+import { OUTCOME } from './judge.js';
+import { IMPACT } from './render/three/post.js';
 
-export default function GameCanvas({ engine, poseChannel, perf, onRendererReady, onFallback, onFx }) {
+export default function GameCanvas({ engine, poseChannel, perf, reduced = false, onRendererReady, onFallback, onFx }) {
   const mountRef = useRef(null);
   // 콜백을 의존성에 넣으면 부모가 리렌더될 때마다 렌더러가 통째로 재생성된다.
   // 폴백 직후 three가 다시 서면서 전환이 취소되는 버그를 실측으로 확인했다. ref로 고정한다.
@@ -28,8 +30,12 @@ export default function GameCanvas({ engine, poseChannel, perf, onRendererReady,
     if (!mount) return undefined;
 
     const renderer = createRenderer(mount, {
+      reduced,
       onFallback: (reason) => fallbackRef.current?.(reason),
     });
+    // 명중 순간 로직 시계만 세운다. 렌더는 계속 돈다.
+    // 시계 제어는 ARENA_SCENE 3절대로 GameCanvas 소관이라 렌더러가 만지지 않는다.
+    let hitstopUntil = 0;
     // 화면 좌표가 필요한 연출은 DOM이 그린다. 렌더러는 투영 좌표만 넘긴다
     renderer.setFxObserver((e) => fxRef.current?.(e));
     readyRef.current?.(renderer);
@@ -37,7 +43,8 @@ export default function GameCanvas({ engine, poseChannel, perf, onRendererReady,
     const loop = createLoop({
       update: (stepSec) => engine.update(stepSec),
       render: (_alpha, realDtSec) => {
-        loop.setTimeScale(engine.getTimeScale());
+        const now = performance.now();
+        loop.setTimeScale(now < hitstopUntil ? 0 : engine.getTimeScale());
 
         // 키보드 모드의 자세 프리셋. 연속 채널은 판정을 거치지 않는다.
         // 컨트롤러가 붙으면(C3) setQuaternion이 이 값을 덮는다.
@@ -50,6 +57,11 @@ export default function GameCanvas({ engine, poseChannel, perf, onRendererReady,
         }
 
         const fx = engine.drainFx();
+        for (const e of fx) {
+          if (e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE) {
+            hitstopUntil = now + IMPACT.hitstopMs;
+          }
+        }
         // render 벽시계를 잰다. 헤드리스 fps는 무효라도 이 값의 전후 비교는 유효한 대리 지표다
         const t0 = performance.now();
         renderer.render(engine.view, fx, realDtSec);
@@ -68,7 +80,7 @@ export default function GameCanvas({ engine, poseChannel, perf, onRendererReady,
       renderer.dispose();
     };
     // 콜백은 ref로 고정했으므로 의존성에 넣지 않는다. 렌더러는 마운트당 한 번만 선다.
-  }, [engine, poseChannel, perf]);
+  }, [engine, poseChannel, perf, reduced]);
 
   return (
     <div

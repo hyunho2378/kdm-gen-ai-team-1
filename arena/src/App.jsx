@@ -89,6 +89,7 @@ export default function App() {
           engine={engine}
           poseChannel={poseChannel}
           perf={perf}
+          reduced={reduced}
           onRendererReady={(r) => {
             rendererRef.current = r;
             setRendererFallback(r.isFallback);
