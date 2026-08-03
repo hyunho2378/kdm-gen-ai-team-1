@@ -70,6 +70,7 @@ export function createRenderer(mount, { dev = false, onFallback } = {}) {
     getFps: () => active.getFps(),
     isDegraded: () => active.isDegraded(),
     getInfo: () => active.getInfo?.() ?? null,
+    setFxObserver: (fn) => active.setFxObserver?.(fn),
     dispose: () => active?.dispose(),
   };
 }

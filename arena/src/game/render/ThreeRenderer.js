@@ -11,6 +11,7 @@ import { thrustEase } from './canvas2d/geometry.js';
 import { createComposer } from './three/post.js';
 import { POSE, createOpponent } from './three/opponent.js';
 import { attachSwordModel } from './three/swordModel.js';
+import { createSparks } from './three/sparks.js';
 import { createTrailRibbon } from './three/trail.js';
 import {
   CAMERA,
@@ -58,10 +59,14 @@ export function createThreeRenderer() {
   let post = null;
   let meTrail = null;
   let aiTrail = null;
+  let sparks = null;
+  // 화면 좌표가 필요한 연출은 DOM이 그린다. 렌더러는 좌표만 알려 준다(D4 리포스트 링, D5 FUI)
+  let onFx = null;
 
   const camWorld = new THREE.Vector3();
   const tipWorld = new THREE.Vector3();
   const aiTipWorld = new THREE.Vector3();
+  const crossWorld = new THREE.Vector3();
 
   let w = 0;
   let h = 0;
@@ -218,6 +223,8 @@ export function createThreeRenderer() {
       aiTrail.mesh.renderOrder = 2;
       scene.add(meTrail.mesh, aiTrail.mesh);
 
+      sparks = createSparks(scene);
+
       post = createComposer(renderer, scene, camera);
 
       // 씬 전체 셰이더를 개막 전에 컴파일한다. 첫 등장 프레임마다 컴파일이 끼면 그게 곧 히치다
@@ -291,6 +298,10 @@ export function createThreeRenderer() {
       meTrail.build(camWorld);
       aiTrail.build(camWorld);
 
+      // 두 검이 맞부딪는 지점. 패리 스파크와 리포스트 링이 여기 선다.
+      // 스파크는 월드에 서므로 검끝 월드 좌표를 그대로 쓴다.
+      crossWorld.copy(tipWorld);
+
       // 명중 순간 해당 리본의 최근 구간을 흰 코어로 굳힌다. 나머지 연출은 D5에서 붙는다.
       for (const e of fx) {
         if (e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE) {
@@ -298,7 +309,21 @@ export function createThreeRenderer() {
           // 내가 넣었을 때만 칼날이 붉게 터진다. 레드는 사건의 색이다
           if (e.owner === OWNER.ME) flare = 1;
         }
+        if (e.outcome === OUTCOME.PARRY) {
+          // 스파크는 흰색에서 steel로 식는다. red를 쓰지 않는다(레드는 득점 전용)
+          sparks.burst(crossWorld);
+          opponent.knockBack();
+        }
+        // 화면 좌표를 얹어 DOM 층으로 넘긴다. 캔버스 밖 연출은 HUD가 그린다.
+        // 카메라 로컬 프리셋 좌표를 6절 투영식으로 직접 푼다. 검이 카메라의 자식이라
+        // 이 식이 곧 화면 위치이고, 문서에 박아 둔 자세별 좌표와 그대로 맞는다.
+        if (onFx) {
+          const p = this.projectCameraLocal(tmpTip);
+          onFx({ outcome: e.outcome, owner: e.owner, x: p.x, y: p.y, visible: p.visible });
+        }
       }
+
+      sparks.update(dtRender);
 
       if (flare > 0) {
         flare = Math.max(0, flare - dtRender / FLARE_DECAY_SEC);
@@ -307,6 +332,34 @@ export function createThreeRenderer() {
 
       // delta를 반드시 넘긴다. V4d ShockWave가 이 값으로 물결을 진행시킨다.
       post.render(dtRender);
+    },
+
+    /**
+     * **카메라 로컬** 좌표를 CSS 픽셀로 투영한다. ARENA_SCENE 6절 투영식 그대로다.
+     *
+     * ```
+     * ndcY = (y / |z|) / tan(fov/2)
+     * ndcX = (x / |z|) / (tan(fov/2) * aspect)
+     * ```
+     *
+     * 검이 카메라의 자식이라 프리셋 좌표가 곧 카메라 공간이고, 이 식이 곧 화면 위치다.
+     * 문서에 박아 둔 자세별 화면 좌표(휴식 67.9%/65.0% 등)와 같은 계산이라 대조가 성립한다.
+     */
+    projectCameraLocal(v) {
+      const z = Math.max(1e-4, -v.z);
+      const t = Math.tan((CAMERA.fov * Math.PI) / 360);
+      const ndcX = v.x / z / (t * (w / h));
+      const ndcY = v.y / z / t;
+      return {
+        x: (ndcX * 0.5 + 0.5) * w,
+        y: (-ndcY * 0.5 + 0.5) * h,
+        visible: v.z < 0 && Math.abs(ndcX) <= 1.1 && Math.abs(ndcY) <= 1.1,
+      };
+    },
+
+    /** 화면 좌표가 필요한 연출을 DOM으로 넘기는 통로. 렌더러는 그리지 않는다. */
+    setFxObserver(fn) {
+      onFx = typeof fn === 'function' ? fn : null;
     },
 
     /** 연속 채널 주입. 판별 유니온만 받는다(ARENA_SCENE 3절). */
@@ -323,6 +376,7 @@ export function createThreeRenderer() {
     clear() {
       meTrail?.clear();
       aiTrail?.clear();
+      sparks?.clear();
       flare = 0;
       rapier?.setFlare(0);
       lastD = null;
@@ -357,6 +411,7 @@ export function createThreeRenderer() {
     dispose() {
       disposed = true;
       post?.dispose();
+      sparks?.dispose();
       rapier?.dispose();
       opponent?.dispose();
       meTrail?.dispose();
@@ -380,6 +435,8 @@ export function createThreeRenderer() {
       post = null;
       meTrail = null;
       aiTrail = null;
+      sparks = null;
+      onFx = null;
     },
   };
 }

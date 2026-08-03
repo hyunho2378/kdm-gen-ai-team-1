@@ -457,6 +457,10 @@ export function createOpponent(scene, { tipDistance } = {}) {
   const handTarget = new THREE.Vector3();
   const aimTarget = new THREE.Vector3();
   const aimDir = new THREE.Vector3();
+  // 패리당해 검이 튕겨나는 짧은 반동. 겨냥점을 잠깐 밀었다 되돌린다
+  const KNOCK = new THREE.Vector3(0.42, 0.34, -0.22);
+  const KNOCK_SEC = 0.26;
+  let knock = 0;
   const BLADE_AXIS = new THREE.Vector3(0, 0, -1);
   const tmpColor = new THREE.Color();
   const lerpArr = (out, a, b, t) =>
@@ -478,6 +482,11 @@ export function createOpponent(scene, { tipDistance } = {}) {
 
   return {
     group,
+
+    /** 패리당했을 때. 검이 튕겨나는 인상만 짧게 준다. */
+    knockBack() {
+      knock = 1;
+    },
 
     /** 궤적 리본이 읽는 검끝. 3D 검이 서면 그쪽 앵커로 바뀐다. */
     getTip() {
@@ -528,6 +537,10 @@ export function createOpponent(scene, { tipDistance } = {}) {
       } else {
         handTarget.set(h[0], h[1], h[2]);
         aimTarget.set(aim[0], aim[1], aim[2]);
+      }
+      if (knock > 0) {
+        knock = Math.max(0, knock - dtSec / KNOCK_SEC);
+        aimTarget.addScaledVector(KNOCK, knock);
       }
       // 포즈 사이를 순간이동하면 리본이 화면을 가로지르는 직선을 긋는다. 따라붙게 둔다
       const k = Math.min(1, dtSec * 14);

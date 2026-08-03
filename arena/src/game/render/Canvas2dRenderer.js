@@ -60,6 +60,8 @@ export function createCanvas2dRenderer() {
 
     // 3인칭 2D에는 1인칭 검이 없다. 인터페이스만 맞춘다.
     setSwordPose() {},
+    /** 2D 경로에는 FUI 투영이 없다. 링과 마커는 three 경로 전용이다. */
+    setFxObserver() {},
 
     setPoses(images) {
       legacy?.setPoses(images);

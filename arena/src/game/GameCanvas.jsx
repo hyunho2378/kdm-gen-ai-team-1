@@ -12,14 +12,16 @@ import { createLoop } from './loop.js';
 import { createRenderer } from './render/index.js';
 import { PRESET } from './pose.js';
 
-export default function GameCanvas({ engine, poseChannel, perf, onRendererReady, onFallback }) {
+export default function GameCanvas({ engine, poseChannel, perf, onRendererReady, onFallback, onFx }) {
   const mountRef = useRef(null);
   // 콜백을 의존성에 넣으면 부모가 리렌더될 때마다 렌더러가 통째로 재생성된다.
   // 폴백 직후 three가 다시 서면서 전환이 취소되는 버그를 실측으로 확인했다. ref로 고정한다.
   const readyRef = useRef(onRendererReady);
   const fallbackRef = useRef(onFallback);
+  const fxRef = useRef(onFx);
   readyRef.current = onRendererReady;
   fallbackRef.current = onFallback;
+  fxRef.current = onFx;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -28,6 +30,8 @@ export default function GameCanvas({ engine, poseChannel, perf, onRendererReady,
     const renderer = createRenderer(mount, {
       onFallback: (reason) => fallbackRef.current?.(reason),
     });
+    // 화면 좌표가 필요한 연출은 DOM이 그린다. 렌더러는 투영 좌표만 넘긴다
+    renderer.setFxObserver((e) => fxRef.current?.(e));
     readyRef.current?.(renderer);
 
     const loop = createLoop({

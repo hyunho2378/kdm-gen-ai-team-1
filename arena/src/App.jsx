@@ -11,6 +11,7 @@ import { EV, PHASE } from './game/machine.js';
 import GameCanvas from './game/GameCanvas.jsx';
 import HUD from './components/hud/HUD.jsx';
 import FpsMeter from './components/hud/FpsMeter.jsx';
+import FuiLayer from './components/hud/FuiLayer.jsx';
 import GlassFrame from './components/hud/GlassFrame.jsx';
 import VignetteOverlay from './components/VignetteOverlay.jsx';
 import IdleScreen from './screens/IdleScreen.jsx';
@@ -27,6 +28,9 @@ export default function App() {
   const [snapshot, setSnapshot] = useState(null);
   const [degraded, setDegraded] = useState(false);
   const [rendererFallback, setRendererFallback] = useState(false);
+  // 렌더러가 투영해 준 마지막 연출 좌표. FUI 층이 이것 하나만 본다
+  const [fxShot, setFxShot] = useState(null);
+  const fxId = useRef(0);
   // 연속 채널. engine과 분리되어 있고 렌더러만 소비한다(ARENA_INPUT 3절).
   const poseChannel = useMemo(() => createPoseChannel(), []);
   const perf = useMemo(() => createPerfStats(), []);
@@ -90,6 +94,10 @@ export default function App() {
             setRendererFallback(r.isFallback);
           }}
           onFallback={() => setRendererFallback(true)}
+          onFx={(e) => {
+            fxId.current += 1;
+            setFxShot({ ...e, id: fxId.current });
+          }}
         />
 
         {/* 프레임은 HUD보다 먼저 그린다. 같은 층에서 HUD가 위로 온다 */}
@@ -102,6 +110,7 @@ export default function App() {
           rendererFallback={rendererFallback}
           meterOn={showMeter}
         />
+        <FuiLayer shot={fxShot} reduced={reduced} />
         {showMeter ? <FpsMeter perf={perf} rendererRef={rendererRef} /> : null}
         <VignetteOverlay active={snapshot.dilating} />
 
