@@ -182,6 +182,8 @@ export function createThreeRenderer() {
       sword = createSword(camera);
       swordTip = sword.tipMarker;
       opponent = createOpponent(scene);
+      // 포즈 텍스처를 미리 올린다. 첫 표시 프레임의 업로드 히치를 개막 전으로 옮긴다
+      opponent.prewarm(renderer);
 
       // 레이피어는 비동기다. 뜰 때까지 박스 검이 자리를 지키고, 실패해도 박스 검이 남는다.
       // 자세와 트윈은 sword.group 소관이라 교체 도중이어도 안전하다.
@@ -200,6 +202,8 @@ export function createThreeRenderer() {
           rapier = r;
           swordTip = r.tipAnchor;
           sword.box.visible = false;
+          // 새 재질의 셰이더를 지금 컴파일한다. 안 하면 검이 처음 그려지는 프레임에 통째로 걸린다
+          renderer.compile(scene, camera);
         })
         .catch((err) => {
           console.warn('[arena] 검 모델 로드 실패. 박스 검을 유지한다.', err);
@@ -214,6 +218,9 @@ export function createThreeRenderer() {
       scene.add(meTrail.mesh, aiTrail.mesh);
 
       post = createComposer(renderer, scene, camera);
+
+      // 씬 전체 셰이더를 개막 전에 컴파일한다. 첫 등장 프레임마다 컴파일이 끼면 그게 곧 히치다
+      renderer.compile(scene, camera);
 
       void dev;
       this.resize();

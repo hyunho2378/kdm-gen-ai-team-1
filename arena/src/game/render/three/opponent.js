@@ -20,9 +20,22 @@ export const POSE = {
 
 const TEX_W = 512;
 const TEX_H = 1024;
-const FIG_H = 1.9;                       // 상대 키(m)
-const FIG_W = (FIG_H * TEX_W) / TEX_H;   // 0.95m
+const FIG_H = 1.9;                       // 상대 키(m). 머리 꼭대기에서 발바닥까지다
 const FADE_SEC = 0.12;                   // 포즈 크로스페이드 120ms
+
+/**
+ * 텍스처 안에서 선수가 차지하는 세로 구간.
+ *
+ * 발을 텍스처 맨 아래(0.984)에 두었더니 발 스트로크와 림과 글로우가 경계 밖으로 나가
+ * 바닥에서 **잘린 그루터기**로 보였다. 발을 0.952로 올려 안쪽에 들이고,
+ * 대신 평면을 키워 **머리에서 발바닥까지가 정확히 FIG_H**가 되게 역산한다.
+ * 이러면 화면 점유율 계산(4절 40.9~50.3퍼센트)이 그대로 산다.
+ */
+const HEAD_V = 0.021;   // 머리 타원 꼭대기
+const SOLE_V = 0.969;   // 발바닥. 발 중심 0.952 + 발 스트로크 절반 17px
+const SPAN = SOLE_V - HEAD_V;
+const PLANE_H = FIG_H / SPAN;
+const PLANE_W = (PLANE_H * TEX_W) / TEX_H;
 
 // 림 최종 알파.
 //
@@ -58,7 +71,7 @@ const IDLE = {
   hand: [[0.318, 0.470], [0.760, 0.196]],
   hip: [[0.375, 0.520], [0.625, 0.520]],
   knee: [[0.210, 0.712], [0.790, 0.712]],
-  foot: [[0.255, 0.984], [0.745, 0.984]],
+  foot: [[0.255, 0.952], [0.745, 0.952]],
   blade: [0.470, 0.590, 0.055],  // 텍스처에 투영된 검끝과 끝 폭. 카메라 쪽으로 짧게 눕는다
 };
 
@@ -79,7 +92,7 @@ const POSES = {
     hand: [[0.310, 0.462], [0.752, 0.190]],
     hip: [[0.367, 0.515], [0.617, 0.515]],
     knee: [[0.232, 0.680], [0.782, 0.718]],
-    foot: [[0.290, 0.918], [0.738, 0.984]],
+    foot: [[0.290, 0.886], [0.738, 0.952]],
     blade: [0.462, 0.582, 0.055],
   }),
 
@@ -92,7 +105,7 @@ const POSES = {
     hand: [[0.250, 0.190], [0.766, 0.210]],
     hip: [[0.378, 0.518], [0.628, 0.518]],
     knee: [[0.214, 0.708], [0.792, 0.708]],
-    foot: [[0.258, 0.984], [0.748, 0.984]],
+    foot: [[0.258, 0.952], [0.748, 0.952]],
     blade: [0.130, 0.062, 0.040],
   }),
 
@@ -105,7 +118,7 @@ const POSES = {
     hand: [[0.448, 0.382], [0.842, 0.318]],
     hip: [[0.350, 0.560], [0.600, 0.558]],
     knee: [[0.215, 0.800], [0.800, 0.842]],
-    foot: [[0.110, 0.984], [0.892, 0.984]],
+    foot: [[0.110, 0.952], [0.892, 0.952]],
     blade: [0.600, 0.500, 0.090],
   }),
 
@@ -118,10 +131,25 @@ const POSES = {
     hand: [[0.168, 0.212], [0.870, 0.480]],
     hip: [[0.382, 0.530], [0.632, 0.526]],
     knee: [[0.226, 0.722], [0.796, 0.726]],
-    foot: [[0.268, 0.984], [0.752, 0.984]],
+    foot: [[0.268, 0.952], [0.752, 0.952]],
     blade: [0.075, 0.130, 0.036],
   }),
 };
+
+/** 발밑 그림자용 방사 그라디언트. 가운데가 불투명하고 가장자리로 사라진다. */
+function blobTexture() {
+  const c = document.createElement('canvas');
+  c.width = 128;
+  c.height = 64;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(64, 32, 0, 64, 32, 62);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+  grad.addColorStop(0.55, 'rgba(255, 255, 255, 0.38)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 128, 64);
+  return new THREE.CanvasTexture(c);
+}
 
 function makeCanvas() {
   const c = document.createElement('canvas');
@@ -314,8 +342,10 @@ export function createOpponent(scene) {
   const textures = {};
   for (const name of Object.values(POSE)) textures[name] = bakePose(POSES[name]);
 
-  const geometry = new THREE.PlaneGeometry(FIG_W, FIG_H);
-  geometry.translate(0, FIG_H / 2, 0);  // 발이 바닥 y 0에 닿는다
+  const geometry = new THREE.PlaneGeometry(PLANE_W, PLANE_H);
+  // 발바닥(SOLE_V)이 y 0에 오게 민다. 평면 아래끝은 바닥 밑으로 조금 내려가지만
+  // 그 구간은 투명이고 바닥이 깊이로 가려서 보이지 않는다
+  geometry.translate(0, PLANE_H * (SOLE_V - 0.5), 0);
 
   const group = new THREE.Group();
   const planes = [];
@@ -344,6 +374,23 @@ export function createOpponent(scene) {
   group.add(tip);
   scene.add(group);
 
+  // 접지 그림자. 발밑에 눕는 부드러운 타원 하나로 "바닥에 서 있다"가 성립한다.
+  // 빌보드 그룹의 자식으로 넣으면 카메라를 따라 일어서므로 씬에 직접 붙이고 z만 따라간다.
+  const shadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.05, 0.52),
+    new THREE.MeshBasicMaterial({
+      map: blobTexture(),
+      color: new THREE.Color(colors.bg.deep),
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    })
+  );
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.012;  // 바닥과 z파이팅을 피하는 최소 높이
+  shadow.renderOrder = 0;
+  scene.add(shadow);
+
   let current = 0;
   let poseName = POSE.IDLE;
   let fade = 1;
@@ -357,8 +404,9 @@ export function createOpponent(scene) {
     if (name === poseName) return;
     poseName = name;
     const next = 1 - current;
+    // needsUpdate를 세우지 않는다. 두 텍스처 모두 존재하므로 셰이더 define이 그대로고,
+    // 세우면 포즈가 바뀔 때마다 three가 프로그램을 다시 훑는다(교전 중 프레임 히치의 원인).
     planes[next].material.map = textures[name];
-    planes[next].material.needsUpdate = true;
     current = next;
     fade = 0;
   }
@@ -367,14 +415,24 @@ export function createOpponent(scene) {
     group,
     tip,
 
+    /**
+     * 텍스처 다섯 장을 미리 GPU에 올린다.
+     * 안 하면 각 포즈가 **처음 화면에 뜨는 프레임**에 512 x 1024 업로드와 밉맵 생성이 통째로 들어간다.
+     * 명중 포즈는 하필 찌르기가 꽂히는 순간에 처음 뜨므로 히치가 그 자리에 정확히 얹힌다.
+     */
+    prewarm(renderer) {
+      for (const t of Object.values(textures)) renderer.initTexture(t);
+    },
+
     setPose,
     getPose() {
       return poseName;
     },
 
-    /** 월드 z. distFromD가 준 거리를 그대로 받는다. */
+    /** 월드 z. distFromD가 준 거리를 그대로 받는다. 그림자도 같이 옮긴다. */
     setDistance(dist) {
       group.position.z = -dist;
+      shadow.position.z = -dist;
     },
 
     /**
@@ -434,6 +492,10 @@ export function createOpponent(scene) {
       for (const t of Object.values(textures)) t.dispose();
       for (const p of planes) p.material.dispose();
       geometry.dispose();
+      shadow.geometry.dispose();
+      shadow.material.map?.dispose();
+      shadow.material.dispose();
+      scene.remove(shadow);
       scene.remove(group);
     },
   };

@@ -18,9 +18,20 @@ export function createPoseChannel() {
   let raw = null;
   let calib = null;
 
+  // 반환 객체를 재사용한다. read()는 매 프레임 불리므로 여기서 새로 만들면
+  // 초당 60개씩 쓰레기가 쌓여 GC가 프레임 사이에 끼어든다. 소비처는 즉시 읽고 버린다.
+  const out = { kind: 'preset', value: PRESET.REST };
+  const calibrated = [0, 0, 0, 1];
+
   /** q0의 켤레를 원본에 곱해 기준 자세를 원점으로 옮긴다. 단위 쿼터니언 전제. */
   function applyCalibration(q, q0) {
-    if (!q0) return q;
+    if (!q0) {
+      calibrated[0] = q[0];
+      calibrated[1] = q[1];
+      calibrated[2] = q[2];
+      calibrated[3] = q[3];
+      return calibrated;
+    }
     const [x0, y0, z0, w0] = q0;
     // 켤레 = 축 성분 부호 반전
     const cx = -x0;
@@ -28,12 +39,11 @@ export function createPoseChannel() {
     const cz = -z0;
     const cw = w0;
     const [x, y, z, w] = q;
-    return [
-      cw * x + cx * w + cy * z - cz * y,
-      cw * y - cx * z + cy * w + cz * x,
-      cw * z + cx * y - cy * x + cz * w,
-      cw * w - cx * x - cy * y - cz * z,
-    ];
+    calibrated[0] = cw * x + cx * w + cy * z - cz * y;
+    calibrated[1] = cw * y - cx * z + cy * w + cz * x;
+    calibrated[2] = cw * z + cx * y - cy * x + cz * w;
+    calibrated[3] = cw * w - cx * x - cy * y - cz * z;
+    return calibrated;
   }
 
   return {
@@ -57,9 +67,13 @@ export function createPoseChannel() {
     },
     read() {
       if (kind === 'quaternion' && raw) {
-        return { kind: 'quaternion', value: applyCalibration(raw, calib) };
+        out.kind = 'quaternion';
+        out.value = applyCalibration(raw, calib);
+      } else {
+        out.kind = 'preset';
+        out.value = preset;
       }
-      return { kind: 'preset', value: preset };
+      return out;
     },
     reset() {
       kind = 'preset';

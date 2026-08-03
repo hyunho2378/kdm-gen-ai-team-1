@@ -12,6 +12,7 @@
 //   SavePass가 직전 합성 결과를 들고 있고, TextureEffect가 그것을 NORMAL 블렌드로 덮는다.
 //   opacity가 damp이므로 out = current x (1 - damp) + prev x damp. AfterimagePass와 같은 식이다.
 
+import { HalfFloatType } from 'three';
 import {
   BlendFunction,
   BloomEffect,
@@ -53,7 +54,12 @@ export const BLOOM_LOW = { resolutionScale: 0.25, intensity: 0.9 };
 export const AFTERIMAGE = { damp: 0.70, dampDilated: 0.92 };
 
 export function createComposer(renderer, scene, camera) {
-  const composer = new EffectComposer(renderer);
+  // **프레임 버퍼는 반드시 HalfFloat다.** 기본값 8비트로 두면 잔상 되먹임이 양자화에 걸린다.
+  //   out = current x 0.3 + prev x 0.7
+  // 에서 prev가 1/255일 때 0.7 x 1 = 0.7이 반올림으로 다시 1이 되어 **영원히 안 죽는다.**
+  // 검을 한 번 휘두르면 그 자리에 유령이 박히는 것을 실측으로 확인했다(25초 뒤에도 동일 밝기).
+  // HalfFloat이면 0으로 수렴하고, 덤으로 가산 궤적이 1.0을 넘겨 블룸도 제대로 먹는다.
+  const composer = new EffectComposer(renderer, { frameBufferType: HalfFloatType });
   composer.addPass(new RenderPass(scene, camera));
 
   // 잔상. 직전 합성 결과를 damp만큼 남긴다
