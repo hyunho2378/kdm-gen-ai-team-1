@@ -54,6 +54,8 @@ const PLANE_W = (PLANE_H * TEX_W) / TEX_H;
 // 유니폼 톤. steel.mid를 bg.deep으로 이만큼 눌러 문턱 아래에 앉힌다.
 // 0.30이면 sRGB 약 0.60, 선형 약 0.32다. 올리면 상대가 블룸에 걸리므로 올릴 때 반드시 실측하라.
 const UNIFORM_DARKEN = 0.30;
+// 뒤쪽 팔다리는 더 눌러 깊이를 만든다. sRGB 약 0.42로 앞쪽 0.60과 확실히 갈린다
+const SHADE_DARKEN = 0.52;
 // 부위 경계용 어두운 테두리 두께(텍셀). 겹친 팔다리를 가르는 유일한 수단이다
 const EDGE = 11;
 // 바깥 헤일로. 밝은 몸체라 강할 필요가 없다. 홀로그램 기운만 남긴다
@@ -168,11 +170,12 @@ const X = (v) => v * TEX_W;
 const Y = (v) => v * TEX_H;
 
 /**
- * 골격을 그린다. 같은 도형을 두 번 훑는다.
- * 1패스는 굵고 어둡게(부위 테두리), 2패스는 유니폼 톤으로. 이 테두리가 겹친 팔다리를 가른다.
- * pad가 0이면 안쪽 채움, EDGE면 바깥 테두리다.
+ * 부위 하나를 그린다. 같은 도형을 두 번 훑는 것이 요령이다.
+ * pad가 EDGE면 굵고 어두운 테두리, 0이면 안쪽 채움이다.
+ * **부위마다 테두리를 두르고 순서대로 덮어야** 겹친 팔다리가 서로 갈린다(E2).
+ * 한 번에 다 그리면 단색 덩어리가 되어 사람으로 안 읽힌다.
  */
-function drawFigure(ctx, P, color, pad) {
+function drawPart(ctx, P, part, color, pad) {
   ctx.save();
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
@@ -186,64 +189,66 @@ function drawFigure(ctx, P, color, pad) {
     ctx.lineTo(X(b[0]), Y(b[1]));
     ctx.stroke();
   };
+  const i = part.endsWith('Back') ? 1 : 0;
 
-  // 다리. 허벅지가 굵고 정강이가 가늘다
-  for (let i = 0; i < 2; i += 1) {
+  if (part === 'legBack' || part === 'legFront') {
     seg(P.hip[i], P.knee[i], 78);
     seg(P.knee[i], P.foot[i], 52);
-  }
-
-  // 몸통. 어깨에서 골반으로 좁아지는 사다리꼴
-  ctx.beginPath();
-  ctx.moveTo(X(P.shoulder[0][0]), Y(P.shoulder[0][1]));
-  ctx.lineTo(X(P.shoulder[1][0]), Y(P.shoulder[1][1]));
-  ctx.lineTo(X(P.hip[1][0]), Y(P.hip[1][1]));
-  ctx.lineTo(X(P.hip[0][0]), Y(P.hip[0][1]));
-  ctx.closePath();
-  ctx.fill();
-  ctx.lineWidth = 54 + pad * 2;
-  ctx.stroke();
-
-  // 목
-  seg(P.neck, [P.head[0], P.head[1] + P.head[3] * 0.5], 52);
-
-  // 팔
-  for (let i = 0; i < 2; i += 1) {
+  } else if (part === 'armBack' || part === 'armFront') {
     seg(P.shoulder[i], P.elbow[i], 46);
     seg(P.elbow[i], P.hand[i], 38);
+  } else if (part === 'torso') {
+    ctx.beginPath();
+    ctx.moveTo(X(P.shoulder[0][0]), Y(P.shoulder[0][1]));
+    ctx.lineTo(X(P.shoulder[1][0]), Y(P.shoulder[1][1]));
+    ctx.lineTo(X(P.hip[1][0]), Y(P.hip[1][1]));
+    ctx.lineTo(X(P.hip[0][0]), Y(P.hip[0][1]));
+    ctx.closePath();
+    ctx.fill();
+    ctx.lineWidth = 54 + pad * 2;
+    ctx.stroke();
+  } else if (part === 'neck') {
+    seg(P.neck, [P.head[0], P.head[1] + P.head[3] * 0.5], 52);
+  } else if (part === 'head') {
+    const hr = pad / TEX_W;
+    ctx.beginPath();
+    ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2] + hr), Y(P.head[3]) + pad, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(
+      X(P.head[0]),
+      Y(P.head[1] + P.head[3] * 0.42),
+      X(P.head[2] * 0.88 + hr),
+      Y(P.head[3] * 0.58) + pad,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+    // 비브. 마스크 아래로 벌어지며 어깨를 덮는 사다리꼴
+    const hx = X(P.head[0]);
+    const hb = Y(P.head[1] + P.head[3] * 0.85);
+    const bw = X(P.head[2]) * 0.9 + pad;
+    const sy = (Y(P.shoulder[0][1]) + Y(P.shoulder[1][1])) / 2 + 26 + pad;
+    ctx.beginPath();
+    ctx.moveTo(hx - bw, hb);
+    ctx.lineTo(hx + bw, hb);
+    ctx.lineTo(hx + bw * 1.5, sy);
+    ctx.lineTo(hx - bw * 1.5, sy);
+    ctx.closePath();
+    ctx.fill();
   }
 
-  // 투구. 머리 타원에 턱 보호대와 목가리개(비브)
-  const hr = pad / TEX_W;
-  ctx.beginPath();
-  ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2] + hr), Y(P.head[3]) + pad, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(
-    X(P.head[0]),
-    Y(P.head[1] + P.head[3] * 0.42),
-    X(P.head[2] * 0.88 + hr),
-    Y(P.head[3] * 0.58) + pad,
-    0,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
-
-  // 비브. 마스크 아래로 벌어지며 어깨를 덮는 사다리꼴
-  const hx = X(P.head[0]);
-  const hb = Y(P.head[1] + P.head[3] * 0.85);
-  const bw = X(P.head[2]) * 0.9 + pad;
-  const sy = (Y(P.shoulder[0][1]) + Y(P.shoulder[1][1])) / 2 + 26 + pad;
-  ctx.beginPath();
-  ctx.moveTo(hx - bw, hb);
-  ctx.lineTo(hx + bw, hb);
-  ctx.lineTo(hx + bw * 1.5, sy);
-  ctx.lineTo(hx - bw * 1.5, sy);
-  ctx.closePath();
-  ctx.fill();
-
   ctx.restore();
+}
+
+// 그리는 순서가 곧 앞뒤다. 뒤쪽 팔다리를 먼저 깔고 몸통과 앞쪽을 덮는다
+const BACK_PARTS = ['legBack', 'armBack'];
+const FRONT_PARTS = ['torso', 'neck', 'head', 'legFront', 'armFront'];
+
+/** 실루엣 전체. 바깥 헤일로를 만들 때만 쓴다. */
+function drawFigure(ctx, P, color, pad) {
+  for (const part of [...BACK_PARTS, ...FRONT_PARTS]) drawPart(ctx, P, part, color, pad);
 }
 
 /** 마스크와 장갑과 신발. 유니폼 위에 얹는 어두운 부위들이 선수로 읽히게 만든다. */
@@ -289,11 +294,17 @@ function drawGear(ctx, P) {
   ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2]) - 5, Y(P.head[3]) - 5, 0, 0, Math.PI * 2);
   ctx.stroke();
 
-  // 검 든 손의 장갑
+  // 검 든 손의 장갑과 소매 커프. 어느 팔이 검을 쥐었는지가 이 둘로 읽힌다
   ctx.fillStyle = colors.bg.raised;
   ctx.beginPath();
-  ctx.arc(X(P.hand[0][0]), Y(P.hand[0][1]), 26, 0, Math.PI * 2);
+  ctx.arc(X(P.hand[0][0]), Y(P.hand[0][1]), 28, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = colors.bg.deep;
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.moveTo(X(P.hand[0][0] * 0.72 + P.elbow[0][0] * 0.28), Y(P.hand[0][1] * 0.72 + P.elbow[0][1] * 0.28));
+  ctx.lineTo(X(P.hand[0][0] * 0.55 + P.elbow[0][0] * 0.45), Y(P.hand[0][1] * 0.55 + P.elbow[0][1] * 0.45));
+  ctx.stroke();
 
   // 신발
   for (let i = 0; i < 2; i += 1) {
@@ -322,6 +333,25 @@ function dilate(src, r, steps = 16) {
 }
 
 /**
+ * 부위 묶음 하나를 한 톤으로 굽는다.
+ * steel.mid를 bg.deep으로 눌러 블룸 문턱 아래에 앉힌다. darken이 클수록 어둡다.
+ * 부위마다 어두운 테두리를 먼저 두르므로 같은 톤 안에서도 팔다리가 갈린다.
+ */
+function tonedLayer(P, parts, darken) {
+  const c = makeCanvas();
+  const g = c.getContext('2d');
+  for (const part of parts) {
+    drawPart(g, P, part, colors.bg.deep, EDGE);
+    drawPart(g, P, part, colors.steel.mid, 0);
+  }
+  g.globalCompositeOperation = 'source-atop';
+  g.globalAlpha = darken;
+  g.fillStyle = colors.bg.deep;
+  g.fillRect(0, 0, TEX_W, TEX_H);
+  return c;
+}
+
+/**
  * 포즈 한 장. 어두운 테두리 → 유니폼 채움 → 장비 → 바깥 헤일로 순이다.
  * 부풀린 도형을 불투명으로 만든 뒤 합성할 때 알파를 한 번만 먹인다.
  * 반투명 이미지를 여러 방향으로 겹치면 알파가 1로 수렴해 흰 덩어리가 된다(실측).
@@ -330,18 +360,10 @@ function bakePose(P) {
   const out = makeCanvas();
   const ctx = out.getContext('2d');
 
-  // 1패스. 굵고 어두운 테두리가 겹친 부위를 가른다
-  drawFigure(ctx, P, colors.bg.deep, EDGE);
-
-  // 2패스. 유니폼 톤. steel.mid를 bg.deep으로 눌러 블룸 문턱 아래에 앉힌다
-  const body = makeCanvas();
-  const bctx = body.getContext('2d');
-  drawFigure(bctx, P, colors.steel.mid, 0);
-  bctx.globalCompositeOperation = 'source-atop';
-  bctx.globalAlpha = UNIFORM_DARKEN;
-  bctx.fillStyle = colors.bg.deep;
-  bctx.fillRect(0, 0, TEX_W, TEX_H);
-  ctx.drawImage(body, 0, 0);
+  // 뒤쪽 팔다리를 어둡게 깔고 그 위에 몸통과 앞쪽을 밝게 덮는다.
+  // 두 톤이 있어야 평면이 아니라 몸으로 읽힌다(E2).
+  ctx.drawImage(tonedLayer(P, BACK_PARTS, SHADE_DARKEN), 0, 0);
+  ctx.drawImage(tonedLayer(P, FRONT_PARTS, UNIFORM_DARKEN), 0, 0);
 
   drawGear(ctx, P);
 
