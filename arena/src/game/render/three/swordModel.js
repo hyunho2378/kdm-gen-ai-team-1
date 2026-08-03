@@ -101,7 +101,12 @@ function measure(scene) {
   const tip = bladeBox.getCenter(new THREE.Vector3());
   tip.setComponent(axis, tipOnAxis);
 
-  return { blade, grip, tip };
+  // 칼날 로컬로 되돌리는 행렬을 **여기서** 떠 둔다.
+  // 나중에 blade.worldToLocal을 부르면 그 시점의 matrixWorld를 쓰는데,
+  // 그때는 모델이 이미 카메라 밑에 붙어 있어 전혀 다른 공간으로 변환된다(D5-pre 실측).
+  const toBladeLocal = new THREE.Matrix4().copy(blade.matrixWorld).invert();
+
+  return { blade, grip, tip, toBladeLocal };
 }
 
 /**
@@ -116,7 +121,7 @@ export async function attachSwordModel(parent, { finish = 'chrome', flareColor, 
   const gltf = await loadOnce();
   // 지오메트리와 텍스처는 참조 공유된다. 상대 검이 붙어도 GPU 업로드가 늘지 않는다
   const scene = gltf.scene.clone(true);
-  const { blade, grip, tip } = measure(scene);
+  const { blade, grip, tip, toBladeLocal } = measure(scene);
 
   // 장축을 -z로 돌린다
   const dir = tip.clone().sub(grip).normalize();
@@ -161,7 +166,7 @@ export async function attachSwordModel(parent, { finish = 'chrome', flareColor, 
 
   // 칼끝 앵커. 매 프레임 Box3를 다시 재지 않도록 로드 시 한 번만 심는다
   const tipAnchor = new THREE.Object3D();
-  tipAnchor.position.copy(blade.worldToLocal(tip.clone()));
+  tipAnchor.position.copy(tip).applyMatrix4(toBladeLocal);
   blade.add(tipAnchor);
 
   return {
@@ -180,6 +185,7 @@ export async function attachSwordModel(parent, { finish = 'chrome', flareColor, 
 
     /** 보고와 검증용 실측값 */
     stats: {
+      tipLocal: tipAnchor.position.toArray().map((v) => +v.toFixed(4)),
       scale: +scale.toFixed(4),
       modelTipDistance: +tip.distanceTo(grip).toFixed(4),
       meshes: countMeshes(group),

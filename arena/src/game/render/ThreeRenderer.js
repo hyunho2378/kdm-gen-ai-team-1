@@ -14,7 +14,6 @@ import { attachSwordModel } from './three/swordModel.js';
 import { createSparks } from './three/sparks.js';
 import { createTrailRibbon } from './three/trail.js';
 import {
-  CAMERA,
   SWORD_POSES,
   createBackground,
   createCamera,
@@ -67,6 +66,7 @@ export function createThreeRenderer() {
   const tipWorld = new THREE.Vector3();
   const aiTipWorld = new THREE.Vector3();
   const crossWorld = new THREE.Vector3();
+  const tmpProj = new THREE.Vector3();
 
   let w = 0;
   let h = 0;
@@ -314,11 +314,9 @@ export function createThreeRenderer() {
           sparks.burst(crossWorld);
           opponent.knockBack();
         }
-        // 화면 좌표를 얹어 DOM 층으로 넘긴다. 캔버스 밖 연출은 HUD가 그린다.
-        // 카메라 로컬 프리셋 좌표를 6절 투영식으로 직접 푼다. 검이 카메라의 자식이라
-        // 이 식이 곧 화면 위치이고, 문서에 박아 둔 자세별 좌표와 그대로 맞는다.
+        // 화면 좌표를 얹어 DOM 층으로 넘긴다. 캔버스 밖 연출은 HUD가 그린다
         if (onFx) {
-          const p = this.projectCameraLocal(tmpTip);
+          const p = this.projectToScreen(crossWorld);
           onFx({ outcome: e.outcome, owner: e.owner, x: p.x, y: p.y, visible: p.visible });
         }
       }
@@ -335,27 +333,18 @@ export function createThreeRenderer() {
     },
 
     /**
-     * **카메라 로컬** 좌표를 CSS 픽셀로 투영한다. ARENA_SCENE 6절 투영식 그대로다.
-     *
-     * ```
-     * ndcY = (y / |z|) / tan(fov/2)
-     * ndcX = (x / |z|) / (tan(fov/2) * aspect)
-     * ```
-     *
-     * 검이 카메라의 자식이라 프리셋 좌표가 곧 카메라 공간이고, 이 식이 곧 화면 위치다.
-     * 문서에 박아 둔 자세별 화면 좌표(휴식 67.9%/65.0% 등)와 같은 계산이라 대조가 성립한다.
+     * 월드 좌표를 CSS 픽셀로 투영한다. 상대 빌보드 위 명중 지점처럼
+     * 카메라 로컬로 풀 수 없는 지점은 이 경로를 쓴다(D5).
      */
-    projectCameraLocal(v) {
-      const z = Math.max(1e-4, -v.z);
-      const t = Math.tan((CAMERA.fov * Math.PI) / 360);
-      const ndcX = v.x / z / (t * (w / h));
-      const ndcY = v.y / z / t;
+    projectToScreen(v) {
+      tmpProj.copy(v).project(camera);
       return {
-        x: (ndcX * 0.5 + 0.5) * w,
-        y: (-ndcY * 0.5 + 0.5) * h,
-        visible: v.z < 0 && Math.abs(ndcX) <= 1.1 && Math.abs(ndcY) <= 1.1,
+        x: (tmpProj.x * 0.5 + 0.5) * w,
+        y: (-tmpProj.y * 0.5 + 0.5) * h,
+        visible: tmpProj.z < 1 && Math.abs(tmpProj.x) <= 1.1 && Math.abs(tmpProj.y) <= 1.1,
       };
     },
+
 
     /** 화면 좌표가 필요한 연출을 DOM으로 넘기는 통로. 렌더러는 그리지 않는다. */
     setFxObserver(fn) {
