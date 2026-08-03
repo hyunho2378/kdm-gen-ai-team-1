@@ -178,13 +178,14 @@ export function createSword(camera) {
     })
   );
 
-  // 검끝 마커. 궤적 리본의 시작점이며 소유 색(red.light)을 띤다.
+  // 검끝 마커. 궤적 리본의 시작점이다.
+  // 레드를 상시로 띠지 않는다. 레드는 득점 순간의 색이고 평시 칼끝은 스틸이다(DESIGN v2 색 규칙).
   const tipMarker = new THREE.Mesh(
     new THREE.SphereGeometry(0.014, 10, 8),
     new THREE.MeshStandardMaterial({
-      color: new THREE.Color(colors.trail.self),
-      emissive: new THREE.Color(colors.trail.self),
-      emissiveIntensity: 2.2,
+      color: new THREE.Color(colors.steel.mid),
+      emissive: new THREE.Color(colors.steel.mid),
+      emissiveIntensity: 0.35,
       roughness: 0.4,
     })
   );

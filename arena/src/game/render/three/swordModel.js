@@ -11,8 +11,34 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { colors } from '../../../tokens.js';
 
 const URL = '/assets/sword/scene.gltf';
+
+/**
+ * 마감 두 종.
+ *
+ * chrome  내 검. 크롬 재스킨이다. baseColor 맵을 떼어 청동 톤을 지우고 steel 색으로 덮는다.
+ *         맵을 유지한 채로는 픽셀별 색을 못 바꾸므로 색을 갈려면 맵을 떼는 수밖에 없다.
+ *         **노멀맵은 유지**해서 표면 디테일이 살고, 거칠기 맵도 남겨 마모 변주를 얻는다.
+ * antique 상대 검. 원본 그대로다. 역사 속 검객이라는 서사가 골동 재질에 실린다.
+ *
+ * 둘 다 PMREM 환경맵이 서 있어야 발색한다. 없으면 새까맣게 나온다(V4a에서 밟은 지뢰).
+ */
+const FINISH = {
+  chrome(m) {
+    m.map = null;
+    m.color = new THREE.Color(colors.steel.mid);
+    m.metalness = 0.97;
+    m.roughness = 0.16;
+  },
+  antique() {},
+};
+
+// 득점 플레어 최대 세기. 이 순간만 칼날이 블룸을 넘긴다. 레드는 사건의 색이다.
+const FLARE_PEAK = 1.8;
+// 평시 칼날. 스틸 톤으로 아주 옅게만 살아 있다(문턱 근처에도 못 간다)
+const IDLE_EMISSIVE_INTENSITY = 0.06;
 
 // 모듈 수준 캐시. dev의 이중 마운트나 폴백 재생성에서도 네트워크 요청은 한 번뿐이다.
 let pending = null;
@@ -77,11 +103,11 @@ function measure(scene) {
  * 검 모델을 붙인다. 실패하면 던지고, 호출자가 박스 검을 그대로 둔다.
  *
  * @param parent      검 그룹(카메라의 자식). 프리셋 자세와 트윈은 이 그룹이 쥔다
- * @param emissive    칼날 발광 색. tokens에서 온다(내 검 red.light, 상대 blue.light)
- * @param intensity   발광 세기
+ * @param finish      'chrome'(내 검) 또는 'antique'(상대 검)
+ * @param flareColor  득점 플레어 색. tokens에서 온다(내 검 red.light)
  * @param tipDistance 그룹 원점에서 칼끝까지의 거리(m). 박스 검과 같은 값을 넘겨 궤적 좌표를 보존한다
  */
-export async function attachSwordModel(parent, { emissive, intensity, tipDistance }) {
+export async function attachSwordModel(parent, { finish = 'chrome', flareColor, tipDistance }) {
   const gltf = await loadOnce();
   // 지오메트리와 텍스처는 참조 공유된다. 상대 검이 붙어도 GPU 업로드가 늘지 않는다
   const scene = gltf.scene.clone(true);
@@ -103,12 +129,24 @@ export async function attachSwordModel(parent, { emissive, intensity, tipDistanc
   group.add(inner);
   parent.add(group);
 
-  // 칼날만 발광시킨다. 머티리얼 1개를 여섯 메시가 공유하므로 그대로 만지면 손잡이까지 빛난다.
-  // 텍스처는 참조로 따라오니 clone에 추가 업로드가 없다.
-  const bladeMaterial = blade.material.clone();
-  bladeMaterial.emissive = new THREE.Color(emissive);
-  bladeMaterial.emissiveIntensity = intensity;
-  blade.material = bladeMaterial;
+  // 머티리얼 1개를 여섯 메시가 공유하므로 그대로 만지면 손잡이까지 같이 빛난다.
+  // 칼날만 따로 떼고 나머지는 한 장을 공유한다. 텍스처는 참조로 따라오니 clone에 추가 업로드가 없다.
+  const apply = FINISH[finish] ?? FINISH.chrome;
+  const source = blade.material;
+
+  const hiltMaterial = source.clone();
+  apply(hiltMaterial);
+
+  const bladeMaterial = source.clone();
+  apply(bladeMaterial);
+  const idleColor = new THREE.Color(colors.steel.mid);
+  const flare = new THREE.Color(flareColor ?? colors.steel.mid);
+  bladeMaterial.emissive = idleColor.clone();
+  bladeMaterial.emissiveIntensity = IDLE_EMISSIVE_INTENSITY;
+
+  scene.traverse((o) => {
+    if (o.isMesh) o.material = o === blade ? bladeMaterial : hiltMaterial;
+  });
 
   group.traverse((o) => {
     if (!o.isMesh) return;
@@ -124,14 +162,27 @@ export async function attachSwordModel(parent, { emissive, intensity, tipDistanc
   return {
     group,
     tipAnchor,
+
+    /**
+     * 득점 플레어. 0이면 평시 크롬, 1이면 칼날이 red.light로 터진다.
+     * 제곱을 먹여 솟았다 빠르게 죽는다. 색도 같이 옮겨 평시에는 붉은 기가 남지 않는다.
+     */
+    setFlare(t) {
+      const k = Math.min(1, Math.max(0, t));
+      bladeMaterial.emissive.copy(idleColor).lerp(flare, k);
+      bladeMaterial.emissiveIntensity = IDLE_EMISSIVE_INTENSITY + FLARE_PEAK * k * k;
+    },
+
     /** 보고와 검증용 실측값 */
     stats: {
       scale: +scale.toFixed(4),
       modelTipDistance: +tip.distanceTo(grip).toFixed(4),
-      meshes: group.children.length ? countMeshes(group) : 0,
+      meshes: countMeshes(group),
+      finish,
     },
     dispose() {
       bladeMaterial.dispose();
+      hiltMaterial.dispose();
       parent.remove(group);
     },
   };

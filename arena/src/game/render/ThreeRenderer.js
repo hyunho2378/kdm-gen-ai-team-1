@@ -32,10 +32,9 @@ const BUDGET = motion.budget;
 const ADVANCE_IN = 12;
 const ADVANCE_OUT = 6;
 
-// 칼날 발광 세기. 순수 red.light는 선형 휘도가 0.2285라 세기 1.0에서도
-// Bloom threshold 0.42를 넘지 않는다(빨강은 휘도 기여가 낮다). 그래도 검신은
-// 궤적의 시작점이지 주인공이 아니므로 은은한 선에서 멈춘다.
-const BLADE_EMISSIVE_INTENSITY = 0.35;
+// 득점 플레어 감쇠 시간. JUDGE 800ms 안에서 다 죽는다.
+// 레드는 사건의 색이라 평시 칼날에 상시로 얹지 않는다(DESIGN v2 색 규칙).
+const FLARE_DECAY_SEC = motion.duration.judge / 1000;
 
 /** 두 좌표를 섞는다. 프리셋 트윈의 최소 단위다. */
 function lerp3(out, a, b, t) {
@@ -67,6 +66,9 @@ export function createThreeRenderer() {
   let w = 0;
   let h = 0;
   let fps = 60;
+
+  // 득점 플레어 진행도. fx가 올리고 렌더가 깎는다
+  let flare = 0;
 
   // 상대 상태 추적. 전부 렌더 전용이고 판정으로 돌아가지 않는다.
   let lastD = null;
@@ -183,9 +185,10 @@ export function createThreeRenderer() {
 
       // 레이피어는 비동기다. 뜰 때까지 박스 검이 자리를 지키고, 실패해도 박스 검이 남는다.
       // 자세와 트윈은 sword.group 소관이라 교체 도중이어도 안전하다.
+      // 내 검은 크롬 마감이다. 상대 검은 D2에서 같은 로더에 finish 'antique'로 붙는다.
       attachSwordModel(sword.group, {
-        emissive: colors.trail.self,
-        intensity: BLADE_EMISSIVE_INTENSITY,
+        finish: 'chrome',
+        flareColor: colors.trail.self,
         tipDistance: sword.tipDistance,
       })
         .then((r) => {
@@ -280,11 +283,18 @@ export function createThreeRenderer() {
       meTrail.build(camWorld);
       aiTrail.build(camWorld);
 
-      // 명중 순간 해당 리본의 최근 구간을 흰 코어로 굳힌다. 나머지 연출은 V4d에서 붙는다.
+      // 명중 순간 해당 리본의 최근 구간을 흰 코어로 굳힌다. 나머지 연출은 D5에서 붙는다.
       for (const e of fx) {
         if (e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE) {
           (e.owner === OWNER.ME ? meTrail : aiTrail).markHit();
+          // 내가 넣었을 때만 칼날이 붉게 터진다. 레드는 사건의 색이다
+          if (e.owner === OWNER.ME) flare = 1;
         }
+      }
+
+      if (flare > 0) {
+        flare = Math.max(0, flare - dtRender / FLARE_DECAY_SEC);
+        rapier?.setFlare(flare);
       }
 
       // delta를 반드시 넘긴다. V4d ShockWave가 이 값으로 물결을 진행시킨다.
@@ -305,6 +315,8 @@ export function createThreeRenderer() {
     clear() {
       meTrail?.clear();
       aiTrail?.clear();
+      flare = 0;
+      rapier?.setFlare(0);
       lastD = null;
       dDot = 0;
       advancing = false;
