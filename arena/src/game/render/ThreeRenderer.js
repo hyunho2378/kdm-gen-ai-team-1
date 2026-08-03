@@ -181,7 +181,7 @@ export function createThreeRenderer() {
       background = createBackground(scene);
       sword = createSword(camera);
       swordTip = sword.tipMarker;
-      opponent = createOpponent(scene);
+      opponent = createOpponent(scene, { tipDistance: sword.tipDistance });
       // 포즈 텍스처를 미리 올린다. 첫 표시 프레임의 업로드 히치를 개막 전으로 옮긴다
       opponent.prewarm(renderer);
 
@@ -269,7 +269,7 @@ export function createThreeRenderer() {
       // swordTip은 레이피어가 뜨면 그쪽 앵커로 바뀐다. 거리는 같게 정규화했으므로 궤적이 튀지 않는다.
       camera.updateMatrixWorld();
       swordTip.getWorldPosition(tipWorld);
-      meTrail.push(tipWorld);
+      meTrail.push(tipWorld, dtRender);
 
       // AI 리본은 공격 구간에서만 샘플링한다. 대기 중에 계속 먹이면
       // 움직이지 않는 검끝에 파란 얼룩이 상주한다. 멈추면 리본은 감쇠로 사라진다.
@@ -277,9 +277,9 @@ export function createThreeRenderer() {
       if (aiActive) {
         // 끊겼다 이어지면 옛 점과 새 점이 화면을 가로지르는 직선으로 이어진다. 끊긴 자리에서 새로 시작한다
         if (!aiSampling) aiTrail.clear();
-        opponent.group.updateMatrixWorld();
-        opponent.tip.getWorldPosition(aiTipWorld);
-        aiTrail.push(aiTipWorld);
+        opponent.group.updateMatrixWorld(true);
+        opponent.getTip().getWorldPosition(aiTipWorld);
+        aiTrail.push(aiTipWorld, dtRender);
       }
       aiSampling = aiActive;
 

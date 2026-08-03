@@ -18,6 +18,14 @@ const LIFE_MS = 520;
 // 18구간에 폭 1.9배로 두었더니 상대 앞에 흰 판자가 섰다(실측). 코어는 좁고 짧아야 코어로 읽힌다.
 const HIT_SEGMENTS = 12;
 const HIT_WIDTH_SCALE = 1.3;
+// 순간이동 판별. 검끝이 이 속도보다 빠르게 움직였다면 그것은 궤적이 아니라 자리 이동이다.
+// 상대가 포즈를 바꾸며 겨냥을 크게 돌릴 때 두 점 사이가 벌어져
+// 화면을 가로지르는 거대한 띠가 그려지는 것을 실측했다. 끊긴 자리에서 새로 시작한다.
+//
+// 고정 거리로 두면 안 된다. 프레임이 길어지는 저성능 환경에서는 정상적인 큰 걸음까지 잘려
+// 리본이 통째로 사라진다(실측). 프레임 시간에 비례시키고 최소값만 둔다.
+const TELEPORT_MPS = 12;
+const TELEPORT_MIN_M = 0.35;
 // 굳은 구간이 버티는 시간. JUDGE 동안만이고 그 뒤에는 보통 구간처럼 사라진다.
 // 해제 조건이 없으면 흰 코어가 화면에 영구히 박힌다(V4c 실측).
 const HIT_HOLD_MS = motion.duration.judge;
@@ -74,7 +82,21 @@ export function createTrailRibbon({ core, glow, width = 0.045 }) {
   return {
     mesh,
 
-    push(v) {
+    push(v, dtSec = 1 / 60) {
+      // 직전 점에서 너무 멀면 이력을 버린다. 이어 붙이면 없던 궤적을 그리게 된다
+      if (count > 0) {
+        const limit = Math.max(TELEPORT_MIN_M, TELEPORT_MPS * dtSec);
+        const prev = points[(head - 1 + MAX) % MAX];
+        if (prev.pos.distanceToSquared(v) > limit * limit) {
+          count = 0;
+          head = 0;
+          for (const q of points) {
+            q.live = false;
+            q.hit = false;
+            q.age = 0;
+          }
+        }
+      }
       const p = points[head];
       p.pos.copy(v);
       p.age = 0;

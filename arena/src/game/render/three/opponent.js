@@ -1,14 +1,22 @@
 // 책임: AI 상대 빌보드. ARENA_SCENE 7절.
 //
-// 블랙 배경 위에서 실루엣이 읽히는 법(DESIGN v2 9절):
-// 몸체는 어두운 채움(bg.raised), 외곽은 밝은 림. 어두운 실루엣을 그냥 올리면 배경과 붙어 사라진다.
-// 단 림 밝기는 Bloom threshold(0.42, 선형) 아래로 묶는다. 블룸은 궤적의 전유물이다.
-// 림을 흰색 불투명으로 두면 선형 휘도 1.0이라 상대 전체가 번진다.
+// 블랙 배경 위에서 실루엣이 읽히는 법 (D2 개정):
+// **흰 펜싱 유니폼 전제로 몸체를 밝게** 채운다. 블랙 무대 위 흰 선수가 우리 무채색 규칙과 정합이다.
+// 밝은 몸체는 그 자체로 실루엣이 되므로 바깥 림에 기대지 않고, 대신 부위마다 어두운 테두리를 둘러
+// 겹친 팔다리가 서로 갈린다(2패스. 굵게 어둡게 한 번, 그 위에 유니폼 톤으로 한 번).
+//
+// **몸체 밝기는 Bloom threshold(0.42, 선형) 아래로 묶는다.** 블룸은 궤적의 전유물이다.
+// 알파 합성은 선형 버퍼에서 일어나므로 흰색 불투명은 선형 1.0이라 상대 전체가 번진다.
+// 순백 대신 steel.mid를 bg.deep으로 눌러 sRGB 약 0.60(선형 0.32)에 앉힌다.
+// 배경 0.04 대비 15:1이라 블랙 무대에서는 이것이 흰색으로 읽힌다.
+//
+// 검은 텍스처에 그리지 않는다. 3D 골동 레이피어가 손 앵커에 따로 붙는다.
 //
 // 색은 tokens에서만 온다. 텍스처는 생성 1회 후 재사용한다(포즈 5장, 평면 2장이 공유).
 
 import * as THREE from 'three';
 import { colors } from '../../../tokens.js';
+import { attachSwordModel } from './swordModel.js';
 
 export const POSE = {
   IDLE: 'idle',
@@ -37,20 +45,14 @@ const SPAN = SOLE_V - HEAD_V;
 const PLANE_H = FIG_H / SPAN;
 const PLANE_W = (PLANE_H * TEX_W) / TEX_H;
 
-// 림 최종 알파.
-//
-// 여기서 한 번 틀렸다. 처음에 0.52를 두고 "sRGB 0.60이니 선형 0.32라 안전하다"고 계산했는데
-// **알파 합성이 sRGB가 아니라 선형 버퍼에서 일어난다.** 흰 림은 선형 1.0이므로
-// 합성 결과의 선형 휘도가 곧 알파다. 0.52는 선형 0.58이라 threshold 0.42를 훌쩍 넘었고
-// 실측에서 상대 다리 구간이 192/255(선형 0.527)로 나와 블룸에 걸리고 있었다.
-//
-// 그래서 알파 자체를 문턱 아래로 내린다. 합성 후 총 알파는 0.26 + 0.10 x 0.74 = 0.334 선형이고
-// 화면에는 sRGB 0.61(약 156/255)로 나온다. 배경 0.04 대비 15:1이라 또렷하다.
-const RIM_ALPHA = 0.26;
-const GLOW_ALPHA = 0.10;
-// 밝기를 문턱 아래로 묶은 대신 림을 굵게 가져간다. 두께는 휘도를 올리지 않는다
-const RIM_R = 5;
-const GLOW_R = 16;
+// 유니폼 톤. steel.mid를 bg.deep으로 이만큼 눌러 문턱 아래에 앉힌다.
+// 0.30이면 sRGB 약 0.60, 선형 약 0.32다. 올리면 상대가 블룸에 걸리므로 올릴 때 반드시 실측하라.
+const UNIFORM_DARKEN = 0.30;
+// 부위 경계용 어두운 테두리 두께(텍셀). 겹친 팔다리를 가르는 유일한 수단이다
+const EDGE = 11;
+// 바깥 헤일로. 밝은 몸체라 강할 필요가 없다. 홀로그램 기운만 남긴다
+const GLOW_ALPHA = 0.07;
+const GLOW_R = 14;
 
 /**
  * 포즈 골격. 정규 좌표(x는 0~1이 텍스처 폭, y는 0~1이 텍스처 높이).
@@ -72,7 +74,6 @@ const IDLE = {
   hip: [[0.375, 0.520], [0.625, 0.520]],
   knee: [[0.210, 0.712], [0.790, 0.712]],
   foot: [[0.255, 0.952], [0.745, 0.952]],
-  blade: [0.470, 0.590, 0.055],  // 텍스처에 투영된 검끝과 끝 폭. 카메라 쪽으로 짧게 눕는다
 };
 
 function pose(over) {
@@ -93,7 +94,6 @@ const POSES = {
     hip: [[0.367, 0.515], [0.617, 0.515]],
     knee: [[0.232, 0.680], [0.782, 0.718]],
     foot: [[0.290, 0.886], [0.738, 0.952]],
-    blade: [0.462, 0.582, 0.055],
   }),
 
   // 텔레그래프. 어깨와 검이 들린다. FEINT와 REAL 공통 예고 형태다
@@ -106,7 +106,6 @@ const POSES = {
     hip: [[0.378, 0.518], [0.628, 0.518]],
     knee: [[0.214, 0.708], [0.792, 0.708]],
     foot: [[0.258, 0.952], [0.748, 0.952]],
-    blade: [0.130, 0.062, 0.040],
   }),
 
   // 런지. 앞다리가 길게 뻗고 검이 카메라를 향한다(원근으로 굵어진다)
@@ -119,7 +118,6 @@ const POSES = {
     hip: [[0.350, 0.560], [0.600, 0.558]],
     knee: [[0.215, 0.800], [0.800, 0.842]],
     foot: [[0.110, 0.952], [0.892, 0.952]],
-    blade: [0.600, 0.500, 0.090],
   }),
 
   // 피격. 상체가 젖혀지고 팔이 흩어진다
@@ -132,7 +130,6 @@ const POSES = {
     hip: [[0.382, 0.530], [0.632, 0.526]],
     knee: [[0.226, 0.722], [0.796, 0.726]],
     foot: [[0.268, 0.952], [0.752, 0.952]],
-    blade: [0.075, 0.130, 0.036],
   }),
 };
 
@@ -161,34 +158,12 @@ function makeCanvas() {
 const X = (v) => v * TEX_W;
 const Y = (v) => v * TEX_H;
 
-/** 검신. 손에서 검끝으로 갈수록 굵어진다. 카메라를 향한 원근을 이 폭 변화가 대신한다. */
-function drawBlade(ctx, hand, blade) {
-  const [hx, hy] = hand;
-  const [tx, ty, tw] = blade;
-  const dx = X(tx) - X(hx);
-  const dy = Y(ty) - Y(hy);
-  const len = Math.hypot(dx, dy) || 1;
-  const nx = -dy / len;
-  const ny = dx / len;
-  const w0 = 9;
-  const w1 = (tw * TEX_W) / 2;
-
-  ctx.beginPath();
-  ctx.moveTo(X(hx) + nx * w0, Y(hy) + ny * w0);
-  ctx.lineTo(X(tx) + nx * w1, Y(ty) + ny * w1);
-  ctx.lineTo(X(tx) - nx * w1, Y(ty) - ny * w1);
-  ctx.lineTo(X(hx) - nx * w0, Y(hy) - ny * w0);
-  ctx.closePath();
-  ctx.fill();
-
-  // 코킬. 손 앞 원반 하나로 검을 든 손이 읽힌다
-  ctx.beginPath();
-  ctx.arc(X(hx) + (dx / len) * 14, Y(hy) + (dy / len) * 14, 23, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-/** 골격을 단색으로 그린다. 림도 몸체도 이 같은 도형을 쓴다. */
-function drawFigure(ctx, P, color) {
+/**
+ * 골격을 그린다. 같은 도형을 두 번 훑는다.
+ * 1패스는 굵고 어둡게(부위 테두리), 2패스는 유니폼 톤으로. 이 테두리가 겹친 팔다리를 가른다.
+ * pad가 0이면 안쪽 채움, EDGE면 바깥 테두리다.
+ */
+function drawFigure(ctx, P, color, pad) {
   ctx.save();
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
@@ -196,22 +171,17 @@ function drawFigure(ctx, P, color) {
   ctx.lineJoin = 'round';
 
   const seg = (a, b, w) => {
-    ctx.lineWidth = w;
+    ctx.lineWidth = w + pad * 2;
     ctx.beginPath();
     ctx.moveTo(X(a[0]), Y(a[1]));
     ctx.lineTo(X(b[0]), Y(b[1]));
     ctx.stroke();
   };
 
-  // 다리. 허벅지가 굵고 정강이가 가늘다.
-  // 선 굵기는 텍셀 기준이라 실측 지름이 그대로 나온다. 허벅지 78px은 0.145m다
+  // 다리. 허벅지가 굵고 정강이가 가늘다
   for (let i = 0; i < 2; i += 1) {
     seg(P.hip[i], P.knee[i], 78);
     seg(P.knee[i], P.foot[i], 52);
-    // 발
-    const f = P.foot[i];
-    const out = i === 0 ? -1 : 1;
-    seg(f, [f[0] + out * 0.075, f[1]], 34);
   }
 
   // 몸통. 어깨에서 골반으로 좁아지는 사다리꼴
@@ -222,7 +192,7 @@ function drawFigure(ctx, P, color) {
   ctx.lineTo(X(P.hip[0][0]), Y(P.hip[0][1]));
   ctx.closePath();
   ctx.fill();
-  ctx.lineWidth = 54;
+  ctx.lineWidth = 54 + pad * 2;
   ctx.stroke();
 
   // 목
@@ -234,16 +204,17 @@ function drawFigure(ctx, P, color) {
     seg(P.elbow[i], P.hand[i], 38);
   }
 
-  // 투구. 머리 타원에 턱 보호대와 목가리개(비브)를 붙여야 민머리가 아니라 펜싱 마스크로 읽힌다
+  // 투구. 머리 타원에 턱 보호대와 목가리개(비브)
+  const hr = pad / TEX_W;
   ctx.beginPath();
-  ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2]), Y(P.head[3]), 0, 0, Math.PI * 2);
+  ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2] + hr), Y(P.head[3]) + pad, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
   ctx.ellipse(
     X(P.head[0]),
     Y(P.head[1] + P.head[3] * 0.42),
-    X(P.head[2] * 0.88),
-    Y(P.head[3] * 0.58),
+    X(P.head[2] * 0.88 + hr),
+    Y(P.head[3] * 0.58) + pad,
     0,
     0,
     Math.PI * 2
@@ -253,8 +224,8 @@ function drawFigure(ctx, P, color) {
   // 비브. 마스크 아래로 벌어지며 어깨를 덮는 사다리꼴
   const hx = X(P.head[0]);
   const hb = Y(P.head[1] + P.head[3] * 0.85);
-  const bw = X(P.head[2]) * 0.9;
-  const sy = (Y(P.shoulder[0][1]) + Y(P.shoulder[1][1])) / 2 + 26;
+  const bw = X(P.head[2]) * 0.9 + pad;
+  const sy = (Y(P.shoulder[0][1]) + Y(P.shoulder[1][1])) / 2 + 26 + pad;
   ctx.beginPath();
   ctx.moveTo(hx - bw, hb);
   ctx.lineTo(hx + bw, hb);
@@ -263,7 +234,70 @@ function drawFigure(ctx, P, color) {
   ctx.closePath();
   ctx.fill();
 
-  drawBlade(ctx, P.hand[0], P.blade);
+  ctx.restore();
+}
+
+/** 마스크와 장갑과 신발. 유니폼 위에 얹는 어두운 부위들이 선수로 읽히게 만든다. */
+function drawGear(ctx, P) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // 펜싱 마스크. 어두운 메시에 밝은 테두리 한 줄
+  ctx.fillStyle = colors.bg.raised;
+  ctx.beginPath();
+  ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2]) - 7, Y(P.head[3]) - 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(
+    X(P.head[0]),
+    Y(P.head[1] + P.head[3] * 0.42),
+    X(P.head[2] * 0.88) - 7,
+    Y(P.head[3] * 0.58) - 7,
+    0,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+
+  // 메시 결. 가로줄 몇 개면 그물로 읽힌다
+  ctx.strokeStyle = colors.steel.shadow;
+  ctx.globalAlpha = 0.5;
+  ctx.lineWidth = 3;
+  for (let i = -2; i <= 3; i += 1) {
+    const y = Y(P.head[1] + i * P.head[3] * 0.26);
+    ctx.beginPath();
+    ctx.moveTo(X(P.head[0] - P.head[2]) + 12, y);
+    ctx.lineTo(X(P.head[0] + P.head[2]) - 12, y);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // 마스크 테두리. 두상이 또렷해진다
+  ctx.strokeStyle = colors.steel.mid;
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2]) - 5, Y(P.head[3]) - 5, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 검 든 손의 장갑
+  ctx.fillStyle = colors.bg.raised;
+  ctx.beginPath();
+  ctx.arc(X(P.hand[0][0]), Y(P.hand[0][1]), 26, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 신발
+  for (let i = 0; i < 2; i += 1) {
+    const f = P.foot[i];
+    const out = i === 0 ? -1 : 1;
+    ctx.strokeStyle = colors.bg.raised;
+    ctx.lineWidth = 36;
+    ctx.beginPath();
+    ctx.moveTo(X(f[0]), Y(f[1]));
+    ctx.lineTo(X(f[0] + out * 0.075), Y(f[1]));
+    ctx.stroke();
+  }
+
   ctx.restore();
 }
 
@@ -279,45 +313,38 @@ function dilate(src, r, steps = 16) {
 }
 
 /**
- * 포즈 한 장. 겉에서 안으로 글로우, 선명한 림, 어두운 몸체, 투구 하이라이트 순이다.
+ * 포즈 한 장. 어두운 테두리 → 유니폼 채움 → 장비 → 바깥 헤일로 순이다.
  * 부풀린 도형을 불투명으로 만든 뒤 합성할 때 알파를 한 번만 먹인다.
- * 반투명 이미지를 16방향으로 겹치면 알파가 1로 수렴해 흰 덩어리가 된다(실측).
+ * 반투명 이미지를 여러 방향으로 겹치면 알파가 1로 수렴해 흰 덩어리가 된다(실측).
  */
 function bakePose(P) {
-  const solid = makeCanvas();
-  drawFigure(solid.getContext('2d'), P, colors.steel.hi);
-
-  const body = makeCanvas();
-  drawFigure(body.getContext('2d'), P, colors.bg.raised);
-
-  const rim = dilate(solid, RIM_R);
-  const glow = dilate(solid, GLOW_R);
-
   const out = makeCanvas();
   const ctx = out.getContext('2d');
-  ctx.globalAlpha = GLOW_ALPHA;
-  ctx.drawImage(glow, 0, 0);
-  ctx.globalAlpha = RIM_ALPHA;
-  ctx.drawImage(rim, 0, 0);
-  ctx.globalAlpha = 1;
+
+  // 1패스. 굵고 어두운 테두리가 겹친 부위를 가른다
+  drawFigure(ctx, P, colors.bg.deep, EDGE);
+
+  // 2패스. 유니폼 톤. steel.mid를 bg.deep으로 눌러 블룸 문턱 아래에 앉힌다
+  const body = makeCanvas();
+  const bctx = body.getContext('2d');
+  drawFigure(bctx, P, colors.steel.mid, 0);
+  bctx.globalCompositeOperation = 'source-atop';
+  bctx.globalAlpha = UNIFORM_DARKEN;
+  bctx.fillStyle = colors.bg.deep;
+  bctx.fillRect(0, 0, TEX_W, TEX_H);
   ctx.drawImage(body, 0, 0);
 
-  // 투구 하이라이트 한 점. 머리가 어디를 향하는지 이것 하나로 읽힌다.
-  // 어두운 몸체 위에 얹히므로 이 알파가 거의 그대로 선형 휘도가 된다. 문턱 아래로 묶는다
-  ctx.globalAlpha = 0.30;
-  ctx.fillStyle = colors.steel.hi;
-  ctx.beginPath();
-  ctx.ellipse(
-    X(P.head[0] - P.head[2] * 0.34),
-    Y(P.head[1] - P.head[3] * 0.30),
-    X(P.head[2] * 0.26),
-    Y(P.head[3] * 0.20),
-    -0.5,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
+  drawGear(ctx, P);
+
+  // 바깥 헤일로. 밝은 몸체 뒤에 옅게만 깐다
+  const solid = makeCanvas();
+  drawFigure(solid.getContext('2d'), P, colors.steel.hi, EDGE);
+  const glow = dilate(solid, GLOW_R);
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.globalAlpha = GLOW_ALPHA;
+  ctx.drawImage(glow, 0, 0);
   ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
 
   const tex = new THREE.CanvasTexture(out);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -326,19 +353,37 @@ function bakePose(P) {
 }
 
 /**
- * AI 검끝 오프셋(빌보드 기준 로컬, m). +z가 카메라 쪽이다.
- * 이 포인트가 AI 리본의 소스다. 텔레그래프에서 REAL과 FEINT의 궤적 크기가 갈린다.
+ * 상대의 검 손과 겨냥점(빌보드 로컬, m). +z가 카메라 쪽이다.
+ *
+ * 손 위치는 텍스처 좌표에서 그대로 나온다.
+ *   x = (u - 0.5) x PLANE_W,  y = PLANE_H x (SOLE_V - v)
+ * 겨냥점은 검이 향할 방향만 정한다. 실제 칼끝은 손에서 tipDistance만큼 떨어진 곳에 선다.
+ *
+ * 텔레그래프에서 REAL과 FEINT가 갈리는 곳이 여기다. REAL은 검을 높이 세우고 FEINT는 앞으로만 툭 낸다.
+ * 색이 아니라 **칼의 각도**가 다르므로 형태로 읽힌다.
  */
-const TIP = {
-  [POSE.IDLE]: [-0.20, 1.12, 0.30],
-  [POSE.ADVANCE]: [-0.22, 1.14, 0.38],
-  telegraphReal: [-0.34, 1.76, 0.16],   // 크고 높은 윈드업. 파란 리본이 큰 호를 그린다
-  telegraphFeint: [-0.15, 1.26, 0.52],  // 짧고 낮은 페인트 플릭
-  [POSE.LUNGE]: [0.02, 1.34, 1.46],     // 카메라를 향해 뻗는다
-  [POSE.HIT]: [0.42, 1.52, 0.24],
+const HAND = {
+  [POSE.IDLE]: [-0.182, 1.000, 0.06],
+  [POSE.ADVANCE]: [-0.190, 1.016, 0.10],
+  [POSE.TELEGRAPH]: [-0.250, 1.561, 0.02],
+  [POSE.LUNGE]: [-0.052, 1.176, 0.20],
+  [POSE.HIT]: [-0.333, 1.517, 0.02],
 };
 
-export function createOpponent(scene) {
+const AIM = {
+  [POSE.IDLE]: [0.22, 1.42, 0.34],
+  [POSE.ADVANCE]: [0.20, 1.44, 0.38],
+  telegraphReal: [-0.30, 2.20, 0.10],
+  telegraphFeint: [0.14, 1.70, 0.35],
+  [POSE.LUNGE]: [0.16, 1.24, 0.78],
+  [POSE.HIT]: [-0.62, 1.92, 0.10],
+};
+
+// 겨냥을 카메라 정면으로 두면 검이 극단적으로 단축돼 점으로 보인다(실측).
+// 상대 검은 화면을 가로질러야 읽히므로 대기와 예고는 비스듬히 세우고,
+// 런지만 카메라 쪽 성분을 키워 찔러 들어오는 인상을 만든다.
+
+export function createOpponent(scene, { tipDistance } = {}) {
   const textures = {};
   for (const name of Object.values(POSE)) textures[name] = bakePose(POSES[name]);
 
@@ -369,10 +414,25 @@ export function createOpponent(scene) {
     group.add(m);
   }
 
-  // 검끝 포인트. 그룹의 자식이라 빌보드 회전을 그대로 따른다
+  // 검 손. 3D 골동 레이피어가 여기 붙고 겨냥 방향으로 돈다.
+  // 검이 도착하기 전과 로드 실패 시에는 tip이 리본 소스를 대신한다.
+  const hand = new THREE.Object3D();
   const tip = new THREE.Object3D();
-  group.add(tip);
+  group.add(hand, tip);
   scene.add(group);
+
+  let sword = null;
+  attachSwordModel(hand, { finish: 'antique', tipDistance })
+    .then((r) => {
+      sword = r;
+      // 검은 빌보드 평면보다 앞이라 깊이로 자연히 앞에 선다. 렌더 순서는 기본값을 쓴다
+      r.group.traverse((o) => {
+        if (o.isMesh) o.renderOrder = 0;
+      });
+    })
+    .catch((err) => {
+      console.warn('[arena] 상대 검 로드 실패. 가상 검끝 포인트를 유지한다.', err);
+    });
 
   // 접지 그림자. 발밑에 눕는 부드러운 타원 하나로 "바닥에 서 있다"가 성립한다.
   // 빌보드 그룹의 자식으로 넣으면 카메라를 따라 일어서므로 씬에 직접 붙이고 z만 따라간다.
@@ -394,11 +454,16 @@ export function createOpponent(scene) {
   let current = 0;
   let poseName = POSE.IDLE;
   let fade = 1;
+  const handTarget = new THREE.Vector3();
+  const aimTarget = new THREE.Vector3();
+  const aimDir = new THREE.Vector3();
+  const BLADE_AXIS = new THREE.Vector3(0, 0, -1);
   const tmpColor = new THREE.Color();
+  const lerpArr = (out, a, b, t) =>
+    out.set(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
   const baseColor = new THREE.Color(colors.steel.hi);
   const hitColor = new THREE.Color(colors.red.light);
   const realColor = new THREE.Color(colors.red.light);
-  const tipTarget = new THREE.Vector3();
 
   function setPose(name) {
     if (name === poseName) return;
@@ -413,7 +478,11 @@ export function createOpponent(scene) {
 
   return {
     group,
-    tip,
+
+    /** 궤적 리본이 읽는 검끝. 3D 검이 서면 그쪽 앵커로 바뀐다. */
+    getTip() {
+      return sword ? sword.tipAnchor : tip;
+    },
 
     /**
      * 텍스처 다섯 장을 미리 GPU에 올린다.
@@ -448,19 +517,28 @@ export function createOpponent(scene) {
         planes[1 - current].material.opacity = 1 - fade;
       }
 
-      // 검끝. 런지 중에는 대기 자세에서 런지 자세로 뻗는 중간값을 쓴다
-      let target = TIP[poseName] ?? TIP[POSE.IDLE];
-      if (poseName === POSE.TELEGRAPH) target = real ? TIP.telegraphReal : TIP.telegraphFeint;
+      // 검 손과 겨냥점. 런지 중에는 대기에서 런지로 뻗는 중간값을 쓴다
+      let aim = AIM[poseName] ?? AIM[POSE.IDLE];
+      if (poseName === POSE.TELEGRAPH) aim = real ? AIM.telegraphReal : AIM.telegraphFeint;
+      const h = HAND[poseName] ?? HAND[POSE.IDLE];
       if (poseName === POSE.LUNGE) {
-        const a = TIP[POSE.IDLE];
-        const b = TIP[POSE.LUNGE];
         const t = Math.min(1, Math.max(0, lunge));
-        tipTarget.set(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
+        lerpArr(handTarget, HAND[POSE.IDLE], h, t);
+        lerpArr(aimTarget, AIM[POSE.IDLE], aim, t);
       } else {
-        tipTarget.set(target[0], target[1], target[2]);
+        handTarget.set(h[0], h[1], h[2]);
+        aimTarget.set(aim[0], aim[1], aim[2]);
       }
       // 포즈 사이를 순간이동하면 리본이 화면을 가로지르는 직선을 긋는다. 따라붙게 둔다
-      tip.position.lerp(tipTarget, Math.min(1, dtSec * 14));
+      const k = Math.min(1, dtSec * 14);
+      hand.position.lerp(handTarget, k);
+      aimDir.copy(aimTarget).sub(hand.position);
+      if (aimDir.lengthSq() > 1e-8) {
+        aimDir.normalize();
+        hand.quaternion.setFromUnitVectors(BLADE_AXIS, aimDir);
+      }
+      // 검이 없을 때만 쓰는 대체 검끝
+      if (!sword) tip.position.lerp(aimTarget, k);
 
       // 림 색조. 피격 틴트가 예고 색조를 이긴다
       if (tintHit > 0) tmpColor.copy(baseColor).lerp(hitColor, tintHit);
@@ -489,6 +567,7 @@ export function createOpponent(scene) {
     },
 
     dispose() {
+      sword?.dispose();
       for (const t of Object.values(textures)) t.dispose();
       for (const p of planes) p.material.dispose();
       geometry.dispose();
