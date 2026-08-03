@@ -29,7 +29,13 @@ export const POSE = {
 const TEX_W = 512;
 const TEX_H = 1024;
 const FIG_H = 1.9;                       // 상대 키(m). 머리 꼭대기에서 발바닥까지다
-const FADE_SEC = 0.12;                   // 포즈 크로스페이드 120ms
+/**
+ * 포즈 크로스페이드. **공격은 빠르고 회복은 느리다.**
+ * 같은 값으로 두면 찌르기가 미끄러지듯 나가 순간성이 죽는다.
+ * 텔레그래프와 런지로 들어갈 때는 55ms, 돌아올 때는 220ms다.
+ */
+const FADE_FAST = 0.055;
+const FADE_SLOW = 0.22;
 
 /**
  * 텍스처 안에서 선수가 차지하는 세로 구간.
@@ -84,52 +90,55 @@ const POSES = {
   // 앙가르드. 무릎을 굽히고 발을 벌린 기본 자세
   [POSE.IDLE]: IDLE,
 
-  // 전진. 앞발이 떠서 앞으로 나가고 상체가 따라간다
+  // 전진. 앞발이 확실히 떠서 앞으로 나가고 무게중심이 따라간다
   [POSE.ADVANCE]: pose({
-    head: [0.492, 0.090, 0.105, 0.074],
-    neck: [0.492, 0.175],
-    shoulder: [[0.297, 0.228], [0.687, 0.230]],
-    elbow: [[0.230, 0.362], [0.784, 0.306]],
-    hand: [[0.310, 0.462], [0.752, 0.190]],
-    hip: [[0.367, 0.515], [0.617, 0.515]],
-    knee: [[0.232, 0.680], [0.782, 0.718]],
-    foot: [[0.290, 0.886], [0.738, 0.952]],
+    head: [0.486, 0.086, 0.105, 0.074],
+    neck: [0.486, 0.171],
+    shoulder: [[0.292, 0.224], [0.682, 0.228]],
+    elbow: [[0.226, 0.356], [0.780, 0.302]],
+    hand: [[0.308, 0.452], [0.748, 0.186]],
+    hip: [[0.362, 0.508], [0.612, 0.510]],
+    knee: [[0.226, 0.668], [0.784, 0.714]],
+    foot: [[0.302, 0.876], [0.740, 0.952]],
   }),
 
-  // 텔레그래프. 어깨와 검이 들린다. FEINT와 REAL 공통 예고 형태다
+  // 텔레그래프. 상체를 뒤로 살짝 젖히고 검 팔을 확실히 들어 올린다.
+  // 이 자세가 "온다"는 신호이므로 실루엣만 잘라 봐도 대기와 달라야 한다
   [POSE.TELEGRAPH]: pose({
-    head: [0.508, 0.100, 0.105, 0.074],
-    neck: [0.508, 0.185],
-    shoulder: [[0.312, 0.212], [0.702, 0.242]],
-    elbow: [[0.205, 0.300], [0.800, 0.330]],
-    hand: [[0.250, 0.190], [0.766, 0.210]],
-    hip: [[0.378, 0.518], [0.628, 0.518]],
-    knee: [[0.214, 0.708], [0.792, 0.708]],
-    foot: [[0.258, 0.952], [0.748, 0.952]],
+    head: [0.516, 0.075, 0.105, 0.074],
+    neck: [0.514, 0.160],
+    shoulder: [[0.318, 0.190], [0.706, 0.228]],
+    elbow: [[0.212, 0.272], [0.804, 0.318]],
+    hand: [[0.262, 0.155], [0.770, 0.198]],
+    hip: [[0.382, 0.512], [0.632, 0.516]],
+    knee: [[0.216, 0.702], [0.796, 0.706]],
+    foot: [[0.262, 0.952], [0.752, 0.952]],
   }),
 
-  // 런지. 앞다리가 길게 뻗고 검이 카메라를 향한다(원근으로 굵어진다)
+  // 런지. **대기와 실루엣이 확연히 달라야 한다.**
+  // 머리가 텍스처 높이로 0.205(약 0.41m) 떨어지고 발 간격이 0.844까지 벌어진다.
+  // 앞무릎은 깊게 접히고 뒷다리는 펴진다. 검 든 팔은 카메라 쪽으로 완전히 뻗는다
   [POSE.LUNGE]: pose({
-    head: [0.470, 0.170, 0.105, 0.074],
-    neck: [0.474, 0.252],
-    shoulder: [[0.300, 0.300], [0.690, 0.306]],
-    elbow: [[0.345, 0.348], [0.808, 0.400]],
-    hand: [[0.448, 0.382], [0.842, 0.318]],
-    hip: [[0.350, 0.560], [0.600, 0.558]],
-    knee: [[0.215, 0.800], [0.800, 0.842]],
-    foot: [[0.110, 0.952], [0.892, 0.952]],
+    head: [0.455, 0.300, 0.105, 0.074],
+    neck: [0.462, 0.382],
+    shoulder: [[0.292, 0.428], [0.672, 0.436]],
+    elbow: [[0.372, 0.452], [0.800, 0.520]],
+    hand: [[0.492, 0.470], [0.858, 0.430]],
+    hip: [[0.352, 0.660], [0.598, 0.656]],
+    knee: [[0.196, 0.836], [0.836, 0.900]],
+    foot: [[0.086, 0.952], [0.930, 0.952]],
   }),
 
-  // 피격. 상체가 젖혀지고 팔이 흩어진다
+  // 피격. 상체가 뒤로 젖혀지고 균형이 무너진다
   [POSE.HIT]: pose({
-    head: [0.535, 0.135, 0.105, 0.074],
-    neck: [0.522, 0.212],
-    shoulder: [[0.320, 0.272], [0.712, 0.266]],
-    elbow: [[0.212, 0.302], [0.826, 0.368]],
-    hand: [[0.168, 0.212], [0.870, 0.480]],
-    hip: [[0.382, 0.530], [0.632, 0.526]],
-    knee: [[0.226, 0.722], [0.796, 0.726]],
-    foot: [[0.268, 0.952], [0.752, 0.952]],
+    head: [0.556, 0.152, 0.105, 0.074],
+    neck: [0.536, 0.226],
+    shoulder: [[0.334, 0.286], [0.724, 0.272]],
+    elbow: [[0.206, 0.318], [0.842, 0.372]],
+    hand: [[0.156, 0.222], [0.888, 0.492]],
+    hip: [[0.386, 0.540], [0.636, 0.534]],
+    knee: [[0.238, 0.742], [0.788, 0.748]],
+    foot: [[0.272, 0.952], [0.756, 0.952]],
   }),
 };
 
@@ -364,10 +373,11 @@ function bakePose(P) {
  */
 const HAND = {
   [POSE.IDLE]: [-0.182, 1.000, 0.06],
-  [POSE.ADVANCE]: [-0.190, 1.016, 0.10],
-  [POSE.TELEGRAPH]: [-0.250, 1.561, 0.02],
-  [POSE.LUNGE]: [-0.052, 1.176, 0.20],
-  [POSE.HIT]: [-0.333, 1.517, 0.02],
+  [POSE.ADVANCE]: [-0.192, 1.036, 0.10],
+  [POSE.TELEGRAPH]: [-0.238, 1.631, 0.02],
+  // 런지에서 손이 카메라 쪽으로 크게 나온다. 몸이 뻗는 만큼 검도 나가야 "몸으로 찌른다"가 된다
+  [POSE.LUNGE]: [-0.008, 1.000, 0.34],
+  [POSE.HIT]: [-0.345, 1.497, 0.02],
 };
 
 const AIM = {
@@ -375,7 +385,7 @@ const AIM = {
   [POSE.ADVANCE]: [0.20, 1.44, 0.38],
   telegraphReal: [-0.30, 2.20, 0.10],
   telegraphFeint: [0.14, 1.70, 0.35],
-  [POSE.LUNGE]: [0.16, 1.24, 0.78],
+  [POSE.LUNGE]: [0.20, 1.05, 0.95],
   [POSE.HIT]: [-0.62, 1.92, 0.10],
 };
 
@@ -454,6 +464,7 @@ export function createOpponent(scene, { tipDistance } = {}) {
   let current = 0;
   let poseName = POSE.IDLE;
   let fade = 1;
+  let fadeSec = FADE_SLOW;
   const handTarget = new THREE.Vector3();
   const aimTarget = new THREE.Vector3();
   const aimDir = new THREE.Vector3();
@@ -471,6 +482,8 @@ export function createOpponent(scene, { tipDistance } = {}) {
 
   function setPose(name) {
     if (name === poseName) return;
+    // 공격으로 들어가는 전환만 빠르다. 검과 몸이 같은 프레임에 뻗는다
+    fadeSec = name === POSE.LUNGE || name === POSE.TELEGRAPH || name === POSE.HIT ? FADE_FAST : FADE_SLOW;
     poseName = name;
     const next = 1 - current;
     // needsUpdate를 세우지 않는다. 두 텍스처 모두 존재하므로 셰이더 define이 그대로고,
@@ -521,7 +534,7 @@ export function createOpponent(scene, { tipDistance } = {}) {
       group.quaternion.copy(camera.quaternion);
 
       if (fade < 1) {
-        fade = Math.min(1, fade + dtSec / FADE_SEC);
+        fade = Math.min(1, fade + dtSec / fadeSec);
         planes[current].material.opacity = fade;
         planes[1 - current].material.opacity = 1 - fade;
       }
@@ -542,8 +555,8 @@ export function createOpponent(scene, { tipDistance } = {}) {
         knock = Math.max(0, knock - dtSec / KNOCK_SEC);
         aimTarget.addScaledVector(KNOCK, knock);
       }
-      // 포즈 사이를 순간이동하면 리본이 화면을 가로지르는 직선을 긋는다. 따라붙게 둔다
-      const k = Math.min(1, dtSec * 14);
+      // 손 추종도 포즈 전환과 같은 리듬을 탄다. 몸이 빠르게 뻗으면 검도 빠르게 나간다
+      const k = Math.min(1, dtSec / fadeSec);
       hand.position.lerp(handTarget, k);
       aimDir.copy(aimTarget).sub(hand.position);
       if (aimDir.lengthSq() > 1e-8) {
