@@ -1,0 +1,11 @@
+Model Information:
+* title:	Antique Rapier Sword
+* source:	https://sketchfab.com/3d-models/antique-rapier-sword-910eb65ba53d49f3b810c0d3917a6840
+* author:	GabrielUCG (https://sketchfab.com/GabrielUCG)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Antique Rapier Sword" (https://sketchfab.com/3d-models/antique-rapier-sword-910eb65ba53d49f3b810c0d3917a6840) by GabrielUCG (https://sketchfab.com/GabrielUCG) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

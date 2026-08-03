@@ -23,6 +23,18 @@
 | 궤적 리본 | 자체 구현 | arena 궤적. `ribbon-geometry`(MIT)를 검토했으나 생성자 전용이라 in-place 갱신이 없고 폭이 단일 상수여서 나이별 감쇠를 못 한다. 매 프레임 지오메트리를 새로 만들면 가비지가 쌓여 미채택 | (참고) https://github.com/yomotsu/ribbon-geometry |
 | 카메라 셰이크 (trauma 방식) | MIT, **로직 포팅** | arena 명중 연출. `three-screenshake`가 npm에 없어(404) `sajmoni/screen-shake`의 trauma 방식을 JS로 포팅 | https://github.com/sajmoni/screen-shake |
 
+## 3D 에셋
+
+| 이름 | 라이선스 | 적용 위치 | 링크 |
+|---|---|---|---|
+| Antique Rapier Sword | CC-BY-4.0 (저작자 표시 필수, 상업 이용 허용) | arena 1인칭 내 검. `arena/public/assets/sword/` | https://sketchfab.com/3d-models/antique-rapier-sword-910eb65ba53d49f3b810c0d3917a6840 |
+
+배포 시 아래 문구를 그대로 유지한다(원본 `license.txt`의 크레딧 문구 전문).
+
+> This work is based on "Antique Rapier Sword" (https://sketchfab.com/3d-models/antique-rapier-sword-910eb65ba53d49f3b810c0d3917a6840) by GabrielUCG (https://sketchfab.com/GabrielUCG) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+텍스처 3장은 4096에서 1024로 리사이즈했다(36.0MB → 3.8MB). 지오메트리와 파일명은 원본 그대로다.
+
 ## 폰트
 
 | 이름 | 라이선스 | 적용 위치 | 링크 |

@@ -8,3 +8,6 @@ dist/
 
 # 제출 서류 (코드와 무관)
 _submission_docs/
+
+# 검 모델 원본 zip(4K 텍스처 36MB). 경량본은 arena/public/assets/sword에 있고 원본은 Sketchfab에서 다시 받는다
+arena/src/assets/

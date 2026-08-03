@@ -127,8 +127,17 @@ export function createBackground(scene) {
 }
 
 /**
+ * 그룹 원점에서 칼끝까지의 거리(m). 박스 검의 tipMarker 위치이자
+ * 레이피어 모델을 정규화하는 기준이다. 이 값을 유지해야 6절 궤적 좌표가 그대로 산다.
+ */
+export const BOX_TIP_DISTANCE = 0.68;
+
+/**
  * 내 검. 15절 방향에 따라 Box 세장비로 간다. Lathe는 여유 시 승격.
  * 그룹 원점이 그립이고 검신은 -z로 뻗는다. 검끝에 emissive 마커를 둔다.
+ *
+ * 레이피어 glTF가 뜨면 이 박스는 꺼지고 그룹만 남아 자세와 트윈을 계속 쥔다.
+ * 로드 실패에도 검이 사라지지 않게 이 골격을 지우지 않는다(PITFALLS 서드파티 원칙).
  */
 /**
  * 내 검. 프리셋 좌표는 **카메라 로컬**이므로 카메라의 자식으로 붙인다.
@@ -136,6 +145,8 @@ export function createBackground(scene) {
  */
 export function createSword(camera) {
   const group = new THREE.Group();
+  // 박스 검 부품을 한 겹 안에 모은다. 레이피어가 뜨면 이 겹만 끄고 그룹은 그대로 쓴다
+  const box = new THREE.Group();
 
   const BLADE_LEN = 0.62;
   const blade = new THREE.Mesh(
@@ -179,8 +190,9 @@ export function createSword(camera) {
   );
   tipMarker.position.set(0, 0, -BLADE_LEN - 0.06);
 
-  group.add(blade, guard, grip, tipMarker);
+  box.add(blade, guard, grip, tipMarker);
+  group.add(box);
   camera.add(group);
 
-  return { group, tipMarker, bladeLength: BLADE_LEN };
+  return { group, box, tipMarker, bladeLength: BLADE_LEN, tipDistance: BOX_TIP_DISTANCE };
 }

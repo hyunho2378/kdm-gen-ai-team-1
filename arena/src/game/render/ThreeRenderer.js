@@ -10,6 +10,7 @@ import { AI_MODE, ATTACK_KIND, OUTCOME, OWNER } from '../judge.js';
 import { thrustEase } from './canvas2d/geometry.js';
 import { createComposer } from './three/post.js';
 import { POSE, createOpponent } from './three/opponent.js';
+import { attachSwordModel } from './three/swordModel.js';
 import { createTrailRibbon } from './three/trail.js';
 import {
   CAMERA,
@@ -31,6 +32,11 @@ const BUDGET = motion.budget;
 const ADVANCE_IN = 12;
 const ADVANCE_OUT = 6;
 
+// 칼날 발광 세기. 순수 red.light는 선형 휘도가 0.2285라 세기 1.0에서도
+// Bloom threshold 0.42를 넘지 않는다(빨강은 휘도 기여가 낮다). 그래도 검신은
+// 궤적의 시작점이지 주인공이 아니므로 은은한 선에서 멈춘다.
+const BLADE_EMISSIVE_INTENSITY = 0.35;
+
 /** 두 좌표를 섞는다. 프리셋 트윈의 최소 단위다. */
 function lerp3(out, a, b, t) {
   out.set(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
@@ -42,6 +48,10 @@ export function createThreeRenderer() {
   let scene = null;
   let camera = null;
   let sword = null;
+  // 궤적이 읽는 검끝. 레이피어가 뜨기 전에는 박스 검의 마커다
+  let swordTip = null;
+  let rapier = null;
+  let disposed = false;
   let background = null;
   let opponent = null;
   let canvas = null;
@@ -168,7 +178,29 @@ export function createThreeRenderer() {
       createEnvironment(renderer, scene);
       background = createBackground(scene);
       sword = createSword(camera);
+      swordTip = sword.tipMarker;
       opponent = createOpponent(scene);
+
+      // 레이피어는 비동기다. 뜰 때까지 박스 검이 자리를 지키고, 실패해도 박스 검이 남는다.
+      // 자세와 트윈은 sword.group 소관이라 교체 도중이어도 안전하다.
+      attachSwordModel(sword.group, {
+        emissive: colors.trail.self,
+        intensity: BLADE_EMISSIVE_INTENSITY,
+        tipDistance: sword.tipDistance,
+      })
+        .then((r) => {
+          // dispose 이후 늦게 도착한 응답이 죽은 씬을 건드리지 않게 막는다
+          if (disposed || !sword) {
+            r.dispose();
+            return;
+          }
+          rapier = r;
+          swordTip = r.tipAnchor;
+          sword.box.visible = false;
+        })
+        .catch((err) => {
+          console.warn('[arena] 검 모델 로드 실패. 박스 검을 유지한다.', err);
+        });
 
       // 궤적 리본 2개. 소유 색은 v2 확정 매핑이다(내 검 red, AI blue).
       meTrail = createTrailRibbon({ core: colors.trail.self, glow: colors.trail.selfGlow });
@@ -224,8 +256,9 @@ export function createThreeRenderer() {
       poseSword(gameState);
 
       // 검끝 월드 좌표를 리본에 먹인다. 검이 카메라의 자식이라 월드 변환이 필요하다.
+      // swordTip은 레이피어가 뜨면 그쪽 앵커로 바뀐다. 거리는 같게 정규화했으므로 궤적이 튀지 않는다.
       camera.updateMatrixWorld();
-      sword.tipMarker.getWorldPosition(tipWorld);
+      swordTip.getWorldPosition(tipWorld);
       meTrail.push(tipWorld);
 
       // AI 리본은 공격 구간에서만 샘플링한다. 대기 중에 계속 먹이면
@@ -297,11 +330,14 @@ export function createThreeRenderer() {
         geometries: info.memory.geometries,
         programs: info.programs?.length ?? 0,
         segments: this.segmentCount(),
+        sword: rapier ? 'rapier' : 'box',
       };
     },
 
     dispose() {
+      disposed = true;
       post?.dispose();
+      rapier?.dispose();
       opponent?.dispose();
       meTrail?.dispose();
       aiTrail?.dispose();
@@ -316,6 +352,8 @@ export function createThreeRenderer() {
       scene = null;
       camera = null;
       sword = null;
+      swordTip = null;
+      rapier = null;
       background = null;
       opponent = null;
       canvas = null;
