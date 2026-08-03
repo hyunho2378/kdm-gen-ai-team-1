@@ -76,6 +76,10 @@ export function createCanvas2dRenderer() {
     isDegraded() {
       return legacy?.isDegraded() ?? false;
     },
+    /** 2D에는 드로우콜 개념이 없다. 미터가 이 경로에서는 fps만 읽는다. */
+    getInfo() {
+      return null;
+    },
 
     dispose() {
       canvas?.remove();

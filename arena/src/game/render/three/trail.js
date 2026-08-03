@@ -13,8 +13,14 @@ import { colors, motion } from '../../../tokens.js';
 
 const MAX = motion.budget.trailMaxSegments;
 const LIFE_MS = 520;
-// 명중 순간 흰 코어로 굳히는 최근 구간 길이
-const HIT_SEGMENTS = 18;
+// 명중 순간 흰 코어로 굳히는 최근 구간 길이.
+// 흰 코어는 가산 블렌딩에서 포화되고 그 위에 블룸이 얹혀 실제 폭보다 훨씬 굵게 보인다.
+// 18구간에 폭 1.9배로 두었더니 상대 앞에 흰 판자가 섰다(실측). 코어는 좁고 짧아야 코어로 읽힌다.
+const HIT_SEGMENTS = 12;
+const HIT_WIDTH_SCALE = 1.3;
+// 굳은 구간이 버티는 시간. JUDGE 동안만이고 그 뒤에는 보통 구간처럼 사라진다.
+// 해제 조건이 없으면 흰 코어가 화면에 영구히 박힌다(V4c 실측).
+const HIT_HOLD_MS = motion.duration.judge;
 
 export function createTrailRibbon({ core, glow, width = 0.045 }) {
   const coreColor = new THREE.Color(core);
@@ -86,11 +92,12 @@ export function createTrailRibbon({ core, glow, width = 0.045 }) {
     update(dtSec) {
       const dt = dtSec * 1000;
       for (let k = 0; k < count; k += 1) at(k).age += dt;
-      // 수명이 다한 앞쪽을 버린다. 명중으로 굳은 구간은 남긴다.
+      // 수명이 다한 앞쪽을 버린다. 굳은 구간은 JUDGE 길이만큼 더 버틴다.
       while (count > 1) {
         const oldest = at(0);
-        if (oldest.age <= LIFE_MS || oldest.hit) break;
+        if (oldest.age <= (oldest.hit ? HIT_HOLD_MS : LIFE_MS)) break;
         oldest.live = false;
+        oldest.hit = false;
         count -= 1;
       }
     },
@@ -119,7 +126,7 @@ export function createTrailRibbon({ core, glow, width = 0.045 }) {
         const life = Math.max(0, 1 - p.age / LIFE_MS);
         const recency = count > 1 ? k / (count - 1) : 1; // 최근일수록 1
         // 나이와 최신도로 폭이 감쇠한다. 명중 구간은 굵게 고정한다.
-        const w = p.hit ? width * 1.9 : width * (0.18 + 0.82 * recency * life);
+        const w = p.hit ? width * HIT_WIDTH_SCALE : width * (0.18 + 0.82 * recency * life);
         const a = p.hit ? 1 : (0.35 + 0.65 * life) * recency;
 
         const o = k * 6;

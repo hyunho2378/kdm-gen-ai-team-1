@@ -8,8 +8,13 @@ import { colors } from '../../../tokens.js';
 export const CAMERA = { fov: 70, near: 0.05, far: 60, eyeY: 1.6 };
 
 // 4절. d는 근접도라 값이 클수록 가깝다(judge.js 정의). 그래서 거리는 반비례한다.
-const DIST_NEAR = 1.6;
-const DIST_FAR = 6.0;
+//
+// V4c 실측 조정. 상대가 화면 높이에서 차지하는 비율은 1.9m / (2 x dist x tan35도) = 1.3568 / dist다.
+// 유효 범위 d 35~55에서 40~55퍼센트를 차지해야 위협적으로 읽힌다는 요구를 이 두 상수로 맞췄다.
+//   d 35 → 3.32m → 40.9%   d 45 → 3.01m → 45.2%   d 55 → 2.70m → 50.3%
+// 근을 더 줄이면 d 100에서 상대가 얼굴을 뚫고 들어온다. 원을 더 키우면 먼쪽이 40퍼센트 아래로 떨어진다.
+const DIST_NEAR = 1.3;
+const DIST_FAR = 4.4;
 export function distFromD(d) {
   return DIST_FAR - (d / 100) * (DIST_FAR - DIST_NEAR);
 }

@@ -5,10 +5,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createEngine } from './game/engine.js';
 import { createPoseChannel } from './game/pose.js';
+import { createPerfStats, meterEnabled } from './game/perf.js';
 import { attachKeyboard } from './game/input.js';
 import { EV, PHASE } from './game/machine.js';
 import GameCanvas from './game/GameCanvas.jsx';
 import HUD from './components/hud/HUD.jsx';
+import FpsMeter from './components/hud/FpsMeter.jsx';
+import GlassFrame from './components/hud/GlassFrame.jsx';
 import VignetteOverlay from './components/VignetteOverlay.jsx';
 import IdleScreen from './screens/IdleScreen.jsx';
 import MatchEndScreen from './screens/MatchEndScreen.jsx';
@@ -26,6 +29,9 @@ export default function App() {
   const [rendererFallback, setRendererFallback] = useState(false);
   // 연속 채널. engine과 분리되어 있고 렌더러만 소비한다(ARENA_INPUT 3절).
   const poseChannel = useMemo(() => createPoseChannel(), []);
+  const perf = useMemo(() => createPerfStats(), []);
+  // dev이거나 주소에 ?fps=1이 있으면 미터를 띄운다. 실기 확인이 최종 성능 게이트다
+  const showMeter = useMemo(() => meterEnabled(import.meta.env.DEV), []);
 
   const engine = useMemo(
     () =>
@@ -71,7 +77,6 @@ export default function App() {
   if (!snapshot) return null;
 
   const { phase } = snapshot;
-  const showMeter = import.meta.env.DEV;
 
   return (
     <ViewportGuard>
@@ -79,7 +84,7 @@ export default function App() {
         <GameCanvas
           engine={engine}
           poseChannel={poseChannel}
-          showMeter={showMeter}
+          perf={perf}
           onRendererReady={(r) => {
             rendererRef.current = r;
             setRendererFallback(r.isFallback);
@@ -87,12 +92,17 @@ export default function App() {
           onFallback={() => setRendererFallback(true)}
         />
 
+        {/* 프레임은 HUD보다 먼저 그린다. 같은 층에서 HUD가 위로 온다 */}
+        <GlassFrame reduced={reduced} />
+
         <HUD
           snapshot={snapshot}
           getD={() => engine.getD()}
           fpsDegraded={degraded}
           rendererFallback={rendererFallback}
+          meterOn={showMeter}
         />
+        {showMeter ? <FpsMeter perf={perf} rendererRef={rendererRef} /> : null}
         <VignetteOverlay active={snapshot.dilating} />
 
         {phase === PHASE.IDLE ? (

@@ -69,6 +69,7 @@ export function createRenderer(mount, { dev = false, onFallback } = {}) {
     clear: () => active.clear(),
     getFps: () => active.getFps(),
     isDegraded: () => active.isDegraded(),
+    getInfo: () => active.getInfo?.() ?? null,
     dispose: () => active?.dispose(),
   };
 }

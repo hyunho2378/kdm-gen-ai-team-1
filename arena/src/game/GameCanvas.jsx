@@ -12,7 +12,7 @@ import { createLoop } from './loop.js';
 import { createRenderer } from './render/index.js';
 import { PRESET } from './pose.js';
 
-export default function GameCanvas({ engine, poseChannel, showMeter, onRendererReady, onFallback }) {
+export default function GameCanvas({ engine, poseChannel, perf, onRendererReady, onFallback }) {
   const mountRef = useRef(null);
   // 콜백을 의존성에 넣으면 부모가 리렌더될 때마다 렌더러가 통째로 재생성된다.
   // 폴백 직후 three가 다시 서면서 전환이 취소되는 버그를 실측으로 확인했다. ref로 고정한다.
@@ -26,7 +26,6 @@ export default function GameCanvas({ engine, poseChannel, showMeter, onRendererR
     if (!mount) return undefined;
 
     const renderer = createRenderer(mount, {
-      dev: showMeter,
       onFallback: (reason) => fallbackRef.current?.(reason),
     });
     readyRef.current?.(renderer);
@@ -47,7 +46,10 @@ export default function GameCanvas({ engine, poseChannel, showMeter, onRendererR
         }
 
         const fx = engine.drainFx();
+        // render 벽시계를 잰다. 헤드리스 fps는 무효라도 이 값의 전후 비교는 유효한 대리 지표다
+        const t0 = performance.now();
         renderer.render(engine.view, fx, realDtSec);
+        perf?.sample(realDtSec, performance.now() - t0);
       },
     });
 
@@ -62,7 +64,7 @@ export default function GameCanvas({ engine, poseChannel, showMeter, onRendererR
       renderer.dispose();
     };
     // 콜백은 ref로 고정했으므로 의존성에 넣지 않는다. 렌더러는 마운트당 한 번만 선다.
-  }, [engine, poseChannel, showMeter]);
+  }, [engine, poseChannel, perf]);
 
   return (
     <div

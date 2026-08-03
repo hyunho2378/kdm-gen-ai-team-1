@@ -2,13 +2,14 @@
 //
 // 규율. 게임 상태는 읽기만 한다(허용 필드 9개). 루프는 loop.js가 쥔다.
 // react-three-fiber를 쓰지 않는다. 색은 tokens에서만 온다.
-// V4a 범위는 씬 골격이다. 리본은 V4b, 빌보드는 V4c, 명중 연출은 V4d, 후처리는 V4b와 V4e에서 붙는다.
+// V4a 범위는 씬 골격, V4b는 리본과 블룸, V4c는 상대 빌보드다. 명중 연출은 V4d에서 붙는다.
 
 import * as THREE from 'three';
 import { colors, motion } from '../../tokens.js';
-import { OUTCOME, OWNER } from '../judge.js';
+import { AI_MODE, ATTACK_KIND, OUTCOME, OWNER } from '../judge.js';
 import { thrustEase } from './canvas2d/geometry.js';
 import { createComposer } from './three/post.js';
+import { POSE, createOpponent } from './three/opponent.js';
 import { createTrailRibbon } from './three/trail.js';
 import {
   CAMERA,
@@ -25,6 +26,10 @@ import {
 // 실기 60fps가 안 나오면 감축 사다리에서 가장 먼저 내릴 후보이기도 하다.
 const DPR_CAP = 2;
 const BUDGET = motion.budget;
+
+// 전진 포즈 진입과 이탈 문턱(초당 d 변화량). 히스테리시스가 없으면 포즈가 떤다.
+const ADVANCE_IN = 12;
+const ADVANCE_OUT = 6;
 
 /** 두 좌표를 섞는다. 프리셋 트윈의 최소 단위다. */
 function lerp3(out, a, b, t) {
@@ -52,6 +57,12 @@ export function createThreeRenderer() {
   let w = 0;
   let h = 0;
   let fps = 60;
+
+  // 상대 상태 추적. 전부 렌더 전용이고 판정으로 돌아가지 않는다.
+  let lastD = null;
+  let dDot = 0;
+  let advancing = false;
+  let aiSampling = false;
 
   // 연속 채널의 최신값. 판정에 쓰이지 않는다.
   let pose = { kind: 'preset', value: 'rest' };
@@ -107,6 +118,18 @@ export function createThreeRenderer() {
     }
   }
 
+  /**
+   * 상대 포즈 선택. 읽기 허용 필드만 본다.
+   * hitOwner가 ME면 내가 넣은 것이므로 맞은 쪽은 상대다(judge.js의 owner는 득점자다).
+   */
+  function pickPose(g) {
+    if (g.hitFlash > 0 && g.hitOwner === OWNER.ME) return POSE.HIT;
+    if ((g.aiLunge ?? 0) > 0.02) return POSE.LUNGE;
+    if (g.aiMode === AI_MODE.TELEGRAPH) return POSE.TELEGRAPH;
+    if (advancing) return POSE.ADVANCE;
+    return POSE.IDLE;
+  }
+
   return {
     id: 'three',
     label: '3D',
@@ -125,6 +148,9 @@ export function createThreeRenderer() {
         display: 'block',
       });
       renderer.setClearColor(new THREE.Color(colors.bg.base), 1);
+      // 기본값은 renderer.render마다 초기화라 컴포저를 거치면 마지막 패스 수치만 남는다.
+      // 프레임 머리에서 직접 비우고 프레임 전체를 합산해야 드로우콜이 대리 지표가 된다.
+      renderer.info.autoReset = false;
       mount.appendChild(canvas);
 
       // 컨텍스트 손실은 폴백 신호다. 삼켜서는 안 된다(PITFALLS 브라우저별 검증).
@@ -142,23 +168,14 @@ export function createThreeRenderer() {
       createEnvironment(renderer, scene);
       background = createBackground(scene);
       sword = createSword(camera);
-
-      // V4c에서 빌보드로 교체된다. 지금은 거리 매핑 확인용 자리표시자다.
-      opponent = new THREE.Mesh(
-        new THREE.BoxGeometry(0.5, 1.7, 0.12),
-        new THREE.MeshStandardMaterial({
-          color: new THREE.Color(colors.bg.raised),
-          emissive: new THREE.Color(colors.trail.ai),
-          emissiveIntensity: 0.25,
-          roughness: 0.7,
-        })
-      );
-      opponent.position.set(0, 0.85, -4);
-      scene.add(opponent);
+      opponent = createOpponent(scene);
 
       // 궤적 리본 2개. 소유 색은 v2 확정 매핑이다(내 검 red, AI blue).
       meTrail = createTrailRibbon({ core: colors.trail.self, glow: colors.trail.selfGlow });
       aiTrail = createTrailRibbon({ core: colors.trail.ai, glow: colors.trail.aiGlow });
+      // 빌보드(1)보다 뒤. 궤적이 상대 위로 지나간다
+      meTrail.mesh.renderOrder = 2;
+      aiTrail.mesh.renderOrder = 2;
       scene.add(meTrail.mesh, aiTrail.mesh);
 
       post = createComposer(renderer, scene, camera);
@@ -182,9 +199,27 @@ export function createThreeRenderer() {
     render(gameState, fx, dtRender) {
       if (!renderer) return;
       if (dtRender > 0) fps += (1 / dtRender - fps) * 0.08;
+      renderer.info.reset();
 
       // 상대 거리. d는 근접도라 값이 클수록 가깝다.
-      opponent.position.z = -distFromD(gameState.d);
+      opponent.setDistance(distFromD(gameState.d));
+
+      // 다가오는지 물러나는지. 커지는 d가 곧 다가오는 상대다
+      if (lastD !== null && dtRender > 0) {
+        dDot += ((gameState.d - lastD) / dtRender - dDot) * 0.25;
+        advancing = advancing ? dDot > ADVANCE_OUT : dDot > ADVANCE_IN;
+      }
+      lastD = gameState.d;
+
+      const real = gameState.aiKind === ATTACK_KIND.REAL;
+      opponent.setPose(pickPose(gameState));
+      // 명중 순간 틴트. hitFlash는 초당 1.6으로 줄어 0.192폭이 정확히 120ms다(요구 구간 상단).
+      // owner는 득점자라 ME면 맞은 쪽이 상대다. 그래서 상대 빌보드가 붉어진다.
+      const tintHit =
+        gameState.hitOwner === OWNER.ME
+          ? Math.min(1, Math.max(0, ((gameState.hitFlash ?? 0) - 0.808) / 0.192))
+          : 0;
+      opponent.update(dtRender, camera, { lunge: gameState.aiLunge ?? 0, tintHit, real });
 
       poseSword(gameState);
 
@@ -193,13 +228,17 @@ export function createThreeRenderer() {
       sword.tipMarker.getWorldPosition(tipWorld);
       meTrail.push(tipWorld);
 
-      // AI 검끝은 V4c 빌보드에서 온다. 지금은 상대 앞 오프셋 포인트가 자리를 지킨다.
-      aiTipWorld.set(
-        opponent.position.x - 0.18,
-        opponent.position.y + 0.25,
-        opponent.position.z + 0.35 + 0.5 * (gameState.aiLunge ?? 0)
-      );
-      aiTrail.push(aiTipWorld);
+      // AI 리본은 공격 구간에서만 샘플링한다. 대기 중에 계속 먹이면
+      // 움직이지 않는 검끝에 파란 얼룩이 상주한다. 멈추면 리본은 감쇠로 사라진다.
+      const aiActive = gameState.aiMode !== AI_MODE.IDLE || (gameState.aiLunge ?? 0) > 0.02;
+      if (aiActive) {
+        // 끊겼다 이어지면 옛 점과 새 점이 화면을 가로지르는 직선으로 이어진다. 끊긴 자리에서 새로 시작한다
+        if (!aiSampling) aiTrail.clear();
+        opponent.group.updateMatrixWorld();
+        opponent.tip.getWorldPosition(aiTipWorld);
+        aiTrail.push(aiTipWorld);
+      }
+      aiSampling = aiActive;
 
       meTrail.update(dtRender);
       aiTrail.update(dtRender);
@@ -224,8 +263,8 @@ export function createThreeRenderer() {
       if (next && (next.kind === 'preset' || next.kind === 'quaternion')) pose = next;
     },
 
-    setPoses() {
-      // V4c에서 빌보드 텍스처로 연결한다.
+    setPoses(images) {
+      opponent?.setPoses(images);
     },
     setBackgroundImage(image) {
       background?.setImage(image);
@@ -233,6 +272,10 @@ export function createThreeRenderer() {
     clear() {
       meTrail?.clear();
       aiTrail?.clear();
+      lastD = null;
+      dDot = 0;
+      advancing = false;
+      aiSampling = false;
     },
     segmentCount() {
       return (meTrail?.segmentCount() ?? 0) + (aiTrail?.segmentCount() ?? 0);
@@ -243,9 +286,23 @@ export function createThreeRenderer() {
     isDegraded() {
       return fps < BUDGET.minFps;
     },
+    /** 대리 지표. 헤드리스 fps가 무효라 미터가 이 숫자들을 대신 읽는다. */
+    getInfo() {
+      if (!renderer) return null;
+      const info = renderer.info;
+      return {
+        draws: info.render.calls,
+        triangles: info.render.triangles,
+        textures: info.memory.textures,
+        geometries: info.memory.geometries,
+        programs: info.programs?.length ?? 0,
+        segments: this.segmentCount(),
+      };
+    },
 
     dispose() {
       post?.dispose();
+      opponent?.dispose();
       meTrail?.dispose();
       aiTrail?.dispose();
       scene?.traverse((o) => {

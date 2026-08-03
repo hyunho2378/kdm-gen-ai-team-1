@@ -183,11 +183,11 @@ arena는 캔버스 0, HUD 10~50, 판정과 시간 팽창 비네트 90.
 ### 레이어 (안쪽에서 바깥으로)
 
 1. **배경**: 도장 이미지 평면 + FogExp2(bg.deep 톤). 이미지 도착 전에는 그라디언트 텍스처가 임시로 선다.
-2. **AI 상대**: 정면 선수 스틸 빌보드. 포즈 5종(대기, 전진, 텔레그래프, 런지, 피격)을 평면 2장 크로스페이드로 전환하고 항상 카메라를 향한다. 간합 d를 월드 z로 매핑해 다가오고 물러난다.
+2. **AI 상대**: 정면 선수 스틸 빌보드. 몸체는 bg.raised 채움, 외곽은 림. 림 밝기는 Bloom threshold 아래로 묶는다(블룸은 궤적 전유물). 포즈 5종(대기, 전진, 텔레그래프, 런지, 피격)을 평면 2장 크로스페이드로 전환하고 항상 카메라를 향한다. 간합 d를 월드 z로 매핑해 다가오고 물러난다.
 3. **내 검**: 화면 오른쪽 아래 그립의 1인칭 검. 검신은 steel 톤 금속 재질, 검끝에 red.light emissive 마커. 키보드는 프리셋 자세 트윈, 컨트롤러는 쿼터니언 직결.
-4. **궤적 리본**: ribbon-geometry. 내 검 red.light, 상대 blue.light, 명중 코어 화이트 고정. additive blending에 나이 감쇠.
-5. **후처리**: RenderPass → AfterimagePass → EffectPass(Bloom, ChromaticAberration, Vignette, HueSaturation) → ShockWave.
-6. **HUD**: DOM. 이 층만 MOTION 규율이 그대로 적용된다.
+4. **궤적 리본**: 자체 구현(사전 할당 버퍼 제자리 갱신). 내 검 red.light, 상대 blue.light, 명중 코어 화이트를 JUDGE 동안 고정. additive blending에 나이 감쇠.
+5. **후처리**: RenderPass → 잔상(SavePass + TextureEffect, damp 평시 0.70) → EffectPass(Bloom, ChromaticAberration, Vignette, HueSaturation) → ShockWave. `postprocessing`에 AfterimagePass가 없어 같은 식을 이 라이브러리 기본기로 세운다.
+6. **HUD**: DOM. 이 층만 MOTION 규율이 그대로 적용된다. **XR 글라스 팔각형 프레임**(SVG 한 장, 크롬 스트로크와 red.light 코너 액센트)이 뷰포트를 두르고, 모든 HUD 요소가 컷 크기 + 12px 인셋 하나를 공유한다. 중앙 시야는 비운다. 세부는 `ARENA_SCENE.md` 16절.
 
 ### 소유 색
 
