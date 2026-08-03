@@ -30,7 +30,7 @@ function expect(cond, message) {
   if (!cond) throw new Error(message);
 }
 
-/** 시나리오 6종. 사양의 검증 항목과 1:1이다. */
+/** 시나리오 8종. 사양의 검증 항목과 1:1이다. D3에서 런지 2종이 붙었다. */
 export function runJudgeSelftest() {
   const results = [];
 
@@ -125,7 +125,62 @@ export function runJudgeSelftest() {
     })
   );
 
+  results.push(
+    scenario('런지 유효 범위 확장', () => {
+      const s = createJudgeState({ d: 33 });
+      s.ai.mode = AI_MODE.RECOVER;
+      expect(!inValidRange(s.d), 'd 33은 보통 찌르기의 유효 범위 밖이어야 한다');
+      expect(inValidRange(s.d, true), 'd 33은 런지의 유효 범위 안이어야 한다');
+      const plain = resolveThrust(s, 5000);
+      expect(plain.reason === MISS_REASON.OUT_OF_RANGE, '보통 찌르기는 거리 밖');
+      const lunged = resolveThrust(s, 5000, { lunge: true });
+      expect(lunged.outcome === OUTCOME.HIT, '런지는 회복 중인 상대에게 닿는다');
+      // 가까운 쪽 상한은 넓히지 않는다
+      const near = createJudgeState({ d: 58 });
+      near.ai.mode = AI_MODE.RECOVER;
+      expect(resolveThrust(near, 5000, { lunge: true }).reason === MISS_REASON.OUT_OF_RANGE, '런지도 상한은 그대로');
+      return `${RULES.LUNGE_VALID_MIN}~${RULES.VALID_MAX} 대 ${RULES.VALID_MIN}~${RULES.VALID_MAX}`;
+    })
+  );
+
+  results.push(
+    scenario('런지 쿨다운', () => {
+      const s = createJudgeState({ d: 45 });
+      s.ai.mode = AI_MODE.RECOVER;
+      s.lastThrustAt = 1000;
+      s.thrustCooldownMs = RULES.LUNGE_COOLDOWN_MS;
+      const tooSoon = resolveThrust(s, 1000 + RULES.THRUST_COOLDOWN_MS);
+      expect(tooSoon.reason === MISS_REASON.COOLDOWN, '런지 뒤에는 보통 쿨다운으로 못 푼다');
+      const ok = resolveThrust(s, 1000 + RULES.LUNGE_COOLDOWN_MS);
+      expect(ok.outcome === OUTCOME.HIT, '런지 쿨다운 경과 후 정상 판정');
+      expect(RULES.LUNGE_COOLDOWN_MS > RULES.THRUST_COOLDOWN_MS, '런지 쿨다운이 더 길어야 한다');
+      return `${RULES.THRUST_COOLDOWN_MS}ms 대 ${RULES.LUNGE_COOLDOWN_MS}ms`;
+    })
+  );
+
   return results;
+}
+
+/**
+ * 기준 서명. 같은 시드와 같은 대본이 같은 경기를 내는지 보는 회귀 가드다.
+ *
+ * **D3에서 갱신했다.** AI 유파 다양화와 런지 추가는 의도적 게임플레이 변경이므로 서명이 바뀌는 것이 정상이다.
+ * 절차: 변경 전 그린 확인 → 변경 → 같은 시드 2회 동일 확인 → 새 서명 채택.
+ *
+ * 이전 기록은 앞 80자만 남겨 두었는데 **그 구간은 D3 전후가 똑같았다.**
+ * 대본의 앞부분은 AI가 아직 갈리기 전이라 변경이 뒤쪽에서만 드러나기 때문이다.
+ * 접두만 보는 가드는 회귀를 놓친다. 그래서 이제 길이와 해시와 꼬리를 함께 박는다.
+ */
+export const BASELINE = {
+  length: 244,
+  hash: '8c2f910',
+  tail: 'SCORE:6-2:53.633#6-2#ME',
+};
+
+function signatureHash(sig) {
+  let h = 0;
+  for (let i = 0; i < sig.length; i += 1) h = (h * 31 + sig.charCodeAt(i)) >>> 0;
+  return h.toString(16);
 }
 
 /**
@@ -156,7 +211,15 @@ export function runDeterminismCheck(seed = 20260802) {
 
   const a = play();
   const b = play();
-  return { pass: a === b, signatureLength: a.length, sample: a.slice(0, 80) };
+  const hash = signatureHash(a);
+  return {
+    pass: a === b,
+    signatureLength: a.length,
+    hash,
+    sample: a.slice(0, 80),
+    tail: a.slice(-BASELINE.tail.length),
+    matchesBaseline: a.length === BASELINE.length && hash === BASELINE.hash && a.endsWith(BASELINE.tail),
+  };
 }
 
 /** dev 콘솔 출력. App 마운트 시 한 번 부른다. */
@@ -170,6 +233,7 @@ export function reportSelftest() {
     console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.name}${r.detail ? ` — ${r.detail}` : ''}`);
   }
   console.log(`결정성  같은 시드 2회 서명 일치: ${det.pass}  (표본 ${det.sample})`);
+  console.log(`기준 서명  일치: ${det.matchesBaseline}  (길이 ${det.signatureLength}, 해시 ${det.hash}, 꼬리 ${det.tail})`);
   console.groupEnd();
 
   return { results, determinism: det };

@@ -107,7 +107,8 @@ export function createThreeRenderer() {
         t = e / 0.3;
       } else {
         a = SWORD_POSES.windup;
-        b = SWORD_POSES.thrust;
+        // 런지는 더 깊이 들어간다. meLungeDeep은 렌더 전용 표식이다
+        b = gameState.meLungeDeep ? SWORD_POSES.lungeDeep : SWORD_POSES.thrust;
         t = (e - 0.3) / 0.7;
       }
     }

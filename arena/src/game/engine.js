@@ -53,7 +53,8 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     phase: PHASE.IDLE,
     aiMode: AI_MODE.IDLE,
     aiKind: null,
-    meLunge: 0,      // 0~1 런지 진행
+    meLunge: 0,      // 0~1 찌르기 진행
+    meLungeDeep: false, // 이번 찌르기가 런지인가(더 깊은 뻗기 프리셋)
     aiLunge: 0,
     meGuard: false,
     hitFlash: 0,     // 0~1 명중 섬광 감쇠
@@ -183,7 +184,10 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
 
     // 명중 섬광 감쇠는 어느 phase에서나 돈다
     if (view.hitFlash > 0) view.hitFlash = Math.max(0, view.hitFlash - dtSec * 1.6);
-    if (view.meLunge > 0) view.meLunge = Math.max(0, view.meLunge - dtSec * 3.2);
+    if (view.meLunge > 0) {
+      view.meLunge = Math.max(0, view.meLunge - dtSec * 3.2);
+      if (view.meLunge === 0) view.meLungeDeep = false;
+    }
     if (view.aiLunge > 0) view.aiLunge = Math.max(0, view.aiLunge - dtSec * 3.2);
 
     if (!live) {
@@ -208,10 +212,14 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     // 이산 입력 처리
     for (const ev of input.drain()) {
       if (ev.kind !== INPUT.THRUST) continue;
-      const result = resolveThrust(state, clockMs);
+      // 전진을 홀드한 채 찌르면 런지다. 새 키를 만들지 않는다(ARENA_INPUT 이산 채널 유지).
+      const lunge = input.isHeld(INPUT.ADVANCE);
+      const result = resolveThrust(state, clockMs, { lunge });
       if (result.reason === MISS_REASON.COOLDOWN) continue; // 쿨다운은 판정 연출 없이 무시한다
       state.lastThrustAt = clockMs;
+      state.thrustCooldownMs = lunge ? RULES.LUNGE_COOLDOWN_MS : RULES.THRUST_COOLDOWN_MS;
       view.meLunge = 1;
+      view.meLungeDeep = lunge;
       applyResult(result);
       return;
     }
@@ -248,6 +256,7 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     winner = null;
     view.hitFlash = 0;
     view.meLunge = 0;
+    view.meLungeDeep = false;
     view.aiLunge = 0;
     view.dilation = 0;
     view.d = state.d;

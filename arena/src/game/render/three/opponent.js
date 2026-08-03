@@ -542,7 +542,9 @@ export function createOpponent(scene, { tipDistance } = {}) {
 
       // 림 색조. 피격 틴트가 예고 색조를 이긴다
       if (tintHit > 0) tmpColor.copy(baseColor).lerp(hitColor, tintHit);
-      else if (poseName === POSE.TELEGRAPH && real) tmpColor.copy(baseColor).lerp(realColor, 0.35);
+      // 유니폼이 밝아진 뒤로는 색 배수가 몸 전체에 걸린다. 0.35면 상대가 분홍으로 읽혀
+      // 액센트가 아니라 색깔 표시가 된다. 형태(칼 각도)가 1차 단서이므로 색조는 낮게 둔다
+      else if (poseName === POSE.TELEGRAPH && real) tmpColor.copy(baseColor).lerp(realColor, 0.22);
       else tmpColor.copy(baseColor);
       planes[0].material.color.copy(tmpColor);
       planes[1].material.color.copy(tmpColor);

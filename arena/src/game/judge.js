@@ -18,6 +18,13 @@ export const RULES = {
   /** 키보드 한 스텝이 움직이는 d 양(초당). 홀드 시 연속 적용된다. */
   STEP_PER_SEC: 26,
   THRUST_COOLDOWN_MS: 350,
+  /**
+   * 런지. 전진을 홀드한 채 찌르면 한 걸음 더 뻗는다.
+   * 유효 범위가 먼 쪽으로 조금 넓어지는 대신 쿨다운이 길다. 거리를 사는 대가로 템포를 낸다.
+   * 가까운 쪽 상한은 넓히지 않는다. 붙어 있을 때 런지가 더 유리할 이유가 없다.
+   */
+  LUNGE_VALID_MIN: 32,
+  LUNGE_COOLDOWN_MS: 500,
   RIPOSTE_WINDOW_MS: 600,
   /** AI 공격 예고 길이. 이 구간에 가드해야 패리가 선다. */
   TELEGRAPH_MS: 340,
@@ -59,8 +66,21 @@ export function createJudgeState({ d = RULES.D_START } = {}) {
     d,
     score: { me: 0, ai: 0 },
     lastThrustAt: -Infinity,
+    /** 직전 찌르기가 건 쿨다운. 런지면 더 길다 */
+    thrustCooldownMs: RULES.THRUST_COOLDOWN_MS,
     guarding: false,
-    ai: { mode: AI_MODE.IDLE, kind: null, until: 0, nextAttackAt: 0 },
+    ai: {
+      mode: AI_MODE.IDLE,
+      kind: null,
+      until: 0,
+      nextAttackAt: 0,
+      // 유파 다양화용. 전부 시드 난수로만 움직인다(D3)
+      attacks: 0,      // 지금까지 낸 공격 수. 템포 구간 전환의 기준
+      band: 0,         // 현재 템포 구간 인덱스
+      stepAt: 0,       // 다음 거리 흔들기 판정 시각
+      stepUntil: 0,    // 흔들기 진행 종료 시각
+      pressured: false, // 이번 리포스트 윈도우에 이미 반응했는가
+    },
     riposteUntil: 0,
     /** 최근 교환 성공 여부. true가 성공(명중, 패리, 리포스트) */
     form: [],
@@ -72,8 +92,9 @@ export function clampD(d) {
   return Math.min(RULES.D_MAX, Math.max(RULES.D_MIN, d));
 }
 
-export function inValidRange(d) {
-  return d >= RULES.VALID_MIN && d <= RULES.VALID_MAX;
+export function inValidRange(d, lunge = false) {
+  const min = lunge ? RULES.LUNGE_VALID_MIN : RULES.VALID_MIN;
+  return d >= min && d <= RULES.VALID_MAX;
 }
 
 /**
@@ -81,15 +102,17 @@ export function inValidRange(d) {
  * 우선순위: 쿨다운 > 리포스트 윈도우 > 거리 > 상대 공격 상태.
  * 리포스트 윈도우 안에서는 거리 판정을 면제한다(패리 직후 붙어 있는 상태를 인정).
  */
-export function resolveThrust(state, nowMs) {
-  if (nowMs - state.lastThrustAt < RULES.THRUST_COOLDOWN_MS) {
-    return { outcome: OUTCOME.MISS, owner: OWNER.ME, points: 0, reason: MISS_REASON.COOLDOWN, counted: false };
+export function resolveThrust(state, nowMs, { lunge = false } = {}) {
+  // 쿨다운은 **직전 찌르기가 건 길이**로 잰다. 런지를 냈으면 다음 한 발이 늦다.
+  if (nowMs - state.lastThrustAt < state.thrustCooldownMs) {
+    return { outcome: OUTCOME.MISS, owner: OWNER.ME, points: 0, reason: MISS_REASON.COOLDOWN, counted: false, lunge };
   }
   if (nowMs < state.riposteUntil) {
-    return { outcome: OUTCOME.RIPOSTE, owner: OWNER.ME, points: RULES.RIPOSTE_POINTS, reason: null, counted: true };
+    return { outcome: OUTCOME.RIPOSTE, owner: OWNER.ME, points: RULES.RIPOSTE_POINTS, reason: null, counted: true, lunge };
   }
-  if (!inValidRange(state.d)) {
-    return { outcome: OUTCOME.MISS, owner: OWNER.ME, points: 0, reason: MISS_REASON.OUT_OF_RANGE, counted: true };
+  // 런지만 진입 조건이 다르다. 이 아래 4분기 판정은 손대지 않는다.
+  if (!inValidRange(state.d, lunge)) {
+    return { outcome: OUTCOME.MISS, owner: OWNER.ME, points: 0, reason: MISS_REASON.OUT_OF_RANGE, counted: true, lunge };
   }
 
   // 상대가 열리는 순간에만 명중한다.
@@ -100,17 +123,17 @@ export function resolveThrust(state, nowMs) {
   switch (state.ai.mode) {
     case AI_MODE.RECOVER:
       // 공격을 내지른 직후는 무방비다. 준비 동작에 찔러 넣는 정석 득점 경로.
-      return { outcome: OUTCOME.HIT, owner: OWNER.ME, points: RULES.HIT_POINTS, reason: null, counted: true };
+      return { outcome: OUTCOME.HIT, owner: OWNER.ME, points: RULES.HIT_POINTS, reason: null, counted: true, lunge };
     case AI_MODE.TELEGRAPH:
       // 페인트는 검이 궤도를 벗어난 상태라 읽어내면 득점이다.
       if (state.ai.kind === ATTACK_KIND.FEINT) {
-        return { outcome: OUTCOME.HIT, owner: OWNER.ME, points: RULES.HIT_POINTS, reason: null, counted: true };
+        return { outcome: OUTCOME.HIT, owner: OWNER.ME, points: RULES.HIT_POINTS, reason: null, counted: true, lunge };
       }
       // 진짜 공격에 맞불을 놓으면 얻어맞는다. 가드로 받아야 한다.
-      return { outcome: OUTCOME.MISS, owner: OWNER.ME, points: 0, reason: MISS_REASON.INTO_ATTACK, counted: true };
+      return { outcome: OUTCOME.MISS, owner: OWNER.ME, points: 0, reason: MISS_REASON.INTO_ATTACK, counted: true, lunge };
     default:
       // 대치 중에는 상대 검이 선을 잡고 있어 그냥 들어가지 않는다.
-      return { outcome: OUTCOME.MISS, owner: OWNER.ME, points: 0, reason: MISS_REASON.BLOCKED, counted: true };
+      return { outcome: OUTCOME.MISS, owner: OWNER.ME, points: 0, reason: MISS_REASON.BLOCKED, counted: true, lunge };
   }
 }
 

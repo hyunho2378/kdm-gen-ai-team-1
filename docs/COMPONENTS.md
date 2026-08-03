@@ -70,10 +70,15 @@
   전환 조건 3종: WebGL 컨텍스트 생성 실패, 런타임 `webglcontextlost`, URL `?renderer=2d`.
   전환 시 StatusChip에 "호환 렌더"를 띄운다. 레이어 구성은 DESIGN 9절과 ARENA_SCENE.md를 따른다.
   **렌더러는 게임 상태를 읽기만 한다. 쓰기 금지.** 읽어도 되는 필드는 ARENA_SCENE.md의 표에 한정한다.
-- **machine** `game/machine.js` / 상태 머신(컴포넌트 아님) — **렌더러 승격 중 수정 금지**
+- **machine** `game/machine.js` / 상태 머신(컴포넌트 아님) — **렌더 작업 중 수정 금지**
   phase 8종 소유. IDLE→PAIRING→CALIBRATION→EN_GARDE→EXCHANGE→JUDGE→SCORE→MATCH_END.
-- **judge** `game/judge.js` / 판정(결정적, LLM 없음) — **렌더러 승격 중 수정 금지**
+- **judge** `game/judge.js` / 판정(결정적, LLM 없음) — **렌더 작업 중 수정 금지.**
+  게임플레이 변경은 기준 서명 갱신 절차를 밟는 단계에서만 한다(D3이 그 예다).
   거리 유효 범위, THRUST 임계, FEINT와 REAL, 리포스트 윈도우 600ms, 쿨다운 350ms.
+  **런지(D3)**: 전진 홀드 + 찌르기. 새 키를 만들지 않고 이산 채널을 그대로 쓴다.
+  유효 범위가 먼 쪽으로 넓어지고(35~55 → **32~55**) 쿨다운이 길다(350 → **500ms**).
+  가까운 쪽 상한은 넓히지 않는다. 붙어 있을 때 런지가 더 유리할 이유가 없다.
+  **진입 조건만 다르고 아래 4분기 판정은 손대지 않는다.**
   **명중 4분기**: 유효 범위 안 찌르기는 상대가 열린 순간에만 명중한다. 무조건 명중으로 두면
   연타로 7초에 경기가 끝나고 FEINT 판독과 가드와 리포스트와 시간 팽창이 전부 죽는다(실측).
   | 상대 상태 | 결과 |
@@ -86,6 +91,16 @@
   직후 준비 동작에 찔러 넣기(1점). 헛침 사유는 PATTERNS 6절대로 6자 이내.
   **패리는 phase를 멈추지 않는다.** JUDGE 800ms와 SCORE 420ms를 거치면 리포스트 윈도우가
   열리자마자 만료된다. 판정 문구 표시(showJudge)를 phase와 분리해 둔다.
+- **opponents** `game/opponents.js` / AI 유파 파라미터 — 게임플레이 파일이라 렌더 작업 중 수정 금지
+  두 유파가 **다르게 싸운다**는 것이 체감되어야 한다(D3). 난수는 전부 주입된 rng를 거친다.
+  | 파라미터 | 뜻 |
+  |---|---|
+  | `tempoBands` / `tempoShiftEvery` | 공격 간격 분포를 몇 합마다 갈아탄다. 같은 리듬이 이어지면 박자를 세고 만다 |
+  | `comboChance` / `comboGapMs` | 회복 직후 곧바로 두 번째 공격을 낼 확률과 그 짧은 간격 |
+  | `stepFeintChance` | 대치 중 앞으로 훅 들어왔다 빠지는 거리 흔들기 확률 |
+  | `ripostePressure` | 패리당해 리포스트 창이 열렸을 때 즉시 되받아치려 들 확률 |
+  이탈리아 세이버는 콤보와 빠른 템포, 프랑스 에페는 거리 흔들기와 되받아치기다.
+  실측 평균 공격 간격 **이탈리아 1778~2077ms 대 프랑스 3248~3748ms**.
 - **HUD** `components/hud/HUD.jsx` / DOM 오버레이 루트
   zIndex.sticky~header. 하위: DistanceGauge, ScoreBoard, JudgeText, PhaseBanner, StatusChip 3개.
 - **DistanceGauge** `components/hud/DistanceGauge.jsx`
