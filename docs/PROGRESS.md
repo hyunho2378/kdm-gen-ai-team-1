@@ -521,9 +521,43 @@
   판정은 거리와 타이밍의 **결정적 근사**, 부위는 **표시 전용**(실룰에도 부위 점수 차등이 없다),
   우선권은 **단순화 근사**(완전한 우선권 심판은 주관 판정이다)
 
+- controller C2 센서 파이프라인과 5phase 화면 (코드 완료, 실기 검증 대기)
+  - **범위는 폰 단독 센서 동작까지다.** 소켓 연동은 C3이고 `pipeline.js`의 action/pose 콜백이 접점이다
+  - `sensors/motion.js` 이산 채널, `sensors/orientation.js` 연속 채널(ahrs Madgwick),
+    `sensors/permission.js`, `sensors/wakelock.js`, `pipeline.js` 오케스트레이터
+  - **전방 축을 하드코딩하지 않았다.** 폰을 검처럼 쥘 때 전방이 +y인지 -z인지는 파지법과 기기마다 다르다.
+    대신 **중력 기준 수평 성분이 지배적인가**로만 판정한다. 중력은 캘리브레이션에서 재고 느린 EMA로 따라간다.
+    걷기는 수직이 지배적이라 여기서 잘린다
+  - THRUST 네 관문: 크기(임계 18) / 수평 지배(수직의 1.25배) / 최소 지속(40ms) / 쿨다운(350ms).
+    하나라도 빼면 걷기와 고쳐잡기가 샌다. 임계는 캘리브레이션에서 관측 노이즈의 2.4배로 개인 보정
+  - **deg → rad 변환과 dt 실측 둘 다 코드에 있다.** ahrs Madgwick은 rad/s를 받는데
+    DeviceMotion rotationRate는 deg/s다. 샘플 주기도 상수 대신 이벤트 간 실측값을
+    `update`의 `deltaTimeSec` 인자로 넘긴다
+  - 중력 분리 3단: `acceleration` 우선 → 없으면 `includingGravity` 하이패스 →
+    둘 다 없으면 탭 버튼 모드. power 정규화는 [임계, 임계x2.5] → 0~1
+  - **iOS 권한은 버튼 핸들러 첫 줄에서 부른다.** 앞에 await를 하나라도 두면 제스처 컨텍스트를 잃는다.
+    `requestMotionPermission()`이 await 없이 Promise를 그대로 돌려주는 이유다.
+    안드로이드는 `requestPermission` 부재를 존재 검사로 분기해 바로 통과
+  - 연속 채널 30Hz 스로틀, 이산은 스로틀 없이 즉시. Wake Lock은 visibilitychange 재획득, 실패 무시
+  - 화면 5종(JOIN / PERMISSION / CALIBRATION / PLAY / END) + 탭 버튼 모드 + 가로 안내 + HapticFlash.
+    코드 입력은 자체 키패드다(네이티브 UI 금지). 혼동 문자 0 O 1 I를 알파벳에서 뺐다
+  - `?debug=1` 디버그 뷰: 수평/수직 그래프 + 임계선, THRUST 로그(power), 가드, 자세 오일러, 실측 주기
+  - 데스크톱 검증 9항목 전부 OK. 코드 자동 주입, 4자리 미만 차단(aria-disabled),
+    5 phase 전환, 센서 미수신 시 탭 모드 폴백, 탭 찌르기 로그, 가로 안내, 디버그 패널, 에러 0(favicon 404 제외)
+  - grep: localStorage / 100vh / HEX / 이모지 / 네이티브 select / TS **전부 0건**
+    (히트 3건은 전부 규칙을 적은 주석이다). 4앱 빌드 성공
+  - CREDITS에 ahrs 기록. **동봉 LICENSE는 Apache-2.0인데 package.json 필드가 APSL-2.0으로 오기돼 있다.**
+    동봉 파일이 우선하고 LIBRARIES 판정표와 일치한다
+
 ## 진행중
-- **P-C 룰 심화 R0~R5 전체 완료(확인 대기). 트랙 해제 가능.**
-  - 다음은 **controller C2**다. 선행 조건 둘: git remote 연결, Vercel controller 프로젝트 연결
+- **controller C2 (코드 완료, 실기 검증 대기). 트랙 선점.**
+  데스크톱 검증까지 끝났고 **남은 것은 실기 폰 측정 하나**다. Vercel 연결은 사용자가 맡는다
+  - 실기 절차: 안드로이드로 프리뷰 URL + `?debug=1` → 캘리브레이션 →
+    찌르기 20회(오탐/미탐), 걷기 30초(오탐 0), 가드 10회, 스와이프 → debug 수치 보고
+  - 임계 조정이 필요하면 debug 화면의 수평/수직/임계 수치를 근거로 보고
+- **P-C 룰 심화 R0~R5 전체 완료(확인 대기).**
+  - controller C2 코드 완료. 다음은 **C3 소켓 연동**이다
+    (쿼터니언 → arena `setSwordPose` 직결, arena의 키보드 임시 착탄 변주 `AIM_JITTER` 제거)
   - 잔여: V4e 시간 팽창 시각 세트(R5 웹캠 트리거와 연동 확인 필요), 생성 이미지 setPoses 교체 단계마다 커밋을 남기고 승인 대기 없이 이어간다
   - **R3은 서명이 바뀌는 유일한 단계다.** 갱신 절차(변경 전 그린 → 변경 → 같은 시드 2회 동일
     → 새 서명 채택)를 밟고 selftest BASELINE과 이 문서를 함께 고친다. R4 R5는 새 서명 유지가 조건

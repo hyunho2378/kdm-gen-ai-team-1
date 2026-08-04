@@ -65,3 +65,13 @@ brand 작업에서 확정되면 그때 추가한다.
   `arena/src/game/faceTracker.js`가 jsdelivr에서 `vision_bundle.mjs`와 wasm을 받는다.
 - FaceLandmarker 모델 `face_landmarker.task`(float16/1)는 Google 배포본을 그대로 참조한다.
   로드 실패 시 게임은 성공률 근사 폴백으로 계속 돈다.
+
+## ahrs (controller C2)
+
+- `ahrs` 1.3.3 (psiphi75/ahrs). **동봉된 LICENSE 파일은 Apache License 2.0이다.**
+  `controller/src/sensors/orientation.js`에서 Madgwick 필터로 자세를 융합한다.
+- **메타데이터 불일치 기록.** npm 패키지의 `package.json` `license` 필드는 `APSL-2.0`으로 적혀 있는데
+  실제 동봉 LICENSE 파일은 Apache-2.0이다. 업스트림 표기 오류로 보이고
+  **동봉 LICENSE 파일이 우선한다.** LIBRARIES.md 판정표의 Apache-2.0 표기와 일치한다.
+- 참고만 하고 코드를 복사하지 않은 것: PiyuSX/GameProtoType(구조 참고),
+  ZiCog/madgwick.js와 EmmaPoliakova/WebRTCSmartphoneController(무라이선스라 개념만).

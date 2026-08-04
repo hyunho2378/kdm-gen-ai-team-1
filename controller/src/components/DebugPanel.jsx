@@ -1,0 +1,136 @@
+// 책임: 실기 튜닝의 눈 (C2-3). ?debug=1일 때만 뜬다.
+//
+// 실기에서 임계를 정하려면 숫자가 보여야 한다. 가속 크기 그래프, THRUST 로그(power 포함),
+// 가드 상태, 자세 오일러, 현재 임계, 실측 이벤트 주기.
+// 상시 노출 요소라 애니메이션하지 않고 갱신은 rAF 하나로 묶는다.
+
+import { useEffect, useRef, useState } from 'react';
+import { colors, radius, typography } from '../tokens.js';
+
+const W = 320;
+const H = 90;
+const KEEP = W;
+
+/** 프로덕션 번들에서도 파라미터가 있으면 뜬다. dev 빌드는 파라미터 없이도 뜬다. */
+export function debugEnabled(isDev) {
+  if (typeof window === 'undefined') return false;
+  return isDev || new URLSearchParams(window.location.search).get('debug') === '1';
+}
+
+/** 쿼터니언 → 오일러(도). 숫자로 보는 편이 작은 화면에서 읽기 쉽다. */
+function euler([x, y, z, w]) {
+  const sinp = 2 * (w * y - z * x);
+  const pitch = Math.abs(sinp) >= 1 ? Math.sign(sinp) * 90 : (Math.asin(sinp) * 180) / Math.PI;
+  const roll = (Math.atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y)) * 180) / Math.PI;
+  const yaw = (Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z)) * 180) / Math.PI;
+  return { roll, pitch, yaw };
+}
+
+export default function DebugPanel({ pipeline, log }) {
+  const canvasRef = useRef(null);
+  const histRef = useRef([]);
+  const [info, setInfo] = useState({ horiz: 0, vert: 0, threshold: 0, hz: 0, guarding: false, support: '-', pose: [0, 0, 0, 1] });
+
+  // 샘플 수집은 파이프라인 콜백으로, 그리기는 rAF로 분리한다
+  useEffect(() => {
+    pipeline.on('sample', (s) => {
+      const h = histRef.current;
+      h.push(s);
+      if (h.length > KEEP) h.shift();
+    });
+    return () => pipeline.on('sample', null);
+  }, [pipeline]);
+
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const c = canvasRef.current;
+      const h = histRef.current;
+      const last = h[h.length - 1];
+      if (c) {
+        const g = c.getContext('2d');
+        g.clearRect(0, 0, W, H);
+        const thr = last?.threshold ?? 18;
+        const top = Math.max(thr * 2.6, 30);
+        // 임계선
+        g.strokeStyle = colors.red.light;
+        g.globalAlpha = 0.7;
+        g.beginPath();
+        const ty = H - (thr / top) * H;
+        g.moveTo(0, ty);
+        g.lineTo(W, ty);
+        g.stroke();
+        g.globalAlpha = 1;
+        // 수평 성분(판정에 쓰는 값)과 수직 성분을 함께 그린다
+        for (const [key, color] of [['vert', colors.steel.shadow], ['horiz', colors.steel.hi]]) {
+          g.strokeStyle = color;
+          g.beginPath();
+          h.forEach((s, i) => {
+            const y = H - Math.min(1, s[key] / top) * H;
+            if (i === 0) g.moveTo(i, y);
+            else g.lineTo(i, y);
+          });
+          g.stroke();
+        }
+      }
+      if (last) {
+        setInfo({
+          horiz: last.horiz,
+          vert: last.vert,
+          threshold: last.threshold,
+          hz: pipeline.getHz(),
+          guarding: last.guarding,
+          support: last.support,
+          pose: pipeline.getPose(),
+        });
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [pipeline]);
+
+  const e = euler(info.pose);
+  const row = (k, v) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+      <span style={{ color: colors.text.dim }}>{k}</span>
+      <span style={{ color: colors.text.primary, fontVariantNumeric: 'tabular-nums' }}>{v}</span>
+    </div>
+  );
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        left: 8,
+        right: 8,
+        bottom: 8,
+        zIndex: 80,
+        padding: 10,
+        borderRadius: radius.md,
+        background: colors.bg.overlay,
+        border: `1px solid ${colors.line.default}`,
+        fontFamily: 'ui-monospace, monospace',
+        fontSize: typography.caption.size,
+        pointerEvents: 'none',
+      }}
+    >
+      <canvas ref={canvasRef} width={W} height={H} style={{ width: '100%', height: H, display: 'block' }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px', marginTop: 8 }}>
+        {row('수평', info.horiz.toFixed(1))}
+        {row('수직', info.vert.toFixed(1))}
+        {row('임계', info.threshold.toFixed(1))}
+        {row('주기', `${info.hz.toFixed(0)}Hz`)}
+        {row('가드', info.guarding ? '켜짐' : '꺼짐')}
+        {row('센서', info.support)}
+        {row('roll', `${e.roll.toFixed(0)}도`)}
+        {row('pitch', `${e.pitch.toFixed(0)}도`)}
+      </div>
+      <div style={{ marginTop: 6, color: colors.text.secondary, maxHeight: 62, overflow: 'hidden' }}>
+        {log.slice(0, 4).map((l) => (
+          <div key={l.id}>{l.text}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
