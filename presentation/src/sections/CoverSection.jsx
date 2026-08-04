@@ -180,8 +180,9 @@ export default function CoverSection({ data }) {
       id="cover"
       style={{
         position: 'relative',
-        // 200vh 스크롤 동안 안쪽 sticky 레이어가 고정된 채 프레임이 넘어간다. reduced는 핀 없이 한 화면.
-        height: reduced ? undefined : '200vh',
+        // 200dvh 스크롤 동안 안쪽 sticky 레이어가 고정된 채 프레임이 넘어간다. reduced는 핀 없이 한 화면.
+        // dvh로 두어 모바일 주소창 변화에서 sticky(100dvh)와 스크롤 길이가 어긋나지 않게 한다.
+        height: reduced ? undefined : '200dvh',
         minHeight: '100dvh',
       }}
     >

@@ -18,7 +18,11 @@ export default function OutputsSection() {
   const flipRef = useRef(null); // 로드된 Flip 플러그인
   const closeRef = useRef(null);
   const [open, setOpen] = useState(null);
-  const reducedTransparency = useMediaQuery('(prefers-reduced-transparency: reduce)');
+  // 유리막을 불투명으로 돌리는 조건: 투명도 감소 요청 또는 고대비 요청(둘 다 반투명이 해롭다).
+  // 훅은 무조건 각각 호출하고 값만 OR한다(조건부 호출 금지).
+  const prefersReducedTransparency = useMediaQuery('(prefers-reduced-transparency: reduce)');
+  const prefersHighContrast = useMediaQuery('(prefers-contrast: more)');
+  const reducedTransparency = prefersReducedTransparency || prefersHighContrast;
 
   // Flip은 클릭 시점에 동기적으로 필요하므로 마운트에서 미리 로드해 둔다(무료 플러그인).
   useEffect(() => {

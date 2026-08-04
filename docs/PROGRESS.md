@@ -580,7 +580,18 @@
     - 클립패스 리빌: 신규 `ClipReveal`. inset(0 100% 0 0)→inset(0) 와이프를 ScrollTrigger scrub로. insight 미디어 **한 곳만 절제 적용**(clipReveal prop). reduced-motion 완전 노출. gl-transitions는 LICENSE 확인 불가라 미도입(clip-path로 충분)
     - 검증(DOM): 카드 클릭→dialog(aria-modal) 열림+scrim(zIndex 90)+닫기버튼 포커스, ESC 닫힘, 바깥클릭 닫힘, position fixed 안착, insight clip-path 적용. 4앱 빌드 성공. Flip 24KB 지연 청크
     - 참고: 헤드리스 winH=0 붕괴 시 Flip tween(rAF)이 못 돌아 morph transform 잔여가 관찰됨(실브라우저는 사용자가 보는 카드를 클릭→작은 delta로 부드럽게 완료·clearProps). 육안 확인 권장
-  - 다음: P7 감사와 마감
+  - **P7 완료. 감사와 마감.**
+    - grep 감사(presentation/src 전수): HEX 하드코딩 0, 이모지 0(주석의 → 화살표는 이모지 아님), 바레 100vh 0(cover는 200dvh로 다듬음), ease-in 0, GSAP `.in` 이즈 0, hover scale 0(주석만), lorem 0, 무라이선스 3종(olivierlarose/cortiz2894/kalebkloppe/mouse-effects/scroll-image-sequence) 코드 흔적 0
+    - reduced-motion 전 분기 확인(코드): StageShader 미로드, cover 스크럽 없이 대표 프레임 정지, OutputsSection Flip skip+페이드만, ClipReveal 완전 노출, Reveal fade, Magnetic off. 파티클류 없음
+    - prefers-reduced-transparency + **prefers-contrast: more** → 유리 카드/상세/스크림 불투명(bg.raised) 폴백(OutputsSection에 prefers-contrast 추가). 훅은 무조건 호출 후 값 OR(조건부 호출 금지)
+    - magnetic CTA(demo): 이미 정석 이관됨. try/catch+동적 import 폴백(실패 시 평범 버튼), reduced off, 한 곳만. CREDITS 기재
+    - cover 200vh→**200dvh**(모바일 주소창에서 sticky 100dvh와 스크롤 길이 일관)
+    - CREDITS 최종 대조: GSAP 행에 Flip 추가, snoise(P5) 기재됨. 빌드타임 도구(Pillow, scroll-scrub-starter)는 앱 반입 0이라 미기재 유지. 미도입 기재 0
+    - 모바일 프레임 축소: 임시 72장(680KB)은 이미 경량이라 스킵 미적용. 실물 240장 도착 시 SCRUB_ASSET_SPEC의 2프레임 스킵 적용(문서화됨)
+    - LCP 보호: StageShader는 requestIdleCallback 이후 로드, 히어로 frame0 디코드 게이트로 빈 canvas 방지. 무거운 에셋이 초기 페인트를 막지 않음
+    - 4앱 빌드 성공. 320·desktop·3840 가로 오버플로 0(안정 뷰포트 실측, P3/P4)
+    - **남은 사람 단계: Vercel 프리뷰 배포 실 URL 육안 검증, Lighthouse LCP/CLS/INP 실측 전후 비교(헤드리스 pane 불안정으로 자동 측정 불가), 실브라우저에서 P3 스크럽·P6 Flip 모핑 육안 확인.** 배포는 외부 공개 액션이라 권한 확인 후 사람이 수행
+  - **presentation 탈PPT 개편 P0~P7 전체 완료.** 실물 펜싱 프레임 도착 시 `presentation/public/frames/hero/` 폴더 덮어쓰기 + manifest.count만 바꾸면 반영(코드 수정 0)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록
