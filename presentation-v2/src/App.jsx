@@ -32,7 +32,7 @@ const SECTIONS = SECTION_LABELS;
 // **인덱스를 어디에도 쓰지 않는다.** 등록도 조회도 전부 id로 한다.
 // 예전에는 인덱스로 조회했는데 앞에 섹션을 끼울 때마다 위임이 엉뚱한 섹션에 붙었다.
 // 이제 표지 뒤에 두 장을 더 넣어도 아래 두 줄과 각 섹션 코드가 그대로 산다.
-const DELEGATE_IDS = ['why', 'duelist'];
+const DELEGATE_IDS = ['why', 'keyword', 'duelist'];
 
 // easeInOutCubic. 1초 섹션 이동에 붙는다.
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -163,7 +163,12 @@ export default function App() {
             ) : s.id === 'target' ? (
               <S3Target active={current === i} />
             ) : s.id === 'keyword' ? (
-              <S4Keyword active={current === i} />
+              // 위임 섹션이지만 진입 연출 트리거로 active도 함께 받는다.
+              <S4Keyword
+                active={current === i}
+                registerHandler={reg[s.id].handler}
+                registerEnter={reg[s.id].enter}
+              />
             ) : s.id === 'naming' ? (
               <S5Naming active={current === i} />
             ) : s.id === 'color' ? (
