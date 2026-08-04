@@ -104,6 +104,8 @@ export function createRenderer(canvas) {
 
       // 2) 선수. 오프스크린에 그려 잔상을 누적한 뒤 본 캔버스에 얹는다
       lctx.globalCompositeOperation = 'destination-out';
+      // **이 rgb는 색이 아니라 지우개다.** destination-out에서는 알파만 쓰이고 rgb는 버려진다.
+      // 토큰으로 바꾸면 색으로 읽혀 오해를 만든다. 순검정 금지 규칙의 대상이 아니다
       lctx.fillStyle = `rgba(0, 0, 0, ${AFTERIMAGE_ALPHA})`;
       lctx.fillRect(0, 0, w, h);
       lctx.globalCompositeOperation = 'source-over';

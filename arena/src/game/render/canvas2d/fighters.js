@@ -2,7 +2,7 @@
 // 포즈 5종(대기, 전진, 런지, 가드, 피격) x 2인. 이미지 도착 시 setPoses로 교체한다.
 // 잔상은 오프스크린 누적(renderer/index.js)이 담당한다. 여기서는 현재 프레임만 그린다.
 
-import { colors, motion } from '../../../tokens.js';
+import { colors, motion, withAlpha } from '../../../tokens.js';
 import { swordTip, swordHilt } from './geometry.js';
 
 export const POSE = { IDLE: 'IDLE', ADVANCE: 'ADVANCE', LUNGE: 'LUNGE', GUARD: 'GUARD', HIT: 'HIT' };
@@ -64,14 +64,14 @@ export function createFighters() {
     }
 
     // 실루엣 본체. 배경보다 밝은 무채색으로 두고 림 라이트로 크롬 느낌을 준다.
-    ctx.fillStyle = 'rgba(21, 21, 26, 0.96)';
+    ctx.fillStyle = withAlpha(colors.bg.raised, 0.96);
     ctx.strokeStyle = colors.steel.edge;
     bodyPath(ctx, fighter, scale, lean);
     ctx.fill();
     ctx.lineWidth = 2 * scale;
     ctx.stroke();
 
-    ctx.strokeStyle = 'rgba(21, 21, 26, 0.96)';
+    ctx.strokeStyle = withAlpha(colors.bg.raised, 0.96);
     legs(ctx, fighter, scale, spread);
     ctx.strokeStyle = colors.steel.edge;
     ctx.lineWidth = 1.5 * scale;

@@ -14,6 +14,16 @@ const WHITE = '#FDFDFD';     // 전경. RGB 253,253,253
 const RED = '#E60D15';       // Branding Red. RGB 230,13,21
 const RED_DEEP = '#80070C';  // Red Deep. 브랜드 그라디언트의 깊은 쪽 스톱
 
+// VORTEX가 값을 정하지 않은 층. base 기준 상대 밝기 관계만 유지해 재산출했다
+const DEEP = '#0A0A0A';      // base보다 어둡되 순검정 아님
+const RAISED = '#181818';    // base보다 한 단 밝다
+
+// arena 고유. VORTEX에 블루 정의가 없어 상대 식별색만 남는다
+const BLUE = '#35C8FF';
+// 크롬 재질 스톱. arena 정체성이라 값을 유지한다
+const STEEL_MID = '#D8E2F0';
+const STEEL_SHADOW = '#6E7B92';
+
 /**
  * HEX에서 rgba 문자열을 만든다. **알파 파생값을 손으로 적지 않기 위한 유일한 통로다.**
  * 브랜드 색이 또 바뀔 때 rgba를 따로 고쳐야 하는 자리를 남기지 않는다.
@@ -28,9 +38,9 @@ export function withAlpha(hex, a) {
 export const colors = {
   bg: {
     base: BLACK,          // 지각상 블랙. 순수 #000 금지
-    deep: '#0A0A0A',      // 그라디언트 하단, 비네트. base보다 어둡되 순검정 아님
-    raised: '#181818',    // 카드, 패널, HUD 판넬. base보다 한 단 밝다
-    overlay: withAlpha('#0A0A0A', 0.85),
+    deep: DEEP,           // 그라디언트 하단, 비네트
+    raised: RAISED,       // 카드, 패널, HUD 판넬
+    overlay: withAlpha(DEEP, 0.85),
   },
   red: {
     light: RED,           // 빛의 레드. 내 궤적, 다크 위 텍스트, 글로우 코어. bg.base 위 4.0:1(대형과 UI 전용)
@@ -40,24 +50,24 @@ export const colors = {
     glow: withAlpha(RED, 0.45),
   },
   blue: {
-    light: '#35C8FF',     // AI 상대 궤적, 상대 소유 표시 전용. bg.base 위 9.8:1
-    glow: 'rgba(53, 200, 255, 0.35)',
+    light: BLUE,          // AI 상대 궤적, 상대 소유 표시 전용. bg.base 위 9.8:1
+    glow: withAlpha(BLUE, 0.35),
   },
   steel: {
     // 크롬 재질 그라디언트 스톱. 디스플레이 타이포, 로고, 검신, 구분선 하이라이트 전용
     // 본문, caption, HUD 텍스트 사용 금지. shadow 단독 사용 금지
     // VORTEX 리스킨에서 흰 끝단만 WHITE로 정합시켰다. mid와 shadow는 arena 정체성이라 유지한다
     hi: WHITE,
-    mid: '#D8E2F0',
-    shadow: '#6E7B92',
+    mid: STEEL_MID,
+    shadow: STEEL_SHADOW,
     edge: withAlpha(WHITE, 0.9),
-    gradient: `linear-gradient(175deg, ${WHITE} 0%, #D8E2F0 45%, #6E7B92 78%, #D8E2F0 100%)`,
+    gradient: `linear-gradient(175deg, ${WHITE} 0%, ${STEEL_MID} 45%, ${STEEL_SHADOW} 78%, ${STEEL_MID} 100%)`,
   },
   trail: {
     self: RED,                              // 내 검. red.light와 동일
     selfGlow: withAlpha(RED, 0.45),
-    ai: '#35C8FF',                          // AI 상대. blue.light와 동일
-    aiGlow: 'rgba(53, 200, 255, 0.35)',
+    ai: BLUE,                               // AI 상대. blue.light와 동일
+    aiGlow: withAlpha(BLUE, 0.35),
     hit: WHITE,                             // 명중 순간 코어 고정
   },
   text: {

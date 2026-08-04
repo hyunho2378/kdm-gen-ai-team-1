@@ -2,7 +2,7 @@
 // bg.base에서 bg.deep으로 떨어지는 수직 그라디언트 + 방사 비네트 + 낮은 알파 안개 두 겹.
 // 이미지가 도착하면 setImage로 갈아끼운다. 나머지 레이어는 건드리지 않는다.
 
-import { colors } from '../../../tokens.js';
+import { colors, withAlpha } from '../../../tokens.js';
 
 export function createBackground() {
   let image = null;
@@ -40,8 +40,8 @@ export function createBackground() {
           w * 0.5 + drift, groundY, 0,
           w * 0.5 + drift, groundY, w * (0.42 + i * 0.16)
         );
-        fog.addColorStop(0, `rgba(216, 226, 240, ${0.05 - i * 0.02})`);
-        fog.addColorStop(1, 'rgba(216, 226, 240, 0)');
+        fog.addColorStop(0, withAlpha(colors.steel.mid, 0.05 - i * 0.02));
+        fog.addColorStop(1, withAlpha(colors.steel.mid, 0));
         ctx.fillStyle = fog;
         ctx.fillRect(0, 0, w, h);
       }
@@ -56,8 +56,8 @@ export function createBackground() {
 
       // 방사 비네트
       const vig = ctx.createRadialGradient(w * 0.5, h * 0.5, h * 0.24, w * 0.5, h * 0.5, h * 0.86);
-      vig.addColorStop(0, 'rgba(5, 5, 6, 0)');
-      vig.addColorStop(1, 'rgba(5, 5, 6, 0.82)');
+      vig.addColorStop(0, withAlpha(colors.bg.deep, 0));
+      vig.addColorStop(1, withAlpha(colors.bg.deep, 0.82));
       ctx.fillStyle = vig;
       ctx.fillRect(0, 0, w, h);
     },
