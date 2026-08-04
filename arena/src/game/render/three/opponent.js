@@ -100,12 +100,71 @@ function rand(ref) {
  */
 export const TARGET = { HEAD: 'head', CHEST: 'chest', FLANK: 'flank' };
 
+/**
+ * 겨냥 보정은 **방향**이지 위치가 아니다. 검끝은 손에서 tipDistance만큼 그 방향으로 나간 점이라
+ * 보정값과 착지 높이가 선형이 아니다. 그래서 값을 감으로 넣으면 안 되고 역산해야 한다.
+ *
+ * 처음에 머리 보정을 +0.42로 넣었더니 검끝이 y 1.497에 앉아 **부위 라벨이 몸통으로 나왔다**(실측).
+ * FUI가 "투구"라고 쓰는데 칼이 가슴에 꽂혀 있으면 R4의 요구가 깨진다.
+ * 문턱 1.55를 넘도록 역산해 +0.78로 올렸고 실측 착지가 y 1.66이다.
+ */
 const TARGET_AIM = {
-  [TARGET.HEAD]: [-0.10, 0.42],
+  [TARGET.HEAD]: [-0.10, 0.78],
   [TARGET.CHEST]: [0, 0],
   [TARGET.FLANK]: [0.26, -0.30],
 };
 const ZERO_AIM = [0, 0];
+
+/**
+ * 유파 기술 카탈로그 (R4). FENCING_RULES 4절.
+ * **전부 시각 계층이다.** 공격 타이밍과 판정은 opponents와 judge가 그대로 쥐고,
+ * 여기서는 "어떤 기술로 보이느냐"만 갈린다(E4 착탄 다양화와 같은 원리).
+ *
+ * | 필드 | 뜻 |
+ * |---|---|
+ * | target | 어디를 노리는가. FUI 부위 라벨과 일치해야 한다 |
+ * | bow | 스윙 중간에 겨냥점이 옆으로 부푸는 양(상대 로컬 m). **이것이 베기 호를 만든다** |
+ * | reach | 몸이 카메라 쪽으로 나가는 양(m). 플런지와 플레슈가 크다 |
+ * | dip | 추가 세로 압축. 몸이 낮게 깔린다 |
+ *
+ * 사브르는 절단계라 베기가 유효하고, **전진 시 발 교차가 반칙이라 플레슈를 못 쓴다.**
+ * 그래서 장거리는 발을 교차하지 않는 플런지다. 에페는 찌르기 종목이고 플레슈가 허용된다.
+ */
+export const TECH = {
+  CUT_HEAD: 'cutHead',
+  CUT_FLANK: 'cutFlank',
+  CUT_CHEEK: 'cutCheek',
+  STOP_CUT: 'stopCut',
+  THRUST: 'thrust',
+  FLECHE: 'fleche',
+  STOP_HIT: 'stopHit',
+  PLUNGE: 'plunge',
+};
+
+const TECH_SPEC = {
+  // 머리 베기. 위에서 아래로 내려치는 수직 호
+  [TECH.CUT_HEAD]: { target: 'head', bow: [0.10, 0.62, 0], reach: 0.16, dip: 0.02 },
+  // 옆구리 베기. 바깥에서 안으로 감는 수평 호
+  [TECH.CUT_FLANK]: { target: 'flank', bow: [0.66, -0.06, 0], reach: 0.18, dip: 0.05 },
+  // 뺨 베기. 대각선 호
+  [TECH.CUT_CHEEK]: { target: 'head', bow: [0.44, 0.40, 0], reach: 0.14, dip: 0.02 },
+  // 손목 스톱컷. 짧고 낮은 호. 뻗은 팔만 노린다
+  [TECH.STOP_CUT]: { target: 'flank', bow: [0.26, -0.24, 0], reach: 0.06, dip: 0.01 },
+  // 찌르기. 호가 없다. 에페의 기본
+  [TECH.THRUST]: { target: 'chest', bow: [0, 0, 0], reach: 0.14, dip: 0.03 },
+  // 플레슈. 상체를 던지며 달려든다. 가장 깊게 나가고 가장 낮게 깔린다
+  [TECH.FLECHE]: { target: 'chest', bow: [0.06, -0.10, 0], reach: 0.42, dip: 0.09 },
+  // 손목 스톱히트. 낮고 짧은 찌르기
+  [TECH.STOP_HIT]: { target: 'flank', bow: [0.04, -0.16, 0], reach: 0.05, dip: 0.01 },
+  // 플런지. 사브르의 장거리 공격이다. 발을 교차하지 않고 도약해 들어가며 베기 호를 얹는다.
+  // 플레슈만큼 깊지 않은 것은 발 교차 없이 낼 수 있는 거리가 거기까지이기 때문이다
+  [TECH.PLUNGE]: { target: 'chest', bow: [0.30, 0.34, 0], reach: 0.36, dip: 0.07 },
+};
+
+/** 발레스트라(홉 스텝). 양 유파 공통 전진 변주다. 양발이 함께 떠서 함께 닿는다. */
+const HOP_H = 0.085;
+const HOP_SEC = 0.30;
+const HOP_GAP = [1.9, 4.2];
 
 /** 패리당했을 때 검이 튕겨나는 방향 2종. 받는 위치가 매번 같지 않아야 한다(E4). */
 export const PARRY_LINE = { HIGH: 'high', LOW: 'low' };
@@ -554,6 +613,11 @@ export function createOpponent(scene, { tipDistance } = {}) {
   let dipT = -1;                                            // 진행 중이면 0~DIP_SEC, 아니면 -1
   let nextDipAt = DIP_GAP[0] + rand(seed) * (DIP_GAP[1] - DIP_GAP[0]);
   let target = TARGET.CHEST;
+  // 이번 공격의 기술. 렌더러가 예고 진입에 한 번 정한다(R4)
+  let tech = TECH_SPEC[TECH.THRUST];
+  // 발레스트라 홉. 전진 중에만 뛴다
+  let hopT = -1;
+  let nextHopAt = HOP_GAP[0] + rand(seed) * (HOP_GAP[1] - HOP_GAP[0]);
   const BLADE_AXIS = new THREE.Vector3(0, 0, -1);
   const tmpColor = new THREE.Color();
   const lerpArr = (out, a, b, t) =>
@@ -588,11 +652,15 @@ export function createOpponent(scene, { tipDistance } = {}) {
     },
 
     /**
-     * 이번 공격의 표적. 렌더러가 예고 진입 순간에 한 번 정한다.
-     * 검 겨냥이 이 값을 따라 돌고 파란 리본이 그 궤적을 그린다.
+     * 이번 공격의 기술과 표적. 렌더러가 예고 진입 순간에 한 번 정한다.
+     * 검 겨냥이 표적을 따라 돌고 파란 리본이 그 궤적을 그린다.
+     * **표적은 기술이 정한다.** 베기 호의 착지점과 FUI 부위 라벨이 어긋나면 안 되기 때문이다(R4).
      */
-    setTarget(name) {
-      if (TARGET_AIM[name]) target = name;
+    setAttack(name) {
+      const spec = TECH_SPEC[name];
+      if (!spec) return;
+      tech = spec;
+      target = spec.target;
     },
     getTarget() {
       return target;
@@ -652,6 +720,14 @@ export function createOpponent(scene, { tipDistance } = {}) {
           dipT = 0;
           nextDipAt = footT + DIP_GAP[0] + rand(seed) * (DIP_GAP[1] - DIP_GAP[0]);
         }
+        // 발레스트라. 전진 중에만 뛴다. 예고에 들어가면 홉도 함께 언다(E4 정지 규칙)
+        if (hopT >= 0) {
+          hopT += dtSec;
+          if (hopT >= HOP_SEC) hopT = -1;
+        } else if (poseName === POSE.ADVANCE && footT >= nextHopAt) {
+          hopT = 0;
+          nextHopAt = footT + HOP_GAP[0] + rand(seed) * (HOP_GAP[1] - HOP_GAP[0]);
+        }
       }
       group.position.x = SWAY_X * lowNoise(footT);
       shadow.position.x = group.position.x;
@@ -659,7 +735,14 @@ export function createOpponent(scene, { tipDistance } = {}) {
       let squash = BREATH * (Math.sin(footT * 1.85) * 0.5 + 0.5);
       if (dipT >= 0) squash += DIP * Math.sin(Math.PI * (dipT / DIP_SEC));
       const poseDip = POSE_DIP[poseName] ?? 0;
-      squash += poseName === POSE.LUNGE ? poseDip * Math.min(1, Math.max(0, lunge)) : poseDip;
+      const swing = poseName === POSE.LUNGE ? Math.min(1, Math.max(0, lunge)) : 0;
+      squash += poseName === POSE.LUNGE ? (poseDip + tech.dip) * swing : poseDip;
+      // 몸이 카메라 쪽으로 나간다. 플런지와 플레슈가 크다. 그림자도 같이 따라간다(R4)
+      const reach = tech.reach * swing;
+      group.position.z += reach;
+      shadow.position.z = group.position.z;
+      // 발레스트라 홉. 위로만 뜨므로 발이 바닥에 먹히지 않는다(내려가면 D1 잘림이 재발한다)
+      group.position.y = hopT >= 0 ? HOP_H * Math.sin(Math.PI * (hopT / HOP_SEC)) : 0;
       // **압축은 그룹이 아니라 빌보드 평면에만 건다.** 그룹에 걸면 손에 붙은 3D 검까지
       // 비균등 스케일을 받아 칼이 눌리고, 회전이 얹혀 있어 전단까지 생긴다(부모 비균등 스케일 x 자식 회전).
       // 평면 지오메트리는 발바닥이 원점이라 scale.y가 그대로 "발 붙인 채 머리가 내려가는" 변형이 된다.
@@ -673,11 +756,17 @@ export function createOpponent(scene, { tipDistance } = {}) {
       const off = poseName === POSE.TELEGRAPH || poseName === POSE.LUNGE ? TARGET_AIM[target] : ZERO_AIM;
       const h = HAND[poseName] ?? HAND[POSE.IDLE];
       if (poseName === POSE.LUNGE) {
-        const t = Math.min(1, Math.max(0, lunge));
+        const t = swing;
         lerpArr(handTarget, HAND[POSE.IDLE], h, t);
         lerpArr(aimTarget, AIM[POSE.IDLE], aim, t);
         aimTarget.x += off[0] * t;
         aimTarget.y += off[1] * t;
+        // **베기 호 (R4).** 겨냥점이 스윙 중간에 옆으로 부푼다. 시작과 끝에서는 0이라
+        // 착지점은 표적 그대로이고 가는 길만 휘어진다. 3D 검이 이 호를 그리고 리본이 따라온다.
+        // 찌르기 계열은 bow가 0이라 직선이 그대로 산다
+        const bow = Math.sin(Math.PI * t);
+        aimTarget.x += tech.bow[0] * bow;
+        aimTarget.y += tech.bow[1] * bow;
       } else {
         handTarget.set(h[0], h[1], h[2]);
         aimTarget.set(aim[0] + off[0], aim[1] + off[1], aim[2]);

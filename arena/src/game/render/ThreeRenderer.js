@@ -9,7 +9,7 @@ import { colors, motion } from '../../tokens.js';
 import { AI_MODE, ATTACK_KIND, OUTCOME, OWNER } from '../judge.js';
 import { thrustEase } from './canvas2d/geometry.js';
 import { createComposer } from './three/post.js';
-import { PARRY_LINE, POSE, TARGET, createOpponent } from './three/opponent.js';
+import { PARRY_LINE, POSE, TECH, createOpponent } from './three/opponent.js';
 import { attachSwordModel } from './three/swordModel.js';
 import { createShake } from './three/shake.js';
 import { createSparks } from './three/sparks.js';
@@ -70,15 +70,25 @@ const AIM_JITTER_X = [-0.05, 0.21];
 const AIM_JITTER_Y = [-0.22, 0.10];
 
 /**
- * 상대 표적 성향 (E4). 유파마다 노리는 곳이 다르다. 세이버는 상단, 에페는 몸통이다.
- * **시각 스타일 전용이다.** `aiKind`와 같은 등급이고 타이밍이나 판정에 쓰지 않는다.
- * 가중 주머니라 뽑기 한 번이면 성향이 나온다.
+ * 유파별 기술 성향 (R4). E4의 표적 다양화를 기술 카탈로그로 확장한 것이다.
+ * **표적은 기술이 데리고 온다.** 베기 호의 착지점과 FUI 부위 라벨이 어긋나면 안 되기 때문이다.
+ *
+ * **시각 스타일 전용이다.** aiKind, school과 같은 등급이고 타이밍이나 판정에 쓰지 않는다.
+ *
+ * 사브르는 절단계라 베기가 주력이고 **전진 발 교차가 반칙이라 플레슈를 못 쓴다.**
+ * 그래서 장거리가 플런지다. 에페는 찌르기 종목이고 플레슈가 허용된다.
  */
-const TARGET_BIAS = {
-  'italian-saber': [TARGET.HEAD, TARGET.HEAD, TARGET.CHEST, TARGET.FLANK],
-  'french-epee': [TARGET.CHEST, TARGET.CHEST, TARGET.FLANK, TARGET.HEAD],
+const TECH_NEAR = {
+  'italian-saber': [TECH.CUT_HEAD, TECH.CUT_HEAD, TECH.CUT_FLANK, TECH.CUT_CHEEK, TECH.STOP_CUT],
+  'french-epee': [TECH.THRUST, TECH.THRUST, TECH.THRUST, TECH.STOP_HIT],
 };
-const TARGET_FALLBACK = [TARGET.HEAD, TARGET.CHEST, TARGET.FLANK];
+const TECH_FAR = {
+  'italian-saber': [TECH.PLUNGE, TECH.PLUNGE, TECH.CUT_HEAD],
+  'french-epee': [TECH.FLECHE, TECH.FLECHE, TECH.THRUST],
+};
+const TECH_FALLBACK = [TECH.THRUST, TECH.CUT_HEAD, TECH.CUT_FLANK];
+/** 이 아래면 장거리 기술을 고른다. 유효 범위 먼쪽 경계(35) 근처다 */
+const FAR_D = 42;
 
 /** 두 좌표를 섞는다. 프리셋 트윈의 최소 단위다. */
 function lerp3(out, a, b, t) {
@@ -372,8 +382,10 @@ export function createThreeRenderer() {
       // 상대 표적은 예고에 들어가는 순간 정해진다. 예고 자세가 이미 그쪽을 겨누므로
       // 어디로 오는지가 형태로 미리 읽힌다. 유파 성향은 시각 스타일 규칙 안이다
       if (gameState.aiMode === AI_MODE.TELEGRAPH && prevAiMode !== AI_MODE.TELEGRAPH) {
-        const bag = TARGET_BIAS[gameState.school?.key] ?? TARGET_FALLBACK;
-        opponent.setTarget(bag[Math.floor(rand(seed) * bag.length) % bag.length]);
+        // 거리가 멀면 장거리 기술(플런지 / 플레슈), 가까우면 근거리 기술을 뽑는다
+        const table = gameState.d < FAR_D ? TECH_FAR : TECH_NEAR;
+        const bag = table[gameState.school?.key] ?? TECH_FALLBACK;
+        opponent.setAttack(bag[Math.floor(rand(seed) * bag.length) % bag.length]);
       }
       prevAiMode = gameState.aiMode;
 

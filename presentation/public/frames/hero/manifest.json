@@ -1,0 +1,8 @@
+{
+  "count": 72,
+  "pattern": "frame_%04d.webp",
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "placeholder": true
+}
