@@ -518,7 +518,8 @@
     - (2) 실측(앱과 동일 모듈 임포트해 실제 ScrollTrigger 구동): ScrollTrail body 스크럽 트리거 `.progress`가 스크롤 비율과 정확 일치(0/0.5/0.9/1), interactions pin 동반 진행(0→0.312→1), 8개 트리거 전부 단일 `ST.update()` 경로로 반응. 숨겨진 pane의 rAF 스로틀로 scrub:1 easing만 정지했으나 gsap.ticker 수동 펌프 시 trailOffset 단조 감소 확인 — 앱 버그 아님
     - (3) reduced: `if(isReduced()) return ()=>{}`로 Lenis 미기동, 네이티브 스크롤 분기 생존(정적 확정)
     - 4앱 빌드 성공, A1~A3 무결(8섹션·레일 8점·ScrollTrail 존재, top offset 1000 미도색 시작)
-  - 다음: P2 에셋 파이프라인과 프레임 사양서
+  - **P2 완료.** `docs/SCRUB_ASSET_SPEC.md`(실물 영상 요건 5~10초·어두운/단색 배경·1080p·24fps, scroll-scrub-starter build.sh 추출, cwebp 변환, leading-zero frame_%04d, 240 상한·2프레임 스킵, 투명 시 clearRect). 임시 프레임 72장 생성(`presentation/scripts/gen_temp_frames.py`, Pillow) → `presentation/public/frames/hero/frame_0001~0072.webp` + `manifest.json`(placeholder:true). 1280×720 webp 680KB. 검끝 곡선 모티프 진행(크롬→red 검끝), 우하단 TEMP 라벨은 스크럽 검증 보조. 실물 교체는 폴더 덮어쓰기 + manifest.count만. scroll-scrub-starter/Pillow는 빌드타임 도구라 CREDITS 미기재
+  - 다음: P3 표지 히어로 영상 스크럽(imageSequence 로직 포팅, 200vh pin, decode 프리로드, DPR 캡, reduced 정지 프레임)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록
