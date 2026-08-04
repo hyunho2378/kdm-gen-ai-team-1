@@ -30,6 +30,80 @@ export const WHY = {
   },
 };
 
+// 대상 TARGET (원본 Slide 16_9 - 5.svg)
+// 원본은 카드가 아니라 큰 원 3개다(실측 cx 440.5 / 978.0 / 1487.0, cy 655.8, r 231.3).
+export const TARGET = {
+  label: { en: 'TARGET', ko: '대상' },
+  headline: '누구나 쉽게, 가장 가까운 취미 경험으로 전환하는 XR 경험',
+};
+
+export const TARGET_ITEMS = [
+  { key: 't1', no: '01', desc: ['펜싱을 가장 가까운', '취미로 만나고 싶은 사람들'] },
+  { key: 't2', no: '02', desc: ['해보고 싶었지만,', '시작하기는 어려웠던 사람들'] },
+  { key: 't3', no: '03', desc: ['일상에 새로운 긴장과', '몰입을 원하는 사람들'] },
+];
+
+// 디자인 키워드 (원본 Slide 16_9 - 29.svg)
+// 원본 라벨은 'Desigh Keyword'로 오타가 있다. 지시 문구대로 'Design Keyword'를 쓴다.
+export const KEYWORD = {
+  label: { en: 'Design Keyword', ko: '디자인 키워드' },
+  headline: '빠르게 움직이고, 정확하게 판단하며, 끝까지 몰입한다.',
+  body: [
+    '본 제품은 펜싱의 핵심 경험을 XR 기술로 확장하여 실시간 피드백과 직관적인 인터페이스를 통해 더욱 효과적인 트레이닝 환경을 제공한다.',
+    '이를 위해 Dynamic, Precision, Immersion의 세가지 디자인 키워드를 바탕으로 형태와 사용자 경험을 전개한다.',
+  ],
+};
+
+// caption의 각 줄은 문자열이거나 { terms, suffix }다.
+// 원본 SVG는 '거리 · 자세 · 타이밍'처럼 가운데점을 썼지만 DESIGN 카피 규칙이 이를 금지한다.
+// 그래서 낱말을 terms로 쪼개 두고 사이 구분은 컴포넌트가 얇은 선으로 그린다.
+export const KEYWORDS = [
+  {
+    key: 'dynamic',
+    en: 'Dynamic',
+    ko: '역동적인',
+    img: '/images/keyword/dynamic.png',
+    caption: ['빠르게 변화하는 경기 상황 속에서도', '사용자의 움직임을 자연스럽게 따라가는 경험'],
+  },
+  {
+    key: 'precision',
+    en: 'Precision',
+    ko: '정확한',
+    img: '/images/keyword/precision.png',
+    caption: [{ terms: ['거리', '자세', '타이밍'], suffix: '을' }, '정밀하게 분석하는 XR 글라스'],
+  },
+  {
+    key: 'immersion',
+    en: 'Immersion',
+    ko: '몰입하는',
+    img: '/images/keyword/immersion.png',
+    caption: ['현실과 디지털이 자연스럽게', '결합된 몰입형 훈련 경험'],
+  },
+];
+
+// 브랜드 네이밍 (원본 Slide 16_9 - 30.svg)
+export const NAMING = {
+  label: { en: 'Brand Naming', ko: '브랜드 네이밍' },
+  headline:
+    "펜싱 검이 그리는 곡선의 궤적과 경기의 긴장감이 소용돌이처럼 몰입으로 이어지는 순간을 'VORTEX'라는 이름에 담았다.",
+  sub: '사용자의 움직임과 정확한 피드백이 하나의 경험으로 이어지는 XR 트레이닝을 상징한다.',
+  shots: ['/images/naming/shot-1.png', '/images/naming/shot-2.png'],
+};
+
+// 컬러 시스템 (원본 Slide 16_9 - 31.svg)
+// **색값은 여기에 적지 않는다.** 컴포넌트가 tokens에서 읽어 표시한다(이 페이지가 토큰의 진열장).
+export const COLOR_SYSTEM = {
+  label: { en: 'Color System', ko: '컬러 시스템' },
+  headline: '강렬한 브랜드 레드는 펜싱의 에너지와 긴장감을, 절제된 블랙은 XR 인터페이스의 명확성과 몰입감을 표현한다.',
+  sub: '대비감 있는 컬러 시스템을 통해 브랜드 아이덴티티와 사용자 경험을 일관되게 전달한다.',
+  brandingRed: 'Branding Red',
+  primary: 'Primary',
+  brandGradient: 'Brand Gradient',
+  hex: 'HEX',
+  rgb: 'RGB',
+  stopLabels: ['Color1', 'Color2', 'Color3', 'Color4'],
+};
+
 // S3 컨셉
 export const CONCEPT = {
   label: 'CONCEPT',
@@ -96,16 +170,22 @@ export const DUELIST_STYLES = [
   },
 ];
 
-// 셸 섹션 목록. App.jsx가 이 배열로 8섹션을 세운다.
+// 셸 섹션 목록. App.jsx가 이 배열로 섹션을 세운다.
+// **순서를 바꾸면 App.jsx의 위임 인덱스와 active 비교 숫자를 함께 고쳐야 한다.**
+// 브랜드 4장(대상 → 디자인 키워드 → 네이밍 → 컬러)은 문제 다음, 컨셉 앞에 들어간다.
 export const SECTION_LABELS = [
   { id: 's1', ko: '표지', en: 'COVER' },
   { id: 's2', ko: '문제', en: 'WHY' },
-  { id: 's3', ko: '컨셉', en: 'CONCEPT' },
-  { id: 's4', ko: '인터랙션', en: 'EXPERIENCE' },
-  { id: 's5', ko: '유파', en: 'AI DUELIST' },
-  { id: 's6', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
-  { id: 's7', ko: '산출물', en: 'OUTPUTS' },
-  { id: 's8', ko: '데모', en: 'DEMO' },
+  { id: 's3', ko: '대상', en: 'TARGET' },
+  { id: 's4', ko: '디자인 키워드', en: 'DESIGN KEYWORD' },
+  { id: 's5', ko: '브랜드 네이밍', en: 'BRAND NAMING' },
+  { id: 's6', ko: '컬러 시스템', en: 'COLOR SYSTEM' },
+  { id: 's7', ko: '컨셉', en: 'CONCEPT' },
+  { id: 's8', ko: '인터랙션', en: 'EXPERIENCE' },
+  { id: 's9', ko: '유파', en: 'AI DUELIST' },
+  { id: 's10', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
+  { id: 's11', ko: '산출물', en: 'OUTPUTS' },
+  { id: 's12', ko: '데모', en: 'DEMO' },
 ];
 
 export const PLACEHOLDER_SUFFIX = '플레이스홀더';

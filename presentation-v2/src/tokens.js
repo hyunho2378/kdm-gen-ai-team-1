@@ -28,6 +28,7 @@ export const colors = {
 
   // 포인트 레드. 명중·강조·CTA·라벨 포인트·TO-BE에만 아껴서. 화면 전체를 레드로 칠하지 않는다.
   red: '#E60D15',
+  redDeep: '#80070C', // 브랜드 그라디언트의 어두운 레드 스톱
   redGlow: 'rgba(230, 13, 21, 0.45)',
 
   // 흰 계열 텍스트. 전부 white에서 파생한다.
@@ -58,6 +59,20 @@ export const colors = {
     opponent: '#FF3B4E',
     opponentGlow: 'rgba(255, 59, 78, 0.4)',
   },
+};
+
+// 브랜드 그라디언트. 컬러 시스템 섹션이 이 값과 아래 스톱 배열을 그대로 진열한다.
+export const brandGradient =
+  `linear-gradient(105deg, ${colors.white} 0%, ${colors.red} 42%, ${colors.redDeep} 72%, ${colors.black} 100%)`;
+
+// 위 그라디언트의 스톱을 순서대로. 컬러 시스템의 Color1~4 라벨이 이 배열에서 값을 읽는다.
+export const brandGradientStops = [colors.white, colors.red, colors.redDeep, colors.black];
+
+/** '#E60D15' → '230, 13, 21'. 컬러 시스템이 RGB 표기를 토큰에서 유도하게 하는 유일한 통로. */
+export const hexToRgbText = (hex) => {
+  const h = hex.replace('#', '');
+  const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
+  return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
 };
 
 export const typography = {

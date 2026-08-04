@@ -10,6 +10,10 @@ import { colors } from './tokens.js';
 import { SECTION_LABELS, PLACEHOLDER_SUFFIX, COVER_HINT } from './copy.js';
 import S1Cover from './sections/S1Cover.jsx';
 import S2Why from './sections/S2Why.jsx';
+import S3Target from './sections/S3Target.jsx';
+import S4Keyword from './sections/S4Keyword.jsx';
+import S5Naming from './sections/S5Naming.jsx';
+import S6ColorSystem from './sections/S6ColorSystem.jsx';
 import S3Concept from './sections/S3Concept.jsx';
 import S4Experience from './sections/S4Experience.jsx';
 import S5Duelist from './sections/S5Duelist.jsx';
@@ -18,8 +22,14 @@ import S5Duelist from './sections/S5Duelist.jsx';
 
 gsap.registerPlugin(Observer);
 
-// 8섹션. 발표 덱 시안 골격. 바탕은 전부 브랜드 블랙. 문구는 copy.js가 단일 원천이다.
+// 섹션 목록. 발표 덱 시안 골격. 바탕은 전부 브랜드 블랙. 문구는 copy.js가 단일 원천이다.
 const SECTIONS = SECTION_LABELS;
+
+// 서브 진행을 위임하는 섹션의 **id**. 인덱스를 손으로 적지 않는다.
+// 중간에 섹션을 끼워 넣어 뒤 인덱스가 밀려도 여기서 id로 찾으므로 위임이 엉뚱한 섹션에 붙지 않는다.
+// (브랜드 4장을 문제와 컨셉 사이에 넣었을 때 실제로 인터랙션과 유파의 인덱스가 3,4 → 7,8로 밀렸다)
+const DELEGATE_IDS = ['s2', 's8', 's9'];
+const DELEGATE_INDEXES = DELEGATE_IDS.map((id) => SECTIONS.findIndex((s) => s.id === id));
 
 // easeInOutCubic. 1초 섹션 이동에 붙는다.
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -36,11 +46,14 @@ export default function App() {
 
   // 인덱스별 register 함수는 렌더마다 새로 만들면 자식 useEffect가 매번 다시 돈다. 한 번만 만든다.
   const reg = useMemo(() => {
-    const mk = (i) => ({
-      handler: (fn) => { subHandlers.current[i] = fn; },
-      enter: (fn) => { subEnters.current[i] = fn; },
+    const map = {};
+    DELEGATE_INDEXES.forEach((i) => {
+      map[i] = {
+        handler: (fn) => { subHandlers.current[i] = fn; },
+        enter: (fn) => { subEnters.current[i] = fn; },
+      };
     });
-    return { 1: mk(1), 3: mk(3), 4: mk(4) };
+    return map;
   }, []);
 
   useEffect(() => {
@@ -135,16 +148,25 @@ export default function App() {
               background: colors.black,
             }}
           >
-            {i === 0 ? (
-              <S1Cover active={current === 0} />
-            ) : i === 1 ? (
-              <S2Why registerHandler={reg[1].handler} registerEnter={reg[1].enter} />
-            ) : i === 2 ? (
-              <S3Concept active={current === 2} />
-            ) : i === 3 ? (
-              <S4Experience registerHandler={reg[3].handler} registerEnter={reg[3].enter} />
-            ) : i === 4 ? (
-              <S5Duelist registerHandler={reg[4].handler} registerEnter={reg[4].enter} />
+            {/* **인덱스가 아니라 id로 고른다.** 섹션을 끼워 넣어도 짝이 어긋나지 않는다. */}
+            {s.id === 's1' ? (
+              <S1Cover active={current === i} />
+            ) : s.id === 's2' ? (
+              <S2Why registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
+            ) : s.id === 's3' ? (
+              <S3Target active={current === i} />
+            ) : s.id === 's4' ? (
+              <S4Keyword active={current === i} />
+            ) : s.id === 's5' ? (
+              <S5Naming active={current === i} />
+            ) : s.id === 's6' ? (
+              <S6ColorSystem active={current === i} />
+            ) : s.id === 's7' ? (
+              <S3Concept active={current === i} />
+            ) : s.id === 's8' ? (
+              <S4Experience registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
+            ) : s.id === 's9' ? (
+              <S5Duelist registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
             ) : (
               <div
                 style={{
