@@ -17,11 +17,12 @@ import PhaseBanner from './PhaseBanner.jsx';
 import PisteStrip from './PisteStrip.jsx';
 import { frameInset, useViewport } from './frame.js';
 
-// 미터가 켜지면 하단 행 전체가 그 위로 비켜선다.
+// 하단 디버그 패널(우하단 fps 미터, 좌하단 캠 디버그)이 켜지면 하단 행 전체가 그 위로 비켜선다.
 // 배너만 올렸더니 1024에서 간합 게이지의 오른쪽 끝(헛침 사유와 숫자)이 미터에 깔렸다(실측).
-const METER_CLEARANCE = 62;
+// 둘은 좌우 반대편이라 서로는 안 겹치고, 게이지만 둘 다를 피하면 된다.
+const DEBUG_CLEARANCE = 62;
 
-export default function HUD({ snapshot, getD, getPiste, camValue = '없음', camOk = false, fpsDegraded, rendererFallback, meterOn = false }) {
+export default function HUD({ snapshot, getD, getPiste, camValue = '없음', camOk = false, fpsDegraded, rendererFallback, bottomDebug = false }) {
   const { w } = useViewport();
   const { phase, score, result, school } = snapshot;
   const live = phase === PHASE.EN_GARDE || phase === PHASE.EXCHANGE || phase === PHASE.JUDGE || phase === PHASE.SCORE;
@@ -78,7 +79,7 @@ export default function HUD({ snapshot, getD, getPiste, camValue = '없음', cam
           gridTemplateColumns: '1fr auto 1fr',
           alignItems: 'flex-end',
           gap: 24,
-          paddingBottom: meterOn ? METER_CLEARANCE : 0,
+          paddingBottom: bottomDebug ? DEBUG_CLEARANCE : 0,
         }}
       >
         <span />

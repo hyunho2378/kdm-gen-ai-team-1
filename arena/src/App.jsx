@@ -6,11 +6,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createEngine } from './game/engine.js';
 import { createPoseChannel } from './game/pose.js';
 import { createPerfStats, meterEnabled } from './game/perf.js';
-import { CAM, CAM_LABEL, createFaceTracker } from './game/faceTracker.js';
+import { CAM, CAM_LABEL, camDebugEnabled, createFaceTracker } from './game/faceTracker.js';
 import { attachKeyboard } from './game/input.js';
 import { EV, PHASE } from './game/machine.js';
 import GameCanvas from './game/GameCanvas.jsx';
 import HUD from './components/hud/HUD.jsx';
+import CamDebug from './components/hud/CamDebug.jsx';
 import FpsMeter from './components/hud/FpsMeter.jsx';
 import FuiLayer from './components/hud/FuiLayer.jsx';
 import GlassFrame from './components/hud/GlassFrame.jsx';
@@ -41,6 +42,8 @@ export default function App() {
   const face = useMemo(() => createFaceTracker(), []);
   // dev이거나 주소에 ?fps=1이 있으면 미터를 띄운다. 실기 확인이 최종 성능 게이트다
   const showMeter = useMemo(() => meterEnabled(import.meta.env.DEV), []);
+  // ?cam=1이면 캠 디버그. 캠이 약한 것과 안 붙은 것을 사용자가 눈으로 가른다(V2)
+  const showCam = useMemo(camDebugEnabled, []);
 
   const engine = useMemo(
     () =>
@@ -139,10 +142,11 @@ export default function App() {
           camOk={camStatus === CAM.READY}
           fpsDegraded={degraded}
           rendererFallback={rendererFallback}
-          meterOn={showMeter}
+          bottomDebug={showMeter || showCam}
         />
         <FuiLayer shot={fxShot} reduced={reduced} />
         {showMeter ? <FpsMeter perf={perf} rendererRef={rendererRef} /> : null}
+        {showCam ? <CamDebug face={face} rendererRef={rendererRef} reduced={reduced} /> : null}
         <VignetteOverlay active={snapshot.dilating} />
 
         {phase === PHASE.IDLE ? (

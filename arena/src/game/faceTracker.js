@@ -35,6 +35,23 @@ const LOST_MS = 700;     // 이만큼 얼굴이 없으면 소실로 본다
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 /**
+ * `?cam=1`이면 캠 디버그 패널을 띄운다. ?fps=1과 같은 방식으로 프로덕션 번들에도 들어간다.
+ *
+ * 왜 필요한가. "패럴랙스가 약하다"와 "캠이 아예 안 붙었다"가 화면에서 똑같이 보인다.
+ * 상태와 지표와 실제로 걸린 오프셋을 함께 띄워야 사용자가 그 둘을 가른다.
+ *
+ * fps 미터와 달리 dev에서 자동으로 뜨지는 않는다. 상주하면 개발 중 화면을 계속 가리고,
+ * 이 패널은 "지금 캠을 본다"는 의도가 있을 때만 필요한 진단 도구다.
+ */
+export function camDebugEnabled() {
+  try {
+    return new URLSearchParams(window.location.search).get('cam') === '1';
+  } catch {
+    return false;
+  }
+}
+
+/**
  * 상태는 다섯이다. 어느 상태에서도 게임은 멈추지 않는다.
  * off(미기동) / requesting(권한 대기) / denied(거부) / ready(추적 중) / lost(얼굴 소실)
  */
@@ -69,6 +86,15 @@ export function createFaceTracker() {
   const m = { headX: 0, headYaw: 0, scale: 0, stability: 0 };
   // 안정도 계산용 직전 원시 위치
   let prevRaw = null;
+
+  /**
+   * 집중 판정. **한 곳에만 둔다.**
+   * 팽창 트리거와 디버그 패널이 각자 조건을 적으면 둘이 갈라져
+   * "패널은 충족이라는데 팽창이 안 걸린다"가 된다. 그 순간 패널이 진단 도구를 그만둔다.
+   */
+  function isFocused() {
+    return m.stability >= FOCUS_STABILITY && Math.abs(m.headYaw) <= FOCUS_YAW;
+  }
 
   function setStatus(next) {
     if (status === next) return;
@@ -147,6 +173,12 @@ export function createFaceTracker() {
      */
     async start() {
       if (status === CAM.READY || status === CAM.REQUESTING) return;
+      // **dispose 뒤 재기동을 허용한다.** 이 플래그를 안 되돌리면 추적기가 영구히 죽는다.
+      // StrictMode가 dev에서 effect를 마운트 해제 후 다시 태우는데, 그 사이 cleanup이 dispose를 부른다.
+      // 그러면 두 번째 start가 getUserMedia까지 갔다가 아래 disposed 가드에서 조용히 되돌아가고
+      // 상태가 `요청 중`에 영원히 멎는다(?cam=1 패널로 실측해 잡았다).
+      // dispose는 "지금 세션을 접는다"이지 "다시는 못 켠다"가 아니다.
+      disposed = false;
       setStatus(CAM.REQUESTING);
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -206,7 +238,25 @@ export function createFaceTracker() {
      */
     dilationTrigger() {
       if (status !== CAM.READY) return null;
-      return { focused: m.stability >= FOCUS_STABILITY && Math.abs(m.headYaw) <= FOCUS_YAW };
+      return { focused: isFocused() };
+    },
+
+    /**
+     * `?cam=1` 패널이 초당 두 번 읽는 한 묶음. **판정 경로가 아니다.**
+     * 문턱까지 함께 넘기는 것은 "안정도 0.61"만 봐서는 얼마나 모자란지 알 수 없기 때문이다.
+     */
+    debug() {
+      return {
+        status,
+        headX: m.headX,
+        headYaw: m.headYaw,
+        scale: m.scale,
+        stability: m.stability,
+        // 캠이 안 서 있으면 팽창이 근사 폴백으로 가므로 충족 여부가 무의미하다
+        focused: status === CAM.READY ? isFocused() : null,
+        focusStability: FOCUS_STABILITY,
+        focusYaw: FOCUS_YAW,
+      };
     },
 
     dispose() {

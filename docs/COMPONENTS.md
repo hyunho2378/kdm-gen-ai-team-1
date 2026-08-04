@@ -122,6 +122,14 @@
   3초 진행 링. SVG stroke 애니메이션(transform, opacity 규칙 준수 대상 아님, stroke-dashoffset은 SVG 예외로 허용하되 HUD 밖 남용 금지).
 - **VignetteOverlay** `components/VignetteOverlay.jsx` / 시간 팽창
   zIndex.overlay, 방사 비네트 opacity만 애니메이션. timeDilation 수치 참조.
+- **CamDebug** `components/hud/CamDebug.jsx` / 웹캠 진단 (V2)
+  주소에 `?cam=1`이 있을 때만 좌하단에 뜬다. **프로덕션 번들 포함, dev 자동 노출 없음.**
+  두 줄이다. (1) 추적 상태 라벨, 머리 x, 요와 문턱, 안정도와 문턱.
+  (2) **실제로 카메라에 걸린 패럴랙스 오프셋(mm, 도)**, 팽창 조건 충족 여부, 모션 감소 표시.
+  존재 이유는 "캠이 약한 것"과 "캠이 안 붙은 것"을 사용자가 가르게 하는 것이다.
+  지표가 아니라 걸린 양을 내야 그 둘이 갈린다. 2D 폴백은 패럴랙스가 없어 "해당 없음"이다.
+  상시 노출 요소라 애니메이션하지 않고 갱신은 초당 두 번(프레임 경로 밖)이다.
+  하단 행 클리어런스 62px을 FpsMeter와 공유한다(`HUD`의 `bottomDebug`).
 - **FaceTracker** `game/faceTracker.js` / 웹캠(컴포넌트 아님) — R5에서 구현
   MediaPipe tasks-vision FaceLandmarker를 **CDN에서 받는다(번들 금지).**
   추론은 메인 루프 밖 **15Hz 스로틀**이고 렌더는 마지막 결과를 읽기만 한다.
@@ -131,6 +139,9 @@
   상태 5종(off / requesting / denied / ready / lost)이 StatusChip 라벨로 그대로 나온다.
   거부와 실패와 소실이 전부 같은 경로로 수렴한다. 트리거가 null을 돌리면
   engine이 기존 성공률 근사로 판단하고 게임은 안 멈춘다.
+  **`dispose()`는 세션을 접는 것이지 영구 종료가 아니다.** `start()`가 `disposed`를 되돌린다.
+  안 되돌리면 StrictMode의 dev 재마운트 한 번에 추적기가 죽고 상태가 `요청 중`에 영원히 멎는다(V2 실측).
+  집중 판정은 `isFocused()` 한 곳에만 둔다. 트리거와 디버그 패널이 각자 조건을 적으면 둘이 갈라진다.
 
 ## controller
 

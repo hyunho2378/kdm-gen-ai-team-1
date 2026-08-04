@@ -71,6 +71,12 @@ export function createRenderer(mount, { dev = false, reduced = false, onFallback
     isDegraded: () => active.isDegraded(),
     getInfo: () => active.getInfo?.() ?? null,
     setFxObserver: (fn) => active.setFxObserver?.(fn),
+    // **이 두 줄이 없어서 헤드 패럴랙스가 한 번도 안 돌았다(V2 실측).**
+    // App이 `r.setHeadSource?.(...)`로 부르는데 이 핸들에 그 이름이 없었다.
+    // 옵셔널 체이닝이 없는 이름을 조용히 삼켜 캠 지표가 렌더러에 닿은 적이 없다.
+    // 2D 폴백에는 패럴랙스가 없으므로 아래도 옵셔널로 둔다(getParallax는 null을 돌린다).
+    setHeadSource: (fn) => active.setHeadSource?.(fn),
+    getParallax: () => active.getParallax?.() ?? null,
     dispose: () => active?.dispose(),
   };
 }

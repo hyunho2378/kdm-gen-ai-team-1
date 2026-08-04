@@ -117,11 +117,16 @@ const GUARD_OUT_SEC = 0.22;
  * 헤드 커플드 패럴랙스 (R5). 웹캠이 읽은 머리 위치로 카메라를 아주 조금 옮긴다.
  * 검이 카메라의 자식이라 검도 함께 움직이고, 그것이 1인칭에서 맞다.
  *
- * **절제가 전부다.** 크게 걸면 조준이 흔들려 게임이 안 되고 멀미가 난다.
- * x 5cm, z 3cm, 요 0.02rad은 "화면 너머를 들여다본다"는 인상만 남기는 크기다.
- * 스무딩은 지표 EMA 위에 한 겹 더 얹는다. 추론이 15Hz라 그대로 쓰면 계단이 보인다.
+ * **V2 상향.** 실사용 피드백이 "패럴랙스가 있는데 체감이 안 된다"였다.
+ * 초기값 x 5cm / z 3cm는 절제가 지나쳐 화면에서 안 읽혔다. x 9cm / z 5cm로 올리고
+ * 요는 x와 같은 비율(1.8배)로 0.036rad에 맞춘다. 셋이 따로 놀면 머리 움직임과 화면이 어긋난다.
+ *
+ * **스무딩 시정수는 그대로 둔다.** 진폭이 멀미를 만드는 것이 아니라 급한 추종이 만든다.
+ * 추론이 15Hz라 이 한 겹이 없으면 계단이 보인다.
+ *
+ * 이 값은 시작점이고 최종 판단은 실기 육안이다. 과하면 여기 셋만 내린다.
  */
-const PARALLAX = { x: 0.05, z: 0.03, yaw: 0.02, smooth: 6.0 };
+const PARALLAX = { x: 0.09, z: 0.05, yaw: 0.036, smooth: 6.0 };
 const CAMERA_EYE_Y = CAMERA.eyeY;
 
 export function createThreeRenderer() {
@@ -574,6 +579,15 @@ export function createThreeRenderer() {
      */
     setHeadSource(fn) {
       head = typeof fn === 'function' ? fn : null;
+    },
+
+    /**
+     * `?cam=1` 디버그 패널이 읽는 현재 패럴랙스 오프셋(m). 스무딩을 거친 뒤의 값이다.
+     * 지표가 아니라 **화면에 실제로 걸린 양**이라야 "캠은 도는데 왜 안 움직이지"를 가른다.
+     * 읽기 전용이고 프레임 경로가 아니다(패널이 초당 두 번만 부른다).
+     */
+    getParallax() {
+      return { x: headNow.x, z: headNow.z, yaw: headNow.yaw };
     },
 
     /** 연속 채널 주입. 판별 유니온만 받는다(ARENA_SCENE 3절). */
