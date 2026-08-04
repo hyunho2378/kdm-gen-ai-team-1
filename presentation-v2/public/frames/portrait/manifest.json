@@ -1,0 +1,13 @@
+{
+  "count": 150,
+  "pattern": "frame_%04d.webp",
+  "width": 1080,
+  "height": 2048,
+  "fps": 25.0,
+  "source": "fencing-portrait.mp4",
+  "sourceSize": [
+    2160,
+    4096
+  ],
+  "placeholder": true
+}

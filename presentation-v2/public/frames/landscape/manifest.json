@@ -1,0 +1,13 @@
+{
+  "count": 150,
+  "pattern": "frame_%04d.webp",
+  "width": 1600,
+  "height": 900,
+  "fps": 30.0,
+  "source": "fencing-landscape.mp4",
+  "sourceSize": [
+    3840,
+    2160
+  ],
+  "placeholder": true
+}

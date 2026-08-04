@@ -1,0 +1,17 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: #0A0A0B; /* 브랜드 블랙(네이비 금지) */
+  color: #f2f6ff;
+  /* Lenis가 스크롤을 소유한다. CSS smooth와 겹치면 두 번 보간되어 튄다. */
+  scroll-behavior: auto;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* 조작 셸은 방향키/휠 한 번에 한 섹션씩 이동한다. 자유 스크롤을 막는다. */
+  overscroll-behavior: none;
+}
+
+:focus-visible { outline: 2px solid #ff2442; outline-offset: 2px; }
