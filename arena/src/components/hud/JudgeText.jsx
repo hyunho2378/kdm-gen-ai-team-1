@@ -8,14 +8,21 @@ import { OUTCOME, OWNER } from '../../game/judge.js';
 
 const ENTER_MS = 150;
 
-/** 문구는 4종 고정이다. 여기 없는 문구를 만들지 마라. */
+/**
+ * 문구는 4종 고정이다. 여기 없는 문구를 만들지 마라.
+ *
+ * **R3에서 사유가 늘었다.** OUTCOME은 그대로 4종이고 부제만 갈린다.
+ * 더블 투셰는 양쪽 득점이라 소유 색 하나로 칠할 수 없어 중립 steel로 둔다.
+ * 시뮬타네와 더블 무효는 무득점이므로 헛침 계열이다. 램프는 LampPanel이 따로 진다.
+ */
 function phrase(result) {
   if (!result) return null;
   switch (result.outcome) {
     case OUTCOME.HIT:
+      if (result.aiPoints > 0) return { text: '명중', tone: 'steel', sub: result.reason };
       return result.owner === OWNER.ME
-        ? { text: '명중', tone: 'me', sub: '내 득점' }
-        : { text: '명중', tone: 'ai', sub: '상대 득점' };
+        ? { text: '명중', tone: 'me', sub: result.reason ?? '내 득점' }
+        : { text: '명중', tone: 'ai', sub: result.reason ?? '상대 득점' };
     case OUTCOME.MISS:
       return { text: '헛침', tone: 'dim', sub: result.reason };
     case OUTCOME.PARRY:

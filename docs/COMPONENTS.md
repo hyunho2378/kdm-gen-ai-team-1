@@ -103,6 +103,15 @@
   실측 평균 공격 간격 **이탈리아 1778~2077ms 대 프랑스 3248~3748ms**.
 - **HUD** `components/hud/HUD.jsx` / DOM 오버레이 루트
   zIndex.sticky~header. 하위: DistanceGauge, ScoreBoard, JudgeText, PhaseBanner, StatusChip 3개.
+- **PisteStrip** `components/hud/PisteStrip.jsx` / 상단 밴드 (R3-1)
+  피스트 14m를 가로 바 하나로 줄인다. 실룰의 폭 1.5m가 측면 이동을 봉쇄해 전술이
+  전진과 후퇴 1차원으로 압축되므로 바 하나가 경기 공간을 온전히 담는다.
+  두 위치 점(나 red.light, 상대 blue.light), 경고선 눈금 2개(각 끝 2m), 경고 문구.
+  `engine.getPiste()` 폴링이고 **위치는 transform만** 움직인다. 경고 점등은 상태가 바뀔 때만 만진다.
+- **LampPanel** `components/hud/LampPanel.jsx` / 상단 밴드 (R3-2)
+  심판기 램프. **좌 red가 나, 우 blue가 상대다. 초록을 도입하지 않는다**
+  (FENCING_RULES 판정표: 좌우 식별이 본질이고 초록은 색 규칙을 깬다).
+  더블 투셰와 시뮬타네는 양쪽이 함께 켜지고, 둘의 구분은 점등이 아니라 JudgeText 문구가 진다.
 - **DistanceGauge** `components/hud/DistanceGauge.jsx`
   d 0~100 바, 유효 범위 밴드 red.light 표시. 헛침 사유 짧은 텍스트 슬롯.
 - **JudgeText** `components/hud/JudgeText.jsx`

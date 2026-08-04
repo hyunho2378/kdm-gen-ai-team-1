@@ -2,7 +2,7 @@
 // 색은 blue.light 고정(DESIGN 2절: 블루는 상대의 색이고 내 것에 쓰지 않는다).
 
 import { colors } from '../tokens.js';
-import { RULES, AI_MODE, ATTACK_KIND } from './judge.js';
+import { RULES, AI_MODE, ATTACK_KIND, moveOpponent } from './judge.js';
 
 /**
  * 유파 2종. 두 유파가 "다르게 싸운다"는 것이 체감되어야 하므로 파라미터가 넷 늘었다(D3).
@@ -36,6 +36,11 @@ export const SCHOOLS = [
     feintRatio: 0.3,
     preferredD: 52,
     stepSpeed: 20,
+    // R3. 우선권 종목이라 동시 개시는 무득점(시뮬타네)이다. 창은 FENCING_RULES 실측 170ms
+    lockoutMs: 170,
+    doubleTouch: false,
+    // 라인 몰기 성향. 세이버는 몰아치는 유파라 높다
+    lineDrive: 0.55,
     color: colors.blue.light,
   },
   {
@@ -55,6 +60,11 @@ export const SCHOOLS = [
     feintRatio: 0.55,
     preferredD: 38,
     stepSpeed: 15,
+    // R3. 우선권이 없는 종목이라 양쪽 다 득점(더블 투셰)이다. 창은 실측 40ms로 훨씬 좁다
+    lockoutMs: 40,
+    doubleTouch: true,
+    // 거리를 재는 유파라 몰아붙이는 성향이 낮다
+    lineDrive: 0.22,
     color: colors.blue.light,
   },
 ];
@@ -62,6 +72,15 @@ export const SCHOOLS = [
 /** 거리 흔들기 한 걸음의 속도와 길이. 앞으로 훅 들어왔다 선호 간합으로 되돌아간다. */
 const STEP_FEINT_SPEED = 30;
 const STEP_FEINT_MS = 420;
+
+/**
+ * 라인 몰기 (R3). 상대를 피스트 뒤로 밀어붙이는 전술이다.
+ * 흔들기보다 느리고 길게 민다. 내가 간합을 지키려고 물러나면 그만큼 뒤가 줄어든다.
+ * 판단은 전부 주입된 rng를 거친다.
+ */
+const DRIVE_SPEED = 12;
+const DRIVE_MS = { min: 700, max: 1500 };
+const DRIVE_GAP = { min: 1800, max: 3600 };
 
 export function getSchool(key) {
   return SCHOOLS.find((s) => s.key === key) ?? SCHOOLS[0];
@@ -113,10 +132,19 @@ export function stepOpponent(state, school, nowMs, dtSec, rng) {
     ai.pressured = false;
   }
 
+  // 라인 몰기. 이따금 길게 밀어붙여 상대 뒤를 줄인다(R3)
+  if (ai.mode === AI_MODE.IDLE && nowMs >= ai.driveAt) {
+    ai.driveAt = nowMs + rng.range(DRIVE_GAP.min, DRIVE_GAP.max);
+    ai.driveUntil = rng.chance(school.lineDrive ?? 0) ? nowMs + rng.range(DRIVE_MS.min, DRIVE_MS.max) : 0;
+  }
+
   // 선호 간합으로 당기고 민다. 플레이어 입력과 합산되어 최종 d가 정해진다.
   const surge = nowMs < ai.stepUntil ? STEP_FEINT_SPEED : 0;
-  const drift = (Math.sign(school.preferredD - state.d) * school.stepSpeed + surge) * dtSec;
-  state.d += drift;
+  const drive = nowMs < ai.driveUntil ? DRIVE_SPEED : 0;
+  const drift = (Math.sign(school.preferredD - state.d) * school.stepSpeed + surge + drive) * dtSec;
+  // **d를 직접 더하지 않는다.** 같은 변화량을 상대 위치에 실어 d가 간격에서 유도되게 한다(R3-1).
+  // 경계에 닿지 않는 한 이 경로는 `state.d += drift`와 완전히 같은 값을 낸다.
+  moveOpponent(state, drift);
 
   if (ai.mode === AI_MODE.IDLE && nowMs >= ai.nextAttackAt) {
     ai.mode = AI_MODE.TELEGRAPH;

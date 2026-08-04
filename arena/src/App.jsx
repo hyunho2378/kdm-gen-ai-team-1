@@ -51,6 +51,9 @@ export default function App() {
     setSnapshot(engine.snapshot());
   }, [engine]);
 
+  // 피스트 스트립이 매 프레임 폴링하는 창구. 참조를 고정해야 스트립의 rAF 루프가 재시작되지 않는다
+  const getPiste = useMemo(() => () => engine.getPiste(), [engine]);
+
   // F9는 어느 phase에서든 동작해야 한다. 비상 컷의 생명이다.
   useEffect(
     () =>
@@ -107,6 +110,7 @@ export default function App() {
         <HUD
           snapshot={snapshot}
           getD={() => engine.getD()}
+          getPiste={getPiste}
           fpsDegraded={degraded}
           rendererFallback={rendererFallback}
           meterOn={showMeter}

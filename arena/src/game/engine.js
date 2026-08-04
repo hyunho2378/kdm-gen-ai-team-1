@@ -15,9 +15,12 @@ import {
   ATTACK_KIND,
   MISS_REASON,
   createJudgeState,
-  clampD,
   resolveThrust,
   resolveTelegraphEnd,
+  resolvePisteOut,
+  resetPositions,
+  movePlayer,
+  pisteWarning,
   isSuccess,
   shouldDilate,
   matchWinner,
@@ -102,6 +105,8 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
       showJudge: clockMs < judgeUntil,
       dilating: clockMs < state.dilation.activeUntil,
       keyboardMode: true,
+      // 램프는 판정 결과가 쥔다. 좌 red가 나, 우 blue가 상대다(R3-2)
+      lamp: lastResult?.lamp ?? null,
     };
   }
 
@@ -122,6 +127,8 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
       if (result.owner === OWNER.ME) state.score.me += result.points;
       else state.score.ai += result.points;
     }
+    // 더블 투셰. 양쪽이 함께 가져간다(R3-2). 에페에만 성립한다
+    if (result.aiPoints > 0) state.score.ai += result.aiPoints;
     if (result.counted) state.form.push(isSuccess(result));
     if (result.opensRiposte) state.riposteUntil = clockMs + RULES.RIPOSTE_WINDOW_MS;
     else state.riposteUntil = 0;
@@ -135,7 +142,12 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
 
     // 패리는 경기를 멈추지 않는다. JUDGE와 SCORE를 거치면 1200ms가 흘러
     // 600ms 리포스트 윈도우가 열리자마자 죽는다. 판정 문구만 띄우고 계속 싸운다.
-    if (result.outcome === OUTCOME.PARRY) {
+    //
+    // **맞불(상대 공격)도 같은 이유로 멈추지 않는다(R3-2).** 상대 공격이 아직 날아오는 중인데
+    // 여기서 phase를 세우면 그 공격이 JUDGE 800ms + SCORE 420ms 뒤로 밀린다.
+    // 그러면 락아웃 창(세이버 170ms, 에페 40ms)이 **구조적으로 닫혀** 동시타가 영원히 안 난다.
+    // 실측으로 확인했다. 판정 4분기의 의미(맞불은 헛침)는 그대로고 진행만 이어진다.
+    if (result.outcome === OUTCOME.PARRY || result.reason === MISS_REASON.INTO_ATTACK) {
       publish();
       return;
     }
@@ -201,13 +213,23 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     if (input.isHeld(INPUT.RETREAT)) move -= 1;
     state.guarding = input.isHeld(INPUT.GUARD);
     view.meGuard = state.guarding;
-    state.d += move * RULES.STEP_PER_SEC * dtSec;
+    // **d를 직접 더하지 않는다.** 같은 변화량을 내 위치에 실어 d가 두 위치의 간격에서 유도되게 한다(R3-1).
+    // 경계에 닿지 않는 한 이 경로는 `state.d += move * STEP_PER_SEC * dtSec`와 같은 값을 낸다.
+    movePlayer(state, move * RULES.STEP_PER_SEC * dtSec);
 
     const telegraphEnded = stepOpponent(state, school, clockMs, dtSec, rng);
-    state.d = clampD(state.d);
     view.d = state.d;
     view.aiMode = state.ai.mode;
     view.aiKind = state.ai.kind;
+
+    // 후방 경계 실점. 위치가 경계에 물려 있으므로 판정 직후 앙가르드로 되돌린다
+    const out = resolvePisteOut(state);
+    if (out) {
+      resetPositions(state);
+      view.d = state.d;
+      applyResult(out);
+      return;
+    }
 
     // 이산 입력 처리
     for (const ev of input.drain()) {
@@ -216,6 +238,8 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
       const lunge = input.isHeld(INPUT.ADVANCE);
       const result = resolveThrust(state, clockMs, { lunge });
       if (result.reason === MISS_REASON.COOLDOWN) continue; // 쿨다운은 판정 연출 없이 무시한다
+      // 진짜 공격에 맞불을 놓은 시각을 남긴다. 상대 공격이 닿을 때 동시타 창으로 다시 본다(R3-2)
+      if (result.reason === MISS_REASON.INTO_ATTACK) state.counterAt = clockMs;
       state.lastThrustAt = clockMs;
       state.thrustCooldownMs = lunge ? RULES.LUNGE_COOLDOWN_MS : RULES.THRUST_COOLDOWN_MS;
       view.meLunge = 1;
@@ -226,7 +250,13 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
 
     if (telegraphEnded) {
       const kind = state.ai.kind;
-      const result = resolveTelegraphEnd(state);
+      // 유파의 락아웃 창을 넘긴다. judge는 유파를 모르고 창 길이와 더블 인정 여부만 본다
+      const result = resolveTelegraphEnd(state, clockMs, {
+        lockoutMs: school.lockoutMs,
+        doubleTouch: school.doubleTouch,
+      });
+      // 이번 공격에 대한 맞불 기록은 여기서 소진한다. 다음 공격으로 넘기지 않는다
+      state.counterAt = -Infinity;
       if (kind === ATTACK_KIND.REAL) {
         view.aiLunge = 1;
         maybeDilate();
@@ -295,6 +325,15 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     },
     getD() {
       return state.d;
+    },
+    /**
+     * 피스트 위치와 경고선 진입 여부. **HUD 전용 폴링 창구다.**
+     * 렌더러가 읽는 view에는 넣지 않는다. 읽기 필드 11개를 그대로 유지하기 위해서다
+     * (ARENA_SCENE 1절). DistanceGauge의 getD와 같은 방식이다.
+     */
+    getPiste() {
+      const warn = pisteWarning(state);
+      return { me: state.mePos, ai: state.aiPos, warnMe: warn.me, warnAi: warn.ai };
     },
   };
 }

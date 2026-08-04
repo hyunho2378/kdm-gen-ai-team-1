@@ -7,8 +7,15 @@ import {
   OWNER,
   AI_MODE,
   ATTACK_KIND,
+  LAMP,
   MISS_REASON,
+  PISTE,
+  SCORE_REASON,
   createJudgeState,
+  moveOpponent,
+  movePlayer,
+  pisteWarning,
+  resolvePisteOut,
   resolveThrust,
   resolveTelegraphEnd,
   inValidRange,
@@ -30,7 +37,7 @@ function expect(cond, message) {
   if (!cond) throw new Error(message);
 }
 
-/** 시나리오 8종. 사양의 검증 항목과 1:1이다. D3에서 런지 2종이 붙었다. */
+/** 시나리오 10종. 사양의 검증 항목과 1:1이다. D3에서 런지 2종, R3에서 피스트와 락아웃 2종이 붙었다. */
 export function runJudgeSelftest() {
   const results = [];
 
@@ -158,23 +165,101 @@ export function runJudgeSelftest() {
     })
   );
 
+  results.push(
+    scenario('후방 경계 실점', () => {
+      const step = -RULES.STEP_PER_SEC / 60;   // 매 프레임 후퇴 한 칸
+      const s = createJudgeState();
+      expect(resolvePisteOut(s) === null, '앙가르드 라인에서는 실점이 없다');
+      expect(pisteWarning(s).me === false, '시작은 경고선 밖이다');
+
+      // 계속 물러나면 뒤가 소진된다. 1.3 m/s로 5m라 3.85초다
+      let warnAt = -1;
+      for (let i = 0; i < 60 * 5; i += 1) {
+        movePlayer(s, step);
+        if (warnAt < 0 && pisteWarning(s).me) warnAt = i;
+        if (resolvePisteOut(s)) break;
+      }
+      const out = resolvePisteOut(s);
+      expect(out !== null, '후방 경계를 넘으면 판정이 선다');
+      expect(out.owner === OWNER.AI, '내가 밀려나면 상대 득점');
+      expect(out.reason === SCORE_REASON.PISTE_OUT, `사유는 피스트 밖인데 ${out.reason}`);
+      expect(out.reason.length <= 6, '판정 사유는 6자 이내');
+      expect(warnAt > 0, '경계 전에 경고선을 지난다');
+
+      // 반대쪽도 성립한다. AI를 뒤로 몰면 내 득점이다
+      const a = createJudgeState();
+      for (let i = 0; i < 60 * 5 && !resolvePisteOut(a); i += 1) moveOpponent(a, step);
+      const mine = resolvePisteOut(a);
+      expect(mine && mine.owner === OWNER.ME, 'AI를 라인 밖으로 몰면 내 득점');
+      return `${PISTE.ME_START}m 소진 ${(warnAt / 60).toFixed(2)}초에 경고선, 양방향 성립`;
+    })
+  );
+
+  results.push(
+    scenario('유파별 동시타 락아웃', () => {
+      // 유파 파라미터는 호출자가 넘긴다. judge는 유파를 모른다
+      const SABER = { lockoutMs: 170, doubleTouch: false };
+      const EPEE = { lockoutMs: 40, doubleTouch: true };
+      const attacked = (score) => {
+        const s = createJudgeState({ d: 45 });
+        s.ai.mode = AI_MODE.TELEGRAPH;
+        s.ai.kind = ATTACK_KIND.REAL;
+        s.guarding = false;
+        s.counterAt = 1000;
+        if (score) s.score = score;
+        return s;
+      };
+
+      // 세이버는 우선권 종목이라 동시 개시가 무득점이다
+      const sim = resolveTelegraphEnd(attacked(), 1000 + SABER.lockoutMs - 1, SABER);
+      expect(sim.points === 0 && !sim.aiPoints, '시뮬타네는 아무도 못 가져간다');
+      expect(sim.reason === SCORE_REASON.SIMULTANEOUS, `사유는 시뮬타네인데 ${sim.reason}`);
+      expect(sim.lamp === LAMP.BOTH, '양쪽 램프가 켜진다');
+
+      // 창을 벗어나면 평소대로 내가 맞는다
+      const late = resolveTelegraphEnd(attacked(), 1000 + SABER.lockoutMs + 1, SABER);
+      expect(late.owner === OWNER.AI && late.points === RULES.HIT_POINTS, '창 밖은 단일 실점');
+
+      // 에페는 우선권이 없어 양쪽 다 가져간다
+      const dbl = resolveTelegraphEnd(attacked(), 1000 + EPEE.lockoutMs - 1, EPEE);
+      expect(dbl.outcome === OUTCOME.HIT, '더블도 명중이다');
+      expect(dbl.points === RULES.HIT_POINTS && dbl.aiPoints === RULES.HIT_POINTS, '더블은 양쪽 1점');
+      expect(dbl.reason === SCORE_REASON.DOUBLE, `사유는 더블 투셰인데 ${dbl.reason}`);
+
+      // 창 길이가 유파 차이를 만든다. 세이버면 동시타였을 100ms가 에페에서는 단일 실점이다
+      const single = resolveTelegraphEnd(attacked(), 1100, EPEE);
+      expect(single.owner === OWNER.AI, '에페 창 40ms 밖은 단일 실점');
+
+      // 동점 매치포인트의 더블은 무효다(실룰 null and void)
+      const mp = RULES.MATCH_POINT - 1;
+      const voided = resolveTelegraphEnd(attacked({ me: mp, ai: mp }), 1000 + EPEE.lockoutMs - 1, EPEE);
+      expect(voided.points === 0 && !voided.aiPoints, '매치포인트 더블은 점수가 없다');
+      expect(voided.reason === SCORE_REASON.DOUBLE_VOID, `사유는 더블 무효인데 ${voided.reason}`);
+      return `세이버 ${SABER.lockoutMs}ms 시뮬타네 / 에페 ${EPEE.lockoutMs}ms 더블, ${mp}-${mp} 더블 무효`;
+    })
+  );
+
   return results;
 }
 
 /**
  * 기준 서명. 같은 시드와 같은 대본이 같은 경기를 내는지 보는 회귀 가드다.
  *
- * **D3에서 갱신했다.** AI 유파 다양화와 런지 추가는 의도적 게임플레이 변경이므로 서명이 바뀌는 것이 정상이다.
+ * **D3과 R3에서 갱신했다.** 의도적 게임플레이 변경이므로 서명이 바뀌는 것이 정상이다.
  * 절차: 변경 전 그린 확인 → 변경 → 같은 시드 2회 동일 확인 → 새 서명 채택.
+ *
+ * R3 변경분: 피스트 절대 위치와 후방 경계 실점, 유파별 동시타 락아웃,
+ * 그리고 **맞불이 phase를 멈추지 않게 한 것**(멈추면 락아웃 창이 구조적으로 닫힌다).
+ * 직전 D3 서명은 길이 244 / 해시 8c2f910 / 꼬리 `SCORE:6-2:53.633#6-2#ME`였다.
  *
  * 이전 기록은 앞 80자만 남겨 두었는데 **그 구간은 D3 전후가 똑같았다.**
  * 대본의 앞부분은 AI가 아직 갈리기 전이라 변경이 뒤쪽에서만 드러나기 때문이다.
  * 접두만 보는 가드는 회귀를 놓친다. 그래서 이제 길이와 해시와 꼬리를 함께 박는다.
  */
 export const BASELINE = {
-  length: 244,
-  hash: '8c2f910',
-  tail: 'SCORE:6-2:53.633#6-2#ME',
+  length: 205,
+  hash: 'ef4b27d5',
+  tail: 'JUDGE:6-1:51.833#6-1#ME',
 };
 
 function signatureHash(sig) {

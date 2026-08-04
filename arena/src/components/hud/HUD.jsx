@@ -12,14 +12,16 @@ import StatusChip from '../ui/StatusChip.jsx';
 import DistanceGauge from './DistanceGauge.jsx';
 import ScoreBoard from './ScoreBoard.jsx';
 import JudgeText from './JudgeText.jsx';
+import LampPanel from './LampPanel.jsx';
 import PhaseBanner from './PhaseBanner.jsx';
+import PisteStrip from './PisteStrip.jsx';
 import { frameInset, useViewport } from './frame.js';
 
 // 미터가 켜지면 하단 행 전체가 그 위로 비켜선다.
 // 배너만 올렸더니 1024에서 간합 게이지의 오른쪽 끝(헛침 사유와 숫자)이 미터에 깔렸다(실측).
 const METER_CLEARANCE = 62;
 
-export default function HUD({ snapshot, getD, fpsDegraded, rendererFallback, meterOn = false }) {
+export default function HUD({ snapshot, getD, getPiste, fpsDegraded, rendererFallback, meterOn = false }) {
   const { w } = useViewport();
   const { phase, score, result, school } = snapshot;
   const live = phase === PHASE.EN_GARDE || phase === PHASE.EXCHANGE || phase === PHASE.JUDGE || phase === PHASE.SCORE;
@@ -42,16 +44,25 @@ export default function HUD({ snapshot, getD, fpsDegraded, rendererFallback, met
       }}
     >
       {/* 상단: 좌 점수, 우 상태 칩. 둘 다 상단 컷 변 아래 안쪽이다 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
-        <ScoreBoard score={score} schoolName={school.name} />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <StatusChip label="서버" value="키보드 모드" degraded />
-            <StatusChip label="컨트롤러" value="없음" degraded />
-            <StatusChip label="캠" value="없음" degraded />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24 }}>
+          <ScoreBoard score={score} schoolName={school.name} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <StatusChip label="서버" value="키보드 모드" degraded />
+              <StatusChip label="컨트롤러" value="없음" degraded />
+              <StatusChip label="캠" value="없음" degraded />
+            </div>
+            {rendererFallback ? <StatusChip label="렌더" value="호환 렌더" degraded /> : null}
+            {fpsDegraded ? <StatusChip label="성능" value="자동 감축" degraded /> : null}
           </div>
-          {rendererFallback ? <StatusChip label="렌더" value="호환 렌더" degraded /> : null}
-          {fpsDegraded ? <StatusChip label="성능" value="자동 감축" degraded /> : null}
+        </div>
+
+        {/* 심판기 램프와 피스트 스트립 (R3). 실제 심판기처럼 좌우 램프가 위치 축을 감싼다.
+            둘 다 상단 밴드라 중앙 시야를 안 가린다(16절 규칙 유지) */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
+          <LampPanel lamp={snapshot.lamp} active={snapshot.showJudge} schoolName={school.name} />
+          {getPiste ? <PisteStrip getPiste={getPiste} /> : null}
         </div>
       </div>
 
