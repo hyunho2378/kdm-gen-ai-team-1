@@ -9,6 +9,8 @@ import Lenis from 'lenis';
 import { colors } from './tokens.js';
 import { SECTION_LABELS, PLACEHOLDER_SUFFIX, COVER_HINT } from './copy.js';
 import S1Cover from './sections/S1Cover.jsx';
+import SPrologue from './sections/SPrologue.jsx';
+import SPainPoint from './sections/SPainPoint.jsx';
 import S2Why from './sections/S2Why.jsx';
 import S3Target from './sections/S3Target.jsx';
 import S4Keyword from './sections/S4Keyword.jsx';
@@ -26,13 +28,11 @@ gsap.registerPlugin(Observer);
 // 섹션 목록. 발표 덱 시안 골격. 바탕은 전부 브랜드 블랙. 문구는 copy.js가 단일 원천이다.
 const SECTIONS = SECTION_LABELS;
 
-// 서브 진행을 위임하는 섹션의 **id**. 인덱스를 손으로 적지 않는다.
-// 중간에 섹션을 끼워 넣어 뒤 인덱스가 밀려도 여기서 id로 찾으므로 위임이 엉뚱한 섹션에 붙지 않는다.
-// (브랜드 4장을 문제와 컨셉 사이에 넣었을 때 실제로 인터랙션과 유파의 인덱스가 3,4 → 7,8로 밀렸다)
-// **s8(인터랙션)은 뺐다.** 4종을 한 화면에 동시에 띄우도록 개편해 서브 진행이 없어졌다.
-// 이제 방향키 한 번에 통과한다.
-const DELEGATE_IDS = ['s2', 's9'];
-const DELEGATE_INDEXES = DELEGATE_IDS.map((id) => SECTIONS.findIndex((s) => s.id === id));
+// 서브 진행을 위임하는 섹션의 id.
+// **인덱스를 어디에도 쓰지 않는다.** 등록도 조회도 전부 id로 한다.
+// 예전에는 인덱스로 조회했는데 앞에 섹션을 끼울 때마다 위임이 엉뚱한 섹션에 붙었다.
+// 이제 표지 뒤에 두 장을 더 넣어도 아래 두 줄과 각 섹션 코드가 그대로 산다.
+const DELEGATE_IDS = ['why', 'duelist'];
 
 // easeInOutCubic. 1초 섹션 이동에 붙는다.
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -42,18 +42,18 @@ export default function App() {
   const currentRef = useRef(0);
   const animatingRef = useRef(false);
   const lenisRef = useRef(null);
-  // 서브 진행 위임. 섹션이 방향키를 자기 단계로 소비할 수 있게 인덱스별 핸들러를 잡아 둔다.
-  // 지금 위임하는 섹션은 셋. 1 문제(2단계) / 3 인터랙션(4단계) / 4 유파(3단계).
+  // 서브 진행 위임. 섹션이 방향키를 자기 단계로 소비할 수 있게 **id별로** 핸들러를 잡아 둔다.
+  // 지금 위임하는 섹션은 둘. 문제(2단계) / 유파(6단계).
   const subHandlers = useRef({});
   const subEnters = useRef({});
 
-  // 인덱스별 register 함수는 렌더마다 새로 만들면 자식 useEffect가 매번 다시 돈다. 한 번만 만든다.
+  // id별 register 함수는 렌더마다 새로 만들면 자식 useEffect가 매번 다시 돈다. 한 번만 만든다.
   const reg = useMemo(() => {
     const map = {};
-    DELEGATE_INDEXES.forEach((i) => {
-      map[i] = {
-        handler: (fn) => { subHandlers.current[i] = fn; },
-        enter: (fn) => { subEnters.current[i] = fn; },
+    DELEGATE_IDS.forEach((id) => {
+      map[id] = {
+        handler: (fn) => { subHandlers.current[id] = fn; },
+        enter: (fn) => { subEnters.current[id] = fn; },
       };
     });
     return map;
@@ -73,8 +73,8 @@ export default function App() {
     const go = (dir) => {
       if (animatingRef.current) return;
       // 위임 섹션에 머무는 동안 방향키는 그 섹션의 서브 단계를 소비한다.
-      // 경계(처음/끝)에서만 핸들러가 false를 돌려 섹션이 바뀐다.
-      const sub = subHandlers.current[currentRef.current];
+      // 경계(처음/끝)에서만 핸들러가 false를 돌려 섹션이 바뀐다. **조회는 현재 섹션 id로 한다.**
+      const sub = subHandlers.current[SECTIONS[currentRef.current].id];
       if (sub && sub(dir)) return;
       const next = currentRef.current + dir;
       if (next < 0 || next >= SECTIONS.length) return; // 경계에서 멈춘다(순환 없음)
@@ -82,7 +82,7 @@ export default function App() {
       currentRef.current = next;
       setCurrent(next);
       // 위임 섹션으로 진입하면 방향에 맞는 경계 단계에서 시작하도록 알린다(아래→처음, 위→끝)
-      subEnters.current[next]?.(dir);
+      subEnters.current[SECTIONS[next].id]?.(dir);
       const target = document.getElementById(SECTIONS[next].id);
       const unlock = () => {
         animatingRef.current = false;
@@ -152,25 +152,29 @@ export default function App() {
             }}
           >
             {/* **인덱스가 아니라 id로 고른다.** 섹션을 끼워 넣어도 짝이 어긋나지 않는다. */}
-            {s.id === 's1' ? (
+            {s.id === 'cover' ? (
               <S1Cover active={current === i} />
-            ) : s.id === 's2' ? (
-              <S2Why registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
-            ) : s.id === 's3' ? (
+            ) : s.id === 'prologue' ? (
+              <SPrologue active={current === i} />
+            ) : s.id === 'painpoint' ? (
+              <SPainPoint active={current === i} />
+            ) : s.id === 'why' ? (
+              <S2Why registerHandler={reg[s.id].handler} registerEnter={reg[s.id].enter} />
+            ) : s.id === 'target' ? (
               <S3Target active={current === i} />
-            ) : s.id === 's4' ? (
+            ) : s.id === 'keyword' ? (
               <S4Keyword active={current === i} />
-            ) : s.id === 's5' ? (
+            ) : s.id === 'naming' ? (
               <S5Naming active={current === i} />
-            ) : s.id === 's6' ? (
+            ) : s.id === 'color' ? (
               <S6ColorSystem active={current === i} />
-            ) : s.id === 's7' ? (
+            ) : s.id === 'concept' ? (
               <S3Concept active={current === i} />
-            ) : s.id === 's8' ? (
+            ) : s.id === 'experience' ? (
               <S4Experience active={current === i} />
-            ) : s.id === 's9' ? (
-              <S5Duelist registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
-            ) : s.id === 's12' ? (
+            ) : s.id === 'duelist' ? (
+              <S5Duelist registerHandler={reg[s.id].handler} registerEnter={reg[s.id].enter} />
+            ) : s.id === 'demo' ? (
               <S7Demo active={current === i} />
             ) : (
               <div
@@ -257,7 +261,8 @@ export default function App() {
           letterSpacing: '0.16em',
           color: colors.text.faint,
           pointerEvents: 'none',
-          opacity: current === 0 ? 1 : 0,
+          // 표지에서만 보인다. 인덱스가 아니라 id로 판단해 섹션이 밀려도 안 깨진다.
+          opacity: SECTIONS[current].id === 'cover' ? 1 : 0,
           transition: 'opacity 300ms ease',
         }}
       >

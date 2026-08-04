@@ -16,6 +16,57 @@ export const COVER = {
   sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 XR',
 };
 
+// 배경 PROLOGUE (원본 Slide 16_9 - 2.svg)
+// body의 각 줄은 조각 배열이다. b가 true인 조각만 강조(밝고 굵게), 나머지는 저알파.
+export const PROLOGUE = {
+  label: 'PROLOGUE',
+  body: [
+    [
+      { t: '펜싱은 빠른 공격보다 ' },
+      { t: '상대와의 거리, 타이밍, 움직임', b: true },
+      { t: '을 읽는 감각이 중요한 ' },
+      { t: '1:1 대결 스포츠', b: true },
+      { t: '다.' },
+    ],
+    [
+      { t: '하지만 높은 진입장벽으로 많은 사람들에게는 ' },
+      { t: "'관람하는 스포츠'", b: true },
+      { t: '에 머물러 있다.' },
+    ],
+  ],
+};
+
+// 인사이트 PAIN POINT (원본 1.svg)
+// 상단 페인 3장과 하단 인사이트 3장이 같은 열에 선다. 배열 순서가 곧 열 순서다.
+export const PAINPOINT = {
+  painLabel: 'PAIN POINT',
+  insightLabel: 'INSIGHT',
+  // 배경 사진은 라이선스 미확인 시안이라 임베드하지 않는다. 파일이 없으면 다크 플레이스홀더로 내려앉는다.
+  bg: '/images/painpoint/bg.png',
+};
+
+export const PAINPOINT_COLUMNS = [
+  {
+    key: 'functional',
+    // 원본 SVG 오타 'Fuctional'을 'Functional'로 교정했다.
+    title: 'Functional (기능적)',
+    pain: ['거리감을 익히기 어렵고', '자세 교정이 어려움'],
+    insight: ['피드백 받을 수 있는', '시스템이 필요'],
+  },
+  {
+    key: 'economic',
+    title: 'Economic (경제적)',
+    pain: ['레슨비와 장비가 비싸고', '연습장이 부족'],
+    insight: ['일상에서 지속적으로 즐길 수', '있는 환경이 필요'],
+  },
+  {
+    key: 'social',
+    title: 'Social (사회적)',
+    pain: ['진입 장벽이 높고', '같이 할 사람이 없음'],
+    insight: ['부담 없이 시작하고, 대결하며', '성장할 수 있는 경험이 필요'],
+  },
+];
+
 // S2 문제
 export const WHY = {
   label: { en: 'WHY', ko: '문제' },
@@ -224,21 +275,24 @@ export const DUELIST_STYLES = [
 ];
 
 // 셸 섹션 목록. App.jsx가 이 배열로 섹션을 세운다.
-// **순서를 바꾸면 App.jsx의 위임 인덱스와 active 비교 숫자를 함께 고쳐야 한다.**
-// 브랜드 4장(대상 → 디자인 키워드 → 네이밍 → 컬러)은 문제 다음, 컨셉 앞에 들어간다.
+// **id는 의미 이름이다.** 예전에는 s1~s12 번호였는데 앞에 섹션을 끼울 때마다 전부 밀려
+// 위임과 렌더 분기가 같이 깨졌다. 이제 순서를 바꿔도 id는 그대로이고
+// App.jsx가 위임과 컴포넌트 선택을 전부 id로 하므로 삽입이 안전하다.
 export const SECTION_LABELS = [
-  { id: 's1', ko: '표지', en: 'COVER' },
-  { id: 's2', ko: '문제', en: 'WHY' },
-  { id: 's3', ko: '대상', en: 'TARGET' },
-  { id: 's4', ko: '디자인 키워드', en: 'DESIGN KEYWORD' },
-  { id: 's5', ko: '브랜드 네이밍', en: 'BRAND NAMING' },
-  { id: 's6', ko: '컬러 시스템', en: 'COLOR SYSTEM' },
-  { id: 's7', ko: '컨셉', en: 'CONCEPT' },
-  { id: 's8', ko: '인터랙션', en: 'EXPERIENCE' },
-  { id: 's9', ko: '유파', en: 'AI DUELIST' },
-  { id: 's10', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
-  { id: 's11', ko: '산출물', en: 'OUTPUTS' },
-  { id: 's12', ko: '데모', en: 'DEMO' },
+  { id: 'cover', ko: '표지', en: 'COVER' },
+  { id: 'prologue', ko: '배경', en: 'PROLOGUE' },
+  { id: 'painpoint', ko: '인사이트', en: 'PAIN POINT' },
+  { id: 'why', ko: '문제', en: 'WHY' },
+  { id: 'target', ko: '대상', en: 'TARGET' },
+  { id: 'keyword', ko: '디자인 키워드', en: 'DESIGN KEYWORD' },
+  { id: 'naming', ko: '브랜드 네이밍', en: 'BRAND NAMING' },
+  { id: 'color', ko: '컬러 시스템', en: 'COLOR SYSTEM' },
+  { id: 'concept', ko: '컨셉', en: 'CONCEPT' },
+  { id: 'experience', ko: '인터랙션', en: 'EXPERIENCE' },
+  { id: 'duelist', ko: '유파', en: 'AI DUELIST' },
+  { id: 'workflow', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
+  { id: 'outputs', ko: '산출물', en: 'OUTPUTS' },
+  { id: 'demo', ko: '데모', en: 'DEMO' },
 ];
 
 export const PLACEHOLDER_SUFFIX = '플레이스홀더';
