@@ -104,12 +104,14 @@ export const COLOR_SYSTEM = {
   stopLabels: ['Color1', 'Color2', 'Color3', 'Color4'],
 };
 
-// S3 컨셉
+// 컨셉 (원본 Slide 16_9 - 4.svg)
+// 원본 순서: CONCEPT → VORTEX → 인용 → 가로 구분선 → 반투명 레드 글래스 박스 본문.
 export const CONCEPT = {
   label: 'CONCEPT',
-  desc: [
-    '펜싱 칼이 소용돌이처럼 빨아들이는 몰입',
-    '상대와 나 사이 거리를 계산하고 무너뜨리는 결투',
+  quote: '“상대와 나 사이의 결정적 거리, 1:1 대응”',
+  body: [
+    '상대와 나, 오직 두 사람만이 만들어내는 결정적 거리 안에 들어서는 순간부터',
+    '결투는 이미 시작, 그 거리를 계산하고 지키고 무너뜨리는 감각의 결투 경험',
   ],
 };
 
