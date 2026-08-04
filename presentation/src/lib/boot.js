@@ -19,8 +19,25 @@ export function markBooted() {
   resolveBoot();
 }
 
+// 히어로 첫 프레임 준비 신호. 프리로더가 폰트와 함께 이걸 기다렸다가 걷힌다(P3).
+// 상한(프리로더 2.5초)이 항상 우선이라 프레임이 늦어도 화면을 인질로 잡지 않는다.
+let resolveAssets;
+const assets = new Promise((resolve) => {
+  resolveAssets = resolve;
+});
+let assetsDone = false;
+export function markAssetsReady() {
+  if (assetsDone) return;
+  assetsDone = true;
+  resolveAssets();
+}
+export function whenAssetsReady() {
+  return assets;
+}
+
 if (typeof window !== 'undefined') {
   setTimeout(markBooted, FAILSAFE_MS);
+  setTimeout(markAssetsReady, FAILSAFE_MS);
 }
 
 /** 프리로더 종료를 기다린다. 이미 끝났으면 즉시 이어진다. */

@@ -21,7 +21,7 @@ import { frameInset, useViewport } from './frame.js';
 // 배너만 올렸더니 1024에서 간합 게이지의 오른쪽 끝(헛침 사유와 숫자)이 미터에 깔렸다(실측).
 const METER_CLEARANCE = 62;
 
-export default function HUD({ snapshot, getD, getPiste, fpsDegraded, rendererFallback, meterOn = false }) {
+export default function HUD({ snapshot, getD, getPiste, camValue = '없음', camOk = false, fpsDegraded, rendererFallback, meterOn = false }) {
   const { w } = useViewport();
   const { phase, score, result, school } = snapshot;
   const live = phase === PHASE.EN_GARDE || phase === PHASE.EXCHANGE || phase === PHASE.JUDGE || phase === PHASE.SCORE;
@@ -51,7 +51,7 @@ export default function HUD({ snapshot, getD, getPiste, fpsDegraded, rendererFal
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               <StatusChip label="서버" value="키보드 모드" degraded />
               <StatusChip label="컨트롤러" value="없음" degraded />
-              <StatusChip label="캠" value="없음" degraded />
+              <StatusChip label="캠" value={camValue} degraded={!camOk} />
             </div>
             {rendererFallback ? <StatusChip label="렌더" value="호환 렌더" degraded /> : null}
             {fpsDegraded ? <StatusChip label="성능" value="자동 감축" degraded /> : null}

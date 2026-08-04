@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { colors, motion, typography, zIndex } from '../tokens.js';
 import { isReduced, REDUCED_FADE_MS } from '../lib/motionMode.js';
-import { markBooted } from '../lib/boot.js';
+import { markBooted, whenAssetsReady } from '../lib/boot.js';
 
 const MAX_WAIT_MS = 2500;
 const DRAW_MS = 900;
@@ -47,9 +47,12 @@ export default function Preloader() {
 
     const cap = setTimeout(leave, MAX_WAIT_MS);
     const fonts = document.fonts?.ready ?? Promise.resolve();
+    // 폰트와 히어로 첫 프레임을 함께 기다린다. 빈 canvas로 표지가 뜨는 것을 막는다(P3).
+    // 상한(cap)이 항상 우선이라 둘 중 하나가 늦어도 2.5초에서 무조건 걷힌다.
+    const ready = Promise.all([fonts, whenAssetsReady()]);
     // 선 그리기가 한 번은 보이도록 최소 시간을 준다. reduced에서는 기다리지 않는다.
     const floor = isReduced() ? 0 : DRAW_MS * 0.6;
-    fonts.then(() => setTimeout(leave, floor)).catch(leave);
+    ready.then(() => setTimeout(leave, floor)).catch(leave);
 
     return () => {
       cancelled = true;

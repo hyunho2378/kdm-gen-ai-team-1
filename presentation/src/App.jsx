@@ -69,9 +69,8 @@ export default function App() {
       <main>
         {SECTIONS.map((s) => {
           if (s.id === 'cover') {
-            return (
-              <Section key={s.id} id={s.id} label={s.label} renderTitle={() => <CoverSection data={s} />} />
-            );
+            // cover는 200vh 핀 히어로라 Section 골격(100dvh flex 중앙)을 쓰지 않고 자체 섹션을 소유한다(P3)
+            return <CoverSection key={s.id} data={s} />;
           }
           const Body = BODY[s.id];
           return (

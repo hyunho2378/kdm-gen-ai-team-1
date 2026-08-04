@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createEngine } from './game/engine.js';
 import { createPoseChannel } from './game/pose.js';
 import { createPerfStats, meterEnabled } from './game/perf.js';
+import { CAM, CAM_LABEL, createFaceTracker } from './game/faceTracker.js';
 import { attachKeyboard } from './game/input.js';
 import { EV, PHASE } from './game/machine.js';
 import GameCanvas from './game/GameCanvas.jsx';
@@ -31,9 +32,13 @@ export default function App() {
   // 렌더러가 투영해 준 마지막 연출 좌표. FUI 층이 이것 하나만 본다
   const [fxShot, setFxShot] = useState(null);
   const fxId = useRef(0);
+  // 웹캠 상태. 어느 경로로 실패해도 게임은 안 멈춘다(R5)
+  const [camStatus, setCamStatus] = useState(CAM.OFF);
   // 연속 채널. engine과 분리되어 있고 렌더러만 소비한다(ARENA_INPUT 3절).
   const poseChannel = useMemo(() => createPoseChannel(), []);
   const perf = useMemo(() => createPerfStats(), []);
+  // 웹캠 추적기. engine과 렌더러 양쪽에 지표를 넘기지만 **판정 경로에는 불리언 하나만 간다**
+  const face = useMemo(() => createFaceTracker(), []);
   // dev이거나 주소에 ?fps=1이 있으면 미터를 띄운다. 실기 확인이 최종 성능 게이트다
   const showMeter = useMemo(() => meterEnabled(import.meta.env.DEV), []);
 
@@ -66,6 +71,23 @@ export default function App() {
     [engine]
   );
 
+  // 웹캠 배선 (R5). 팽창 트리거는 불리언만, 패럴랙스는 렌더러 전용 연속 채널이다.
+  // 캠이 안 서면 트리거가 null을 돌려 engine이 기존 성공률 근사로 판단한다(우선순위 캠 > 근사).
+  useEffect(() => {
+    face.onStatusChange(setCamStatus);
+    engine.setDilationTrigger(() => face.dilationTrigger());
+    // 권한은 사용자 제스처에서만 얻을 수 있다. 첫 키 입력에 붙인다
+    const kick = () => face.start();
+    window.addEventListener('keydown', kick, { once: true });
+    window.addEventListener('pointerdown', kick, { once: true });
+    return () => {
+      window.removeEventListener('keydown', kick);
+      window.removeEventListener('pointerdown', kick);
+      engine.setDilationTrigger(null);
+      face.dispose();
+    };
+  }, [engine, face]);
+
   // 성능 가드 상태를 칩에 반영한다. 프레임마다 state를 올리지 않는다.
   useEffect(() => {
     const id = setInterval(() => {
@@ -96,6 +118,8 @@ export default function App() {
           onRendererReady={(r) => {
             rendererRef.current = r;
             setRendererFallback(r.isFallback);
+            // 패럴랙스 지표 주입. reduced면 렌더러가 목표를 0으로 두어 카메라가 안 움직인다
+            r.setHeadSource?.(() => face.read());
           }}
           onFallback={() => setRendererFallback(true)}
           onFx={(e) => {
@@ -111,6 +135,8 @@ export default function App() {
           snapshot={snapshot}
           getD={() => engine.getD()}
           getPiste={getPiste}
+          camValue={CAM_LABEL[camStatus]}
+          camOk={camStatus === CAM.READY}
           fpsDegraded={degraded}
           rendererFallback={rendererFallback}
           meterOn={showMeter}

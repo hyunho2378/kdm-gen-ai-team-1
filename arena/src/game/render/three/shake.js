@@ -50,6 +50,16 @@ export function createShake(camera) {
       }
     },
 
+    /**
+     * 기준 자세 갱신 (R5). 헤드 패럴랙스가 카메라를 옮기므로 셰이크의 기준도 따라와야 한다.
+     * 둘 다 camera.position에 절대값을 쓰면 프레임마다 서로를 덮어써 떨림이 된다.
+     * **패럴랙스가 기준을 정하고 셰이크는 그 위에 얹는다.**
+     */
+    setBase(pos, quat) {
+      base.copy(pos);
+      if (quat) baseQuat.copy(quat);
+    },
+
     reset() {
       trauma = 0;
       camera.position.copy(base);

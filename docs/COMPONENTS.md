@@ -122,8 +122,15 @@
   3초 진행 링. SVG stroke 애니메이션(transform, opacity 규칙 준수 대상 아님, stroke-dashoffset은 SVG 예외로 허용하되 HUD 밖 남용 금지).
 - **VignetteOverlay** `components/VignetteOverlay.jsx` / 시간 팽창
   zIndex.overlay, 방사 비네트 opacity만 애니메이션. timeDilation 수치 참조.
-- **FaceTracker** `game/faceTracker.js` / 웹캠(컴포넌트 아님)
-  MediaPipe FaceLandmarker CDN. 요 각도와 랜드마크 안정도 2지표. 거부와 실패 시 null 반환, 게임은 THRUST 성공률 대체 지표로 계속.
+- **FaceTracker** `game/faceTracker.js` / 웹캠(컴포넌트 아님) — R5에서 구현
+  MediaPipe tasks-vision FaceLandmarker를 **CDN에서 받는다(번들 금지).**
+  추론은 메인 루프 밖 **15Hz 스로틀**이고 렌더는 마지막 결과를 읽기만 한다.
+  지표 4개(머리 x, 요, 얼굴 크기, 안정도) 전부 EMA. 랜드마크는 코끝과 양 눈꼬리 셋만 쓴다.
+  **판정 유입 금지.** engine이 이 파일을 import하지 않고, 팽창 트리거로 넘기는 것은
+  `{ focused: boolean }` 하나뿐이다. 아날로그 값은 렌더러 패럴랙스로만 간다.
+  상태 5종(off / requesting / denied / ready / lost)이 StatusChip 라벨로 그대로 나온다.
+  거부와 실패와 소실이 전부 같은 경로로 수렴한다. 트리거가 null을 돌리면
+  engine이 기존 성공률 근사로 판단하고 게임은 안 멈춘다.
 
 ## controller
 

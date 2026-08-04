@@ -15,6 +15,7 @@ import { createShake } from './three/shake.js';
 import { createSparks } from './three/sparks.js';
 import { createTrailRibbon } from './three/trail.js';
 import {
+  CAMERA,
   SWORD_POSES,
   createBackground,
   createCamera,
@@ -112,6 +113,17 @@ function lerpToward(out, b, t) {
 const GUARD_IN_SEC = 0.055;
 const GUARD_OUT_SEC = 0.22;
 
+/**
+ * 헤드 커플드 패럴랙스 (R5). 웹캠이 읽은 머리 위치로 카메라를 아주 조금 옮긴다.
+ * 검이 카메라의 자식이라 검도 함께 움직이고, 그것이 1인칭에서 맞다.
+ *
+ * **절제가 전부다.** 크게 걸면 조준이 흔들려 게임이 안 되고 멀미가 난다.
+ * x 5cm, z 3cm, 요 0.02rad은 "화면 너머를 들여다본다"는 인상만 남기는 크기다.
+ * 스무딩은 지표 EMA 위에 한 겹 더 얹는다. 추론이 15Hz라 그대로 쓰면 계단이 보인다.
+ */
+const PARALLAX = { x: 0.05, z: 0.03, yaw: 0.02, smooth: 6.0 };
+const CAMERA_EYE_Y = CAMERA.eyeY;
+
 export function createThreeRenderer() {
   let renderer = null;
   let scene = null;
@@ -165,6 +177,12 @@ export function createThreeRenderer() {
   let jitterY = 0;
   // 가드 홀드 진행도 0~1. 홀드 구간에만 1로 올라간다(R1)
   let guardBlend = 0;
+  // 헤드 패럴랙스 (R5). 웹캠이 없으면 전부 0이라 카메라가 기준 자세에 그대로 앉는다
+  let head = null;
+  const headNow = { x: 0, z: 0, yaw: 0 };
+  const camBase = new THREE.Vector3();
+  const camQuat = new THREE.Quaternion();
+  const YAW_AXIS = new THREE.Vector3(0, 1, 0);
 
   // 연속 채널의 최신값. 판정에 쓰이지 않는다.
   let pose = { kind: 'preset', value: 'rest' };
@@ -369,6 +387,25 @@ export function createThreeRenderer() {
       }
       lastD = gameState.d;
 
+      // 헤드 패럴랙스. 캠이 없거나 reduced면 목표가 0이라 스무딩을 타고 기준 자세로 되돌아온다.
+      // **거부와 실패와 소실이 전부 이 한 경로로 수렴한다**(우아한 저하. PATTERNS 8절)
+      {
+        const m = !reducedMotion && head ? head() : null;
+        const tx = m ? -m.headX * PARALLAX.x : 0;
+        const tz = m ? -m.scale * PARALLAX.z : 0;
+        const ty = m ? -m.headYaw * PARALLAX.yaw : 0;
+        const k = Math.min(1, dtRender * PARALLAX.smooth);
+        headNow.x += (tx - headNow.x) * k;
+        headNow.z += (tz - headNow.z) * k;
+        headNow.yaw += (ty - headNow.yaw) * k;
+        camBase.set(headNow.x, CAMERA_EYE_Y, headNow.z);
+        camQuat.setFromAxisAngle(YAW_AXIS, headNow.yaw);
+        // 패럴랙스가 기준을 정하고 셰이크가 그 위에 얹는다. 둘 다 절대값을 쓰면 서로를 덮어쓴다
+        shake.setBase(camBase, camQuat);
+        camera.position.copy(camBase);
+        camera.quaternion.copy(camQuat);
+      }
+
       const real = gameState.aiKind === ATTACK_KIND.REAL;
 
       // 이번 찌르기의 조준을 시작 순간 한 번 뽑는다. 매 프레임 뽑으면 칼끝이 떨린다
@@ -527,6 +564,16 @@ export function createThreeRenderer() {
     /** 화면 좌표가 필요한 연출을 DOM으로 넘기는 통로. 렌더러는 그리지 않는다. */
     setFxObserver(fn) {
       onFx = typeof fn === 'function' ? fn : null;
+    },
+
+    /**
+     * 헤드 패럴랙스 지표 주입 (R5). 매 프레임 읽을 게터 하나만 받는다.
+     * **판정과 무관한 연속 채널이다.** 검 자세의 setSwordPose와 같은 등급이고
+     * engine을 거치지 않으므로 결정성 영역 밖이다(ARENA_INPUT 1절).
+     * null을 넣으면 패럴랙스가 스무딩을 타고 0으로 돌아온다.
+     */
+    setHeadSource(fn) {
+      head = typeof fn === 'function' ? fn : null;
     },
 
     /** 연속 채널 주입. 판별 유니온만 받는다(ARENA_SCENE 3절). */

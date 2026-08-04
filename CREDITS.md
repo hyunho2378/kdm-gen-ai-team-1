@@ -57,3 +57,10 @@ brand 작업에서 확정되면 그때 추가한다.
 - EmmaPoliakova/WebRTCSmartphoneController — LICENSE 파일 없음. 기본적으로 사용 불가
 - naughtyduk/glitchGL — 개인 무료와 상업 유료 듀얼 라이선스
 - Muggleee/liquid-glass — README에만 MIT 표기, 정식 LICENSE 파일 없음
+
+## MediaPipe Tasks Vision (R5)
+
+- `@mediapipe/tasks-vision` 0.10.14, Apache-2.0. **CDN 로드이고 번들에 포함하지 않는다.**
+  `arena/src/game/faceTracker.js`가 jsdelivr에서 `vision_bundle.mjs`와 wasm을 받는다.
+- FaceLandmarker 모델 `face_landmarker.task`(float16/1)는 Google 배포본을 그대로 참조한다.
+  로드 실패 시 게임은 성공률 근사 폴백으로 계속 돈다.
