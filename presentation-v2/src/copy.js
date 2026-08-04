@@ -145,36 +145,42 @@ export const CONCEPT = {
   ],
 };
 
-// S4 인터랙션 4종. 순서가 곧 서브 진행 순서다.
+// 인터랙션 4종 (원본 `바인더1.pdf` 6페이지의 4카드 그리드).
 // icon은 lucide-react 아이콘 이름. 컴포넌트가 이름으로 골라 쓴다.
+// name과 desc의 각 줄은 문자열이거나 { terms, tail }이다.
+// 원본은 '페인트 · 리포스트 판독'과 '속도·각도'처럼 가운데점을 쓰지만 DESIGN 카피 규칙이 금지한다.
+// 낱말을 terms로 쪼개 두고 사이 구분은 컴포넌트가 얇은 선으로 그린다.
 export const EXPERIENCE = {
-  label: { en: 'EXPERIENCE', ko: '인터랙션' },
+  label: { en: 'EXPERIENCE', ko: '핵심 인터랙션' },
+  // 원본 PDF 문구는 '포르테를 이루는 네 가지 핵심 XR 인터렉션'이다.
+  // 포르테(PORTÉE)는 구 제품명이라 확정명 VORTEX로 바꾸고 '인터렉션' 오타도 바로잡았다.
+  headline: 'VORTEX를 이루는 네 가지 핵심 XR 인터랙션',
 };
 
 export const INTERACTIONS = [
   {
     key: 'forte',
-    icon: 'Activity',
+    icon: 'Footprints',
     name: '포르테 트래킹',
-    desc: ['칼 뿌리의 위치와 속도를 폰 센서로 추적', '휘두름의 세기가 그대로 궤적의 두께'],
+    desc: ['풋워크를 하체 트래킹으로 인식해', '상대와의 거리를 매 순간 재계산'],
   },
   {
     key: 'enGarde',
-    icon: 'Shield',
+    icon: 'PersonStanding',
     name: '앙 가르드 안정성',
-    desc: ['겨눔 자세의 흔들림을 실시간 지표로 환산', '무너진 자세가 그대로 판정의 빈틈'],
+    desc: ['무게중심과 자세를 트래킹해', 'En garde의 정확도를 평가'],
   },
   {
     key: 'blade',
     icon: 'Swords',
-    name: '블레이드 트래킹과 콘택트',
-    desc: ['두 칼날의 궤적과 맞닿는 순간의 판별', '막기와 흘리기가 갈리는 접촉 지점'],
+    name: '블레이드 트래킹 & 콘택트',
+    desc: [{ terms: ['검끝 속도', '각도'], tail: ' 추적, 명중 순간' }, '진동으로 타격 반동을 재현'],
   },
   {
     key: 'feint',
-    icon: 'Eye',
-    name: '페인트 리포스트 판독',
-    desc: ['속임 동작과 진짜 공격의 구분', '되받아치기 창이 열리는 짧은 구간의 판독'],
+    icon: 'Brain',
+    name: { terms: ['페인트', '리포스트 판독'] },
+    desc: ['가짜 동작과 진짜 공격을 구분해', '카운터 타이밍을 학습'],
   },
 ];
 

@@ -29,7 +29,9 @@ const SECTIONS = SECTION_LABELS;
 // 서브 진행을 위임하는 섹션의 **id**. 인덱스를 손으로 적지 않는다.
 // 중간에 섹션을 끼워 넣어 뒤 인덱스가 밀려도 여기서 id로 찾으므로 위임이 엉뚱한 섹션에 붙지 않는다.
 // (브랜드 4장을 문제와 컨셉 사이에 넣었을 때 실제로 인터랙션과 유파의 인덱스가 3,4 → 7,8로 밀렸다)
-const DELEGATE_IDS = ['s2', 's8', 's9'];
+// **s8(인터랙션)은 뺐다.** 4종을 한 화면에 동시에 띄우도록 개편해 서브 진행이 없어졌다.
+// 이제 방향키 한 번에 통과한다.
+const DELEGATE_IDS = ['s2', 's9'];
 const DELEGATE_INDEXES = DELEGATE_IDS.map((id) => SECTIONS.findIndex((s) => s.id === id));
 
 // easeInOutCubic. 1초 섹션 이동에 붙는다.
@@ -165,7 +167,7 @@ export default function App() {
             ) : s.id === 's7' ? (
               <S3Concept active={current === i} />
             ) : s.id === 's8' ? (
-              <S4Experience registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
+              <S4Experience active={current === i} />
             ) : s.id === 's9' ? (
               <S5Duelist registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
             ) : s.id === 's12' ? (
