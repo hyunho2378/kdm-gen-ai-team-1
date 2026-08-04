@@ -39,16 +39,15 @@ export default function WorkflowSection() {
   const wide = useMediaQuery(`(min-width: ${breakpoints.md}px)`);
 
   return (
-    <Reveal style={{ marginTop: spacing.unit * 5, display: 'flex', flexDirection: 'column', gap: 0 }}>
+    // P4: 표 느낌(행 보더)을 지우고 카드 없는 넓은 행간 타이포로. 2열 병기 내용 규칙은 유지.
+    <Reveal style={{ marginTop: spacing.unit * 6, display: 'flex', flexDirection: 'column', gap: spacing.unit * 6 }}>
       {WORKFLOW.map((row) => (
         <div
           key={row.step}
           style={{
             display: 'grid',
-            gridTemplateColumns: wide ? 'minmax(140px, 1fr) 2fr 2fr' : '1fr',
-            gap: wide ? spacing.gutter : spacing.unit * 2,
-            paddingBlock: spacing.unit * 3,
-            borderTop: `1px solid ${colors.line.default}`,
+            gridTemplateColumns: wide ? 'minmax(160px, 1fr) 2fr 2fr' : '1fr',
+            gap: wide ? `clamp(${spacing.unit * 3}px, 3vw, ${spacing.unit * 6}px)` : spacing.unit * 2,
           }}
         >
           <h3

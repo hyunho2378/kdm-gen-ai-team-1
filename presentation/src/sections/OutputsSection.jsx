@@ -1,17 +1,52 @@
-// IA 2절 7번: 최종 산출물 3종. arena와 brand 캡처는 아직 없어 bg.raised 플레이스홀더를 둔다.
-// PATTERNS 3절 카드: bg.raised, line.default 보더, radius.lg, 패딩 24. 그림자 금지, 깊이는 보더로.
+// IA 2절 7번: 최종 산출물 3종. P4에서 유리 카드로 개편.
+// 유리 = CSS backdrop-filter(blur+반투명) + line.strong 보더 + glow.steel. drei/three 유리는 도입하지 않는다(R3F 배제 판정).
+// 등장 = GSAP from(yPercent:100, stagger) + ScrollTrigger로 아래에서 순차 부상(GreenSock 공식 패턴, 무료).
+// reduced-transparency에서 불투명 폴백(bg.raised), reduced-motion에서 y 이동 없이 페이드만.
+// 카피(o.name, o.role, "캡처 예정")는 원문 그대로.
 
-import { colors, radius, spacing, typography } from '../tokens.js';
+import { useEffect, useRef } from 'react';
+import { colors, radius, spacing, typography, glow } from '../tokens.js';
+import { gsap, ScrollTrigger } from '../lib/scroll.js';
+import { isReduced } from '../lib/motionMode.js';
+import { useMediaQuery } from '../lib/useMediaQuery.js';
 import { OUTPUTS } from '../content/sections.js';
-import Reveal from '../components/Reveal.jsx';
 
 export default function OutputsSection() {
+  const gridRef = useRef(null);
+  const reducedTransparency = useMediaQuery('(prefers-reduced-transparency: reduce)');
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return undefined;
+    const cards = Array.from(grid.children);
+    const reduced = isReduced();
+    // 아래에서 순차 부상. reduced-motion에서는 y 이동을 버리고 짧은 페이드만(전정기관 자극 회피).
+    gsap.set(cards, reduced ? { opacity: 0 } : { opacity: 0, yPercent: 100 });
+    const trigger = ScrollTrigger.create({
+      trigger: grid,
+      start: 'top 82%',
+      once: true, // 재진입 재실행 금지
+      onEnter: () =>
+        gsap.to(
+          cards,
+          reduced
+            ? { opacity: 1, duration: 0.3, ease: 'none' }
+            : { opacity: 1, yPercent: 0, duration: 0.7, ease: 'power3.out', stagger: 0.18 }
+        ),
+    });
+    return () => trigger.kill();
+  }, []);
+
+  // reduced-transparency면 불투명. 아니면 얇은 유리막(어두운 무대 위 옅은 반투명 + blur).
+  const glassBg = reducedTransparency ? colors.bg.raised : 'rgba(242, 246, 255, 0.05)';
+  const glassBlur = reducedTransparency ? 'none' : 'blur(16px) saturate(140%)';
+
   return (
-    <Reveal
+    <div
+      ref={gridRef}
       style={{
         marginTop: spacing.unit * 5,
         display: 'grid',
-        // 4K에서 상한으로 가두지 않고 열을 늘린다(RESPONSIVE 탐색 중심 전략)
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         gap: spacing.gutter,
       }}
@@ -20,9 +55,12 @@ export default function OutputsSection() {
         <article
           key={o.key}
           style={{
-            background: colors.bg.raised,
-            border: `1px solid ${colors.line.default}`,
+            background: glassBg,
+            backdropFilter: glassBlur,
+            WebkitBackdropFilter: glassBlur,
+            border: `1px solid ${colors.line.strong}`,
             borderRadius: radius.lg,
+            boxShadow: glow.steel,
             padding: 24,
             display: 'flex',
             flexDirection: 'column',
@@ -76,6 +114,6 @@ export default function OutputsSection() {
           </p>
         </article>
       ))}
-    </Reveal>
+    </div>
   );
 }

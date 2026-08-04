@@ -137,8 +137,9 @@ export default function InteractionsSection() {
         marginTop: spacing.unit * 5,
         minHeight: '70dvh',
         display: 'grid',
-        gridTemplateColumns: 'minmax(320px, 1fr) minmax(320px, 1fr)',
-        gap: spacing.gutter,
+        // P4: 미디어 우위. 텍스트 40 / 비주얼 60
+        gridTemplateColumns: 'minmax(240px, 2fr) minmax(320px, 3fr)',
+        gap: `clamp(${spacing.unit * 3}px, 4vw, ${spacing.unit * 8}px)`,
         alignItems: 'center',
       }}
     >
@@ -148,8 +149,8 @@ export default function InteractionsSection() {
         ))}
       </div>
 
-      {/* 우 비주얼. 스텝 전환은 크로스페이드다. key 교체로 리마운트하지 않는다 */}
-      <div style={{ position: 'relative', minHeight: 300 }}>
+      {/* 우 비주얼(60%). 스텝 전환은 크로스페이드다. key 교체로 리마운트하지 않는다 */}
+      <div style={{ position: 'relative', minHeight: 'min(52vh, 460px)' }}>
         {INTERACTIONS.map((item, i) => {
           const V = VISUALS[item.key];
           return (

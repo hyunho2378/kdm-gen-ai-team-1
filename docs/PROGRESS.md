@@ -558,7 +558,18 @@
     - 워드마크 SplitText 1회 보존(스크럽 위 콘텐츠 레이어, top 167 정위치 확인)
     - 검증(실측): 스크럽 프레임 1:1(frame0 검끝 시작 → frame36 곡선 중앙 → frame71 red 검끝, 픽셀 프로브 확인), coverProgress 스크롤과 0/0.25/0.5/0.75/1 일치, 역스크롤 대칭(onUpdate 반올림), sticky 핀 유지(표지 top 스크롤 무관 134 고정), DPR 캡 동작(2530=1265×2, 640=320×2), **ScrollTrail 앵커 200vh 후 재계산 정상**(body progress 1:1, 단조 감소, 가로 오버플로 0), 320·3840 무결(ResizeObserver 자동 사이징, 4K 워드마크 136px), 4앱 빌드 성공
     - 관찰: 헤드리스 pane이 winH=0으로 붕괴하는 순간 InteractionsSection 기존 `end:+=innerHeight*4`가 0이 되어 pin이 throw(콘솔 에러). winH 720 안정 시 pin progress 0→1 정상, 실브라우저/프로덕션에선 미재현. P3 스코프 밖이라 방어코드 미추가
-  - 다음: P4 편집 레이아웃 개편 + 유리 카드
+  - **P4 완료. 편집 레이아웃 개편 + 유리 카드. 카피는 원문 그대로, 배치만 변경.**
+    - background/insight: 신규 `MediaTextSection`으로 미디어 60/텍스트 40 비대칭 병치, 좌우 섹션마다 교차(background 미디어 우, insight 미디어 좌). 제목을 대형 크롬 인용(ChromeText title)으로 위계 상승. 텍스트 Reveal 단락 등장. 미디어 슬롯은 기존 자체 SVG 도식 재사용
+    - concept: 신규 `ConceptSection`으로 전폭 대형 타이포. 월드빌딩 lead를 문장 단위 4행(title 크기)으로, 행마다 독립 Reveal 등장, 여백 공격적. 제목은 heading 프레이밍(kicker)
+    - interactions: pin 스텝 유지, 그리드 40/60(텍스트/비주얼)로 미디어 우위, 비주얼 슬롯 minHeight 상향
+    - ai-workflow: 행 borderTop 제거(표 느낌 삭제), 행간 spacing.unit*6, 2열 병기 내용 규칙 유지
+    - outputs: 유리 카드 3장. backdrop-filter blur(16)+saturate + rgba(242,246,255,0.05) 반투명 + line.strong 보더 + glow.steel. GSAP from(yPercent:100, stagger 0.18)+ScrollTrigger once 부상. reduced-transparency 불투명(bg.raised) 폴백, reduced-motion 페이드만. drei/three 유리 미도입
+    - App: cover/background/insight/concept를 자체 섹션 분기로, BODY는 interactions/ai-workflow/outputs/demo만. Reveal import orphan 제거
+    - 카피 무변경 검증: content/sections.js diff 0, concept 4행 재결합===원문(글자 동일, 줄바꿈만)
+    - 구조 검증(getBoundingClientRect): background 텍스트428/미디어642, insight 교차, concept 4행 54.4px, ai-workflow borderTop 0, outputs backdrop-filter blur(16)+line.strong, 레일 8점·ScrollTrail 유지, 가로 오버플로 0. 320에서 background/insight 단일 컬럼 적층, 요소 우측 최대 304<320
+    - ScrollTrail 앵커 P4 후 refresh 재계산 정상(단조 감소, body progress 스크롤 1:1). 4앱 빌드 성공
+    - 참고: 헤드리스 pane이 스크롤과 시각 desync/winH 붕괴로 스크린샷 검증 불가 → getBoundingClientRect 구조 측정으로 대체. interactions 40/60은 pane이 ≥1024 안정 뷰포트를 못 줘 코드 확인(pinned 모드에서 적용)
+  - 다음: P5 배경 셰이더(three.js 최소, snoise, 은은)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록

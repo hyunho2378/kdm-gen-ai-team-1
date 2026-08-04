@@ -11,26 +11,18 @@ import ProgressRail from './components/ProgressRail.jsx';
 import StageBackground from './components/StageBackground.jsx';
 import ScrollTrail from './components/ScrollTrail.jsx';
 import Preloader from './components/Preloader.jsx';
-import Reveal from './components/Reveal.jsx';
 import { LineageDiagram, TrajectoryToDataDiagram } from './components/diagrams/Diagrams.jsx';
 import CoverSection from './sections/CoverSection.jsx';
+import MediaTextSection from './sections/MediaTextSection.jsx';
+import ConceptSection from './sections/ConceptSection.jsx';
 import InteractionsSection from './sections/InteractionsSection.jsx';
 import WorkflowSection from './sections/WorkflowSection.jsx';
 import OutputsSection from './sections/OutputsSection.jsx';
 import DemoSection from './sections/DemoSection.jsx';
 
-// 섹션 id별 본문. cover는 제목 연출을 직접 소유하므로 Section의 기본 렌더를 쓰지 않는다.
+// P4 편집 레이아웃: background/insight/concept는 세로 나열(PPT)을 깨고 자체 편집 섹션을 소유한다.
+// 나머지는 Section 골격 위에 본문을 얹는다. cover는 200vh 히어로를 직접 소유(P3).
 const BODY = {
-  background: () => (
-    <Reveal style={{ marginTop: 40, maxWidth: 640 }}>
-      <LineageDiagram />
-    </Reveal>
-  ),
-  insight: () => (
-    <Reveal style={{ marginTop: 40, maxWidth: 640 }}>
-      <TrajectoryToDataDiagram />
-    </Reveal>
-  ),
   interactions: () => <InteractionsSection />,
   'ai-workflow': () => <WorkflowSection />,
   outputs: () => <OutputsSection />,
@@ -71,6 +63,16 @@ export default function App() {
           if (s.id === 'cover') {
             // cover는 200vh 핀 히어로라 Section 골격(100dvh flex 중앙)을 쓰지 않고 자체 섹션을 소유한다(P3)
             return <CoverSection key={s.id} data={s} />;
+          }
+          // P4 편집 레이아웃: 미디어 60/텍스트 40 비대칭(좌우 교차), concept 전폭 대형 타이포
+          if (s.id === 'background') {
+            return <MediaTextSection key={s.id} data={s} media={<LineageDiagram />} mediaSide="right" />;
+          }
+          if (s.id === 'insight') {
+            return <MediaTextSection key={s.id} data={s} media={<TrajectoryToDataDiagram />} mediaSide="left" />;
+          }
+          if (s.id === 'concept') {
+            return <ConceptSection key={s.id} data={s} />;
           }
           const Body = BODY[s.id];
           return (
