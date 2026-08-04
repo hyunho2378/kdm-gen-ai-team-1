@@ -506,7 +506,7 @@ steel.mid를 bg.deep으로 0.30만큼 눌러 sRGB 약 0.60에 앉힌다. 실측 
   `ribbon-geometry`는 생성자 전용이라 in-place 갱신이 없고 폭이 단일 상수여서 미채택했다(CREDITS 참조).
 - 포인트 이력 상한 `tokens.motion.budget.trailMaxSegments`(240). 초과분은 앞에서 버린다.
 - 색: 내 리본 **`trail.self` = red.light**, AI 리본 **`trail.ai` = blue.light**.
-  명중 코어 **`trail.hit` = #FFFFFF**. 이 매핑이 v2 확정이고 `tokens.trail`이 진실이다.
+  명중 코어 **`trail.hit` = #FDFDFD**. 이 매핑이 v2 확정이고 `tokens.trail`이 진실이다.
 - 재질은 additive blending. 나이에 따라 폭과 알파가 감쇠한다(버텍스 알파 또는 폭 함수).
 - 명중 순간 해당 리본의 **최근 12구간**을 흰 코어로 고정하고 **JUDGE 800ms 동안만** 유지한다.
   해제 조건이 없으면 흰 코어가 화면에 영구히 박힌다(V4c 실측. 상대 앞에 흰 판자가 섰다).
