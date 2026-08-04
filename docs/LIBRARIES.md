@@ -10,6 +10,8 @@
 > | 영상 스크럽 | canvas-scroll-clip(MIT) 설치 | **1순위: GSAP imageSequence 헬퍼 로직 포팅** (우리 ScrollTrigger 안에서 프레임 인덱스 트윈 + snap "frame" + curFrame 비교 redraw 방지). canvas-scroll-clip(MIT)은 포팅이 막힐 때의 **폴백**으로만 문서에 남긴다 | canvas-scroll-clip은 자체 스크롤 처리를 갖고 있어 우리 루프와 이중 리스너가 된다. 로직을 소유하면 ScrollTrail과 같은 진행률 원천을 쓴다 |
 > | 배경 셰이더 | Codrops DOM 왜곡(원형) | **three.js 최소 도입(P5): 풀스크린 쿼드 1장 + snoise 프래그먼트, R3F 없이 플레인.** 콘텐츠 뒤 fixed 캔버스 레이어의 독립 일렁임 | DOM 왜곡 방식은 우리 구조상 불가. R3F 배제 판정과 일관 |
 >
+> **P5 실제 채택(갱신):** 위 표는 "three.js 최소 도입"이라 적었으나, 풀스크린 쿼드 1장 + snoise 프래그먼트 하나에는 three.js가 과해 **raw WebGL로 구현**했다(의존성 0, 번들 +5KB, R3F 배제 판정과 일관, 출력 동일). snoise만 Ashima/stegu(MIT) 이식.
+>
 > ## 라이선스 절대 규칙 (전 단계)
 >
 > - **MIT(와 GSAP 무료, Apache)만 코드 채택.** GSAP은 2025-04 전면 무료(Flip, ScrollTrigger, SplitText 포함, 상업 이용 포함).

@@ -569,7 +569,12 @@
     - 구조 검증(getBoundingClientRect): background 텍스트428/미디어642, insight 교차, concept 4행 54.4px, ai-workflow borderTop 0, outputs backdrop-filter blur(16)+line.strong, 레일 8점·ScrollTrail 유지, 가로 오버플로 0. 320에서 background/insight 단일 컬럼 적층, 요소 우측 최대 304<320
     - ScrollTrail 앵커 P4 후 refresh 재계산 정상(단조 감소, body progress 스크롤 1:1). 4앱 빌드 성공
     - 참고: 헤드리스 pane이 스크롤과 시각 desync/winH 붕괴로 스크린샷 검증 불가 → getBoundingClientRect 구조 측정으로 대체. interactions 40/60은 pane이 ≥1024 안정 뷰포트를 못 줘 코드 확인(pinned 모드에서 적용)
-  - 다음: P5 배경 셰이더(three.js 최소, snoise, 은은)
+  - **P5 완료. 배경 셰이더(은은).** 신규 `StageShader.jsx`. 콘텐츠 뒤 fixed 풀스크린 캔버스에 snoise 기반 일렁임
+    - **판정 변경(ponytail): three.js 대신 raw WebGL 채택.** 풀스크린 삼각형 1개 + snoise 프래그먼트 하나에 three.js(~150KB)는 과함. 의존성 0, 번들 +5KB(three.js였다면 +150KB), 데모 견고성↑, 출력 동일, R3F 배제 판정과 일관. snoise는 Ashima/stegu webgl-noise(MIT) GLSL 이식 → CREDITS 기록
+    - 위계: zIndex -1로 전 콘텐츠 뒤(가독성 z-순서로 보장), pointer-events none, alpha≤0.075 극미세, 커서 근처만 약하게 밝아지고 정지 시 u_active 감쇠(relax)
+    - 저하: requestIdleCallback 이후 로드(LCP 미차단), WebGL 실패/모바일(pointer coarse)/reduced-motion에서 미로드 → StageBackground 정적 그라디언트가 그대로 폴백. DPR 캡 1.5, WEBGL_lose_context로 정리
+    - 검증: WebGL 초기화·사이징 정상(1920×1080=1280×1.5), **GL 에러 0**, GLSL 컴파일/링크 에러 0(콘솔 클린), 텍스트 가독성 유지(스크린샷 확인), 빌드 성공(318KB)
+  - 다음: P6 Flip 상세와 클립패스 리빌
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록

@@ -9,6 +9,7 @@ import { subscribe } from './lib/motionMode.js';
 import Section from './components/Section.jsx';
 import ProgressRail from './components/ProgressRail.jsx';
 import StageBackground from './components/StageBackground.jsx';
+import StageShader from './components/StageShader.jsx';
 import ScrollTrail from './components/ScrollTrail.jsx';
 import Preloader from './components/Preloader.jsx';
 import { LineageDiagram, TrajectoryToDataDiagram } from './components/diagrams/Diagrams.jsx';
@@ -56,6 +57,7 @@ export default function App() {
     <>
       <Preloader />
       <StageBackground />
+      <StageShader />
       <ScrollTrail />
       <ProgressRail />
       <main>
