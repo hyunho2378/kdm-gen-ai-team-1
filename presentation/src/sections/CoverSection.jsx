@@ -64,7 +64,10 @@ export default function CoverSection({ data }) {
       drawFrame(f);
     }
 
-    window.addEventListener('resize', resize);
+    // 캔버스를 컨테이너 크기에 맞춘다. window resize보다 견고하다(dvh 변화, 초기 사이징,
+    // 컨테이너가 뒤늦게 크기를 얻는 경우까지 잡아 빈 canvas를 막는다). 스크롤로는 크기가 안 바뀌어 헛발화 없음.
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
 
     fetch(BASE + 'manifest.json')
       .then((r) => r.json())
@@ -129,7 +132,7 @@ export default function CoverSection({ data }) {
 
     return () => {
       cancelled = true;
-      window.removeEventListener('resize', resize);
+      ro.disconnect();
       st?.kill();
     };
   }, [reduced]);

@@ -549,7 +549,16 @@
     - (3) reduced: `if(isReduced()) return ()=>{}`로 Lenis 미기동, 네이티브 스크롤 분기 생존(정적 확정)
     - 4앱 빌드 성공, A1~A3 무결(8섹션·레일 8점·ScrollTrail 존재, top offset 1000 미도색 시작)
   - **P2 완료.** `docs/SCRUB_ASSET_SPEC.md`(실물 영상 요건 5~10초·어두운/단색 배경·1080p·24fps, scroll-scrub-starter build.sh 추출, cwebp 변환, leading-zero frame_%04d, 240 상한·2프레임 스킵, 투명 시 clearRect). 임시 프레임 72장 생성(`presentation/scripts/gen_temp_frames.py`, Pillow) → `presentation/public/frames/hero/frame_0001~0072.webp` + `manifest.json`(placeholder:true). 1280×720 webp 680KB. 검끝 곡선 모티프 진행(크롬→red 검끝), 우하단 TEMP 라벨은 스크럽 검증 보조. 실물 교체는 폴더 덮어쓰기 + manifest.count만. scroll-scrub-starter/Pillow는 빌드타임 도구라 CREDITS 미기재
-  - 다음: P3 표지 히어로 영상 스크럽(imageSequence 로직 포팅, 200vh pin, decode 프리로드, DPR 캡, reduced 정지 프레임)
+  - **P3 완료. 표지 히어로 영상 스크럽.** CoverSection이 Section 골격 대신 자체 `<section id=cover>`를 소유(200vh). 안쪽 `position:sticky` 100dvh 레이어에 펜싱 프레임 canvas(배경) + 스크림 + 콘텐츠. App cover 분기를 `<CoverSection/>` 직접 렌더로 변경
+    - 스크럽: ScrollTrigger onUpdate로 progress→프레임 인덱스 반올림 + curFrame 비교 redraw 방지(imageSequence 로직 포팅, scrub 없이 1:1). 새 라이브러리 0(GSAP ScrollTrigger 기존, 로직 포팅이라 CREDITS 무변경)
+    - 프리로드: manifest 읽고 frame0 decode() 후 즉시 그림(빈 canvas 금지) → boot.markAssetsReady로 프리로더에 알림. 나머지는 fetch만, 디코드는 draw 온디맨드(ponytail: 240장 1080p에서 메모리 오르면 ±10 윈도잉). DPR 캡 min(dpr,2). 투명 프레임 clearRect 분기
+    - 프리로더 결합: Preloader가 폰트+frame0(whenAssetsReady) 함께 대기, 2.5초 상한 유지
+    - reduced: 200vh·스크럽 없이 대표 프레임(마지막) 한 장 정지, 섹션 100dvh
+    - 캔버스 사이징은 ResizeObserver(window resize보다 견고, 컨테이너 뒤늦은 사이징/dvh 변화까지 잡아 빈 canvas 방지)
+    - 워드마크 SplitText 1회 보존(스크럽 위 콘텐츠 레이어, top 167 정위치 확인)
+    - 검증(실측): 스크럽 프레임 1:1(frame0 검끝 시작 → frame36 곡선 중앙 → frame71 red 검끝, 픽셀 프로브 확인), coverProgress 스크롤과 0/0.25/0.5/0.75/1 일치, 역스크롤 대칭(onUpdate 반올림), sticky 핀 유지(표지 top 스크롤 무관 134 고정), DPR 캡 동작(2530=1265×2, 640=320×2), **ScrollTrail 앵커 200vh 후 재계산 정상**(body progress 1:1, 단조 감소, 가로 오버플로 0), 320·3840 무결(ResizeObserver 자동 사이징, 4K 워드마크 136px), 4앱 빌드 성공
+    - 관찰: 헤드리스 pane이 winH=0으로 붕괴하는 순간 InteractionsSection 기존 `end:+=innerHeight*4`가 0이 되어 pin이 throw(콘솔 에러). winH 720 안정 시 pin progress 0→1 정상, 실브라우저/프로덕션에선 미재현. P3 스코프 밖이라 방어코드 미추가
+  - 다음: P4 편집 레이아웃 개편 + 유리 카드
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록
