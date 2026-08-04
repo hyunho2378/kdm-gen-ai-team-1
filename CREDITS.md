@@ -23,6 +23,19 @@
 | 궤적 리본 | 자체 구현 | arena 궤적. `ribbon-geometry`(MIT)를 검토했으나 생성자 전용이라 in-place 갱신이 없고 폭이 단일 상수여서 나이별 감쇠를 못 한다. 매 프레임 지오메트리를 새로 만들면 가비지가 쌓여 미채택 | (참고) https://github.com/yomotsu/ribbon-geometry |
 | 카메라 셰이크 (trauma 방식) | MIT, **로직 포팅** | arena 명중 연출. `three-screenshake`가 npm에 없어(404) `sajmoni/screen-shake`의 trauma 방식을 JS로 포팅 | https://github.com/sajmoni/screen-shake |
 | snoise (simplex 3D) | MIT, **GLSL 코드 이식** | presentation 배경 셰이더(StageShader). Ashima/stegu webgl-noise의 3D simplex를 프래그먼트에 그대로 이식. three.js 없이 raw WebGL 사용(P5 판정) | https://github.com/stegu/webgl-noise |
+| ogl (Polyline) | **Unlicense**(퍼블릭 도메인). 아래 라이선스 실사 참고 | presentation-v2 S1 표지 커서 궤적. `components/VortexLine.jsx`. **공식 예제 `examples/polylines.html` 코드를 출발점으로 가져왔다**(스프링/프릭션 추적 루프, vertex 셰이더 전문, resize 처리). ogl 1.0.11 버전 고정 | https://github.com/oframe/ogl |
+
+**ogl 라이선스 실사(2026-08-05 확인).** 표기가 하나로 모이지 않아 실제 아티팩트를 직접 확인했다.
+
+- npm 레지스트리 `license` 필드: **Unlicense**
+- 저장소 `package.json` `license` 필드: **Unlicense**
+- 저장소 루트에 **LICENSE 파일이 없다.** `raw.githubusercontent.com/oframe/ogl/master/LICENSE`는 404이고
+  GitHub API가 감지한 license도 `null`이다. 설치본(`node_modules/ogl/`)에도 LICENSE 파일이 동봉되지 않는다
+- 즉 **MIT 표기는 어디에도 없다.** 근거는 저자가 직접 적은 SPDX 식별자 `Unlicense` 둘뿐이다
+- **판정: 채택.** Unlicense는 퍼블릭 도메인 헌정이라 허용 범위가 가장 넓다.
+  다만 이 저장소는 "정식 LICENSE 파일 없음"이라는 점에서 아래 *사용하지 않기로 한 것*의 기각 사유와 형식이 같다.
+  갈린 지점은 **ogl은 저장소와 npm 양쪽 package.json에 기계 판독 가능한 SPDX 식별자를 명시**한다는 것이고,
+  기각한 셋은 README 문구뿐이거나 아무 표기도 없었다. `ahrs` 항목과 같은 불일치 기록 규율을 따른다
 
 ## 3D 에셋
 
@@ -46,13 +59,16 @@
 
 brand 작업에서 확정되면 그때 추가한다.
 
-- Tubes Cursor — CC BY-NC-SA. brand 히어로 배경 후보. **비상업 조건이므로 도입 전 대회 제출물의 상업성 여부를 확인할 것.** 채택 시 푸터 크레딧 필수(COMPONENTS.md CreditFooter)
 - liquidGL — `vendor/liquidGL`에 반입만 해 둔 상태. brand 제품 상세 카드 후보. 판정표는 ybouane/liquidglass(MIT)를 1순위로 둔다
 - honzaap/SlashSaber — CC BY-4.0. arena WebGL 승격 시 참고하면 출처 표기 필수
 
 ## 사용하지 않기로 한 것
 
 라이선스 문제로 코드를 가져오지 않는다. 개념 참고만 한다.
+
+- **Tubes Cursor — CC BY-NC-SA. presentation-v2 S1 표지에서 제외했다.**
+  **비상업 조건이 대회 제출물의 상업성 여부에 걸린다.** 그 리스크를 표지에 지고 갈 이유가 없어
+  퍼블릭 도메인인 ogl Polyline으로 갈아탔다. `components/TubesBackground.jsx` 파일은 지우지 않고 보존한다(현재 import 0건)
 
 - ZiCog/madgwick.js — LICENSE 파일 없음. 기본적으로 사용 불가
 - EmmaPoliakova/WebRTCSmartphoneController — LICENSE 파일 없음. 기본적으로 사용 불가

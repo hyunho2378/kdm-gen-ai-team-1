@@ -1,8 +1,12 @@
-// S1 표지. 포스터 문법.
-// 사진(정사각, 인물 중앙, 상단이 빈 블랙)이 화면 하단에 앉고 그 위 빈 블랙에 워드마크와 카피가 얹힌다.
-// 사진 배경이 순수 블랙이라 섹션 #000000과 이음매가 없다. 그라디언트 오버레이를 쓰지 않는다.
+// S1 표지. 포스터 문법 + OGL Polyline 커서 궤적.
+// 사진(정사각, 인물 중앙, 상단이 빈 블랙)이 화면 하단에 앉고 그 위에 레드 라인, 그 위에 텍스트.
 //
-// 초광폭(2560~3840)에서 정사각 사진의 좌우 검은 여백이 크게 뜬다. 여백에 콘텐츠를 채우지 않고
+// **사진 배경은 정확히 rgb(0,0,0)이고 섹션 배경은 #101010이다**(생블랙 금지 규칙).
+// 그대로 얹으면 사진이 섹션보다 어두운 사각형으로 떠 경계가 드러난다(실측).
+// 그래서 사진 레이어를 screen으로 합성한다. screen은 검정(0)에서 배경을 그대로 통과시키므로
+// 사진의 검은 부분이 정확히 #101010이 되고 인물은 그대로 남는다. 그라디언트 오버레이는 쓰지 않는다.
+//
+// 초광폭(2560~3840)에서 정사각 사진의 좌우 여백이 크게 뜬다. 여백에 콘텐츠를 채우지 않고
 // 인물 뒤에 아주 낮은 알파의 레드 radial 글로우를 깔아 여백이 결함으로 안 보이게 한다(VORTEX 연결).
 //
 // 기존 Tubes Cursor 배경은 이 섹션에서 뺐다. components/TubesBackground.jsx 파일은 보존한다.
@@ -12,6 +16,7 @@ import gsap from 'gsap';
 import { colors, typography, motion } from '../tokens.js';
 import { TITLE, COVER } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
+import VortexLine from '../components/VortexLine.jsx';
 
 // 메탈릭 실버 그라디언트. 위는 밝은 실버, 아래로 어두워졌다가 바닥에서 살짝 반사광 → 깎인 금속 볼륨.
 const METAL =
@@ -34,7 +39,7 @@ const CORNER = {
   pointerEvents: 'none',
 };
 
-export default function S1Cover() {
+export default function S1Cover({ active }) {
   const photoRef = useRef(null);
   const markRef = useRef(null);
 
@@ -63,7 +68,8 @@ export default function S1Cover() {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
-      {/* 사진. 하단 정렬 contain이라 인물이 잘리지 않고 정사각 비율이 유지된다. */}
+      {/* 사진. 하단 정렬 contain이라 인물이 잘리지 않고 정사각 비율이 유지된다.
+          screen 합성이라 사진의 검정(rgb 0,0,0)이 섹션 배경 #101010을 그대로 통과시킨다. */}
       <div
         ref={photoRef}
         style={{
@@ -73,6 +79,7 @@ export default function S1Cover() {
           bottom: 0,
           height: '86%',
           zIndex: 1,
+          mixBlendMode: 'screen',
         }}
       >
         <AssetImage src="/images/cover/fencer.png" fit="contain" position="center bottom" />
@@ -99,10 +106,13 @@ export default function S1Cover() {
         }}
       />
 
+      {/* OGL Polyline 커서 궤적. 사진 위, 워드마크 아래(zIndex 3). 선이 텍스트를 가리지 않는다. */}
+      <VortexLine active={active} />
+
       {/* 포스터 좌상단: 팀과 이름. 가운데점 대신 얇은 세로선으로 두 필드를 가른다. */}
       <div style={{ ...CORNER, left: 'clamp(20px, 3.4vw, 56px)', display: 'flex', gap: 10 }}>
         <span style={{ color: colors.text.secondary }}>{COVER.team}</span>
-        <span aria-hidden="true" style={{ width: 1, background: 'rgba(242,246,255,0.22)' }} />
+        <span aria-hidden="true" style={{ width: 1, background: colors.line.strong }} />
         <span>{COVER.members}</span>
       </div>
 

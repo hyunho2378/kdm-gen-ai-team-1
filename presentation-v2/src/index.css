@@ -1,8 +1,8 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
-  background: #000000; /* 브랜드 블랙 확정. tokens.colors.black과 같은 값(첫 페인트 예외) */
-  color: #f2f6ff;
+  background: #101010; /* tokens.colors.black과 같은 값(첫 페인트 예외). 생블랙 금지 */
+  color: #FDFDFD; /* tokens.colors.white와 같은 값. 생화이트 금지 */
   /* Lenis가 스크롤을 소유한다. CSS smooth와 겹치면 두 번 보간되어 튄다. */
   scroll-behavior: auto;
   overflow-x: hidden;

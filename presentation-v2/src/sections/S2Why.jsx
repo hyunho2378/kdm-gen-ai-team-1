@@ -10,7 +10,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, whiteA } from '../tokens.js';
 import { WHY } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { SectionLabel, Badge, StepDots } from '../components/Bits.jsx';
@@ -154,7 +154,7 @@ export default function S2Why({ registerHandler, registerEnter }) {
           zIndex: 3,
           opacity: 0,
           background:
-            'linear-gradient(180deg, transparent 0%, rgba(242,246,255,0.42) 26%, rgba(230,13,21,0.7) 50%, rgba(242,246,255,0.42) 74%, transparent 100%)',
+            `linear-gradient(180deg, transparent 0%, ${whiteA(0.42)} 26%, ${colors.red} 50%, ${whiteA(0.42)} 74%, transparent 100%)`,
           pointerEvents: 'none',
         }}
       />

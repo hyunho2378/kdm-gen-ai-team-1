@@ -35,7 +35,7 @@ export function SectionLabel({ label }) {
         <>
           <span
             aria-hidden="true"
-            style={{ width: 18, height: 1, background: 'rgba(242,246,255,0.24)', flexShrink: 0 }}
+            style={{ width: 18, height: 1, background: colors.line.strong, flexShrink: 0 }}
           />
           <span
             style={{
@@ -66,9 +66,9 @@ export function Badge({ text, filled }) {
         fontSize: 'clamp(0.66rem, 1vw, 0.8rem)',
         fontWeight: 700,
         letterSpacing: '0.2em',
-        color: filled ? '#FFFFFF' : colors.text.secondary,
-        background: filled ? colors.red : 'rgba(242,246,255,0.06)',
-        boxShadow: filled ? `0 0 22px ${colors.redGlow}` : 'inset 0 0 0 1px rgba(242,246,255,0.22)',
+        color: filled ? colors.text.onFill : colors.text.secondary,
+        background: filled ? colors.red : colors.surface.pill,
+        boxShadow: filled ? `0 0 22px ${colors.redGlow}` : `inset 0 0 0 1px ${colors.line.strong}`,
       }}
     >
       {text}
@@ -99,7 +99,7 @@ export function StepDots({ count, active }) {
             width: i === active ? 22 : 8,
             height: 3,
             borderRadius: 999,
-            background: i === active ? colors.red : 'rgba(242,246,255,0.22)',
+            background: i === active ? colors.red : colors.line.strong,
             boxShadow: i === active ? `0 0 10px ${colors.redGlow}` : 'none',
             transition: `width 300ms ${motion.easeOut}, background-color 300ms ease`,
           }}

@@ -135,8 +135,8 @@ export default function S4Experience({ registerHandler, registerEnter }) {
                 textAlign: 'center',
                 gap: 'clamp(14px, 2.4vh, 28px)',
                 padding: 'clamp(28px, 4.6vh, 56px) clamp(24px, 4vw, 56px)',
-                background: 'rgba(242,246,255,0.035)',
-                border: '1px solid rgba(242,246,255,0.10)',
+                background: colors.surface.glass,
+                border: `1px solid ${colors.line.default}`,
                 borderRadius: 20,
                 backdropFilter: 'blur(14px)',
                 WebkitBackdropFilter: 'blur(14px)',
@@ -158,7 +158,7 @@ export default function S4Experience({ registerHandler, registerEnter }) {
                   flexShrink: 0,
                 }}
               >
-                {Icon ? <Icon size={30} strokeWidth={1.7} color="#FFFFFF" /> : null}
+                {Icon ? <Icon size={30} strokeWidth={1.7} color={colors.text.onFill} /> : null}
               </span>
 
               <div

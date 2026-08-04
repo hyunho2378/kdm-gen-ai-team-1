@@ -25,7 +25,7 @@ export default function AssetImage({
           height: '100%',
           // 순수 블랙에서 살짝 뜬 다크 그라디언트. 사진 자리를 결함이 아니라 면으로 읽히게 한다.
           background: `linear-gradient(155deg, ${colors.raised} 0%, ${colors.deep} 58%, ${colors.black} 100%)`,
-          boxShadow: `inset 0 0 0 1px rgba(242,246,255,0.06)`,
+          boxShadow: `inset 0 0 0 1px ${colors.line.faint}`,
           ...style,
         }}
       />

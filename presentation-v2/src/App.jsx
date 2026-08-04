@@ -136,7 +136,7 @@ export default function App() {
             }}
           >
             {i === 0 ? (
-              <S1Cover />
+              <S1Cover active={current === 0} />
             ) : i === 1 ? (
               <S2Why registerHandler={reg[1].handler} registerEnter={reg[1].enter} />
             ) : i === 2 ? (
@@ -156,7 +156,7 @@ export default function App() {
                   justifyContent: 'center',
                   gap: 12,
                   // 아직 채우지 않은 섹션임을 드러내는 은은한 경계
-                  boxShadow: 'inset 0 0 0 1px rgba(242,246,255,0.04)',
+                  boxShadow: `inset 0 0 0 1px ${colors.line.hairline}`,
                 }}
               >
                 <span
@@ -165,7 +165,7 @@ export default function App() {
                     fontWeight: 800,
                     letterSpacing: '-0.04em',
                     lineHeight: 1,
-                    color: 'rgba(242,246,255,0.14)',
+                    color: colors.line.default,
                   }}
                 >
                   {String(i + 1).padStart(2, '0')}
@@ -175,7 +175,7 @@ export default function App() {
                     fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
                     fontWeight: 600,
                     letterSpacing: '0.02em',
-                    color: 'rgba(242,246,255,0.7)',
+                    color: colors.text.secondary,
                   }}
                 >
                   {s.ko}
@@ -184,7 +184,7 @@ export default function App() {
                   style={{
                     fontSize: '0.8125rem',
                     letterSpacing: '0.24em',
-                    color: 'rgba(242,246,255,0.3)',
+                    color: colors.text.faint,
                   }}
                 >
                   {`${s.en}  ${PLACEHOLDER_SUFFIX}`}
@@ -206,14 +206,14 @@ export default function App() {
           fontVariantNumeric: 'tabular-nums',
           fontSize: '0.8125rem',
           letterSpacing: '0.14em',
-          color: 'rgba(242,246,255,0.55)',
+          color: colors.text.dim,
           pointerEvents: 'none',
           display: 'flex',
           alignItems: 'baseline',
           gap: 6,
         }}
       >
-        <span style={{ color: 'rgba(242,246,255,0.92)', fontWeight: 600 }}>
+        <span style={{ color: colors.text.primary, fontWeight: 600 }}>
           {String(current + 1).padStart(2, '0')}
         </span>
         <span style={{ opacity: 0.5 }}>/ {String(SECTIONS.length).padStart(2, '0')}</span>
@@ -228,7 +228,7 @@ export default function App() {
           zIndex: 100,
           fontSize: '0.75rem',
           letterSpacing: '0.16em',
-          color: 'rgba(242,246,255,0.35)',
+          color: colors.text.faint,
           pointerEvents: 'none',
           opacity: current === 0 ? 1 : 0,
           transition: 'opacity 300ms ease',
