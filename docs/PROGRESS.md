@@ -549,6 +549,47 @@
   - CREDITS에 ahrs 기록. **동봉 LICENSE는 Apache-2.0인데 package.json 필드가 APSL-2.0으로 오기돼 있다.**
     동봉 파일이 우선하고 LIBRARIES 판정표와 일치한다
 
+- presentation-v2 브랜드 확정과 발표 덱 골격 이식 (확인 대기)
+  - **브랜드 VORTEX 확정.** 펜싱 칼이 소용돌이처럼 빨아들이는 몰입. 역동과 몰입을 한 단어에
+  - `presentation-v2/src/tokens.js` 한 파일만 수정. **`shared/tokens.js`는 무변경**(앱 간 색 통일은 별개 작업).
+    black `#0A0A0B` → **`#000000`**(순수 블랙 확정. 깊이는 배경 그라디언트가 아니라 레드 radial 글로우가 만든다),
+    red `#B3122C` → **`#E60D15`**, redGlow `rgba(230,13,21,0.45)`. **trail 색은 무변경**
+  - **`typography.displayFamily` 신설.** 제목 폰트가 미정이라 본문 `family`와 분리했다.
+    S1 워드마크와 S3 컨셉명만 이 키를 참조하므로 **한 줄 교체로 제목 폰트가 전부 바뀐다**.
+    지금 값은 본문과 같은 Pretendard다. `motion`도 이 파일에 신설(shared를 안 건드리려면 자급해야 한다)
+  - **`src/copy.js` 신설. 모든 화면 문구의 단일 원천이고 컴포넌트 하드코딩 0건**(grep 실측).
+    `TITLE`과 `CONCEPT_NAME`은 지금 같은 값이지만 나중에 갈라질 수 있어 별도 상수다
+  - **카피 규칙 충돌 하나를 처리했다.** DESIGN.md 260행이 화면 카피에 가운데점을 금지하는데
+    지시 라벨은 `WHY · 문제` 형태였다. 라벨을 `{ en, ko }` 두 필드로 나누고
+    **가운데점 대신 red 점과 얇은 선을 그려** 두 규칙을 다 지켰다. copy.js 가운데점 0건, em대시 0건, 이모지 0건
+  - SECTIONS 8장 재편: COVER / WHY / CONCEPT / EXPERIENCE / AI DUELIST / AI 워크플로우 / 산출물 / 데모.
+    S6~S8은 기존 플레이스홀더 유지. **`S2Background` `S3Trajectory` `S4Concept` 파일은 보존**하고 import만 뺐다
+  - 셸 위임을 인덱스 키 맵으로 일반화했다. 전에는 s2/s5 전용 ref 4개였는데 위임 섹션이 셋(1 문제 / 3 인터랙션 / 4 유파)이 됐다.
+    `go()`의 동작은 그대로다. **register 함수는 useMemo로 한 번만 만든다**(렌더마다 새로 만들면 자식 useEffect가 매번 다시 돈다)
+  - **이미지 계약을 `components/AssetImage.jsx` 한 곳으로.** 404나 디코드 실패면 tokens 기반 다크 그라디언트 div로 내려앉는다.
+    **이미지를 전부 지운 상태에서 전 8섹션 순회 완주, 콘솔 에러 0 실측**
+  - S1 표지: 사진 하단 정렬 contain(인물 안 잘림) + 상단 빈 블랙에 메탈릭 워드마크와 포스터 코너 라벨.
+    사진 배경이 순수 블랙이라 섹션과 이음매가 없어 **그라디언트 오버레이를 쓰지 않았다.** Tubes Cursor 제거(파일은 보존)
+  - **초광폭 이음매 버그를 실측으로 잡았다.** 레드 글로우를 사진 **아래**에 깔았더니 사진 영역에서만 가려져
+    3840에서 좌우에 하드한 세로 경계가 생겼다. 글로우를 위로 올리고 **`mix-blend-mode: screen`**으로 바꿨다.
+    screen은 흰 유니폼(선형 1.0)을 그대로 두고 검은 영역에만 값을 더하므로 사진 안팎이 한 덩어리로 이어진다.
+    **글로우 중심도 58% → 82%로 내렸다.** 머리 높이에 두면 마스크가 붉게 물들어 레드가 배경색이 된다
+  - S2 문제(2단계): 단계 1에서 `scale(0.49) + translateX(∓24.5vw)`로 좌우 패널 전환. **width 애니메이션 0건.**
+    uniform scale이라 사진 왜곡이 없다. TO-BE는 자리에 미리 앉아 opacity와 brightness만 오른다(예외 1곳, reduced면 opacity만).
+    **배지와 캡션은 패널에 안 넣었다.** 넣으면 0.49배로 축소돼 못 읽는다. 별도 요소로 두고 translateX만 준다
+  - S3 컨셉: duel.png 우측 하단 앵커 부상(opacity 0→0.9, y 40→0, 1.4s) + radial 마스크로 사각 경계 제거.
+    **리퀴드글래스 라이브러리 미사용**(진입 블랙아웃 미해결). CSS 글래스 + 좌측만 큰 라운드의 비대칭 박스.
+    좌측 블록의 중앙 정렬은 flex가 잡는다. **인라인 `translateY(-50%)`와 GSAP `y`를 겹치면 GSAP이 덮어써 정렬이 깨진다**
+  - S4 인터랙션(4단계): 중앙 카드 1장 활성, lucide-react 원형 아이콘(red 원). 하단 진행 도트 4개
+  - S5 유파(3단계): 좌측 1/3 인물 컷아웃 바닥 정렬, 전환 시 opacity + x(-30px). 우측 배지와 서술
+  - lucide-react 도입. **CREDITS에 이미 "전 앱 아이콘"으로 기재돼 있어 추가 기록 없음**
+  - 검증(실브라우저 헤드리스, 방향키 실제 순회 + 스크린샷 육안):
+    1512에서 정방향 13장 역방향 9장 전부 포착. **서브 진행 경계 정확**(S2가 2번, S4가 4번, S5가 3번을 소비하고
+    그 다음 입력에서만 섹션이 바뀐다). 역방향 대칭 확인. **콘솔 에러 0**
+  - 색 실측: 섹션 배경과 html 배경 **`rgb(0,0,0)`**, `rgb(230,13,21)` 사용 요소 15개
+  - 폭 실측 3840 / 2560 / 1024: **가로 오버플로 전부 0**, 페이지 에러 0
+  - 4앱 아님 주의: 이 트랙은 presentation-v2 단일 앱만 손댔다. presentation-v2 빌드 성공(268.6KB, gzip 91.0KB)
+
 ## 진행중
 - **controller C2 (코드 완료, 실기 검증 대기). 트랙 선점.**
   데스크톱 검증까지 끝났고 **남은 것은 실기 폰 측정 하나**다. Vercel 연결은 사용자가 맡는다
@@ -663,6 +704,18 @@
 - 시각디자이너 워드마크 SVG 슬롯 전달(크롬 레터링)
 
 ## 미해결 이슈
+- **표지 이미지는 Gargarella 사진작가 워터마크 저작물의 임시 시안. 제출 전 생성형 자체 제작 이미지로 필수 교체. 현 상태로 제출 불가.**
+  - 워터마크가 남으므로 **크롭이나 편집도 하지 않았다**(2차 저작 위험). 임시 배치만 했고 CREDITS에 채택 기록 없음
+  - 위치 `presentation-v2/public/images/cover/fencer.png`. 원본 `KakaoTalk_20260804_192012608 1.png`은 리포 루트에 남겨 뒀다
+- **표지 WHY 컨셉 유파 이미지 전부 자체 생성 이미지로 교체 필요(제출 전 필수).**
+  - 규약 경로: `cover/fencer.png`, `why/asis.png`, `why/tobe.png`, `concept/duel.png`,
+    `duelist/style-1.png` `style-2.png` `style-3.png`
+  - **현재 표지 외 6장은 리포에 없어 전부 다크 그라디언트 플레이스홀더로 뜬다.** 코드는 안 죽는다(실측).
+    교체는 해당 경로에 파일을 놓기만 하면 되고 코드 수정 0
+- presentation-v2 제목(디스플레이) 폰트 미정. `tokens.typography.displayFamily`가 지금 본문과 같은 Pretendard다.
+  폰트가 정해지면 이 키 한 줄만 바꾼다. 참조처는 S1 워드마크와 S3 컨셉명 둘뿐
+- presentation-v2 S2 TO-BE 사진의 `filter: brightness` 애니메이션은 **transform/opacity 규칙의 명시적 예외 1곳**이다.
+  실기에서 저프레임이 관측되면 opacity 페이드로 내린다(reduced motion 분기는 이미 opacity만 쓴다)
 - dev 포트 고정: arena 5173, controller 5174, presentation 5175, brand 5176
 - 루트 package.json "type": "module" 유지 필요(shared ESM 로드)
 - hello의 방 코드 필드: SERVER.md는 room, 기존 골격은 code. 서버가 room ?? code로 둘 다 받는다.

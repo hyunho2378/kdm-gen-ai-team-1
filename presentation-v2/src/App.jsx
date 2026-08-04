@@ -2,30 +2,24 @@
 // 한 입력에 한 섹션씩 1초 이징 이동. 이동 중 입력을 잠근다. 우하단에 현재/전체 표시.
 // 지금은 색만 다른 빈 풀스크린 8섹션. 내용은 S1부터 하나씩 채운다.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Observer } from 'gsap/Observer';
 import Lenis from 'lenis';
 import { colors } from './tokens.js';
+import { SECTION_LABELS, PLACEHOLDER_SUFFIX, COVER_HINT } from './copy.js';
 import S1Cover from './sections/S1Cover.jsx';
-import S2Background from './sections/S2Background.jsx';
-import S3Trajectory from './sections/S3Trajectory.jsx';
-import S4Concept from './sections/S4Concept.jsx';
-import S5Interactions from './sections/S5Interactions.jsx';
+import S2Why from './sections/S2Why.jsx';
+import S3Concept from './sections/S3Concept.jsx';
+import S4Experience from './sections/S4Experience.jsx';
+import S5Duelist from './sections/S5Duelist.jsx';
+// 보존: sections/S2Background.jsx(프레임 스크럽), S3Trajectory.jsx(궤적 리본), S4Concept.jsx(리퀴드 글래스).
+// 발표 덱 골격 이식으로 이번 배치에서는 쓰지 않는다. 파일은 뒤 섹션 재사용 예정이라 지우지 않는다.
 
 gsap.registerPlugin(Observer);
 
-// 8섹션. 바탕은 전부 브랜드 블랙(네이비 금지). 아직 안 채운 섹션은 번호로 구분한다.
-const SECTIONS = [
-  { id: 's1', label: '표지', en: 'COVER' },
-  { id: 's2', label: '배경', en: 'BACKGROUND' },
-  { id: 's3', label: '인사이트', en: 'INSIGHT' },
-  { id: 's4', label: '컨셉', en: 'CONCEPT' },
-  { id: 's5', label: '인터랙션', en: 'INTERACTIONS' },
-  { id: 's6', label: 'AI 워크플로우', en: 'AI WORKFLOW' },
-  { id: 's7', label: '산출물', en: 'OUTPUTS' },
-  { id: 's8', label: '데모', en: 'DEMO' },
-];
+// 8섹션. 발표 덱 시안 골격. 바탕은 전부 브랜드 블랙. 문구는 copy.js가 단일 원천이다.
+const SECTIONS = SECTION_LABELS;
 
 // easeInOutCubic. 1초 섹션 이동에 붙는다.
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -35,16 +29,19 @@ export default function App() {
   const currentRef = useRef(0);
   const animatingRef = useRef(false);
   const lenisRef = useRef(null);
-  // S2가 방향키를 서브 진행(프레임 스크럽)으로 소비할 수 있게 위임 핸들러를 잡아 둔다.
-  const s2HandlerRef = useRef(null);
-  const s2EnterRef = useRef(null);
-  const s5HandlerRef = useRef(null);
-  const s5EnterRef = useRef(null);
+  // 서브 진행 위임. 섹션이 방향키를 자기 단계로 소비할 수 있게 인덱스별 핸들러를 잡아 둔다.
+  // 지금 위임하는 섹션은 셋. 1 문제(2단계) / 3 인터랙션(4단계) / 4 유파(3단계).
+  const subHandlers = useRef({});
+  const subEnters = useRef({});
 
-  const registerS2Handler = useCallback((fn) => { s2HandlerRef.current = fn; }, []);
-  const registerS2Enter = useCallback((fn) => { s2EnterRef.current = fn; }, []);
-  const registerS5Handler = useCallback((fn) => { s5HandlerRef.current = fn; }, []);
-  const registerS5Enter = useCallback((fn) => { s5EnterRef.current = fn; }, []);
+  // 인덱스별 register 함수는 렌더마다 새로 만들면 자식 useEffect가 매번 다시 돈다. 한 번만 만든다.
+  const reg = useMemo(() => {
+    const mk = (i) => ({
+      handler: (fn) => { subHandlers.current[i] = fn; },
+      enter: (fn) => { subEnters.current[i] = fn; },
+    });
+    return { 1: mk(1), 3: mk(3), 4: mk(4) };
+  }, []);
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -59,18 +56,17 @@ export default function App() {
     let unlockTimer = null;
     const go = (dir) => {
       if (animatingRef.current) return;
-      // S2에 머무는 동안 방향키는 프레임 스크럽을 소비한다. 경계(처음/끝)에서만 아래로 떨어져 섹션이 바뀐다.
-      if (currentRef.current === 1 && s2HandlerRef.current && s2HandlerRef.current(dir)) return;
-      // S5(인터랙션 4종)도 같은 구조: 판1~4를 방향키로 넘기고 판4 끝에서만 섹션이 바뀐다.
-      if (currentRef.current === 4 && s5HandlerRef.current && s5HandlerRef.current(dir)) return;
+      // 위임 섹션에 머무는 동안 방향키는 그 섹션의 서브 단계를 소비한다.
+      // 경계(처음/끝)에서만 핸들러가 false를 돌려 섹션이 바뀐다.
+      const sub = subHandlers.current[currentRef.current];
+      if (sub && sub(dir)) return;
       const next = currentRef.current + dir;
       if (next < 0 || next >= SECTIONS.length) return; // 경계에서 멈춘다(순환 없음)
       animatingRef.current = true;
       currentRef.current = next;
       setCurrent(next);
-      // S2로 진입하면 방향에 맞는 프레임 경계에서 시작하도록 알린다(위→처음, 아래→끝)
-      if (next === 1) s2EnterRef.current?.(dir);
-      if (next === 4) s5EnterRef.current?.(dir);
+      // 위임 섹션으로 진입하면 방향에 맞는 경계 단계에서 시작하도록 알린다(아래→처음, 위→끝)
+      subEnters.current[next]?.(dir);
       const target = document.getElementById(SECTIONS[next].id);
       const unlock = () => {
         animatingRef.current = false;
@@ -131,7 +127,7 @@ export default function App() {
           <section
             id={s.id}
             key={s.id}
-            aria-label={`${i + 1} ${s.label}`}
+            aria-label={`${i + 1} ${s.ko}`}
             style={{
               position: 'relative',
               height: '100dvh',
@@ -142,17 +138,13 @@ export default function App() {
             {i === 0 ? (
               <S1Cover />
             ) : i === 1 ? (
-              <S2Background registerHandler={registerS2Handler} registerEnter={registerS2Enter} />
+              <S2Why registerHandler={reg[1].handler} registerEnter={reg[1].enter} />
             ) : i === 2 ? (
-              <S3Trajectory active={current === 2} />
+              <S3Concept active={current === 2} />
             ) : i === 3 ? (
-              <S4Concept active={current === 3} />
+              <S4Experience registerHandler={reg[3].handler} registerEnter={reg[3].enter} />
             ) : i === 4 ? (
-              <S5Interactions
-                active={current === 4}
-                registerHandler={registerS5Handler}
-                registerEnter={registerS5Enter}
-              />
+              <S5Duelist registerHandler={reg[4].handler} registerEnter={reg[4].enter} />
             ) : (
               <div
                 style={{
@@ -186,7 +178,7 @@ export default function App() {
                     color: 'rgba(242,246,255,0.7)',
                   }}
                 >
-                  {s.label}
+                  {s.ko}
                 </span>
                 <span
                   style={{
@@ -195,7 +187,7 @@ export default function App() {
                     color: 'rgba(242,246,255,0.3)',
                   }}
                 >
-                  {s.en} · 플레이스홀더
+                  {`${s.en}  ${PLACEHOLDER_SUFFIX}`}
                 </span>
               </div>
             )}
@@ -227,7 +219,7 @@ export default function App() {
         <span style={{ opacity: 0.5 }}>/ {String(SECTIONS.length).padStart(2, '0')}</span>
       </div>
 
-      {/* 첫 화면 조작 힌트. S1을 채우면 이 힌트도 교체한다. */}
+      {/* 첫 화면 조작 힌트. */}
       <div
         style={{
           position: 'fixed',
@@ -242,7 +234,7 @@ export default function App() {
           transition: 'opacity 300ms ease',
         }}
       >
-        ↑ ↓ · SPACE · SCROLL
+        {COVER_HINT}
       </div>
     </>
   );
