@@ -63,6 +63,59 @@ const GLOW_ALPHA = 0.07;
 const GLOW_R = 14;
 
 /**
+ * 풋워크 (E4). 상대가 거리 축(z) 말고는 전혀 안 움직여 "서 있는 그림"으로 읽히던 것을 푼다.
+ *
+ * **시간의 함수여야 한다.** 매 프레임 난수를 더하면 그것은 떨림이지 발놀림이 아니다.
+ * 서로 나누어떨어지지 않는 주기 셋을 겹쳐 반복 주기를 눈에 안 띄게 길게 만든다.
+ *
+ * **세로는 위치가 아니라 발바닥을 축으로 한 세로 압축으로 준다.**
+ * 그룹을 아래로 내리면 발이 바닥면 밑으로 들어가 잘린다. D1에서 고친 "잘린 그루터기"가 그대로 재발한다
+ * (지오메트리가 발바닥을 y 0에 맞춰 놓았고 바닥은 불투명이라 깊이로 발을 먹는다).
+ * 실제 펜서도 무게중심을 낮출 때 발은 지면에 붙어 있으므로 압축이 현상에도 맞다.
+ * 그룹 원점이 곧 발바닥이라 scale.y가 정확히 "발을 붙인 채 머리가 내려가는" 변형이 된다.
+ */
+const SWAY_X = 0.045;    // m. 실루엣 폭 1.00m의 4.5퍼센트. 리본 순간이동 가드 0.35m보다 한참 아래다
+const BREATH = 0.006;    // 호흡 압축 비율. 1.9m 기준 약 11mm
+const DIP = 0.055;       // 큰 숙임 압축 비율. 약 105mm 머리 하강
+const DIP_SEC = 0.85;    // 숙였다 일어나기 한 번에 걸리는 시간
+const DIP_GAP = [3.4, 6.8];  // 다음 큰 숙임까지의 간격(초). 저빈도라야 변주로 읽힌다
+// 전진과 런지의 무게중심 하강. 텍스처는 손대지 않고 그룹 변형으로만 준다
+const POSE_DIP = { [POSE.ADVANCE]: 0.035, [POSE.LUNGE]: 0.05 };
+
+/** 저주파 합성 노이즈. -1~1. 주기가 서로 나누어떨어지지 않아 반복이 안 읽힌다. */
+function lowNoise(t) {
+  return Math.sin(t * 0.83) * 0.55 + Math.sin(t * 1.61 + 1.7) * 0.31 + Math.sin(t * 2.87 + 4.1) * 0.14;
+}
+
+/** 렌더 전용 난수. 판정은 이 값을 절대 보지 않는다(sparks.js와 같은 규율). */
+function rand(ref) {
+  ref.v = (ref.v * 1664525 + 1013904223) >>> 0;
+  return ref.v / 4294967296;
+}
+
+/**
+ * 이번 공격의 표적 (E4). 상대가 내 어디를 노리는가.
+ * 겨냥 보정값이라 절대 좌표가 아니라 **검이 향하는 방향**을 바꾼다.
+ * 시각 전용이다. `judge.js`는 부위를 보지 않으므로 판정에 아무 영향이 없다.
+ */
+export const TARGET = { HEAD: 'head', CHEST: 'chest', FLANK: 'flank' };
+
+const TARGET_AIM = {
+  [TARGET.HEAD]: [-0.10, 0.42],
+  [TARGET.CHEST]: [0, 0],
+  [TARGET.FLANK]: [0.26, -0.30],
+};
+const ZERO_AIM = [0, 0];
+
+/** 패리당했을 때 검이 튕겨나는 방향 2종. 받는 위치가 매번 같지 않아야 한다(E4). */
+export const PARRY_LINE = { HIGH: 'high', LOW: 'low' };
+
+const KNOCK_DIR = {
+  [PARRY_LINE.HIGH]: new THREE.Vector3(0.42, 0.34, -0.22),
+  [PARRY_LINE.LOW]: new THREE.Vector3(0.36, -0.30, -0.18),
+};
+
+/**
  * 포즈 골격. 정규 좌표(x는 0~1이 텍스처 폭, y는 0~1이 텍스처 높이).
  *
  * 좌표가 비등방이라는 점을 놓치면 안 된다. 텍스처는 512 x 1024인데 x는 0.95m, y는 1.9m를 덮으므로
@@ -491,9 +544,16 @@ export function createOpponent(scene, { tipDistance } = {}) {
   const aimTarget = new THREE.Vector3();
   const aimDir = new THREE.Vector3();
   // 패리당해 검이 튕겨나는 짧은 반동. 겨냥점을 잠깐 밀었다 되돌린다
-  const KNOCK = new THREE.Vector3(0.42, 0.34, -0.22);
   const KNOCK_SEC = 0.26;
   let knock = 0;
+  let knockDir = KNOCK_DIR[PARRY_LINE.HIGH];
+
+  // 풋워크 상태. 전부 렌더 전용이고 판정으로 돌아가지 않는다
+  const seed = { v: 20260804 };
+  let footT = 0;
+  let dipT = -1;                                            // 진행 중이면 0~DIP_SEC, 아니면 -1
+  let nextDipAt = DIP_GAP[0] + rand(seed) * (DIP_GAP[1] - DIP_GAP[0]);
+  let target = TARGET.CHEST;
   const BLADE_AXIS = new THREE.Vector3(0, 0, -1);
   const tmpColor = new THREE.Color();
   const lerpArr = (out, a, b, t) =>
@@ -518,10 +578,28 @@ export function createOpponent(scene, { tipDistance } = {}) {
   return {
     group,
 
-    /** 패리당했을 때. 검이 튕겨나는 인상만 짧게 준다. */
-    knockBack() {
+    /**
+     * 패리당했을 때. 검이 튕겨나는 인상만 짧게 준다.
+     * line이 상단이면 위로, 하단이면 아래로 밀린다. 받는 선이 매번 같으면 막기가 한 장면으로 굳는다(E4).
+     */
+    knockBack(line = PARRY_LINE.HIGH) {
+      knockDir = KNOCK_DIR[line] ?? KNOCK_DIR[PARRY_LINE.HIGH];
       knock = 1;
     },
+
+    /**
+     * 이번 공격의 표적. 렌더러가 예고 진입 순간에 한 번 정한다.
+     * 검 겨냥이 이 값을 따라 돌고 파란 리본이 그 궤적을 그린다.
+     */
+    setTarget(name) {
+      if (TARGET_AIM[name]) target = name;
+    },
+    getTarget() {
+      return target;
+    },
+
+    /** 착탄점을 실루엣 안으로 죌 때 쓴다. 평면 폭의 절반이다. */
+    bodyHalfWidth: PLANE_W / 2,
 
     /** 궤적 리본이 읽는 검끝. 3D 검이 서면 그쪽 앵커로 바뀐다. */
     getTip() {
@@ -561,21 +639,55 @@ export function createOpponent(scene, { tipDistance } = {}) {
         planes[1 - current].material.opacity = 1 - fade;
       }
 
+      // 풋워크. **예고 중에는 시간 자체를 세운다.**
+      // 공격 예고가 잔움직임에 묻히면 페인트 판독 게임이 죽는다. 정지 자체가 "온다"는 신호다.
+      // 값을 0으로 되돌리지 않고 그 자리에서 얼리므로 팝이 없고, 재개도 얼었던 위상에서 이어진다.
+      if (poseName !== POSE.TELEGRAPH) {
+        footT += dtSec;
+        if (dipT >= 0) {
+          dipT += dtSec;
+          if (dipT >= DIP_SEC) dipT = -1;
+        } else if (footT >= nextDipAt) {
+          // 큰 숙임은 일정 간격이 아니라 뽑은 간격으로 온다. 규칙적이면 그것도 읽힌다
+          dipT = 0;
+          nextDipAt = footT + DIP_GAP[0] + rand(seed) * (DIP_GAP[1] - DIP_GAP[0]);
+        }
+      }
+      group.position.x = SWAY_X * lowNoise(footT);
+      shadow.position.x = group.position.x;
+      // 세로는 발바닥을 축으로 한 압축이다. 위치를 내리면 발이 바닥에 먹힌다(위 주석 참조)
+      let squash = BREATH * (Math.sin(footT * 1.85) * 0.5 + 0.5);
+      if (dipT >= 0) squash += DIP * Math.sin(Math.PI * (dipT / DIP_SEC));
+      const poseDip = POSE_DIP[poseName] ?? 0;
+      squash += poseName === POSE.LUNGE ? poseDip * Math.min(1, Math.max(0, lunge)) : poseDip;
+      // **압축은 그룹이 아니라 빌보드 평면에만 건다.** 그룹에 걸면 손에 붙은 3D 검까지
+      // 비균등 스케일을 받아 칼이 눌리고, 회전이 얹혀 있어 전단까지 생긴다(부모 비균등 스케일 x 자식 회전).
+      // 평면 지오메트리는 발바닥이 원점이라 scale.y가 그대로 "발 붙인 채 머리가 내려가는" 변형이 된다.
+      const bodyScale = 1 - squash;
+      for (const p of planes) p.scale.y = bodyScale;
+
       // 검 손과 겨냥점. 런지 중에는 대기에서 런지로 뻗는 중간값을 쓴다
       let aim = AIM[poseName] ?? AIM[POSE.IDLE];
       if (poseName === POSE.TELEGRAPH) aim = real ? AIM.telegraphReal : AIM.telegraphFeint;
+      // 표적 보정은 노리는 구간에만 얹는다. 예고에서 이미 보이므로 어디를 노리는지가 형태로 읽힌다
+      const off = poseName === POSE.TELEGRAPH || poseName === POSE.LUNGE ? TARGET_AIM[target] : ZERO_AIM;
       const h = HAND[poseName] ?? HAND[POSE.IDLE];
       if (poseName === POSE.LUNGE) {
         const t = Math.min(1, Math.max(0, lunge));
         lerpArr(handTarget, HAND[POSE.IDLE], h, t);
         lerpArr(aimTarget, AIM[POSE.IDLE], aim, t);
+        aimTarget.x += off[0] * t;
+        aimTarget.y += off[1] * t;
       } else {
         handTarget.set(h[0], h[1], h[2]);
-        aimTarget.set(aim[0], aim[1], aim[2]);
+        aimTarget.set(aim[0] + off[0], aim[1] + off[1], aim[2]);
       }
+      // 검은 안 눌리지만 손과 겨냥은 몸을 따라 내려와야 한다. 그래야 검이 몸에서 떠 있지 않다
+      handTarget.y *= bodyScale;
+      aimTarget.y *= bodyScale;
       if (knock > 0) {
         knock = Math.max(0, knock - dtSec / KNOCK_SEC);
-        aimTarget.addScaledVector(KNOCK, knock);
+        aimTarget.addScaledVector(knockDir, knock);
       }
       // 손 추종도 포즈 전환과 같은 리듬을 탄다. 몸이 빠르게 뻗으면 검도 빠르게 나간다
       const k = Math.min(1, dtSec / fadeSec);

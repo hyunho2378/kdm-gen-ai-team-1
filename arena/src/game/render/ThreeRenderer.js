@@ -9,7 +9,7 @@ import { colors, motion } from '../../tokens.js';
 import { AI_MODE, ATTACK_KIND, OUTCOME, OWNER } from '../judge.js';
 import { thrustEase } from './canvas2d/geometry.js';
 import { createComposer } from './three/post.js';
-import { POSE, createOpponent } from './three/opponent.js';
+import { PARRY_LINE, POSE, TARGET, createOpponent } from './three/opponent.js';
 import { attachSwordModel } from './three/swordModel.js';
 import { createShake } from './three/shake.js';
 import { createSparks } from './three/sparks.js';
@@ -47,6 +47,39 @@ function bodyPart(y) {
   return '팔다리';
 }
 
+/** 렌더 전용 난수. 판정은 이 값을 절대 보지 않는다(sparks.js와 같은 규율). */
+function rand(ref) {
+  ref.v = (ref.v * 1664525 + 1013904223) >>> 0;
+  return ref.v / 4294967296;
+}
+
+/**
+ * 키보드 한정 조준 변주 (E4). 찌르기마다 프리셋 호의 칼끝을 조금씩 다른 곳으로 민다.
+ * 키보드는 프리셋 트윈이라 이것이 없으면 찌르기 호가 매번 완전히 같고 착탄도 한 점에 박힌다.
+ *
+ * 중앙값이 0이 아니라 +x인 것은 찌르기 프리셋의 칼끝이 그립보다 왼쪽에 있어
+ * 그대로 상대 평면에 투영하면 착탄이 늘 몸 왼쪽에 몰리기 때문이다
+ * (실측 -0.26m. 몸 반폭이 0.50m라 절반이 한쪽 끝에서 잘린다).
+ * y를 아래로 치우친 것은 투구(1.55m) 문턱을 실제로 넘나들게 하기 위해서다.
+ *
+ * **C3에서 폰 쿼터니언이 검 자세를 쥐면 이 변주만 지우면 된다.**
+ * 아래 착탄 투영식(그립에서 칼끝으로 뻗은 직선을 상대 평면까지 늘린다)은 그대로 남아
+ * 그 순간부터 진짜 조준이 된다. 임시인 것은 이 변주 하나뿐이고 투영식은 미래 코드다.
+ */
+const AIM_JITTER_X = [-0.05, 0.21];
+const AIM_JITTER_Y = [-0.22, 0.10];
+
+/**
+ * 상대 표적 성향 (E4). 유파마다 노리는 곳이 다르다. 세이버는 상단, 에페는 몸통이다.
+ * **시각 스타일 전용이다.** `aiKind`와 같은 등급이고 타이밍이나 판정에 쓰지 않는다.
+ * 가중 주머니라 뽑기 한 번이면 성향이 나온다.
+ */
+const TARGET_BIAS = {
+  'italian-saber': [TARGET.HEAD, TARGET.HEAD, TARGET.CHEST, TARGET.FLANK],
+  'french-epee': [TARGET.CHEST, TARGET.CHEST, TARGET.FLANK, TARGET.HEAD],
+};
+const TARGET_FALLBACK = [TARGET.HEAD, TARGET.CHEST, TARGET.FLANK];
+
 /** 두 좌표를 섞는다. 프리셋 트윈의 최소 단위다. */
 function lerp3(out, a, b, t) {
   out.set(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
@@ -76,6 +109,8 @@ export function createThreeRenderer() {
   let onFx = null;
 
   const camWorld = new THREE.Vector3();
+  const gripWorld = new THREE.Vector3();
+  const aimRay = new THREE.Vector3();
   const tipWorld = new THREE.Vector3();
   const aiTipWorld = new THREE.Vector3();
   const crossWorld = new THREE.Vector3();
@@ -94,6 +129,14 @@ export function createThreeRenderer() {
   let dDot = 0;
   let advancing = false;
   let aiSampling = false;
+  // E4 시각 시드. 착탄 변주, 상대 표적, 패리 받는 선을 여기서 뽑는다.
+  // **engine의 rng를 쓰지 않는다.** 그 수열을 한 번이라도 당겨 쓰면 판정 결과가 통째로 달라진다.
+  const seed = { v: 20260805 };
+  let prevAiMode = null;
+  let prevMeLunge = 0;
+  // 이번 찌르기의 칼끝 변주(카메라 로컬). 찌르기 시작 순간 한 번 뽑는다
+  let jitterX = 0;
+  let jitterY = 0;
 
   // 연속 채널의 최신값. 판정에 쓰이지 않는다.
   let pose = { kind: 'preset', value: 'rest' };
@@ -113,6 +156,8 @@ export function createThreeRenderer() {
     let a = SWORD_POSES.rest;
     let b = SWORD_POSES.rest;
     let t = 0;
+    // 조준 변주가 실리는 정도. 뻗는 구간에서만 자라고 휴식과 가드에서는 0이다
+    let reach = 0;
 
     if (guard) {
       b = SWORD_POSES.guard;
@@ -129,11 +174,16 @@ export function createThreeRenderer() {
         // 런지는 더 깊이 들어간다. meLungeDeep은 렌더 전용 표식이다
         b = gameState.meLungeDeep ? SWORD_POSES.lungeDeep : SWORD_POSES.thrust;
         t = (e - 0.3) / 0.7;
+        reach = t;
       }
     }
 
     lerp3(tmpGrip, a.grip, b.grip, t);
     lerp3(tmpTip, a.tip, b.tip, t);
+    // 찌르기마다 칼끝이 조금씩 다른 곳으로 간다. 그립은 그대로라 검이 겨냥을 바꾼 것으로 읽힌다.
+    // 궤적 리본이 이 칼끝을 따라가므로 호 자체가 매번 달라진다(키보드 한정. 위 상수 주석 참조)
+    tmpTip.x += jitterX * reach;
+    tmpTip.y += jitterY * reach;
 
     sword.group.position.copy(tmpGrip);
     // lookAt을 쓰지 않는다. 비카메라 객체의 lookAt은 +z를 타깃으로 향하는데 검신은 -z로 뻗어 있고,
@@ -278,6 +328,23 @@ export function createThreeRenderer() {
       lastD = gameState.d;
 
       const real = gameState.aiKind === ATTACK_KIND.REAL;
+
+      // 이번 찌르기의 조준을 시작 순간 한 번 뽑는다. 매 프레임 뽑으면 칼끝이 떨린다
+      const meLunge = gameState.meLunge ?? 0;
+      if (meLunge > prevMeLunge && prevMeLunge <= 0.02) {
+        jitterX = AIM_JITTER_X[0] + rand(seed) * (AIM_JITTER_X[1] - AIM_JITTER_X[0]);
+        jitterY = AIM_JITTER_Y[0] + rand(seed) * (AIM_JITTER_Y[1] - AIM_JITTER_Y[0]);
+      }
+      prevMeLunge = meLunge;
+
+      // 상대 표적은 예고에 들어가는 순간 정해진다. 예고 자세가 이미 그쪽을 겨누므로
+      // 어디로 오는지가 형태로 미리 읽힌다. 유파 성향은 시각 스타일 규칙 안이다
+      if (gameState.aiMode === AI_MODE.TELEGRAPH && prevAiMode !== AI_MODE.TELEGRAPH) {
+        const bag = TARGET_BIAS[gameState.school?.key] ?? TARGET_FALLBACK;
+        opponent.setTarget(bag[Math.floor(rand(seed) * bag.length) % bag.length]);
+      }
+      prevAiMode = gameState.aiMode;
+
       opponent.setPose(pickPose(gameState));
       // 명중 순간 틴트. hitFlash는 초당 1.6으로 줄어 0.192폭이 정확히 120ms다(요구 구간 상단).
       // owner는 득점자라 ME면 맞은 쪽이 상대다. 그래서 상대 빌보드가 붉어진다.
@@ -320,12 +387,38 @@ export function createThreeRenderer() {
 
       for (const e of fx) {
         const scored = e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE;
+
+        // 패리는 받는 선을 먼저 정한다. 스파크와 리포스트 링이 같은 지점에 서야 한다.
+        // 늘 같은 점에서 튀면 막기가 매번 같은 한 장면으로 굳는다(E4)
+        let parryLine = null;
+        if (e.outcome === OUTCOME.PARRY) {
+          parryLine = rand(seed) < 0.5 ? PARRY_LINE.HIGH : PARRY_LINE.LOW;
+          crossWorld.copy(tipWorld);
+          crossWorld.y += parryLine === PARRY_LINE.HIGH ? 0.10 : -0.12;
+          crossWorld.x += (rand(seed) - 0.5) * 0.16;
+        }
+
         // 연출이 서는 월드 지점. 내가 넣었으면 상대 몸 위, 내가 맞았으면 상대 검끝이다
         if (scored && e.owner === OWNER.ME) {
+          // **그립에서 칼끝으로 뻗은 직선을 상대 평면까지 늘린 곳이 착탄점이다.**
+          // 전에는 상대 중심 x에 고정이라 어디를 찔러도 명중이 정중앙에 박혔다.
+          // 이 식은 임시가 아니다. C3에서 폰 쿼터니언이 검을 돌리면 그 방향이 그대로 여기로 들어와
+          // 코드 교체 없이 진짜 조준이 된다(임시인 것은 위 AIM_JITTER 상수뿐이다).
+          sword.group.getWorldPosition(gripWorld);
+          aimRay.copy(tipWorld).sub(gripWorld);
+          const planeZ = opponent.group.position.z;
+          const cx = opponent.group.position.x;
+          let hx = cx;
+          // 칼끝이 상대 쪽(-z)으로 향할 때만 평면과 만난다. 옆이나 뒤를 향하면 중심으로 떨어뜨린다
+          if (aimRay.z < -1e-4) {
+            hx = gripWorld.x + aimRay.x * ((planeZ - gripWorld.z) / aimRay.z);
+          }
+          // 실루엣 밖으로 나가면 몸이 아니라 허공에 마커가 선다. 몸 반폭 안으로 죈다
+          const hw = opponent.bodyHalfWidth * 0.9;
           hitWorld.set(
-            opponent.group.position.x,
+            Math.min(cx + hw, Math.max(cx - hw, hx)),
             Math.min(1.8, Math.max(0.35, tipWorld.y)),
-            opponent.group.position.z + 0.06
+            planeZ + 0.06
           );
         } else {
           hitWorld.copy(scored ? aiTipWorld : crossWorld);
@@ -343,7 +436,8 @@ export function createThreeRenderer() {
         if (e.outcome === OUTCOME.PARRY) {
           // 스파크는 흰색에서 steel로 식는다. red를 쓰지 않는다(레드는 득점 전용)
           sparks.burst(crossWorld);
-          opponent.knockBack();
+          // 상단이면 검이 위로, 하단이면 아래로 튕겨난다. 받는 자세가 2종이 된다
+          opponent.knockBack(parryLine);
         }
         // 화면 좌표와 부위를 얹어 DOM 층으로 넘긴다. 캔버스 밖 연출은 HUD가 그린다
         if (onFx) {
@@ -413,6 +507,10 @@ export function createThreeRenderer() {
       dDot = 0;
       advancing = false;
       aiSampling = false;
+      prevAiMode = null;
+      prevMeLunge = 0;
+      jitterX = 0;
+      jitterY = 0;
     },
     segmentCount() {
       return (meTrail?.segmentCount() ?? 0) + (aiTrail?.segmentCount() ?? 0);
