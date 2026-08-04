@@ -10,9 +10,9 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, whiteA } from '../tokens.js';
 import { TARGET, TARGET_ITEMS } from '../copy.js';
-import { SectionLabel } from '../components/Bits.jsx';
+import { SectionLabel, GlassRim } from '../components/Bits.jsx';
 
 export default function S3Target({ active }) {
   const headRef = useRef(null);
@@ -110,15 +110,15 @@ export default function S3Target({ active }) {
               itemsRef.current[i] = el;
             }}
             style={{
+              position: 'relative',
               flex: '0 1 clamp(140px, 24.1vw, 620px)',
               aspectRatio: '1 / 1',
               borderRadius: '50%',
-              background: colors.surface.glass,
-              // 원본은 그라디언트 스트로크다. 위가 밝고 아래로 사라진다.
-              border: `1px solid transparent`,
-              backgroundImage: `linear-gradient(${colors.surface.glass}, ${colors.surface.glass}), linear-gradient(180deg, ${colors.line.strong} 0%, ${colors.line.faint} 62%, transparent 100%)`,
-              backgroundOrigin: 'border-box',
-              backgroundClip: 'padding-box, border-box',
+              // **채움 없음.** 배경 #101010이 그대로 비친다. backdrop-filter도 쓰지 않는다
+              // (뒤가 단색이라 효과가 없고 비용만 든다).
+              background: 'transparent',
+              // 아주 약한 내부 글로우 한 겹만.
+              boxShadow: `inset 0 0 60px ${whiteA(0.03)}`,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -129,6 +129,9 @@ export default function S3Target({ active }) {
               willChange: 'transform, opacity',
             }}
           >
+            {/* 유리 림. 1.2px 링만 남기고 안쪽은 뚫려 있다. */}
+            <GlassRim />
+
             <span
               style={{
                 fontFamily: typography.family,
@@ -136,26 +139,30 @@ export default function S3Target({ active }) {
                 fontWeight: 600,
                 letterSpacing: '0.02em',
                 lineHeight: 1,
-                color: colors.text.primary,
-                opacity: 0.65,
+                color: colors.red,
               }}
             >
               {it.no}
             </span>
             <div>
-              {it.desc.map((line) => (
+              {it.desc.map((segs, li) => (
                 <div
-                  key={line}
+                  key={li}
                   style={{
                     fontFamily: typography.family,
                     fontSize: 'clamp(0.68rem, 1.56vw, 1.7rem)',
-                    fontWeight: 600,
+                    fontWeight: 400,
                     letterSpacing: '-0.02em',
                     lineHeight: 1.55,
                     color: colors.text.primary,
                   }}
                 >
-                  {line}
+                  {/* 강조 조각만 굵게. 위치는 copy.js가 쥔다. */}
+                  {segs.map((sg, si) => (
+                    <span key={si} style={{ fontWeight: sg.b ? 700 : 400 }}>
+                      {sg.t}
+                    </span>
+                  ))}
                 </div>
               ))}
             </div>

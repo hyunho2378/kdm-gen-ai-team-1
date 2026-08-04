@@ -17,6 +17,7 @@ import S6ColorSystem from './sections/S6ColorSystem.jsx';
 import S3Concept from './sections/S3Concept.jsx';
 import S4Experience from './sections/S4Experience.jsx';
 import S5Duelist from './sections/S5Duelist.jsx';
+import S7Demo from './sections/S7Demo.jsx';
 // 보존: sections/S2Background.jsx(프레임 스크럽), S3Trajectory.jsx(궤적 리본), S4Concept.jsx(리퀴드 글래스).
 // 발표 덱 골격 이식으로 이번 배치에서는 쓰지 않는다. 파일은 뒤 섹션 재사용 예정이라 지우지 않는다.
 
@@ -167,6 +168,8 @@ export default function App() {
               <S4Experience registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
             ) : s.id === 's9' ? (
               <S5Duelist registerHandler={reg[i].handler} registerEnter={reg[i].enter} />
+            ) : s.id === 's12' ? (
+              <S7Demo active={current === i} />
             ) : (
               <div
                 style={{

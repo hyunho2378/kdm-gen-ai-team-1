@@ -37,10 +37,32 @@ export const TARGET = {
   headline: '누구나 쉽게, 가장 가까운 취미 경험으로 전환하는 XR 경험',
 };
 
+// desc의 각 줄은 조각 배열이다. b가 true인 조각만 굵게 나온다(원본 볼드 위치).
 export const TARGET_ITEMS = [
-  { key: 't1', no: '01', desc: ['펜싱을 가장 가까운', '취미로 만나고 싶은 사람들'] },
-  { key: 't2', no: '02', desc: ['해보고 싶었지만,', '시작하기는 어려웠던 사람들'] },
-  { key: 't3', no: '03', desc: ['일상에 새로운 긴장과', '몰입을 원하는 사람들'] },
+  {
+    key: 't1',
+    no: '01',
+    desc: [
+      [{ t: '펜싱을 가장 가까운' }],
+      [{ t: '취미로 만나고 싶은 사람들', b: true }],
+    ],
+  },
+  {
+    key: 't2',
+    no: '02',
+    desc: [
+      [{ t: '해보고 싶었지만,' }],
+      [{ t: '시작하기는 어려웠던 사람들', b: true }],
+    ],
+  },
+  {
+    key: 't3',
+    no: '03',
+    desc: [
+      [{ t: '일상에 새로운 긴장', b: true }, { t: '과' }],
+      [{ t: '몰입', b: true }, { t: '을 원하는 사람들' }],
+    ],
+  },
 ];
 
 // 디자인 키워드 (원본 Slide 16_9 - 29.svg)
@@ -87,7 +109,15 @@ export const NAMING = {
   headline:
     "펜싱 검이 그리는 곡선의 궤적과 경기의 긴장감이 소용돌이처럼 몰입으로 이어지는 순간을 'VORTEX'라는 이름에 담았다.",
   sub: '사용자의 움직임과 정확한 피드백이 하나의 경험으로 이어지는 XR 트레이닝을 상징한다.',
-  shots: ['/images/naming/shot-1.png', '/images/naming/shot-2.png'],
+  shots: ['/images/naming/photo-1.png', '/images/naming/photo-2.png'],
+};
+
+// 마지막 섹션 데모 CTA (원본 Slide 16_9 - 9.svg)
+export const DEMO = {
+  label: 'IMMERSIVE FENCING XR',
+  // 원본은 3줄로 끊어 좌측 정렬한다.
+  headline: ['ENTER', 'THE', 'VORTEX.'],
+  ctaLabel: '데모 실행',
 };
 
 // 컬러 시스템 (원본 Slide 16_9 - 31.svg)

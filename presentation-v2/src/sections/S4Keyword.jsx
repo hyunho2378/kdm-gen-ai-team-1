@@ -14,7 +14,7 @@ import gsap from 'gsap';
 import { colors, typography, motion } from '../tokens.js';
 import { KEYWORD, KEYWORDS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SectionLabel } from '../components/Bits.jsx';
+import { SectionLabel, GlassRim } from '../components/Bits.jsx';
 
 const CAPTION = {
   fontFamily: typography.family,
@@ -200,10 +200,15 @@ export default function S4Keyword({ active }) {
                 <div
                   style={{
                     // 원본 r 117 / 카드 폭 573 = 지름 40.9%
+                    position: 'relative',
                     width: '41%',
                     aspectRatio: '1 / 1',
                     borderRadius: '50%',
-                    border: `1px solid ${colors.line.strong}`,
+                    // **채움 없음.** 뒤 사진이 그대로 비친다.
+                    background: 'transparent',
+                    // TARGET과 달리 여기는 뒤가 사진이라 blur가 실제로 보인다. 아주 약하게만.
+                    backdropFilter: 'blur(3px)',
+                    WebkitBackdropFilter: 'blur(3px)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -213,6 +218,8 @@ export default function S4Keyword({ active }) {
                     textShadow: '0 2px 18px rgba(16,16,16,0.9)',
                   }}
                 >
+                  {/* TARGET과 같은 유리 림 문법. */}
+                  <GlassRim />
                   <span
                     style={{
                       fontFamily: typography.family,

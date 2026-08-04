@@ -185,6 +185,16 @@ export default function S5Naming({ active }) {
         {NAMING.shots.map((src) => (
           <div key={src} style={{ position: 'relative', overflow: 'hidden', background: colors.deep }}>
             <AssetImage src={src} fit="cover" />
+            {/* 위쪽 블랙 영역과 사진 사이 경계를 죽인다. 상단만 얕게 페이드. */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `linear-gradient(180deg, ${colors.black} 0%, rgba(16,16,16,0.55) 5%, transparent 16%)`,
+                pointerEvents: 'none',
+              }}
+            />
           </div>
         ))}
       </div>

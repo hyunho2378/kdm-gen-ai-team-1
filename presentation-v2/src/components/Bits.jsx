@@ -3,7 +3,30 @@
 // Badge: 필 배지. filled면 red 채움.
 // StepDots: 서브 진행 표시. 활성만 red.
 
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, whiteA } from '../tokens.js';
+
+// 유리 림 라이트. 위쪽이 밝고 아래로 어두워지는 그라디언트를 mask로 뚫어 링만 남긴다.
+// **border-image나 두 겹 background-clip 트릭이 아니다.** 링이 반투명이라
+// 그 트릭을 쓰면 아래 레이어가 원 전체로 비친다(컨셉 섹션에서 실측으로 확인한 함정).
+// 채움은 호출부가 정한다. TARGET은 투명, 디자인 키워드는 뒤가 사진이라 blur를 살짝 건다.
+export const GLASS_RING = {
+  background: `linear-gradient(160deg, ${whiteA(0.5)}, ${whiteA(0.06)} 55%, ${whiteA(0.18)})`,
+  WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
+  WebkitMaskComposite: 'xor',
+  mask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
+  maskComposite: 'exclude',
+  pointerEvents: 'none',
+};
+
+/** 원 위에 얹는 유리 림 한 겹. inset 0으로 부모를 덮는다. */
+export function GlassRim({ width = 1.2 }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{ ...GLASS_RING, position: 'absolute', inset: 0, borderRadius: '50%', padding: width }}
+    />
+  );
+}
 
 export function SectionLabel({ label }) {
   return (
