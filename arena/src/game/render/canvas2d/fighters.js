@@ -119,10 +119,12 @@ export function createFighters() {
 
     /** 두 선수를 그리고 검끝 좌표를 돌려준다. 궤적 레이어가 이 좌표를 먹는다. */
     draw(ctx, view, pos, scale) {
-      const mePose = view.meGuard
-        ? POSE.GUARD
-        : view.meLunge > 0.05
+      // 우선순위 thrust > guard(홀드 중) > 디폴트. three 경로(R1)와 같은 순서다.
+      // 가드를 먼저 보면 홀드 중 되찌르기가 가드 포즈에 묻혀 화면에서 안 읽힌다.
+      const mePose = view.meLunge > 0.05
         ? POSE.LUNGE
+        : view.meGuard
+        ? POSE.GUARD
         : view.hitOwner === 'AI' && view.hitFlash > 0.4
         ? POSE.HIT
         : POSE.IDLE;

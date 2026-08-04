@@ -31,24 +31,30 @@ export function thrustEase(t) {
 /**
  * 검끝 좌표. 런지 진행 t(0~1)에 따라 전방으로 호를 그린다.
  * 뻗을 때 빠르고 거둘 때 느린 비대칭이 찌르기의 인상을 만든다.
+ *
+ * **우선순위 thrust > guard(홀드 중) > 디폴트.** three 경로(R1)와 같은 순서다.
+ * 가드를 먼저 보면 홀드 중에 되찌를 때 검이 선 자리에 굳어 "찔렀다"가 안 읽힌다.
+ * three는 홀드 블렌드를 상태로 들고 있지만 여기는 프레임마다 계산하는 stateless 경로라
+ * 찌르기 진행도 e로 두 자세를 섞는다. e가 0이면 방어선 그대로, 1이면 찌르기 그대로다.
  */
 export function swordTip(fighter, scale, lungeT, guard) {
   const reach = 150 * scale;
   const shoulderY = fighter.y - 118 * scale;
   const baseX = fighter.x + fighter.dir * 26 * scale;
 
-  if (guard) {
-    // 가드는 검을 세운다. 전방 리치를 줄이고 위로 든다.
-    return { x: baseX + fighter.dir * 34 * scale, y: shoulderY - 52 * scale };
-  }
-
   const e = thrustEase(lungeT);
   // 호: 뻗는 동안 살짝 아래에서 위로 올라온다
   const arc = Math.sin(e * Math.PI) * 26 * scale;
-  return {
+  const tip = {
     x: baseX + fighter.dir * (48 * scale + reach * e),
     y: shoulderY + 14 * scale - arc,
   };
+  if (!guard) return tip;
+
+  // 가드는 검을 세운다. 전방 리치를 줄이고 위로 든다.
+  const gx = baseX + fighter.dir * 34 * scale;
+  const gy = shoulderY - 52 * scale;
+  return { x: gx + (tip.x - gx) * e, y: gy + (tip.y - gy) * e };
 }
 
 /** 검자루 좌표. 검신을 그릴 때 검끝과 잇는다. */
