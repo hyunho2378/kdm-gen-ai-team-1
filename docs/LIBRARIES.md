@@ -1,3 +1,25 @@
+> # [presentation 개편 스택 판정 — 이 표가 조사 원문 추천보다 우선한다]
+>
+> 이 문서 하단 "presentation 개편 조사"(compass A 원문)의 추천 중 아래와 어긋나는 부분은 **이 판정표를 따른다.** 원문은 무수정으로 보존하되 채택은 이 표가 결정한다.
+>
+> ## 스택 판정 (조사와 다른 부분, 이 판정이 조사보다 우선)
+>
+> | 영역 | 조사 원문 추천 | 간합 판정 | 사유 |
+> |---|---|---|---|
+> | 통합 기반 | r3f-scroll-rig + R3F 도입 | **미도입** | A1에서 Lenis+ScrollTrigger 동기 루프가 이미 돌고 ScrollTrail 앵커 테이블이 그 위에 섰다. 스크롤 엔진 교체는 전면 회귀 위험. 스크럽은 canvas 2D로 충분해 three.js가 스크럽에는 불필요 |
+> | 영상 스크럽 | canvas-scroll-clip(MIT) 설치 | **1순위: GSAP imageSequence 헬퍼 로직 포팅** (우리 ScrollTrigger 안에서 프레임 인덱스 트윈 + snap "frame" + curFrame 비교 redraw 방지). canvas-scroll-clip(MIT)은 포팅이 막힐 때의 **폴백**으로만 문서에 남긴다 | canvas-scroll-clip은 자체 스크롤 처리를 갖고 있어 우리 루프와 이중 리스너가 된다. 로직을 소유하면 ScrollTrail과 같은 진행률 원천을 쓴다 |
+> | 배경 셰이더 | Codrops DOM 왜곡(원형) | **three.js 최소 도입(P5): 풀스크린 쿼드 1장 + snoise 프래그먼트, R3F 없이 플레인.** 콘텐츠 뒤 fixed 캔버스 레이어의 독립 일렁임 | DOM 왜곡 방식은 우리 구조상 불가. R3F 배제 판정과 일관 |
+>
+> ## 라이선스 절대 규칙 (전 단계)
+>
+> - **MIT(와 GSAP 무료, Apache)만 코드 채택.** GSAP은 2025-04 전면 무료(Flip, ScrollTrigger, SplitText 포함, 상업 이용 포함).
+> - **무라이선스 3종 복붙 절대 금지, 개념 학습만**: olivierlarose 전 저장소(64개, LICENSE 없음), cortiz2894/mouse-effects, KalebKloppe/scroll-image-sequence. 이들 코드가 한 줄이라도 복사되면 안 된다.
+> - **Codrops와 CodePen 소스는 로직 개념 포팅이 기본**이고, 코드 복사는 해당 저장소의 LICENSE 파일을 실제로 확인해 MIT임을 검증한 뒤에만. 검증 못 하면 개념으로 자체 구현.
+> - **셰이더 노이즈는 Ashima/stegu webgl-noise(MIT)의 snoise만 사용.**
+> - **도입한 전부 CREDITS.md 기록**(이름, 라이선스, 위치, 링크). 안 쓰는 것 기재 금지.
+>
+> ---
+
 > [채택 판정 확정] 이 조사에서 간합이 실제로 쓰는 것과 보류, 제외는 아래와 같다. 조사 원문의 추천과 다른 부분은 이 표가 우선한다.
 >
 > | 영역 | 지금 채택 | 보류(WebGL 승격 시) | 제외와 사유 |
@@ -321,3 +343,270 @@
 - **CC-BY-4.0(SlashSaber) 주의**: 코드용으로 이례적인 라이선스로, 재사용 시 원저자 크레딧 표기 의무가 있고 에셋은 "레포 star" 조건이 붙는다. 상업 배포 시 법률 검토 권장.
 - **Next.js/Vue 전용 주의**: GPGPU curl-noise R3F 예제(benjaminpreiss)는 Next.js, Muggleee/liquid-glass와 ShockWave(TresJS)는 Vue 기반 — Vite+React 이식 시 three 버전·useLoader 경로·컴포넌트 래퍼 조정 필요. 셰이더 GLSL 자체는 프레임워크 무관하게 그대로 이식된다.
 - **한글 텍스트 분해**: SplitText류(SplitType/splittext)는 라틴 문자 기준 설계 — 한글 char 분해 시 조합형/자소 분리 및 줄바꿈(word-break) 검증을 반드시 수행할 것. word 모드가 가장 안전하다.
+
+---
+
+## presentation 개편 조사 (compass A 원문, 무수정)
+
+# 간합(GANHAP) XR 펜싱 프레젠테이션: 오픈소스 인터랙션 기법 전수조사
+
+> 결론부터: 최우선 과제인 "펜싱 선수 영상 스크럽"은 자체 엔진을 흉내 낼 필요 없이 **MIT 라이선스 오픈소스 3종(canvas-scroll-clip · react-scroll-media · GreenSock imageSequence 헬퍼)** 으로 코드를 거의 그대로 가져와 만들 수 있으며, ffmpeg 전처리까지 `scroll-scrub-starter`가 통째로 제공한다. 나머지 4개 기법(유리 카드·마우스 셰이더·섹션 전환·통합 스타터)도 채택 가능한 MIT 소스가 충분하지만, 인기 튜토리얼의 상당수는 **LICENSE 파일이 없는 "무라이선스(all rights reserved)"** 이므로 반드시 제외·경고 처리해야 한다.
+
+## TL;DR
+- **1번(영상 스크럽, 최우선):** `m5kr1pka/canvas-scroll-clip`(MIT, 115★, 무의존) + `iam-saiteja/react-scroll-media`(MIT, TS·의존성 0) + GreenSock 공식 `imageSequence` 헬퍼(2025년 4월부터 GSAP 전면 무료)로 즉시 구현. 영상→프레임 파이프라인은 `timkosters/scroll-scrub-starter`(MIT)의 `./build.sh video.mp4` 한 줄로 해결.
+- **2~5번:** 유리 카드(Codrops 3D Glass Portal + GSAP stagger), 마우스 셰이더(Codrops Water/Pixel Distortion), 섹션 전환(GSAP Flip·clip-path·gl-transitions), 통합 스타터(`14islands/r3f-scroll-rig` MIT, `darkroomengineering/satus` MIT) — 모두 소스 공개. 단 **olivierlarose 튜토리얼 전체(64개 저장소)·cortiz2894/mouse-effects·KalebKloppe/scroll-image-sequence는 무라이선스라 복붙 금지, 개념만 학습**.
+- **구현 원칙:** Vite+R3F 스켈레톤 → Lenis+ScrollTrigger 동기화 → 영상 스크럽 → 유리 카드 → 배경 셰이더 → 전환 순서로 쌓으면 회귀·할루시네이션을 최소화. 화려함보다 정보 위계 우선, 과한 효과는 명시적으로 경고.
+
+## Key Findings
+1. **이미지 시퀀스 스크럽이 가장 풍부**하며, 드물게 React 이식·타입스크립트·접근성까지 끝난 MIT 라이브러리가 2개(`canvas-scroll-clip`, `react-scroll-media`) 존재한다. 펜싱 아이디어의 핵심을 사실상 "설치만으로" 확보 가능.
+2. **무라이선스 함정이 크다.** 검색 상위에 노출되는 인기 창작 튜토리얼 저자 **olivierlarose는 64개 공개 저장소(팔로워 1.3k)를 운영하지만 어느 것에도 LICENSE 파일이 없다**(awwwards-landing-page ★211, nextjs-framer-page-transition ★82, cards-parallax ★68, 3d-distorted-glass-effect ★55 등 — 출처 github.com/olivierlarose). 코드는 공개돼 열람·학습 가능하나, 법적으로는 "all rights reserved"이므로 MIT/Apache/CC0/CC-BY 요건 미충족 → **개념 학습만, 복붙 금지**.
+3. **GSAP은 2025년 4월 Webflow의 GreenSock 인수 이후 100% 무료**가 되었다. Codrops/Webflow 공식 발표(2025-05-14) verbatim: *"we've all read the wonderful news about GSAP now becoming 100% free, for everyone. Thanks to Webflow's support, all of the previously paid plugins in GSAP are now accessible to everyone"* — SplitText·MorphSVG·ScrollTrigger·**Flip 포함, 상업적 이용 포함**(출처 tympanus.net/codrops, webflow.com/blog/gsap-becomes-free). 따라서 GreenSock 공식 CodePen 데모는 전부 안전하게 채택 가능.
+4. **Codrops 데모는 대부분 GitHub(codrops org)에서 MIT로 공개**되나, 개별 저장소마다 라이선스 재확인이 필요(일부는 블로그 본문 스니펫만 제공).
+
+---
+
+## Details
+
+### 1. 스크롤 연동 이미지 시퀀스 / 영상 프레임 스크러빙 (최우선 · 펜싱 선수)
+
+가장 많이 조사한 영역이다. 채택 우선순위 순으로 정렬했다.
+
+**A. m5kr1pka/canvas-scroll-clip** ⭐ 1순위
+- URL: https://github.com/m5kr1pka/canvas-scroll-clip · 데모: Storybook(m5kr1pka.github.io/canvas-scroll-clip)
+- 라이선스: **MIT (LICENSE 파일 확인, GitHub 감지됨)** · 115★
+- 라이브 데모: 있음(Storybook + React Gist 예제)
+- 섹션: **영상스크럽(펜싱 선수)**
+- 이식 난이도: **그대로 씀** — npm 설치. npm 레지스트리 확인 결과 `canvas-scroll-clip@1.3.2`, MIT, 119kB, **third-party 의존성 0**.
+- 훔칠 핵심: `new CanvasScrollClip(el, {framePath, frameCount, scrollArea})` 세 옵션만. 기본 `scrollArea`는 이미지 높이의 2배, 시퀀스 파일명은 최소 2자리 leading-zero 필요(예: `frame_0001.jpg`).
+
+**B. iam-saiteja/react-scroll-media** ⭐ React 네이티브 1순위
+- URL: https://github.com/iam-saiteja/react-scroll-media · 데모: react-scroll-media.pages.dev
+- 라이선스: **MIT** — README 라이선스 섹션 verbatim: *"MIT © 2026 Thanniru Sai Teja"*. 릴리스 5개(최신 v1.1.0 "Enhance security features", 2026-02-13).
+- 라이브 데모: 있음
+- 섹션: **영상스크럽**
+- 이식 난이도: **그대로 씀** — TypeScript 100%, 의존성 0, 번들 gzip ~7.11kB, SSR 안전, `prefers-reduced-motion` 자동 감지 + canvas `role="img"` 접근성 내장.
+- 훔칠 핵심: CSS sticky로 컴포지터 스레드 처리 → 지터 제거. **메모리 벤치마크(1080p 기준): eager 500프레임=46MB, 1000프레임=57MB(High RAM); lazy 1000프레임=45MB로 평탄 유지(⭐권장), 기본 lazy 버퍼 ±10프레임.** 펜싱 영상이 길면 `lazy` 모드로.
+
+**C. GreenSock `imageSequence` 공식 헬퍼**
+- URL: https://gsap.com/docs/v3/HelperFunctions/helpers/imageSequenceScrub/ · 데모: https://codepen.io/GreenSock/pen/VwgevYW
+- 라이선스: **GSAP 무료(2025년 4월 전면 무료)**
+- 라이브 데모: 있음
+- 섹션: 영상스크럽(라이브러리 대신 로직 직접 소유하고 싶을 때)
+- 이식 난이도: 로직 포팅(React `useGSAP` 훅 안에서 호출)
+- 훔칠 핵심: `playhead={frame:0}` 프록시를 ScrollTrigger로 트윈하고 `snap:"frame"`으로 정수 프레임 스냅, `curFrame` 비교로 불필요한 redraw 방지 후 canvas에 `drawImage`.
+
+**D. timkosters/scroll-scrub-starter** (ffmpeg 전처리 파이프라인)
+- URL: https://github.com/timkosters/scroll-scrub-starter · 데모 4개(video-scroll-*.vercel.app)
+- 라이선스: MIT(README에 *"MIT. Fork it, ship it."* 명시 — 단 별도 LICENSE 파일은 없음. 의도는 명확한 MIT)
+- 라이브 데모: 있음(4개)
+- 섹션: **영상스크럽 전처리**(CLI/에이전트 스킬, JS 라이브러리 아님)
+- 이식 난이도: 개념/CLI 활용
+- 훔칠 핵심: `./build.sh video.mp4` → 영상을 프레임(JPEG/WebP)으로 추출 → 정적 스크럽 사이트 자동 생성. `--transparent` 플래그는 ffmpeg colorkey로 흰/녹/검 배경 제거(펜싱 선수를 배경에서 오려낼 때 유용). 10초·24fps=240프레임.
+
+**E. React + GSAP 튜토리얼 (Pragmattic / Loopspeed)**
+- URL: https://blog.pragmattic.dev/scroll-driven-image-sequence-header , https://blog.loopspeed.co.uk/scroll-driven-image-sequence-header
+- 라이선스: 블로그 게시 코드 스니펫(참고·학습용; 저작권 표기 확인 권장)
+- 라이브 데모: 있음
+- 섹션: **표지 히어로 스크럽**
+- 이식 난이도: 그대로 씀에 가까움(React `useGSAP` + canvas pin, 헤더 높이 200vh)
+- 훔칠 핵심: 마운트 시 전 프레임 프리로드 → 프레임 1 즉시 렌더 → ScrollTrigger progress로 프레임 인덱스 계산. 투명 프레임은 매 프레임 `clearRect` 필수.
+
+**F. AliKlein React CodePen**
+- URL: https://codepen.io/AliKlein/pen/dyOqrEB
+- 라이선스: CodePen 기본(참고용)
+- 섹션: 영상스크럽 + 텍스트 레이아웃
+- 이식 난이도: 로직 포팅
+- 훔칠 핵심: canvas는 `position:sticky; top:50%`, 텍스트는 `.content`(position:relative)로 스크롤 시 생기는 빈 공간에 배치 → "스크롤에 따라 텍스트가 나타나는" 요구사항 그대로 충족.
+
+**G. 프리로딩·성능 최적화 (Motion.page 문서)**
+- URL: https://motion.page/docs/sdk/image-sequence
+- 훔칠 핵심(수백 장 로딩 대비): ① `HTMLImageElement.decode()`/`createImageBitmap()`로 디코드 선처리(메인 스레드 밖) ② IntersectionObserver로 섹션 근접 시 지연 프리로드 ③ `Math.min(devicePixelRatio, 2)`로 DPR 캡(고밀도 화면 버퍼 과대화 방지) ④ WebP/AVIF 우선(알파 필요할 때만 PNG) ⑤ 필요 시 2프레임당 1장 스킵으로 요청 반감 ⑥ 프레임 1은 로드 즉시 그려 빈 canvas 방지.
+
+**⚠️ 제외: KalebKloppe/scroll-image-sequence** — https://github.com/KalebKloppe/scroll-image-sequence · **LICENSE 파일 없음 = 무라이선스(all rights reserved)**, 0★, 라이브 데모 없음. `<img>` 대상 sticky 방식 아이디어만 참고, 코드 복붙 금지.
+
+---
+
+### 2. 리퀴드 글래스 / 글래스모피즘 카드 (가로 3개 부상)
+
+이미 확보한 `ybouane/liquidglass`, `dashersw/liquid-glass-js`, drei `MeshTransmissionMaterial` 외의 추가 소스, 특히 **스크롤 결합 패턴** 위주.
+
+**A. Codrops "3D Glass Portal Card" (R3F + MeshTransmissionMaterial + Gaussian Splatting)**
+- URL: https://tympanus.net/codrops/2023/11/29/3d-glass-portal-card-effect-with-react-three-fiber-and-gaussian-splatting/
+- 라이선스: Codrops(대체로 MIT — codrops GitHub org 저장소 확인 권장)
+- 라이브 데모: 있음(본문에 데모/코드 링크)
+- 섹션: **리서치카드**
+- 이식 난이도: 로직 포팅
+- 훔칠 핵심: `state.gl.setRenderTarget(buffer)`로 유리 뒤 씬을 **한 번만** 렌더 → `<MeshTransmissionMaterial buffer={buffer.texture}>`로 포털 효과 + 렌더 최적화 동시 달성. 유리엔 반드시 HDR/EXR 환경광 필요.
+
+**B. GSAP 카드 stagger 부상 (GreenSock 공식)**
+- URL: https://codepen.io/GreenSock/pen/NWqEepW (스크롤 위치 기반 fade-in) · https://codepen.io/narliecholler/pen/WNKZWvv (yPercent:100 stagger)
+- 라이선스: **GSAP 무료**
+- 라이브 데모: 있음
+- 섹션: **리서치카드**(가로 3개 순차 부상)
+- 이식 난이도: 그대로 씀
+- 훔칠 핵심: `gsap.from('.card',{yPercent:100, stagger:0.5, scrollTrigger:{trigger:'.cards', scrub:true, pin:true}})` — 아래에서 순차로 떠오름. 유리 카드 3개에 `stagger:0.15` 정도로 절제.
+
+**C. jmarellanes "Interactive Team Reveal" (GSAP + Lenis 스택 카드)**
+- URL: https://codepen.io/jmarellanes/full/PwzMQrm
+- 라이선스: CodePen 기본(참고용)
+- 라이브 데모: 있음
+- 섹션: 리서치카드
+- 훔칠 핵심: 카드 pin + 순차 진입 + CSS `@layer`·logical property 반응형. Lenis와 이미 결합돼 있어 우리 스택과 정합.
+
+**⚠️ 제외: olivierlarose "3D Glass Effect"** — https://blog.olivierlarose.com/tutorials/3d-glass-effect · 저장소 무라이선스. MeshTransmissionMaterial 사용법 **개념만** 학습(대체재로 위 A·drei 공식 예제 사용).
+
+---
+
+### 3. 마우스 반응 셰이더 배경 (파도/왜곡/일렁임)
+
+**A. Codrops "Water-like Distortion Effect"**
+- URL: https://tympanus.net/codrops/2019/10/08/creating-a-water-like-distortion-effect-with-three-js/
+- 라이선스: Codrops(저장소 확인 권장)
+- 라이브 데모: 있음
+- 섹션: **배경 인터랙션**
+- 훔칠 핵심: canvas에 ripple을 그려 색상 채널에 데이터 인코딩 → 포스트프로세싱에서 render 왜곡. ripple은 나이 들수록 `intensity = 1 - age/maxAge`로 opacity 감소.
+
+**B. Codrops "Pixel Distortion Effect"**
+- URL: https://tympanus.net/codrops/2022/01/12/pixel-distortion-effect-with-three-js/
+- 라이선스: Codrops
+- 라이브 데모: 있음
+- 섹션: 배경 인터랙션(커서 주변 왜곡)
+- 훔칠 핵심: DataTexture 그리드 각 셀에 마우스 위치/속도 기록 → `gl_FragColor = texture2D(uTexture, newUV - 0.02*offset.rg)`로 UV 왜곡, 정지 시 relax로 자연 감쇠.
+
+**C. VoXelo "Interactive 3D Shader Ripple" (CodePen, three.js r128)**
+- URL: https://codepen.io/VoXelo/pen/GRVbwbw
+- 라이선스: CodePen 기본(전체 소스 공개)
+- 라이브 데모: 있음
+- 섹션: 배경 인터랙션
+- 훔칠 핵심: simplex noise(`snoise`) 기반 프래그먼트 셰이더 + `mouse`/`clickPosition` 유니폼으로 어두운 배경 위 은은한 일렁임. 전체 인라인 소스라 참고 편함.
+
+**⚠️ 제외: cortiz2894/mouse-effects & dghez/mouse-effects-webgl-water** — https://github.com/cortiz2894/mouse-effects (29★) 및 그 fork. **LICENSE 파일 없음 = 무라이선스**. water ripple/image trail/liquid mask 3종 묶음이 매력적이나 코드 복붙 금지. 라이브 데모(mouse-effects.vercel.app)는 **느낌 참고 전용**.
+
+**⚠️ 위계 경고:** 배경 셰이더는 어두운 배경 위 **낮은 displacement 강도의 은은한 일렁임만** 허용. 텍스트/카드 가독성을 해치면 즉시 강도 축소 또는 제거. 마우스 왜곡이 정보 위에서 춤추면 발표 내용 전달을 방해한다.
+
+---
+
+### 4. 섹션 전환 (빨려들어가는/모핑 전환)
+
+barba.js 본체는 이미 확보했으므로 **셰이더/모핑 전환 데모** 위주.
+
+**A. gl-transitions/gl-transitions**
+- URL: https://github.com/gl-transitions/gl-transitions
+- 라이선스: 오픈 컬렉션(저장소 라이선스 확인 권장 — GL Transitions는 통상 자유 이용)
+- 라이브 데모: 갤러리(gl-transitions.com)
+- 섹션: **전환**
+- 훔칠 핵심: `progress` 0→1로 from/to 텍스처를 전환하는 GLSL 컬렉션 수십 종(디졸브·한 점 수렴·displacement 등) — "빨려들어가는" 전환에 바로 쓸 프리셋 다수.
+
+**B. Codrops "Custom Page Transitions in Astro with Barba.js + GSAP" (2026)**
+- URL: https://tympanus.net/codrops/2026/04/08/creating-custom-page-transitions-in-astro-with-barba-js-and-gsap/
+- 라이선스: Codrops
+- 라이브 데모: 있음
+- 섹션: 전환
+- 훔칠 핵심: `uProgress` 유니폼을 GSAP로 1.5까지 트윈해 디졸브 셰이더가 화면을 덮음 → 완료 후 WebGL canvas `autoAlpha:0`. barba 훅과의 정리(cleanup) 패턴 포함. MorphSVG 전환도 함께 다룸.
+
+**C. GSAP Flip: 카드 → 상세 확대 모핑**
+- URL: https://codepen.io/GreenSock/pen/LYZYPpE (Expanding Grid Item) · 문서 https://gsap.com/docs/v3/Plugins/Flip/
+- 라이선스: **GSAP 무료(Flip 포함)**
+- 라이브 데모: 있음
+- 섹션: **전환(리서치 카드 → 상세)**
+- 이식 난이도: 로직 포팅
+- 훔칠 핵심: `Flip.getState(targets)` → DOM에서 카드를 상세 컨테이너로 이동 → `Flip.from(state, {absolute:true})`로 위치/스케일/회전 자동 모핑. 중첩 transform·flex/grid에서도 동작.
+
+**D. clip-path 리빌 전환 (tutsplus)**
+- URL: https://codepen.io/tutsplus/pen/abgxGaE
+- 라이선스: CodePen 기본(전체 소스)
+- 라이브 데모: 있음
+- 섹션: 전환
+- 훔칠 핵심: `clipPath:"inset(0 0 100% 0)"` stagger + ScrollTrigger `pin`으로 섹션을 겹쳐 리빌. 각 슬라이드 `z-index` 역순 배치.
+
+**E. kimamov/WebGL-Image-Transition**
+- URL: https://github.com/kimamov/WebGL-Image-Transition
+- 라이선스: 저장소 확인 권장
+- 라이브 데모: 리포 내 예제
+- 섹션: 전환
+- 훔칠 핵심: displacement map 텍스처(`dis.jpg`)로 두 이미지를 무의존 전환. `new Transition(container, img1, img2, dis, {duration})`.
+
+---
+
+### 5. 스크롤텔링 프레임워크 / 스타터 (통합)
+
+basementstudio/scrollytelling은 이미 확보했으므로 그 외.
+
+**A. 14islands/r3f-scroll-rig** ⭐ 통합 기반 1순위
+- URL: https://github.com/14islands/r3f-scroll-rig
+- 라이선스: **MIT**
+- 라이브 데모: 예제 다수
+- 섹션: **통합 기반(전 섹션)**
+- 이식 난이도: 그대로 씀(`@react-three/fiber` + Lenis 스무스 스크롤과 정합)
+- 훔칠 핵심: `<GlobalCanvas>` + `<SmoothScrollbar>`로 DOM 요소를 추적해 그 자리에 Three.js 오브젝트를 정확한 스케일/위치로 렌더(프로그레시브 인핸스먼트). WebGL 컨텍스트 1개로 다중 뷰포트 관리 → 컨텍스트 한계 회피.
+
+**B. darkroomengineering/satus**
+- URL: https://github.com/darkroomengineering/satus
+- 라이선스: **MIT**
+- 라이브 데모: 랜딩(로컬 실행 시 단계별 매뉴얼)
+- 섹션: 통합 기반(구조 참고)
+- 이식 난이도: 개념(Next.js 16 기반이라 Vite로는 패턴만 이식)
+- 훔칠 핵심: Lenis(darkroom 제작)+GSAP+R3F+Theatre 통합, 통합 격리(`lib/integrations`, env 설정 시에만 활성) 구조. WebGL은 `lib/webgl`로 분리.
+
+**C. Codrops "Crafting Scroll Based Animations in Three.js" (Bruno Simon)**
+- URL: https://tympanus.net/codrops/2022/01/05/crafting-scroll-based-animations-in-three-js/ (starter/final zip 제공)
+- 라이선스: Codrops/Three.js Journey 제공 스타터
+- 섹션: 통합 기반(기초)
+- 훔칠 핵심: 섹션별 카메라/오브젝트를 스크롤에 매핑하는 최소 셋업.
+
+**D. Codrops "Theatre.js + R3F 카메라 플라이스루" (2023)**
+- URL: https://tympanus.net/codrops/2023/02/14/animate-a-camera-fly-through-on-scroll-using-theatre-js-and-react-three-fiber/
+- 섹션: 통합 기반(시네마틱 카메라)
+- 훔칠 핵심: `<ScrollControls pages={5}>` + `sheet.sequence.position = scroll.offset * sequenceLength`로 스크롤=타임라인. 시네마틱 카메라 이동에 최적.
+
+**E. wawasensei "Scroll animations with R3F and GSAP"**
+- URL: https://dev.to/wawasensei/scroll-animations-with-react-three-fiber-and-gsap-273j
+- 섹션: 통합 기반
+- 훔칠 핵심: `useScroll` + `tl.current.seek(scroll.offset * tl.current.duration())`로 GSAP 타임라인을 R3F 스크롤에 결합.
+
+**F. Codrops "Scroll-Revealed WebGL Gallery (GSAP+Three+Astro+Barba)" (2026)**
+- URL: https://tympanus.net/codrops/2026/02/02/building-a-scroll-revealed-webgl-gallery-with-gsap-three-js-astro-and-barba-js/
+- 섹션: **리서치카드 + 전환 복합**
+- 훔칠 핵심: WebGL plane과 DOM `<img>`를 정확히 동기화 → 스크롤 시 셰이더 리빌 → 클릭 시 이미지가 상세로 이동하는 seamless 페이지 전환. 우리 "카드→상세" 흐름의 완성형 레퍼런스.
+
+**감상용(느낌 참고 전용 · 소스 비공개/자체 엔진 · 채택 불가):** activetheory.net(자체 엔진 Dreamwave), Lusion, Immersive Garden, Bruno Simon 포트폴리오. 무드·리듬·전환 타이밍만 벤치마크하고 코드는 기대하지 말 것.
+
+---
+
+## 즉시 도입 Top 10 (라이선스 안전 · 이식성 순)
+1. **m5kr1pka/canvas-scroll-clip** (MIT, 115★, 무의존) — 영상 스크럽 코어
+2. **iam-saiteja/react-scroll-media** (MIT, TS·의존성 0) — React 스크럽(길면 lazy 모드)
+3. **GreenSock imageSequence 헬퍼** (GSAP 무료) — 스크럽 로직 직접 소유용
+4. **14islands/r3f-scroll-rig** (MIT) — DOM/WebGL 동기화 통합 기반
+5. **GSAP Flip** (무료) — 카드 → 상세 확대 모핑
+6. **GSAP 카드 stagger CodePen** (무료) — 리서치 유리 카드 순차 부상
+7. **timkosters/scroll-scrub-starter** (MIT) — ffmpeg 영상→프레임 전처리
+8. **gl-transitions** — 섹션 전환 GLSL 프리셋
+9. **Codrops 3D Glass Portal Card** — 유리 카드(renderTarget 최적화)
+10. **Codrops Water/Pixel Distortion** — 배경 셰이더(약하게)
+
+## 섹션별 배정표
+| 섹션 | 1순위 채택 | 보조/대안 |
+|---|---|---|
+| 표지 | react-scroll-media 히어로 스크럽 | Pragmattic pin 헤더(200vh) |
+| 영상스크럽(펜싱) | canvas-scroll-clip | imageSequence 헬퍼 / react-scroll-media(lazy) |
+| 리서치 카드(유리 3개) | GSAP stagger(yPercent) | Codrops Glass Portal(renderTarget) |
+| 배경 인터랙션 | Codrops Water Distortion | VoXelo ripple / Pixel Distortion |
+| 섹션 전환 | GSAP Flip(카드→상세) | clip-path 리빌 / gl-transitions / Codrops Astro+Barba |
+| 통합 기반 | 14islands/r3f-scroll-rig + Lenis | satus 구조 참고 / Theatre.js 카메라 |
+
+## 구현 로드맵 (회귀·할루시네이션 최소화 순서)
+1. **스켈레톤**: Vite + React + JSX + three.js/R3F + GSAP + Lenis 설치. `ReactLenis` root + `gsap.ticker.add(t => lenis.raf(t*1000))` + `lenis.on('scroll', ScrollTrigger.update)` + `gsap.ticker.lagSmoothing(0)`로 **스크롤 동기화 1개 루프** 먼저 확정(이후 모든 효과가 여기 얹힘).
+2. **에셋 전처리**: 펜싱 영상 → `scroll-scrub-starter`로 프레임 추출 → WebP 변환, 동일 해상도/압축 통일, DPR 캡, 필요 시 프레임 스킵. 배경 오려낼 땐 `--transparent` 또는 Runway로 선처리.
+3. **영상 스크럽 섹션 먼저 완성**(최우선 리스크). canvas-scroll-clip 붙이고 `decode()`/`createImageBitmap()` 프리로드·프레임1 즉시 렌더 검증. 여기서 성능(수백 장 로딩)을 통과해야 나머지 진행.
+4. **리서치 유리 카드**: GSAP `from(yPercent:100, stagger)` + ScrollTrigger pin. 유리 질감은 drei `MeshTransmissionMaterial`(이미 확보) 또는 CSS backdrop-filter로 시작, 무거우면 후자로 폴백.
+5. **배경 셰이더(마지막에서 두 번째, 약하게)**: Water/Pixel Distortion을 fixed 배경 레이어로. 위계 해치면 강도 축소.
+6. **섹션 전환**: GSAP Flip(카드→상세) → clip-path/gl-transitions(섹션 간 "빨려들어감"). barba는 SPA 라우팅이 필요할 때만.
+7. **감사(audit)**: LCP/CLS/INP 측정, `prefers-reduced-motion` 분기(스크럽·전환 축약), 모바일 프레임 수 축소 세트. 각 단계마다 배포·리뷰 후 다음 단계 진행(한 번에 다 넣지 말 것).
+
+## Caveats
+- **무라이선스(반드시 제외 — 복붙 금지, 개념 학습만):** olivierlarose 튜토리얼 전체(64개 저장소, LICENSE 없음), `cortiz2894/mouse-effects`(29★, LICENSE 없음), `KalebKloppe/scroll-image-sequence`(LICENSE 없음). 공개돼 열람은 되지만 법적으로 "all rights reserved"라 MIT/Apache/CC0/CC-BY 요건 미충족.
+- **README에만 MIT 명시(형식 LICENSE 파일 없음):** `scroll-scrub-starter`. 기계 감지형 라이선스가 필요하면 별도 확인/문의 권장.
+- **Codrops·CodePen 데모 라이선스는 저장소/펜별로 재확인** 필요(본문 스니펫만 있는 경우 상업 발표 전 확인).
+- **GSAP 무료화는 2025년 4월(Webflow 인수) 이후** 사실이며 Flip·ScrollTrigger·SplitText·MorphSVG 상업 이용 포함. 그 이전 문서/블로그가 "유료 플러그인"이라 적었더라도 현재는 무료.
+- **화려함 < 정보 위계.** 발표용 사이트이므로 심사·청중이 내용을 읽어야 한다. 배경 왜곡·전환이 텍스트/데이터 가독성을 해치면 효과를 줄이거나 제거하라. activetheory 수준의 "감상"은 참고하되, 우리 목표는 "읽히는 시네마틱"이다.
