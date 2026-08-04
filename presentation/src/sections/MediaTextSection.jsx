@@ -8,10 +8,11 @@ import { useMediaQuery } from '../lib/useMediaQuery.js';
 import { RAIL_RESERVE_PX } from '../components/ProgressRail.jsx';
 import ChromeText from '../components/ui/ChromeText.jsx';
 import Reveal from '../components/Reveal.jsx';
+import ClipReveal from '../components/ClipReveal.jsx';
 
 const RAIL_BOTTOM_CLEARANCE = 112; // md 미만에서 하단 가로 레일이 차지하는 높이
 
-export default function MediaTextSection({ data, media, mediaSide = 'right' }) {
+export default function MediaTextSection({ data, media, mediaSide = 'right', clipReveal = false }) {
   const twoCol = useMediaQuery(`(min-width: ${breakpoints.lg}px)`); // 1024 미만은 세로 적층
   const railVertical = useMediaQuery(`(min-width: ${breakpoints.md}px)`);
   const mediaLeft = twoCol && mediaSide === 'left';
@@ -77,10 +78,14 @@ export default function MediaTextSection({ data, media, mediaSide = 'right' }) {
           </p>
         </Reveal>
 
-        {/* 미디어 60% */}
-        <Reveal style={{ order: mediaLeft ? 1 : 2 }}>
-          <div>{media}</div>
-        </Reveal>
+        {/* 미디어 60%. clipReveal이면 스크롤 와이프로 드러난다(P6, insight 한 곳만 절제 적용) */}
+        {clipReveal ? (
+          <ClipReveal style={{ order: mediaLeft ? 1 : 2 }}>{media}</ClipReveal>
+        ) : (
+          <Reveal style={{ order: mediaLeft ? 1 : 2 }}>
+            <div>{media}</div>
+          </Reveal>
+        )}
       </div>
     </section>
   );

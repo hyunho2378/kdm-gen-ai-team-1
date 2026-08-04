@@ -71,7 +71,8 @@ export default function App() {
             return <MediaTextSection key={s.id} data={s} media={<LineageDiagram />} mediaSide="right" />;
           }
           if (s.id === 'insight') {
-            return <MediaTextSection key={s.id} data={s} media={<TrajectoryToDataDiagram />} mediaSide="left" />;
+            // P6: insight 미디어에만 clip-path 와이프 리빌을 절제 적용(인접 리듬)
+            return <MediaTextSection key={s.id} data={s} media={<TrajectoryToDataDiagram />} mediaSide="left" clipReveal />;
           }
           if (s.id === 'concept') {
             return <ConceptSection key={s.id} data={s} />;

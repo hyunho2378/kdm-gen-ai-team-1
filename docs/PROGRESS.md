@@ -574,7 +574,13 @@
     - 위계: zIndex -1로 전 콘텐츠 뒤(가독성 z-순서로 보장), pointer-events none, alpha≤0.075 극미세, 커서 근처만 약하게 밝아지고 정지 시 u_active 감쇠(relax)
     - 저하: requestIdleCallback 이후 로드(LCP 미차단), WebGL 실패/모바일(pointer coarse)/reduced-motion에서 미로드 → StageBackground 정적 그라디언트가 그대로 폴백. DPR 캡 1.5, WEBGL_lose_context로 정리
     - 검증: WebGL 초기화·사이징 정상(1920×1080=1280×1.5), **GL 에러 0**, GLSL 컴파일/링크 에러 0(콘솔 클린), 텍스트 가독성 유지(스크린샷 확인), 빌드 성공(318KB)
-  - 다음: P6 Flip 상세와 클립패스 리빌
+  - **P6 완료. Flip 상세와 클립패스 리빌.**
+    - outputs 유리 카드 → 상세 오버레이 모핑: GSAP Flip(무료, gsap/Flip 지연 로드). 카드 클릭 시 Flip.getState → position:fixed 확대 → Flip.from 모핑, 닫기 역모핑. absolute 옵션 미사용(열린 카드가 이미 fixed out-of-flow라 불필요하고, 켜면 전환 후 position:absolute가 남아 뷰포트 기준이 깨짐 — 실측으로 잡아 제거)
+    - 상세: role=dialog + aria-modal, 캡처 슬롯 확대 + name/role(카피 원문). 딤 스크림(zIndex overlay). ESC·바깥 클릭(scrim)·닫기 버튼 3경로 닫기. 포커스 닫기 버튼으로 이동 + Tab 트랩(첫↔끝 순환). 스크롤 잠금 미적용(전환 중 잠금 최소화). 슬라이드업 아님(모핑). reduced-motion에서 Flip 없이 즉시 전환
+    - 클립패스 리빌: 신규 `ClipReveal`. inset(0 100% 0 0)→inset(0) 와이프를 ScrollTrigger scrub로. insight 미디어 **한 곳만 절제 적용**(clipReveal prop). reduced-motion 완전 노출. gl-transitions는 LICENSE 확인 불가라 미도입(clip-path로 충분)
+    - 검증(DOM): 카드 클릭→dialog(aria-modal) 열림+scrim(zIndex 90)+닫기버튼 포커스, ESC 닫힘, 바깥클릭 닫힘, position fixed 안착, insight clip-path 적용. 4앱 빌드 성공. Flip 24KB 지연 청크
+    - 참고: 헤드리스 winH=0 붕괴 시 Flip tween(rAF)이 못 돌아 morph transform 잔여가 관찰됨(실브라우저는 사용자가 보는 카드를 클릭→작은 delta로 부드럽게 완료·clearProps). 육안 확인 권장
+  - 다음: P7 감사와 마감
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록
