@@ -489,7 +489,13 @@
   - 보존 자산: Lenis+ScrollTrigger 동기 루프, 8섹션 골격과 확정 카피, ScrollTrail, motionMode reduced 분기, cover SplitText 1회, interactions pin. 갈아엎지 않고 위에 얹거나 재배치
   - 스택 판정(조사보다 우선): R3F/r3f-scroll-rig 미도입, 영상 스크럽은 GSAP imageSequence 로직 포팅(canvas 2D), 배경 셰이더는 three.js 최소 도입(P5, R3F 없이)
   - 단계마다 검증 보고와 커밋 후 대기. 확인 전 다음 단계 착수 금지
-  - P0 착수: 이번 조사 원문(compass A) LIBRARIES 배치 + 스택 판정표. 강화 패스 LIBRARIES/CREDITS 소급분은 이미 반영됨(확인)
+  - **P0 완료(7390f75).** compass A LIBRARIES 배치(sha256 동일, 무수정) + 스택 판정표. 강화 패스 LIBRARIES/CREDITS 소급분 이미 반영 확인. CREDITS 무변경(신규 도입 0)
+  - **P1 완료. 보강 없음, 검증만 통과.** scroll.js에 정석 3요소가 이미 전부 있고 단일 루프라 새 코드 0줄
+    - (1) grep 확정: `gsap.ticker.add`·`new Lenis`·`lenis.on('scroll',ScrollTrigger.update)`·`lagSmoothing(0)` 전부 scroll.js 1곳 1회, dispose에서 정리. 경쟁 rAF 0(App 해시점프·Preloader 그리기는 1회성 비스크롤), 중복 scroll 리스너 0
+    - (2) 실측(앱과 동일 모듈 임포트해 실제 ScrollTrigger 구동): ScrollTrail body 스크럽 트리거 `.progress`가 스크롤 비율과 정확 일치(0/0.5/0.9/1), interactions pin 동반 진행(0→0.312→1), 8개 트리거 전부 단일 `ST.update()` 경로로 반응. 숨겨진 pane의 rAF 스로틀로 scrub:1 easing만 정지했으나 gsap.ticker 수동 펌프 시 trailOffset 단조 감소 확인 — 앱 버그 아님
+    - (3) reduced: `if(isReduced()) return ()=>{}`로 Lenis 미기동, 네이티브 스크롤 분기 생존(정적 확정)
+    - 4앱 빌드 성공, A1~A3 무결(8섹션·레일 8점·ScrollTrail 존재, top offset 1000 미도색 시작)
+  - 다음: P2 에셋 파이프라인과 프레임 사양서
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
 
 ## 결정 기록
