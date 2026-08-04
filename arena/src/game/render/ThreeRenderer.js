@@ -86,6 +86,22 @@ function lerp3(out, a, b, t) {
   return out;
 }
 
+/** 지금 있는 자리에서 프리셋 좌표 쪽으로 t만큼. 출발이 가드일 수도 휴식일 수도 있다. */
+function lerpToward(out, b, t) {
+  out.x += (b[0] - out.x) * t;
+  out.y += (b[1] - out.y) * t;
+  out.z += (b[2] - out.z) * t;
+  return out;
+}
+
+/**
+ * 가드 홀드 블렌드 시간 (R1).
+ * 들어갈 때는 빨라야 한다. 가드는 반응이고 지연이 보이면 직접성이 무너진다(MOTION 1절).
+ * 나올 때는 E1의 회복 값(220ms)을 그대로 쓴다. 공격은 빠르고 회복은 느리다는 규칙이 검에도 같이 걸린다.
+ */
+const GUARD_IN_SEC = 0.055;
+const GUARD_OUT_SEC = 0.22;
+
 export function createThreeRenderer() {
   let renderer = null;
   let scene = null;
@@ -137,6 +153,8 @@ export function createThreeRenderer() {
   // 이번 찌르기의 칼끝 변주(카메라 로컬). 찌르기 시작 순간 한 번 뽑는다
   let jitterX = 0;
   let jitterY = 0;
+  // 가드 홀드 진행도 0~1. 홀드 구간에만 1로 올라간다(R1)
+  let guardBlend = 0;
 
   // 연속 채널의 최신값. 판정에 쓰이지 않는다.
   let pose = { kind: 'preset', value: 'rest' };
@@ -148,38 +166,52 @@ export function createThreeRenderer() {
   // 검신이 뻗는 로컬 축. scene.js의 지오메트리 배치와 일치해야 한다.
   const BLADE_AXIS = new THREE.Vector3(0, 0, -1);
 
-  /** 프리셋 사이 블렌드. 자세 선택은 pose, 진행도는 게임 상태가 준다. */
-  function poseSword(gameState) {
-    const guard = gameState.meGuard === true;
+  /**
+   * 프리셋 사이 블렌드. 자세 선택은 pose, 진행도는 게임 상태가 준다.
+   *
+   * **우선순위 thrust > guard(홀드 중) > 디폴트 (R1).** GameCanvas의 프리셋 결정부와 같은 순서다.
+   * 전에는 가드를 먼저 봐서 `else if (lunge > 0)`이 통째로 죽었다. 그래서 가드를 문 채 되찌르면
+   * 찌르기 자세가 아예 안 나왔고 리포스트가 화면에서 "찔렀다"로 안 읽혔다.
+   * `judge.js`는 guard on/off를 순간 이벤트로 이미 옳게 처리하므로 고칠 곳은 이 자세 채널뿐이다.
+   *
+   * **이 우선순위는 키보드 프리셋과 폰 쿼터니언(C3) 양쪽에 같이 걸린다.** 쿼터니언은 회전만 덮어쓰고
+   * 그립 위치는 아래 블렌드가 계속 쥐므로, 폰으로 찌를 때도 찌르기가 가드를 덮는 순서가 유지된다.
+   */
+  function poseSword(gameState, dtSec) {
     const lunge = Math.min(1, Math.max(0, gameState.meLunge ?? 0));
 
-    let a = SWORD_POSES.rest;
-    let b = SWORD_POSES.rest;
-    let t = 0;
+    // 가드 자세는 홀드 구간에만 선다. 떼면 즉시 복귀가 시작되고 220ms에 걸쳐 디폴트로 돌아온다.
+    // 값을 순간에 끊으면 방어선이 팝으로 사라져 무엇이 풀렸는지가 안 읽힌다.
+    const held = gameState.meGuard === true ? 1 : 0;
+    const step = dtSec / (held > guardBlend ? GUARD_IN_SEC : GUARD_OUT_SEC);
+    guardBlend =
+      held > guardBlend ? Math.min(held, guardBlend + step) : Math.max(held, guardBlend - step);
+
+    // 기본 자세. 가드 홀드분만큼 방어선 쪽으로 올라가 있다
+    lerp3(tmpGrip, SWORD_POSES.rest.grip, SWORD_POSES.guard.grip, guardBlend);
+    lerp3(tmpTip, SWORD_POSES.rest.tip, SWORD_POSES.guard.tip, guardBlend);
+
     // 조준 변주가 실리는 정도. 뻗는 구간에서만 자라고 휴식과 가드에서는 0이다
     let reach = 0;
 
-    if (guard) {
-      b = SWORD_POSES.guard;
-      t = 1;
-    } else if (lunge > 0) {
+    if (lunge > 0) {
       // 앞 30퍼센트는 와인드업으로 당겼다가 나머지에서 뻗는다. 비대칭이 찌르기의 인상을 만든다.
       const e = thrustEase(lunge);
       if (e < 0.3) {
-        a = SWORD_POSES.rest;
-        b = SWORD_POSES.windup;
-        t = e / 0.3;
+        // 출발은 지금 있는 자리다. 가드 중이면 방어선에서 당겨지므로 되찌르기가 이어져 보인다
+        const t = e / 0.3;
+        lerpToward(tmpGrip, SWORD_POSES.windup.grip, t);
+        lerpToward(tmpTip, SWORD_POSES.windup.tip, t);
       } else {
-        a = SWORD_POSES.windup;
         // 런지는 더 깊이 들어간다. meLungeDeep은 렌더 전용 표식이다
-        b = gameState.meLungeDeep ? SWORD_POSES.lungeDeep : SWORD_POSES.thrust;
-        t = (e - 0.3) / 0.7;
+        const b = gameState.meLungeDeep ? SWORD_POSES.lungeDeep : SWORD_POSES.thrust;
+        const t = (e - 0.3) / 0.7;
+        lerp3(tmpGrip, SWORD_POSES.windup.grip, b.grip, t);
+        lerp3(tmpTip, SWORD_POSES.windup.tip, b.tip, t);
         reach = t;
       }
     }
 
-    lerp3(tmpGrip, a.grip, b.grip, t);
-    lerp3(tmpTip, a.tip, b.tip, t);
     // 찌르기마다 칼끝이 조금씩 다른 곳으로 간다. 그립은 그대로라 검이 겨냥을 바꾼 것으로 읽힌다.
     // 궤적 리본이 이 칼끝을 따라가므로 호 자체가 매번 달라진다(키보드 한정. 위 상수 주석 참조)
     tmpTip.x += jitterX * reach;
@@ -354,7 +386,7 @@ export function createThreeRenderer() {
           : 0;
       opponent.update(dtRender, camera, { lunge: gameState.aiLunge ?? 0, tintHit, real });
 
-      poseSword(gameState);
+      poseSword(gameState, dtRender);
 
       // 검끝 월드 좌표를 리본에 먹인다. 검이 카메라의 자식이라 월드 변환이 필요하다.
       // swordTip은 레이피어가 뜨면 그쪽 앵커로 바뀐다. 거리는 같게 정규화했으므로 궤적이 튀지 않는다.
@@ -511,6 +543,7 @@ export function createThreeRenderer() {
       prevMeLunge = 0;
       jitterX = 0;
       jitterY = 0;
+      guardBlend = 0;
     },
     segmentCount() {
       return (meTrail?.segmentCount() ?? 0) + (aiTrail?.segmentCount() ?? 0);

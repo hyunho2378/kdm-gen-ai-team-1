@@ -48,10 +48,15 @@ export default function GameCanvas({ engine, poseChannel, perf, reduced = false,
 
         // 키보드 모드의 자세 프리셋. 연속 채널은 판정을 거치지 않는다.
         // 컨트롤러가 붙으면(C3) setQuaternion이 이 값을 덮는다.
+        //
+        // **우선순위 thrust > guard(홀드 중) > 디폴트 (R1).** 렌더러의 poseSword와 같은 순서다.
+        // 가드를 먼저 보면 홀드 중에 찌를 때 찌르기 자세가 통째로 묻혀
+        // 리포스트로 되찌를 때 "찔렀다"가 안 읽힌다. judge는 guard on/off를 순간 이벤트로
+        // 옳게 처리하고 있으므로 고칠 곳은 자세 채널뿐이다.
         if (poseChannel) {
           const v = engine.view;
           poseChannel.setPreset(
-            v.meGuard ? PRESET.GUARD : v.meLunge > 0.02 ? PRESET.THRUST : PRESET.REST
+            v.meLunge > 0.02 ? PRESET.THRUST : v.meGuard ? PRESET.GUARD : PRESET.REST
           );
           renderer.setSwordPose(poseChannel.read());
         }
