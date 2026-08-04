@@ -861,6 +861,30 @@
     - 1512 / 3840 / 1024 전부 가로 오버플로 0, 열 정렬 유지, 콘솔 에러 0.
       빌드 성공(355.4KB, gzip 115.1KB)
 
+- presentation-v2 전역 텍스트 정리와 아이브로우 통일 (확인 대기)
+  - **레이아웃과 인터랙션 로직은 안 건드렸다.** copy.js와 공용 조각, 각 섹션의 아이브로우 호출부만 손봤다
+  - **공용 `Eyebrow` 신설(`components/Bits.jsx`).** 전 섹션이 이것만 쓴다. 개별 하드코딩 아이브로우 0건
+    - 왼쪽에 레드 원 7px(`marginTop: 0.44em`으로 영문 baseline 정렬), weight **600 통일**
+    - 영문 위 작게 / 국문 아래 크게인 **스택 라벨**. 국문이 없으면 단일 라벨
+    - 예전 `SectionLabel`은 영문과 국문을 얇은 가로선으로 갈라 한 줄에 늘어놨다.
+      **스택으로 바꾸면 구분자 자체가 필요 없다**(가운데점을 피하려던 장치였다). `SectionLabel` 제거
+    - 교체 대상 12곳: PROLOGUE / PAIN POINT / INSIGHT / WHY / TARGET / Design Keyword /
+      Brand Naming / Color System / CONCEPT / EXPERIENCE / AI DUELIST / IMMERSIVE FENCING XR
+    - 스택 3곳(키워드, 네이밍, 컬러)은 별도로 붙어 있던 국문 div를 Eyebrow가 흡수했다
+  - **금지 문자 제거.** UI 문자열에서 가운데점과 em대시와 박스라인을 걷었다
+    - `{ terms }` 구조를 평문으로 되돌렸다. `거리, 자세, 타이밍을` / `검끝 속도, 각도 추적, 명중 순간` /
+      `페인트, 리포스트 판독`. 그 구조를 그리던 `Segmented`와 `CaptionLine` 헬퍼도 함께 제거
+    - **원래 UI 문자열에는 이미 금지 문자가 없었다**(앞 세션들이 필드 분리로 피해 뒀다).
+      실제 잔존은 전부 주석이었고, 이번에 만진 파일과 사용 중 파일의 주석까지 정리했다
+    - **잔존은 미사용 보존 파일 5개뿐이다**: `S2Background` `S3Trajectory` `S4Concept`
+      `S5Interactions` `panels/shaderPanel`. 이 트랙 범위 밖이라 손대지 않았다(전부 주석)
+  - **첫 화면 조작 힌트 삭제.** `App.jsx`의 힌트 블록과 `copy.js`의 `COVER_HINT`를 지웠다
+  - 검증(실브라우저 헤드리스, 섹션 순회):
+    - 아이브로우 12개 전부 **레드 원 7px + weight 600**, 스택 라벨 국문도 600
+    - **각 섹션 화면 텍스트의 금지 문자 0건**(innerText에서 `·` `—` `─` `•` `・` 검사)
+    - 표지에서 `SPACE`/`SCROLL` 힌트 **없음** 확인
+    - 콘솔 에러 0, 빌드 성공(353.2KB, gzip 114.7KB)
+
 ## 진행중
 - **controller C2 (코드 완료, 실기 검증 대기). 트랙 선점.**
   데스크톱 검증까지 끝났고 **남은 것은 실기 폰 측정 하나**다. Vercel 연결은 사용자가 맡는다

@@ -17,6 +17,7 @@ import gsap from 'gsap';
 import { ArrowRight } from 'lucide-react';
 import { colors, typography, motion } from '../tokens.js';
 import { DEMO } from '../copy.js';
+import { Eyebrow } from '../components/Bits.jsx';
 
 const ARENA_URL = import.meta.env.VITE_ARENA_URL || '';
 
@@ -93,16 +94,9 @@ export default function S7Demo({ active }) {
       >
         <div
           ref={labelRef}
-          style={{
-            fontFamily: typography.family,
-            fontSize: 'clamp(0.72rem, 1.15vw, 1.26rem)',
-            fontWeight: 700,
-            letterSpacing: '0.02em',
-            color: colors.red,
-            opacity: 0,
-          }}
+          style={{ opacity: 0 }}
         >
-          {DEMO.label}
+          <Eyebrow en={DEMO.label} />
         </div>
 
         <div style={{ marginTop: 'clamp(14px, 2.6vh, 34px)' }}>

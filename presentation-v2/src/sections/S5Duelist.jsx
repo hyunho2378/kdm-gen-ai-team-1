@@ -1,6 +1,6 @@
 // 유파별 AI. 서브 진행 6단계(0 인트로 → 1 카드1 → 2 복귀 → 3 카드2 → 4 복귀 → 5 카드3).
 //
-// ── 레이아웃 출처 ──────────────────────────────────────────────────────────
+// --- 레이아웃 출처 ---
 // `Slide 16_9 - 7.svg`(1920x1080)를 Chromium으로 렌더해 기준으로 삼고 좌표를 SVG에서 직접 뽑았다.
 //   인물 3장  x 581.1 w 609.4 h 934.8 / x 1153.1 w 290.1 h 987.0 / x 1504.6 w 196.7 h 987.0
 //     → **원본은 인물 폭이 제각각이다.** 런지 자세가 넓고 서 있는 둘은 좁다. 높이를 맞추고 폭은 놔둔다
@@ -9,7 +9,7 @@
 //     원본 스톱은 알파 0.9에서 시작하고 주황(#D93E16 #EA520C #FF6A00)으로 번진다.
 //     **브랜드 팔레트에 주황이 없고 지시가 저알파 radial이라 tokens.red 한 색으로 낮은 알파만 쓴다.**
 //
-// ── 카드 인터랙션 출처 ────────────────────────────────────────────────────
+// --- 카드 인터랙션 출처 ---
 // 포폴 저장소 `client/src/components/work/StackCarousel.jsx`(26-portfolio-hyunho)를 실제로 열고
 // 아래 메커니즘을 가져왔다. 추론이 아니다.
 //   - circDist(i, activePos, N): 원형 최단거리. 모듈로 두 번으로 음수를 접고 N/2 넘으면 반대편으로(43~47행)
@@ -25,7 +25,7 @@ import { useEffect, useRef, useState } from 'react';
 import { colors, typography, motion } from '../tokens.js';
 import { DUELIST, DUELIST_STYLES } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SectionLabel, Badge, StepDots } from '../components/Bits.jsx';
+import { Eyebrow, Badge, StepDots } from '../components/Bits.jsx';
 
 const N = DUELIST_STYLES.length;
 const STATES = N * 2; // 0 인트로 + (전진, 복귀) x 3 → 마지막 복귀는 없으므로 0~5
@@ -131,7 +131,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
           textShadow: '0 2px 26px rgba(16,16,16,0.9)',
         }}
       >
-        <SectionLabel label={DUELIST.label} />
+        <Eyebrow en={DUELIST.label.en} ko={DUELIST.label.ko} />
         <div
           style={{
             opacity: focused ? 0 : 1,

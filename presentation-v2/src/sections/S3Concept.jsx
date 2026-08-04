@@ -23,7 +23,7 @@ import gsap from 'gsap';
 import { colors, typography, motion } from '../tokens.js';
 import { CONCEPT, CONCEPT_NAME } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SectionLabel } from '../components/Bits.jsx';
+import { Eyebrow } from '../components/Bits.jsx';
 
 // 사진 자체의 페더링. 좌측을 55%부터 흐리고(지시), 상하 가장자리도 함께 녹인다.
 // 두 층을 intersect로 곱해 네 방향이 한 번에 정리된다.
@@ -145,7 +145,7 @@ export default function S3Concept({ active }) {
           }}
         >
           {/* 1. CONCEPT */}
-          <SectionLabel label={{ en: CONCEPT.label }} />
+          <Eyebrow en={CONCEPT.label} />
 
           {/* 2. VORTEX 워드마크(메탈릭). 원본은 얇은 획이라 weight를 낮게 잡는다. */}
           <div

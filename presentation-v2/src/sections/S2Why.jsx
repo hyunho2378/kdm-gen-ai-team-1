@@ -13,7 +13,7 @@ import gsap from 'gsap';
 import { colors, typography, motion, whiteA } from '../tokens.js';
 import { WHY } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SectionLabel, Badge, StepDots } from '../components/Bits.jsx';
+import { Eyebrow, Badge, StepDots } from '../components/Bits.jsx';
 
 const STEPS = 1; // 단계 0과 1
 
@@ -170,7 +170,7 @@ export default function S2Why({ registerHandler, registerEnter }) {
           textShadow: '0 2px 30px rgba(0,0,0,0.85)',
         }}
       >
-        <SectionLabel label={WHY.label} />
+        <Eyebrow en={WHY.label.en} ko={WHY.label.ko} />
         <div style={{ marginTop: 'clamp(12px, 1.8vh, 22px)' }}>
           {WHY.headline.map((line) => (
             <div

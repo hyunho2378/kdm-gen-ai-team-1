@@ -13,7 +13,7 @@ import gsap from 'gsap';
 import { colors, typography, motion } from '../tokens.js';
 import { NAMING, TITLE } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SectionLabel } from '../components/Bits.jsx';
+import { Eyebrow } from '../components/Bits.jsx';
 
 // S1 표지와 같은 메탈릭 실버 그라디언트. 워드마크의 재질을 한 곳으로 맞춘다.
 const METAL =
@@ -85,20 +85,7 @@ export default function S5Naming({ active }) {
         }}
       >
         <div style={{ flex: '0 0 auto' }}>
-          <SectionLabel label={{ en: NAMING.label.en }} />
-          <div
-            style={{
-              marginTop: 'clamp(8px, 1.5vh, 18px)',
-              fontFamily: typography.family,
-              fontSize: 'clamp(0.86rem, 1.35vw, 1.5rem)',
-              fontWeight: 500,
-              letterSpacing: '-0.01em',
-              color: colors.text.primary,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {NAMING.label.ko}
-          </div>
+          <Eyebrow en={NAMING.label.en} ko={NAMING.label.ko} />
         </div>
 
         <div style={{ flex: '1 1 auto', minWidth: 0 }}>

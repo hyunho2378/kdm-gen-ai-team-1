@@ -14,7 +14,7 @@ import gsap from 'gsap';
 import { colors, typography, motion } from '../tokens.js';
 import { KEYWORD, KEYWORDS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SectionLabel, GlassRim } from '../components/Bits.jsx';
+import { Eyebrow, GlassRim } from '../components/Bits.jsx';
 
 const CAPTION = {
   fontFamily: typography.family,
@@ -23,25 +23,6 @@ const CAPTION = {
   lineHeight: 1.7,
   color: colors.text.secondary,
 };
-
-// 캡션 한 줄. 문자열이면 그대로, { terms, suffix }면 가운데점 대신 얇은 선으로 낱말을 가른다.
-function CaptionLine({ line }) {
-  if (typeof line === 'string') return <div style={CAPTION}>{line}</div>;
-  const last = line.terms.length - 1;
-  return (
-    <div style={{ ...CAPTION, display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-      {line.terms.map((t, i) => (
-        <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          {i > 0 ? (
-            <span aria-hidden="true" style={{ width: 10, height: 1, background: colors.line.strong }} />
-          ) : null}
-          {/* 조사는 마지막 낱말에 붙인다. 떼면 '타이밍  을'로 읽힌다. */}
-          <span>{i === last ? `${t}${line.suffix}` : t}</span>
-        </span>
-      ))}
-    </div>
-  );
-}
 
 export default function S4Keyword({ active }) {
   const headRef = useRef(null);
@@ -93,20 +74,7 @@ export default function S4Keyword({ active }) {
         }}
       >
         <div style={{ flex: '0 0 auto', minWidth: 0 }}>
-          <SectionLabel label={{ en: KEYWORD.label.en }} />
-          <div
-            style={{
-              marginTop: 'clamp(8px, 1.5vh, 18px)',
-              fontFamily: typography.family,
-              fontSize: 'clamp(0.86rem, 1.35vw, 1.5rem)',
-              fontWeight: 500,
-              letterSpacing: '-0.01em',
-              color: colors.text.primary,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {KEYWORD.label.ko}
-          </div>
+          <Eyebrow en={KEYWORD.label.en} ko={KEYWORD.label.ko} />
         </div>
 
         <div style={{ flex: '1 1 auto', minWidth: 0 }}>
@@ -247,8 +215,10 @@ export default function S4Keyword({ active }) {
 
             {/* 카드 아래 캡션 2줄 */}
             <div style={{ marginTop: 'clamp(8px, 1.9vh, 22px)', flexShrink: 0 }}>
-              {k.caption.map((line, li) => (
-                <CaptionLine key={li} line={line} />
+              {k.caption.map((line) => (
+                <div key={line} style={CAPTION}>
+                  {line}
+                </div>
               ))}
             </div>
           </div>

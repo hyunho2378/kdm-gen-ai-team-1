@@ -1,8 +1,9 @@
 // presentation-v2 화면 문구 단일 원천. **컴포넌트에 문자열 하드코딩 금지.**
 // 제품명과 문구가 또 바뀔 수 있다. 교체가 이 파일 하나 수정으로 끝나야 한다.
 //
-// 표기 규칙(docs/DESIGN.md 카피 절): 명사형 종결, 이모지 금지, em대시 금지, 가운데점 금지.
-// 라벨의 영문과 한글은 가운데점 대신 { en, ko } 두 필드로 나눈다. 사이 구분은 컴포넌트가 선으로 그린다.
+// 표기 규칙(docs/DESIGN.md 카피 절): 명사형 종결, 이모지 금지, em대시 금지, 가운데점 금지, 박스라인 금지.
+// 라벨의 영문과 한글은 { en, ko } 두 필드로 나눈다. 화면에서는 Eyebrow가 위아래 스택으로 세운다.
+// 문장 안 나열은 쉼표로 쓴다.
 
 // 제품명과 컨셉명은 지금 같은 값이지만 나중에 갈라질 수 있어 별도 상수로 둔다.
 export const TITLE = 'VORTEX';
@@ -127,9 +128,8 @@ export const KEYWORD = {
   ],
 };
 
-// caption의 각 줄은 문자열이거나 { terms, suffix }다.
-// 원본 SVG는 '거리 · 자세 · 타이밍'처럼 가운데점을 썼지만 DESIGN 카피 규칙이 이를 금지한다.
-// 그래서 낱말을 terms로 쪼개 두고 사이 구분은 컴포넌트가 얇은 선으로 그린다.
+// caption의 각 줄은 문자열이다.
+// 원본 SVG는 나열에 가운데점을 썼지만 프로젝트 텍스트 규칙이 금지하므로 쉼표로 바꿨다.
 export const KEYWORDS = [
   {
     key: 'dynamic',
@@ -143,7 +143,7 @@ export const KEYWORDS = [
     en: 'Precision',
     ko: '정확한',
     img: '/images/keyword/precision.png',
-    caption: [{ terms: ['거리', '자세', '타이밍'], suffix: '을' }, '정밀하게 분석하는 XR 글라스'],
+    caption: ['거리, 자세, 타이밍을', '정밀하게 분석하는 XR 글라스'],
   },
   {
     key: 'immersion',
@@ -198,9 +198,8 @@ export const CONCEPT = {
 
 // 인터랙션 4종 (원본 `바인더1.pdf` 6페이지의 4카드 그리드).
 // icon은 lucide-react 아이콘 이름. 컴포넌트가 이름으로 골라 쓴다.
-// name과 desc의 각 줄은 문자열이거나 { terms, tail }이다.
-// 원본은 '페인트 · 리포스트 판독'과 '속도·각도'처럼 가운데점을 쓰지만 DESIGN 카피 규칙이 금지한다.
-// 낱말을 terms로 쪼개 두고 사이 구분은 컴포넌트가 얇은 선으로 그린다.
+// name과 desc의 각 줄은 전부 문자열이다.
+// 원본은 나열에 가운데점을 쓰지만 프로젝트 텍스트 규칙이 금지하므로 쉼표로 바꿨다.
 export const EXPERIENCE = {
   label: { en: 'EXPERIENCE', ko: '핵심 인터랙션' },
   // 원본 PDF 문구는 '포르테를 이루는 네 가지 핵심 XR 인터렉션'이다.
@@ -225,12 +224,12 @@ export const INTERACTIONS = [
     key: 'blade',
     icon: 'Swords',
     name: '블레이드 트래킹 & 콘택트',
-    desc: [{ terms: ['검끝 속도', '각도'], tail: ' 추적, 명중 순간' }, '진동으로 타격 반동을 재현'],
+    desc: ['검끝 속도, 각도 추적, 명중 순간', '진동으로 타격 반동을 재현'],
   },
   {
     key: 'feint',
     icon: 'Brain',
-    name: { terms: ['페인트', '리포스트 판독'] },
+    name: '페인트, 리포스트 판독',
     desc: ['가짜 동작과 진짜 공격을 구분해', '카운터 타이밍을 학습'],
   },
 ];
@@ -296,4 +295,3 @@ export const SECTION_LABELS = [
 ];
 
 export const PLACEHOLDER_SUFFIX = '플레이스홀더';
-export const COVER_HINT = '↑ ↓   SPACE   SCROLL';

@@ -17,7 +17,7 @@ export const colors = {
   raised: '#181818', // 살짝 뜬 표면
   white: '#FDFDFD', // 전경 기준. 생화이트 아님
 
-  // 실버 화이트 메탈릭. 워드마크·검·HUD의 재질 표현 전용.
+  // 실버 화이트 메탈릭. 워드마크, 검, HUD의 재질 표현 전용.
   // hi의 #FFFFFF는 **그라디언트 하이라이트 스톱 예외**다. 텍스트 색으로 직접 쓰지 않는다.
   silver: {
     hi: '#FFFFFF',
@@ -26,7 +26,7 @@ export const colors = {
     gradient: 'linear-gradient(175deg, #FFFFFF 0%, #D8E2F0 45%, #6E7B92 78%, #D8E2F0 100%)',
   },
 
-  // 포인트 레드. 명중·강조·CTA·라벨 포인트·TO-BE에만 아껴서. 화면 전체를 레드로 칠하지 않는다.
+  // 포인트 레드. 명중, 강조, CTA, 라벨 포인트, TO-BE에만 아껴서. 화면 전체를 레드로 칠하지 않는다.
   red: '#E60D15',
   redDeep: '#80070C', // 브랜드 그라디언트의 어두운 레드 스톱
   redGlow: 'rgba(230, 13, 21, 0.45)',

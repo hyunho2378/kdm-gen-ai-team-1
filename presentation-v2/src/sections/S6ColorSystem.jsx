@@ -22,7 +22,7 @@ import {
   hexToRgbText,
 } from '../tokens.js';
 import { COLOR_SYSTEM } from '../copy.js';
-import { SectionLabel } from '../components/Bits.jsx';
+import { Eyebrow } from '../components/Bits.jsx';
 
 const CARD_RADIUS = 20;
 
@@ -113,20 +113,7 @@ export default function S6ColorSystem({ active }) {
         }}
       >
         <div style={{ flex: '0 0 auto' }}>
-          <SectionLabel label={{ en: COLOR_SYSTEM.label.en }} />
-          <div
-            style={{
-              marginTop: 'clamp(8px, 1.5vh, 18px)',
-              fontFamily: typography.family,
-              fontSize: 'clamp(0.86rem, 1.35vw, 1.5rem)',
-              fontWeight: 500,
-              letterSpacing: '-0.01em',
-              color: colors.text.primary,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {COLOR_SYSTEM.label.ko}
-          </div>
+          <Eyebrow en={COLOR_SYSTEM.label.en} ko={COLOR_SYSTEM.label.ko} />
         </div>
 
         <div style={{ flex: '1 1 auto', minWidth: 0 }}>

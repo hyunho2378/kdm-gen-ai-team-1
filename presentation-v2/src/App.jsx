@@ -7,7 +7,7 @@ import gsap from 'gsap';
 import { Observer } from 'gsap/Observer';
 import Lenis from 'lenis';
 import { colors } from './tokens.js';
-import { SECTION_LABELS, PLACEHOLDER_SUFFIX, COVER_HINT } from './copy.js';
+import { SECTION_LABELS, PLACEHOLDER_SUFFIX } from './copy.js';
 import S1Cover from './sections/S1Cover.jsx';
 import SPrologue from './sections/SPrologue.jsx';
 import SPainPoint from './sections/SPainPoint.jsx';
@@ -250,24 +250,6 @@ export default function App() {
         <span style={{ opacity: 0.5 }}>/ {String(SECTIONS.length).padStart(2, '0')}</span>
       </div>
 
-      {/* 첫 화면 조작 힌트. */}
-      <div
-        style={{
-          position: 'fixed',
-          left: 'clamp(16px, 3vw, 40px)',
-          bottom: 'max(16px, env(safe-area-inset-bottom))',
-          zIndex: 100,
-          fontSize: '0.75rem',
-          letterSpacing: '0.16em',
-          color: colors.text.faint,
-          pointerEvents: 'none',
-          // 표지에서만 보인다. 인덱스가 아니라 id로 판단해 섹션이 밀려도 안 깨진다.
-          opacity: SECTIONS[current].id === 'cover' ? 1 : 0,
-          transition: 'opacity 300ms ease',
-        }}
-      >
-        {COVER_HINT}
-      </div>
     </>
   );
 }

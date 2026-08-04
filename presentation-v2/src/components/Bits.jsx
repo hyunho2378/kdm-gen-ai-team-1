@@ -1,7 +1,8 @@
-// 섹션 공용 조각 셋. S2~S5가 같이 쓴다.
-// SectionLabel: 라벨의 영문과 한글을 가운데점 없이 red 점과 얇은 선으로 가른다(DESIGN 카피 규칙).
+// 섹션 공용 조각. 전 섹션이 같이 쓴다.
+// Eyebrow: 전 섹션 공용 아이브로우. 레드 원 + 영문/국문 스택. 개별 하드코딩 금지.
 // Badge: 필 배지. filled면 red 채움.
 // StepDots: 서브 진행 표시. 활성만 red.
+// GlassRim: 유리 림 보더.
 
 import { colors, typography, motion, whiteA } from '../tokens.js';
 
@@ -28,52 +29,66 @@ export function GlassRim({ width = 1.2 }) {
   );
 }
 
-export function SectionLabel({ label }) {
+/**
+ * 전 섹션 공용 아이브로우. **개별 하드코딩 아이브로우를 두지 않는다.**
+ *
+ * 구조: 왼쪽에 작은 레드 원 하나 + 라벨 스택(영문 위 작게, 국문 아래).
+ * 국문이 없으면 단일 라벨로 뜬다. weight는 전부 600으로 통일한다.
+ *
+ * 예전에는 영문과 국문을 얇은 가로선으로 갈라 한 줄에 늘어놨다.
+ * 그 구분선을 없애고 스택으로 바꾼 것이 이번 통일이다(가운데점을 안 쓰기 위한 장치였는데
+ * 스택이면 구분자 자체가 필요 없다).
+ *
+ * @param {string} en 영문 라벨(필수)
+ * @param {string} [ko] 국문 라벨. 없으면 단일 라벨
+ * @param {string} [tone] 영문 라벨 색. 기본 red
+ */
+export function Eyebrow({ en, ko, tone = colors.red }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+      {/* 원은 영문 라인의 baseline에 맞춘다. em 기준이라 폰트가 커져도 따라간다. */}
       <span
         aria-hidden="true"
         style={{
-          width: 6,
-          height: 6,
+          width: 7,
+          height: 7,
+          marginTop: '0.44em',
           background: colors.red,
           boxShadow: `0 0 10px ${colors.redGlow}`,
           borderRadius: '50%',
           flexShrink: 0,
         }}
       />
-      <span
-        style={{
-          fontFamily: typography.family,
-          fontSize: 'clamp(0.68rem, 1vw, 0.84rem)',
-          fontWeight: 700,
-          letterSpacing: '0.24em',
-          color: colors.red,
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {label.en}
-      </span>
-      {label.ko ? (
-        <>
-          <span
-            aria-hidden="true"
-            style={{ width: 18, height: 1, background: colors.line.strong, flexShrink: 0 }}
-          />
+      <span style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(3px, 0.5vh, 7px)' }}>
+        <span
+          style={{
+            fontFamily: typography.family,
+            fontSize: 'clamp(0.66rem, 0.94vw, 0.9rem)',
+            fontWeight: 600,
+            letterSpacing: '0.18em',
+            lineHeight: 1.1,
+            color: tone,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {en}
+        </span>
+        {ko ? (
           <span
             style={{
               fontFamily: typography.family,
-              fontSize: 'clamp(0.68rem, 1vw, 0.84rem)',
-              fontWeight: 500,
-              letterSpacing: '0.16em',
-              color: colors.text.dim,
+              fontSize: 'clamp(0.8rem, 1.25vw, 1.38rem)',
+              fontWeight: 600,
+              letterSpacing: '-0.01em',
+              lineHeight: 1.2,
+              color: colors.text.primary,
               whiteSpace: 'nowrap',
             }}
           >
-            {label.ko}
+            {ko}
           </span>
-        </>
-      ) : null}
+        ) : null}
+      </span>
     </div>
   );
 }

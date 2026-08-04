@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { colors, typography, motion, whiteA } from '../tokens.js';
 import { TARGET, TARGET_ITEMS } from '../copy.js';
-import { SectionLabel, GlassRim } from '../components/Bits.jsx';
+import { Eyebrow, GlassRim } from '../components/Bits.jsx';
 
 export default function S3Target({ active }) {
   const headRef = useRef(null);
@@ -70,7 +70,7 @@ export default function S3Target({ active }) {
           pointerEvents: 'none',
         }}
       >
-        <SectionLabel label={TARGET.label} />
+        <Eyebrow en={TARGET.label.en} ko={TARGET.label.ko} />
         <h2
           style={{
             margin: 'clamp(12px, 1.9vh, 24px) 0 0',

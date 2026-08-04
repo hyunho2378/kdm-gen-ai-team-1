@@ -16,6 +16,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { colors, typography, motion, whiteA } from '../tokens.js';
 import { PROLOGUE } from '../copy.js';
+import { Eyebrow } from '../components/Bits.jsx';
 
 export default function SPrologue({ active }) {
   const labelRef = useRef(null);
@@ -71,15 +72,10 @@ export default function SPrologue({ active }) {
           top: 'clamp(44px, 21.3vh, 236px)',
           zIndex: 3,
           opacity: 0,
-          fontFamily: typography.family,
-          fontSize: 'clamp(0.72rem, 1.25vw, 1.36rem)',
-          fontWeight: 600,
-          letterSpacing: '0.04em',
-          color: colors.red,
           pointerEvents: 'none',
         }}
       >
-        {PROLOGUE.label}
+        <Eyebrow en={PROLOGUE.label} />
       </div>
 
       {/* 본문 2줄. 원본대로 가운데 정렬. */}

@@ -21,14 +21,7 @@ import gsap from 'gsap';
 import { colors, typography, motion, whiteA } from '../tokens.js';
 import { PAINPOINT, PAINPOINT_COLUMNS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-
-const LABEL = {
-  fontFamily: typography.family,
-  fontSize: 'clamp(0.72rem, 1.25vw, 1.36rem)',
-  fontWeight: 600,
-  letterSpacing: '0.04em',
-  color: colors.red,
-};
+import { Eyebrow } from '../components/Bits.jsx';
 
 export default function SPainPoint({ active }) {
   const painRefs = useRef([]);
@@ -87,15 +80,15 @@ export default function SPainPoint({ active }) {
       {/* 좌측 라벨 둘. 원본 x 57.6 → 3.0%, y 256.1 / 708.2 → 23.7% / 65.6% */}
       <div
         ref={(el) => { labelRefs.current[0] = el; }}
-        style={{ ...LABEL, position: 'absolute', left: 'clamp(16px, 3vw, 72px)', top: '23.7%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}
+        style={{ position: 'absolute', left: 'clamp(16px, 3vw, 72px)', top: '23.7%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}
       >
-        {PAINPOINT.painLabel}
+        <Eyebrow en={PAINPOINT.painLabel} />
       </div>
       <div
         ref={(el) => { labelRefs.current[1] = el; }}
-        style={{ ...LABEL, position: 'absolute', left: 'clamp(16px, 3vw, 72px)', top: '65.6%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}
+        style={{ position: 'absolute', left: 'clamp(16px, 3vw, 72px)', top: '65.6%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}
       >
-        {PAINPOINT.insightLabel}
+        <Eyebrow en={PAINPOINT.insightLabel} />
       </div>
 
       {/* 3열 그리드. 상단 카드 / 화살표 / 하단 카드를 같은 열에 세운다.

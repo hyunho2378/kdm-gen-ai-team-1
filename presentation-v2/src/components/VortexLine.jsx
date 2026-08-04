@@ -1,6 +1,6 @@
 // S1 표지 커서 궤적. 가늘고 선명한 레드 라인 하나.
 //
-// ── 출처 ────────────────────────────────────────────────────────────────────
+// --- 출처 ---
 // 코드 출발점은 추론이 아니라 실제 소스다. 두 곳을 읽고 가져왔다.
 //  1) node_modules/ogl/src/extras/Polyline.js (ogl 1.0.11 설치본)
 //     - 생성자 인자 { points, vertex, fragment, uniforms, attributes }
@@ -17,13 +17,13 @@
 // 예제에서 바꾼 것: 라인 5개 → 1개, 색을 tokens.red로, 두께 20~50 → 얇게,
 // 스프링 강하게 프릭션 낮게, 테이퍼를 양끝 → 꼬리 쪽으로, fragment 셰이더 신설(코어 하이라이트),
 // idle 나선 추가, body 대신 전달받은 캔버스에 마운트, React 생명주기.
-// ────────────────────────────────────────────────────────────────────────────
+// ---
 
 import { useEffect, useRef } from 'react';
 import { Renderer, Transform, Vec3, Color, Polyline } from 'ogl';
 import { colors, motion } from '../tokens.js';
 
-// ── 튜닝 상수 ──
+// --- 튜닝 상수 ---
 const POINT_COUNT = 40; // 폴리라인 점 개수(상한 50)
 const THICKNESS = 4.2; // 선 두께(px 상당). 얇고 선명하게
 const SPRING = 0.42; // 강하게. 커서에 즉각 붙는다
@@ -195,7 +195,7 @@ export default function VortexLine({ active }) {
     ro.observe(host);
     resize();
 
-    // ── 마우스 추적. 예제의 정규화식을 그대로 쓴다. ──
+    // --- 마우스 추적. 예제의 정규화식을 그대로 쓴다. ---
     const mouse = new Vec3();
     const target = new Vec3(); // 커서와 나선을 섞은 최종 목표점
     let lastMoveAt = -Infinity;
@@ -210,7 +210,7 @@ export default function VortexLine({ active }) {
     };
     window.addEventListener('pointermove', updateMouse, { passive: true });
 
-    // ── 루프. 예제의 스프링/프릭션 구조를 그대로 두고 목표점만 갈아끼웠다. ──
+    // --- 루프. 예제의 스프링/프릭션 구조를 그대로 두고 목표점만 갈아끼웠다. ---
     const tmp = new Vec3();
     const mouseVelocity = new Vec3();
     const spiral = new Vec3();

@@ -2,7 +2,7 @@
 // 이전 판은 카드 1장씩 방향키로 넘기는 서브 진행이었다. 그 위임을 전부 걷었고
 // App.jsx의 DELEGATE_IDS에서도 이 섹션(s8)을 뺐다. 이제 방향키 한 번에 통과한다.
 //
-// ── 레이아웃 출처 ──────────────────────────────────────────────────────────
+// --- 레이아웃 출처 ---
 // 이 섹션은 리포의 Slide SVG 8장 중 어디에도 없다(8번은 유파 카드 페이지다).
 // 원본은 `바인더1.pdf` **6페이지**의 4카드 그리드이고 PyMuPDF로 렌더해 픽셀로 좌표를 쟀다.
 //   1600x900 렌더 기준 실측
@@ -20,28 +20,10 @@ import gsap from 'gsap';
 import { Footprints, PersonStanding, Swords, Brain } from 'lucide-react';
 import { colors, typography, motion } from '../tokens.js';
 import { EXPERIENCE, INTERACTIONS } from '../copy.js';
-import { SectionLabel } from '../components/Bits.jsx';
+import { Eyebrow } from '../components/Bits.jsx';
 
 // copy.js가 아이콘을 이름으로 지정한다. 이름 → 컴포넌트 매핑은 여기 한 곳.
 const ICONS = { Footprints, PersonStanding, Swords, Brain };
-
-// 문자열이거나 { terms, tail }. terms면 가운데점 대신 얇은 선으로 낱말을 가른다.
-function Segmented({ value, style, dividerColor }) {
-  if (typeof value === 'string') return <span style={style}>{value}</span>;
-  return (
-    <span style={{ ...style, display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-      {value.terms.map((t, i) => (
-        <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          {i > 0 ? (
-            <span aria-hidden="true" style={{ width: 9, height: 1, background: dividerColor }} />
-          ) : null}
-          {t}
-        </span>
-      ))}
-      {value.tail ? <span>{value.tail}</span> : null}
-    </span>
-  );
-}
 
 export default function S4Experience({ active }) {
   const headRef = useRef(null);
@@ -96,7 +78,7 @@ export default function S4Experience({ active }) {
     >
       {/* 상단 좌측: 라벨과 헤드라인 */}
       <div ref={headRef} style={{ flexShrink: 0, opacity: 0 }}>
-        <SectionLabel label={EXPERIENCE.label} />
+        <Eyebrow en={EXPERIENCE.label.en} ko={EXPERIENCE.label.ko} />
         <h2
           style={{
             margin: 'clamp(12px, 1.9vh, 24px) 0 0',
@@ -173,9 +155,7 @@ export default function S4Experience({ active }) {
                 ) : null}
               </span>
 
-              <Segmented
-                value={it.name}
-                dividerColor={colors.line.strong}
+              <span
                 style={{
                   fontFamily: typography.family,
                   fontSize: 'clamp(0.8rem, 1.18vw, 1.32rem)',
@@ -184,14 +164,14 @@ export default function S4Experience({ active }) {
                   lineHeight: 1.35,
                   color: colors.text.primary,
                 }}
-              />
+              >
+                {it.name}
+              </span>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {it.desc.map((line, li) => (
-                  <Segmented
-                    key={li}
-                    value={line}
-                    dividerColor={colors.line.default}
+                {it.desc.map((line) => (
+                  <span
+                    key={line}
                     style={{
                       fontFamily: typography.family,
                       fontSize: 'clamp(0.68rem, 0.98vw, 1.08rem)',
@@ -199,7 +179,9 @@ export default function S4Experience({ active }) {
                       lineHeight: 1.7,
                       color: colors.text.secondary,
                     }}
-                  />
+                  >
+                    {line}
+                  </span>
                 ))}
               </div>
             </div>
