@@ -45,3 +45,31 @@ controller는 motion 원본을 30Hz로 보내되 THRUST 같은 이산 판정은 
 - 환경 변수: PORT, CORS_ORIGINS. 하드코딩 금지
 - Render 무료 티어 콜드 스타트 대비: arena가 PAIRING 진입 전에 /health를 먼저 때려 깨운다. 실패 시 "서버 깨우는 중" 문구
 - 로그는 접속, 페어링, 단절만. motion 스트림 로깅 금지(로그 폭주)
+
+## 배포 절차 (C3)
+
+세 서비스가 서로의 주소를 알아야 하므로 **순서가 있다.** 서버를 먼저 띄우고 그 주소를 두 프런트에 넣는다.
+
+1. **Render에 server 배포.** Node 웹 서비스, 무료 플랜. 루트 디렉터리 `server`, 빌드 `npm install`, 시작 `npm start`.
+   환경 변수는 `CORS_ORIGINS` 하나다(PORT는 Render가 준다). 이 시점에는 프런트 주소를 아직 모르므로 비워 두고 3단계에서 채운다.
+   배포 후 `https://<서비스>.onrender.com/health`가 `{"ok":true}`를 내면 산 것이다.
+2. **Vercel의 arena와 controller에 서버 주소를 넣는다.**
+   - arena: `VITE_SERVER_URL=https://<서비스>.onrender.com`, `VITE_CONTROLLER_URL=https://<controller>.vercel.app`
+   - controller: `VITE_SERVER_URL=https://<서비스>.onrender.com`
+   - **Vite는 빌드 타임에 값을 박는다.** 환경 변수를 바꾸면 반드시 재배포한다. 런타임에 안 읽는다.
+3. **Render의 `CORS_ORIGINS`에 두 Vercel 주소를 넣고** 서버를 재시작한다. 끝 슬래시를 붙이지 않는다.
+
+### HTTPS 페이지는 wss만 연결할 수 있다
+
+Vercel은 HTTPS이고 브라우저는 그 페이지에서 평문 `ws://` 연결을 혼합 콘텐츠로 차단한다.
+`VITE_SERVER_URL`을 **반드시 `https://`로 적는다.** socket.io가 그 주소에서 `wss://`를 유도한다.
+`http://`로 적으면 로컬에서는 되고 배포에서만 조용히 안 붙는다. 가장 흔한 실패다.
+
+폰도 같은 이유로 HTTPS여야 한다. **iOS는 보안 컨텍스트가 아니면 동작 센서 권한 자체를 안 준다.**
+로컬 폰 테스트를 하려면 Vercel 프리뷰 URL을 쓰는 편이 빠르다.
+
+### Render 무료 플랜 콜드 스타트
+
+15분 유휴 뒤 잠들고 다음 요청이 깨우는 데 수십 초가 걸린다. arena는 그동안 PAIRING 화면에
+"서버를 깨우는 중이다"를 띄우고 **키보드로 시작 버튼을 계속 열어 둔다.** 소켓은 백그라운드에서
+계속 재시도하므로 서버가 늦게 깨어나면 그때 방 코드가 뜬다. 리허설 10분 전에 한 번 열어 깨워 두면 된다.

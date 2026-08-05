@@ -23,6 +23,7 @@
 | 궤적 리본 | 자체 구현 | arena 궤적. `ribbon-geometry`(MIT)를 검토했으나 생성자 전용이라 in-place 갱신이 없고 폭이 단일 상수여서 나이별 감쇠를 못 한다. 매 프레임 지오메트리를 새로 만들면 가비지가 쌓여 미채택 | (참고) https://github.com/yomotsu/ribbon-geometry |
 | 카메라 셰이크 (trauma 방식) | MIT, **로직 포팅** | arena 명중 연출. `three-screenshake`가 npm에 없어(404) `sajmoni/screen-shake`의 trauma 방식을 JS로 포팅 | https://github.com/sajmoni/screen-shake |
 | snoise (simplex 3D) | MIT, **GLSL 코드 이식** | presentation 배경 셰이더(StageShader). Ashima/stegu webgl-noise의 3D simplex를 프래그먼트에 그대로 이식. three.js 없이 raw WebGL 사용(P5 판정) | https://github.com/stegu/webgl-noise |
+| qrcode-generator | MIT | arena PAIRING 화면 QR(`components/QRPanel.jsx`). **인코딩만 라이브러리가 하고 그리기는 우리가 한다.** 모듈 배열만 받아 SVG 사각형으로 직접 그려 canvas도 이미지도 만들지 않는다. 2.0.4, 의존성 0. npm 메타와 `dist/qrcode.js` 헤더 양쪽에서 MIT를 확인했다(Copyright 2009 Kazuhiko Arase). 저장소에 별도 LICENSE 파일은 없고 소스 헤더가 라이선스 표기다 | https://github.com/kazuhikoarase/qrcode-generator |
 | ogl (Polyline) | **Unlicense**(퍼블릭 도메인). 아래 라이선스 실사 참고 | presentation-v2 S1 표지 커서 궤적. `components/VortexLine.jsx`. **공식 예제 `examples/polylines.html` 코드를 출발점으로 가져왔다**(스프링/프릭션 추적 루프, vertex 셰이더 전문, resize 처리). ogl 1.0.11 버전 고정 | https://github.com/oframe/ogl |
 
 **ogl 라이선스 실사(2026-08-05 확인).** 표기가 하나로 모이지 않아 실제 아티팩트를 직접 확인했다.

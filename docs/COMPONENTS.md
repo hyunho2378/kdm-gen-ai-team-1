@@ -116,8 +116,15 @@
   d 0~100 바, 유효 범위 밴드 red.light 표시. 헛침 사유 짧은 텍스트 슬롯.
 - **JudgeText** `components/hud/JudgeText.jsx`
   판정 문구(명중, 헛침, 가드, 리포스트). judge 800ms 타이밍과 동기. hud 타이포.
-- **QRPanel** `components/QRPanel.jsx` / PAIRING
-  방 코드 display 크기 + qrcode 라이브러리 QR. controller URL + ?room=.
+- **QRPanel** `components/QRPanel.jsx` / PAIRING (C3 구현)
+  `qrcode-generator`(MIT)가 모듈 배열만 내고 **SVG 사각형으로 직접 그린다.** canvas도 이미지도 안 만들어
+  4K에서 선명하고 DPR 처리가 필요 없다. URL은 `VITE_CONTROLLER_URL` + `/?room=코드`.
+  **바탕은 반드시 밝다.** 블랙 무대 위에 어두운 QR을 얹으면 폰 카메라가 못 읽는다. 화면에서 유일하게
+  밝은 면인 것은 의도이고 읽히는 것이 최우선이다. 여백은 규격 최소인 4모듈.
+  같은 파일의 `RoomCode`가 코드를 display 크기로 낸다. QR이 안 찍힐 때의 유일한 길이다.
+- **PairingScreen** `screens/PairingScreen.jsx` / PAIRING과 CALIBRATION (C3)
+  상태별 안내 문구, 코드와 QR, **항상 열려 있는 [키보드로 시작]**. 서버가 없거나 폰이 없어도
+  여기서 막히지 않는다. 폰이 붙은 뒤에는 QR을 치우고 캘리브레이션 안내로 바뀐다.
 - **CalibrationRing** `components/CalibrationRing.jsx` / CALIBRATION
   3초 진행 링. SVG stroke 애니메이션(transform, opacity 규칙 준수 대상 아님, stroke-dashoffset은 SVG 예외로 허용하되 HUD 밖 남용 금지).
 - **VignetteOverlay** `components/VignetteOverlay.jsx` / 시간 팽창
