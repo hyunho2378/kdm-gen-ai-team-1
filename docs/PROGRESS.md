@@ -1085,6 +1085,31 @@
   **센서(C2)·소켓(C3) 로직 무변경, 화면 계층만 확장. arena machine.js 무변경, 최신 서명 유지가 통과 조건**
   (이 트랙은 게임플레이 변경 없음). 폴더 소유: controller/arena/shared/server/docs만. presentation-v2 불가침.
   B0~B4 단계별 커밋과 즉시 push. 커밋 접두 `[controller]`/`[arena]`.
+  - **B0 앱 셸과 HOME 완료(커밋 beefc62, push됨).** 강릉페이 프레임/스테이터스바/버튼/바텀시트를
+    `docs/reference/gnpay` 실파일에서 이식(색만 VORTEX 다크). 화면 머신 HOME→CONNECT→SELECT→
+    PERMISSION→CALIBRATION→PLAY→RESULT + 각 화면 뒤로가기. HOME(메탈릭 워드마크+게스트 시작+로그인 스텁 바텀시트).
+    `shared/tokens`에 HIG 스케일 `ig`, 시맨틱 radius, `red.tonal`, `steelText` 추가. usePlatform은 sessionStorage 제거.
+    데스크톱 프레임 미리보기 살림(가로 안내는 터치 기기만, ?debug=0으로 dev 패널 끔). **센서·소켓 로직 무변경.**
+    실브라우저 확인: 폰 프레임+iOS 상태바+워드마크+로그인 시트+게스트→CONNECT 전환.
+  - **남은 단계 B1~B4(다음 세션, 단계 경계에서 중단함):**
+    - **B1 CONNECT 리스킨 + arena 로비.** CONNECT: paired 게이팅(paired 수신 → SELECT), ?room= 스킵,
+      연결 중 스피너/실패 평문+재시도(N1/N9). arena 로비 신설(React 계층, machine 무변경): 세션 코드 크게 +
+      고정 QR(controller 프로덕션 URL, 경량 QR) + "폰 연결 대기" + "키보드로 진행" 상시 버튼 → 1/2/3/4 화면.
+    - **B2 SELECT 4카드 + 소켓 select.** 4카드(VORTEX 3.11 카피 원문 = presentation-v2/copy.js DUELIST_STYLES,
+      인용문 포함) + 확장 상세(FENCING_RULES 근거 한 줄). `shared/protocol.js`에 `MSG.SELECT` 추가.
+      controller `link.sendSelect(school)`, arena socket.js에서 select 수신 → **A3의 진입점(createEngine school 인자)**
+      으로 유파 설정. arena 로비에 선택 유파 표시. 온보딩 첫 판이면 5-4-3-2-1 카운트다운 후 EN_GARDE.
+      사진 라이선스 캐비앗 미해결 기록(제출 전 교체, CREDITS 기재 금지).
+    - **B3 온보딩 코치마크 + PLAY 리스킨.** arena 온보딩(첫 판, 코치마크 3~4개: 게이지/텔레그래프/램프/피스트,
+      게임 시계 timeScale 0 = hitstop 경로, 판정 무영향, 둘째 판부터 생략 메모리 플래그, reduced 정적).
+      폰 PLAY 온보딩(코치마크 2개, 강릉페이 CoachMarkOverlay 이식 = `docs/reference/gnpay/common/CoachMarkOverlay.jsx`).
+      PLAY 리스킨(타이포/간격 정리, 기능 무변경).
+    - **B4 RESULT 통계.** arena: MATCH_END 시 `{t:'result', score, touches, durationMs, pisteOut}` emit(`MSG.RESULT`).
+      폰: 경기 중 메모리 축적(EN_GARDE 쿼터니언 각속도 이동분산=손떨림, 찌르기 수/파워, 가드 수) + arena result 합성.
+      다크 카드 위계, div 바(라이브러리 추가 금지), "저장 안 됨" Footnote.
+    - **통합 검증 + PROGRESS 마무리(B4 후):** 전 플로우 1회, arena 단독 키보드 완주, 온보딩 첫/둘째 판,
+      셀프테스트 13종 + 서명 1097/c820d0f2 유지(게임플레이 무변경 증명), grep(localStorage/HEX/이모지/100vh/서버주소 0),
+      4앱 빌드, 휴리스틱 주석 스팟, 실기(Safari) 안내.
 - **P-C AI 유파 완성(확인 대기).** VORTEX 유파 3종 + 통합 모드로 게임을 맞췄다. **유파 4종 완성.**
   - **A1 헝가리안 신설(심리전형).** `family 'sabre'`(라다엘리 사브르 계승). FEINT 최고(0.6),
     거리 흔들기 최고(0.55), 템포 브레이크(느린 2000~2800 / 빠른 700~1150 밴드를 매 공격 교체 shiftEvery 1),
