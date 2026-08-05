@@ -35,6 +35,25 @@ export function withAlpha(hex, a) {
   return `rgba(${(v >> 16) & 255}, ${(v >> 8) & 255}, ${v & 255}, ${a})`;
 }
 
+/**
+ * HEX를 명도 방향으로 낮춘다. **어둡기 파생값을 손으로 적지 않기 위한 유일한 통로다.**
+ * ratio 0.2면 각 채널이 20퍼센트 어두워진다(계수 0.8을 곱한다).
+ *
+ * 알파를 덮어 눌러 어둡게 만드는 방법을 쓰지 않는다. 그러면 뒤 배경이 비쳐서
+ * 같은 버튼이 카드 위와 배경 위에서 다른 색이 된다. press는 채움 전용이라 불투명해야 한다.
+ *
+ * 채널 곱셈이라 감마를 고려하지 않는다. 지각 명도가 아니라 sRGB 값을 낮추는 것이고
+ * DESIGN 2절이 요구하는 것도 그것이다. 색상(hue)은 비율이 유지되므로 그대로 남는다.
+ */
+export function darken(hex, ratio) {
+  const h = hex.replace('#', '');
+  const n = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const v = parseInt(n, 16);
+  const k = Math.max(0, 1 - ratio);
+  const ch = (shift) => Math.round(((v >> shift) & 255) * k).toString(16).padStart(2, '0');
+  return `#${ch(16)}${ch(8)}${ch(0)}`.toUpperCase();
+}
+
 export const colors = {
   bg: {
     base: BLACK,          // 지각상 블랙. 순수 #000 금지
@@ -45,8 +64,10 @@ export const colors = {
   red: {
     light: RED,           // 빛의 레드. 내 궤적, 다크 위 텍스트, 글로우 코어. bg.base 위 4.0:1(대형과 UI 전용)
     fill: RED_DEEP,       // 면의 레드. CTA, 배지, 플래시 채움. 위에 흰 텍스트 10.6:1
-    // 버튼 press. 채움 전용. 이전 팔레트의 fill 대비 press 비율(0.76)을 그대로 옮겼다
-    press: '#610509',
+    // 버튼 press. 채움 전용. **fill에서 파생한다. 임의 HEX 금지**(DESIGN 2절 press 행).
+    // VORTEX 컬러 시스템에 press 값이 없어서 fill을 명도 20퍼센트 낮춘다.
+    // 이전 리터럴 #610509는 옛 팔레트 비율(0.76)로 손으로 적은 추론값이라 폐기했다
+    press: darken(RED_DEEP, 0.2),
     glow: withAlpha(RED, 0.45),
     // Tonal 버튼(MD3 위계 2순위)의 저알파 red 채움. 강릉페이 primary[100] 자리(색만 VORTEX red)
     tonal: withAlpha(RED, 0.14),

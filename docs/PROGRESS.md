@@ -1079,10 +1079,20 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **shared 토큰 press 파생 작업중. 트랙 선점.** `shared/tokens.js`의 `red.press` 리터럴 `#610509`를
-  `red.fill` 명도 파생으로 교체한다(DESIGN 2절 press 행과 일치시키는 작업).
-  **단일 원천 수정이라 4앱 전부에 값이 흘러간다.** 이 트랙이 끝날 때까지 arena와 controller의
-  버튼과 색 관련 동시 작업을 붙이지 않는다. 코드 변경은 `shared/tokens.js` 한 파일이다
+- **shared 토큰 press 파생 완료(확인 대기).** `red.press` 리터럴을 `red.fill` 명도 파생으로 바꿨다.
+  코드 변경은 `shared/tokens.js` 한 파일이고 트랙 선점은 해제한다
+  - `darken(hex, ratio)` 신설. `withAlpha` 옆에 두고 같은 임무를 진다.
+    **어둡기 파생값을 손으로 적지 않기 위한 유일한 통로다.** ratio 0.2면 각 채널에 0.8을 곱한다
+  - **알파로 눌러 어둡게 하지 않는다.** 그러면 뒤 배경이 비쳐 같은 버튼이 카드 위와 배경 위에서
+    다른 색이 된다. press는 채움 전용이라 불투명해야 한다. 그래서 rgba가 아니라 HEX를 돌려준다
+  - `press: darken(RED_DEEP, 0.2)` = **`#66060A`**(실측 로그). 채널 비율 0.797 / 0.857 / 0.833으로
+    반올림 오차 안에서 목표 0.8이다. DESIGN 2절 "fill을 명도 방향으로 약 20퍼센트 낮춤"과 일치한다
+  - 폐기한 `#610509`와의 차이는 채널당 5, 1, 1이라 눈에 띄는 변화가 아니다.
+    바뀐 것은 값이 아니라 **값이 나오는 방식**이다. fill이 바뀌면 press가 따라온다
+  - press 위 흰 텍스트 대비 **12.94:1**(fill의 10.6:1보다 오른다). bg.base 대비 1.45:1로 blackout이 아니다.
+    fill과 press를 나란히 띄운 픽셀 캡처로 어두워진 것을 눈으로 확인했다
+  - 검증: 4앱 빌드 성공, 셀프테스트 13/13, **서명 1097 / c820d0f2 유지**(토큰은 판정에 닿지 않는다)
+  - **부수 발견 하나. press 색이 어느 앱에서도 화면에 안 뜬다. 아래 미해결에 적었다**
 - **P-B brand 세션 1 기반 세팅 완료(확인 대기).** 라우팅, 토큰, copy, 랜딩 5섹션 뼈대, 상세 4종, 체험하기 연결.
   **비주얼 라이브러리 0개 설치.** 궤적, 셰이더, 유리, morph 전환은 세션 2 이후다
   - **패키지는 이미 서 있었다.** SETUP이 만든 React 18 + Vite + react-router-dom 6.30.4 + vercel.json SPA rewrite +
@@ -1369,6 +1379,19 @@
 - 시각디자이너 워드마크 SVG 슬롯 전달(크롬 레터링)
 
 ## 미해결 이슈
+- **`red.press`가 어느 앱에서도 화면에 뜨지 않는다. 토큰 값이 아니라 적용 경로의 문제다.**
+  - **arena 원인 규명 완료.** `index.css`에 `.ganhap-btn-primary:active { background: var(--red-press); }`가
+    있고 `--red-press`도 `#66060A`로 정상 주입된다. 그런데 `Button.jsx`가 `style` 속성으로
+    `background: colors.red.fill`을 **인라인**으로 걸어서 인라인이 스타일시트 규칙을 이긴다.
+    실측: 누른 상태의 계산 배경이 `rgb(128, 7, 12)`(fill)로 그대로다.
+    **인라인 background만 걷어내면 그 자리에서 `rgb(102, 6, 10)`으로 바뀐다**(브라우저에서 확인)
+  - **이 버그는 이번 변경이 만든 것이 아니다.** 옛 리터럴 `#610509`도 똑같이 죽어 있었다.
+    press 토큰이 생긴 이래로 한 번도 그려진 적이 없다
+  - **controller와 brand는 press 색 규칙 자체가 없다.** controller `ButtonPrimary`는 `scale(0.97)`만 걸고
+    brand CTA는 `:active`가 없다. 둘 다 누르면 크기만 줄고 색은 그대로다(실측)
+  - 고치는 범위는 앱 코드 셋이라 이 트랙(shared 한 파일)에서 손대지 않았다.
+    arena는 인라인 background 제거 한 줄이고, controller와 brand는 press 규칙 신설이다.
+    **DESIGN 7절 press 규약을 세 앱에 실제로 적용할지가 먼저 정해져야 한다**
 - **brand 비주얼 라이브러리 전부 미설치. 세션 2 이후 몫이다.**
   - 히어로 궤적(NewKrok/three-particles TRAIL 또는 arena `trail.js` 재사용), GSAP Flip 카드 morph,
     유리 카드, 갤러리와 마우스 인터랙션, Lenis 부드러운 스크롤이 전부 남았다.
