@@ -18,7 +18,7 @@
 1. **C3 소켓 연동** (프롬프트 CONTROLLER_C3_SOCKET.md 준비됨): 폰 이산 이벤트 → 엔진(키보드와 같은 진입점), 폰 쿼터니언 → setSwordPose, AIM_JITTER는 쿼터니언 소스일 때 비활성 분기, haptic 왕복, server 재접속, Render 배포(wss).
 2. **VORTEX 네이밍 통일** (프롬프트 준비됨): 화면 표기 전부 영문 VORTEX. presentation-v2 불가침, 저장소명/내부 변수 유지.
 3. ~~AI 유파 완성 (프롬프트 ARENA_AI_SCHOOLS.md)~~ → **완료(확인 대기).** 헝가리안 + MIXED + 계열 매핑. 서명 갱신 1회 수행(205/ef4b27d5 → 1097/c820d0f2, 셀프테스트 13종).
-4. **VORTEX 앱 신설** (프롬프트 VORTEX_APP_BUILD.md): 아래 3절 구조. **다음 순서.** SELECT 화면의 소켓 select 메시지가 arena의 같은 진입점(createEngine의 school 인자)을 쓴다 — 이번 트랙에서 준비됨.
+4. ~~VORTEX 앱 신설~~ → **완료(확인 대기, B0~B4).** controller를 VORTEX 폰 앱으로 확장(화면 7종). 강릉페이 시스템 이식(프레임/상태바/버튼/바텀시트/코치마크/HIG, 색은 VORTEX 다크). SELECT 소켓 select → arena engine.setSchool(A3 진입점). RESULT는 arena 통계 + 폰 센서 통계 합성. machine.js·센서·소켓 무변경, 서명 1097/c820d0f2 유지. 잔여: 유파 사진 교체, RESULT 실기 육안.
 5. 잔여: V4e 시간 팽창 시각 세트, 생성 이미지 setPoses 교체, PHASE2(배포 상호 연결, 리허설 3컷, 발표 노트북 실기 fps).
 
 ## 3. 앱 신설 구조 (핵심 결정: controller가 앱이 된다)

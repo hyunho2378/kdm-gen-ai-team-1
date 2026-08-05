@@ -1109,15 +1109,24 @@
     (GameCanvas frozen prop, hitstop 경로라 판정·서명 무관). 첫 EN_GARDE ref로 1회, reduced 정적.
     폰 PLAY 코치마크 2종(CoachMarkOverlay 이식, S7, 마지막 "시작"). PLAY 탭 버튼 ig.title2 리스킨(로직 무변경).
     로컬 3자 검증: arena 온보딩 4스텝+카운트다운 게임 정지, 폰 PLAY 코치마크 2종 통과. **셀프테스트 13/13, 서명 유지.**
-  - **남은 단계 B4(다음 세션, 단계 경계에서 중단함):**
-    - **B4 RESULT 통계.** **MSG.RESULT와 server 중계는 B2에서 이미 깔림** — arena emit + 폰 수신만 붙이면 된다.
-      arena: MATCH_END 시 `{t:'result', score, touches, durationMs, pisteOut}` emit(`MSG.RESULT`). 판정 변경 아님(표시용).
-      폰: 경기 중 메모리 축적(EN_GARDE 쿼터니언 각속도 이동분산=손떨림, 찌르기 수/파워, 가드 수 — controller
-      `pipeline`/App의 이산 소비처에서. localStorage 금지) + arena result 합성. controller App이 socket에서 result 수신
-      → RESULT phase로. RESULT 화면(현재 자리표시자)을 다크 카드 위계 + div 바(라이브러리 추가 금지) + "저장 안 됨" Footnote로 채운다.
-    - **통합 검증 + PROGRESS 마무리(B4 후):** 전 플로우 1회, arena 단독 키보드 완주, 온보딩 첫/둘째 판,
-      셀프테스트 13종 + 서명 1097/c820d0f2 유지(게임플레이 무변경 증명), grep(localStorage/HEX/이모지/100vh/서버주소 0),
-      4앱 빌드, 휴리스틱 주석 스팟, 실기(Safari) 안내.
+  - **B4 경기 결과 통계 완료(커밋 9769d90, push됨).** arena: 경기 중 결과 통계를 모은다(engine `matchStats`:
+    찌르기/명중/리포스트/피스트아웃/경기시간, 표시 전용 순수 카운터라 판정·결정성 무관). MATCH_END에 `link.sendResult`로
+    폰에 전송. 부위 분포는 렌더 몫이라 App이 fx(owner ME 명중)에서 모아 합친다. 폰: 경기 중 센서 통계 축적(메모리만,
+    손떨림 근사=연속 쿼터니언 회전각 평균, 찌르기 수/파워, 가드 수) → `buildMatchResult`로 arena 결과와 합성 → RESULT.
+    ResultScreen 신설(승패+스코어, 경기/부위/폰 통계 카드, div 바, "저장 안 됨 + 근사 지표" Footnote).
+    **검증: arena getMatchStats 노드 실측** — 정상 5-3(명중률 38%)·완전 수동 0-5(14초) 모두 정합. 셀프테스트 13/13, 서명 유지.
+    **실브라우저 2탭 완주 스크린샷 미확보** — 백그라운드 탭이 rAF를 멈춰(arena 게임 루프 정지) 한 창에서 arena 게임과
+    폰을 동시에 못 돌린다(환경 한계, 코드 아님). 전달은 B2 select 중계와 동일 경로. **실기 육안 확인 필요(아래 잔여).**
+  - **트랙 완료(확인 대기). VORTEX 폰 앱 = controller 확장, 화면 7종 전부.** 강릉페이 시스템 이식(프레임/상태바/버튼/
+    바텀시트/코치마크/HIG 타이포/8pt/radius/휴리스틱 주석 규율). 색은 VORTEX 다크. **센서·소켓·machine.js 무변경.**
+    - **통합 검증:** 4앱 빌드 성공. 셀프테스트 **13/13**, 기준 서명 **1097/c820d0f2 유지**(게임플레이 무변경 증명).
+      grep 전수 0건: localStorage/sessionStorage 실사용 0, 100vh 0(주석만), 이모지 0, HEX(컴포넌트) 0, 서버주소 하드코딩 0
+      (arena faceTracker의 MediaPipe CDN은 기존 웹캠 기능, 게임 서버 주소 아님). 휴리스틱 주석 9개 컴포넌트에 인용.
+      실브라우저: HOME/로그인시트, CONNECT 스피너·에러·재시도, arena 로비 코드·QR·키보드폴백, SELECT 4카드·선택 반영,
+      온보딩(arena 4스텝+카운트다운, 폰 2스텝), PLAY 탭 모드 전부 육안 확인. 3자 페어링 완주.
+    - **잔여(제출 전/실기):** (1) **SELECT 유파 사진** 플레이스홀더 → 자체 제작 교체 필수(미해결에 기록, CREDITS 기재 금지).
+      (2) **RESULT 실기 육안** — 실폰+실경기에서 통계 화면 확인(손떨림 등급 임계는 근사, 실기 튜닝 여지).
+      (3) V4e 시간 팽창 시각 세트, 생성 이미지 setPoses 교체, PHASE2(배포 상호 연결, 리허설 3컷, 발표 노트북 실기 fps).
 - **P-C AI 유파 완성(확인 대기).** VORTEX 유파 3종 + 통합 모드로 게임을 맞췄다. **유파 4종 완성.**
   - **A1 헝가리안 신설(심리전형).** `family 'sabre'`(라다엘리 사브르 계승). FEINT 최고(0.6),
     거리 흔들기 최고(0.55), 템포 브레이크(느린 2000~2800 / 빠른 700~1150 밴드를 매 공격 교체 shiftEvery 1),
@@ -1282,11 +1291,9 @@
 ## 다음 작업
 - ~~AI 유파 완성(프롬프트 ARENA_AI_SCHOOLS.md)~~ → **완료(확인 대기).** 유파 4종(세이버/에페/헝가리안/MIXED).
   서명 갱신 1회 수행(205/ef4b27d5 → **1097/c820d0f2**). 상세는 위 진행중 항목
-- **VORTEX 앱 신설(프롬프트 VORTEX_APP_BUILD.md).** 다음 순서다. HANDOVER 3절 구조:
-  controller 폴더를 확장해 VORTEX 폰 앱으로(별도 앱 안 만듦). HOME → CONNECT → SELECT(유파 4카드,
-  소켓 select 메시지가 arena의 **같은 진입점**을 쓴다 — createEngine의 school 인자, 이번 트랙에서 준비됨)
-  → PERMISSION → CALIBRATION → PLAY → RESULT. arena 로비는 경기 밖 React 계층, machine.js 불가침.
-  강릉페이 DESIGN/MD3 규율 이식(색은 VORTEX 다크로 스킨), 게이밍 코치마크 온보딩. 서명 유지가 통과 조건
+- ~~VORTEX 앱 신설(프롬프트 VORTEX_APP_BUILD.md)~~ → **완료(확인 대기, B0~B4).** controller 확장, 화면 7종,
+  강릉페이 시스템 이식, machine.js 무변경, 서명 1097/c820d0f2 유지. 상세는 위 진행중 "controller VORTEX 앱" 항목.
+  잔여: SELECT 유파 사진 교체, RESULT 실기 육안, PHASE2 리허설·배포.
 - **E4 확인 후 E3(히트 이펙트 게이밍 증폭), 그 다음 E5(웹캠 시간 팽창 트리거 + 머리 패럴랙스).**
   순서 고정이고 확인 전 착수 금지다. E5는 아래 V4e 항목과 겹치므로 착수 시 함께 정리한다
 - **C3에서 지울 것 하나.** `ThreeRenderer.js`의 `AIM_JITTER_X` / `AIM_JITTER_Y`와
