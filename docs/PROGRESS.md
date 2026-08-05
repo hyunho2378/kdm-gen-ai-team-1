@@ -1103,14 +1103,18 @@
     (A3 스케줄러 갈아끼움, 엔진 재생성 없이 machine 보존, 경기 전이라 결정성 무관) → 로비 "선택된 유파 OO".
     **셀프테스트 13/13, 서명 1097/c820d0f2 유지.** 로컬 3자 페어링 검증: 선택 세이버 → arena 로비 반영 → PERMISSION.
     **카운트다운(5-4-3-2-1)은 B3 온보딩으로 이관**(첫 판 플래그 공유).
-  - **남은 단계 B3~B4(다음 세션, 단계 경계에서 중단함):**
-    - **B3 온보딩 코치마크 + PLAY 리스킨.** arena 온보딩(첫 판, 코치마크 3~4개: 게이지/텔레그래프/램프/피스트,
-      게임 시계 timeScale 0 = hitstop 경로, 판정 무영향, 둘째 판부터 생략 메모리 플래그, reduced 정적).
-      폰 PLAY 온보딩(코치마크 2개, 강릉페이 CoachMarkOverlay 이식 = `docs/reference/gnpay/common/CoachMarkOverlay.jsx`).
-      PLAY 리스킨(타이포/간격 정리, 기능 무변경).
-    - **B4 RESULT 통계.** arena: MATCH_END 시 `{t:'result', score, touches, durationMs, pisteOut}` emit(`MSG.RESULT`).
-      폰: 경기 중 메모리 축적(EN_GARDE 쿼터니언 각속도 이동분산=손떨림, 찌르기 수/파워, 가드 수) + arena result 합성.
-      다크 카드 위계, div 바(라이브러리 추가 금지), "저장 안 됨" Footnote.
+  - **B3 온보딩 코치마크와 PLAY 리스킨 완료(커밋 2954782, push됨).** arena 온보딩(ArenaOnboarding 신설,
+    첫 판 한정): 코치마크 4종(간합 게이지 / 상대 예고 / 램프 / 피스트) 순차 → 카운트다운 5-4-3-2-1 → 시작.
+    스포트라이트(box-shadow 딤) + FUI 팔각 박스(clip-path, steel/red) + 다음/건너뛰기. **게임 시계 timeScale 0**
+    (GameCanvas frozen prop, hitstop 경로라 판정·서명 무관). 첫 EN_GARDE ref로 1회, reduced 정적.
+    폰 PLAY 코치마크 2종(CoachMarkOverlay 이식, S7, 마지막 "시작"). PLAY 탭 버튼 ig.title2 리스킨(로직 무변경).
+    로컬 3자 검증: arena 온보딩 4스텝+카운트다운 게임 정지, 폰 PLAY 코치마크 2종 통과. **셀프테스트 13/13, 서명 유지.**
+  - **남은 단계 B4(다음 세션, 단계 경계에서 중단함):**
+    - **B4 RESULT 통계.** **MSG.RESULT와 server 중계는 B2에서 이미 깔림** — arena emit + 폰 수신만 붙이면 된다.
+      arena: MATCH_END 시 `{t:'result', score, touches, durationMs, pisteOut}` emit(`MSG.RESULT`). 판정 변경 아님(표시용).
+      폰: 경기 중 메모리 축적(EN_GARDE 쿼터니언 각속도 이동분산=손떨림, 찌르기 수/파워, 가드 수 — controller
+      `pipeline`/App의 이산 소비처에서. localStorage 금지) + arena result 합성. controller App이 socket에서 result 수신
+      → RESULT phase로. RESULT 화면(현재 자리표시자)을 다크 카드 위계 + div 바(라이브러리 추가 금지) + "저장 안 됨" Footnote로 채운다.
     - **통합 검증 + PROGRESS 마무리(B4 후):** 전 플로우 1회, arena 단독 키보드 완주, 온보딩 첫/둘째 판,
       셀프테스트 13종 + 서명 1097/c820d0f2 유지(게임플레이 무변경 증명), grep(localStorage/HEX/이모지/100vh/서버주소 0),
       4앱 빌드, 휴리스틱 주석 스팟, 실기(Safari) 안내.
