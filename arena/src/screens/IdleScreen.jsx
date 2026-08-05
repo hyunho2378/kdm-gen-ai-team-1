@@ -1,12 +1,74 @@
 // IA.md IDLE: 타이틀, [경기 시작] 버튼, [키보드 모드 F9] 안내.
 // C1에서는 서버 경로가 없으므로 [경기 시작]도 키보드 경기로 들어간다.
+//
+// 유파 선택(1/2/3/4): 로컬 키보드 폴백이 상시 보인다(HANDOVER 3절). 카드를 누르거나 숫자키를
+// 치면 그 유파로 경기가 곧장 시작한다. 앱 select 메시지가 붙어도 같은 진입점(selectSchool)을 쓴다.
 
-import { colors, spacing, typography, zIndex } from '../tokens.js';
+import { colors, radius, spacing, typography, zIndex } from '../tokens.js';
+import { SCHOOL } from '../../../shared/protocol.js';
 import { BRAND } from '../copy.js';
 import ChromeText from '../components/ui/ChromeText.jsx';
 import { ButtonPrimary, ButtonGhost } from '../components/ui/Button.jsx';
 
-export default function IdleScreen({ onStart, onKeyboard }) {
+// VORTEX 유파 3.11 카피와 표기 일치. 4번은 세 스타일을 갈아타는 통합 모드.
+const SCHOOL_OPTIONS = [
+  { key: SCHOOL.SABRE, n: '1', name: '이탈리아 세이버', trait: '공격형' },
+  { key: SCHOOL.EPEE, n: '2', name: '프랑스 에페', trait: '카운터형' },
+  { key: SCHOOL.HUNGARIAN, n: '3', name: '헝가리안', trait: '심리전형' },
+  { key: SCHOOL.MIXED, n: '4', name: '통합 MIXED', trait: '세 스타일 조합' },
+];
+
+function SchoolCard({ opt, selected, onSelect }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(opt.key)}
+      aria-pressed={selected}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: 4,
+        minWidth: 128,
+        minHeight: 44,
+        padding: '10px 14px',
+        borderRadius: radius.md,
+        border: `1px solid ${selected ? colors.red.light : colors.line.default}`,
+        background: colors.bg.raised,
+        boxShadow: selected ? `0 0 16px ${colors.red.glow}` : 'none',
+        cursor: 'pointer',
+        fontFamily: typography.family,
+        textAlign: 'left',
+      }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span
+          style={{
+            fontSize: typography.caption.size,
+            fontWeight: 700,
+            color: selected ? colors.red.light : colors.text.dim,
+            border: `1px solid ${selected ? colors.red.light : colors.line.strong}`,
+            borderRadius: radius.xs,
+            width: 18,
+            height: 18,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            lineHeight: 1,
+          }}
+        >
+          {opt.n}
+        </span>
+        <span style={{ fontSize: typography.caption.size, color: colors.text.secondary, wordBreak: 'keep-all' }}>
+          {opt.name}
+        </span>
+      </span>
+      <span style={{ fontSize: typography.caption.size, color: colors.text.dim }}>{opt.trait}</span>
+    </button>
+  );
+}
+
+export default function IdleScreen({ onStart, onKeyboard, onSelectSchool, selectedSchool }) {
   return (
     <section
       style={{
@@ -37,6 +99,26 @@ export default function IdleScreen({ onStart, onKeyboard }) {
       >
         거리와 타이밍을 겨루는 검술 대전. 방향키로 거리를 잡고, 시프트로 막고, 스페이스로 찌른다.
       </p>
+
+      {onSelectSchool ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <span
+            style={{
+              fontFamily: typography.family,
+              fontSize: typography.caption.size,
+              letterSpacing: typography.hud.tracking,
+              color: colors.text.dim,
+            }}
+          >
+            AI 대전자 선택 (숫자키 1~4)
+          </span>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {SCHOOL_OPTIONS.map((opt) => (
+              <SchoolCard key={opt.key} opt={opt} selected={selectedSchool === opt.key} onSelect={onSelectSchool} />
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
         <ButtonPrimary onClick={onStart}>경기 시작</ButtonPrimary>

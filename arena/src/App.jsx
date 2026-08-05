@@ -41,6 +41,10 @@ export default function App() {
   const [camStatus, setCamStatus] = useState(CAM.OFF);
   const [linkStatus, setLinkStatus] = useState(LINK.IDLE);
   const [roomCode, setRoomCode] = useState('');
+  // 유파 선택값(protocol SCHOOL). undefined면 시드로 뽑는다(기존 기본 경로).
+  // 로컬 키보드 1/2/3/4와 유파 카드가 이 값을 세우고, 그러면 엔진이 그 유파로 다시 선다.
+  const [schoolSel, setSchoolSel] = useState(undefined);
+  const [pendingStart, setPendingStart] = useState(false);
   // 연속 채널. engine과 분리되어 있고 렌더러만 소비한다(ARENA_INPUT 3절).
   const poseChannel = useMemo(() => createPoseChannel(), []);
   const perf = useMemo(() => createPerfStats(), []);
@@ -58,14 +62,33 @@ export default function App() {
       createEngine({
         seed: 20260802,
         reducedMotion: reduced,
+        school: schoolSel,
         onPublish: (s) => setSnapshot(s),
       }),
-    [reduced]
+    [reduced, schoolSel]
   );
 
   useEffect(() => {
     setSnapshot(engine.snapshot());
   }, [engine]);
+
+  // 유파 선택은 IDLE에서만. 선택값을 세우면 엔진이 그 유파로 다시 서고(useMemo), 새 엔진이
+  // 뜨면 아래 효과가 키보드 경기를 시작한다. 엔진 재생성이 비동기라 시작을 플래그로 미룬다.
+  const selectSchool = useCallback(
+    (sel) => {
+      if (engine.phase !== PHASE.IDLE) return;
+      setSchoolSel(sel);
+      setPendingStart(true);
+    },
+    [engine]
+  );
+
+  useEffect(() => {
+    if (pendingStart && engine.phase === PHASE.IDLE) {
+      engine.send(EV.START_KEYBOARD);
+      setPendingStart(false);
+    }
+  }, [pendingStart, engine]);
 
   // 피스트 스트립이 매 프레임 폴링하는 창구. 참조를 고정해야 스트립의 rAF 루프가 재시작되지 않는다
   const getPiste = useMemo(() => () => engine.getPiste(), [engine]);
@@ -82,8 +105,9 @@ export default function App() {
         onStart: () => {
           if (engine.phase === PHASE.IDLE) engine.send(EV.START_KEYBOARD);
         },
+        onSelectSchool: selectSchool,
       }),
-    [engine, poseChannel]
+    [engine, poseChannel, selectSchool]
   );
 
   // 소켓 배선 (C3). 이산은 키보드와 같은 큐로, 연속은 렌더러 전용 채널로 간다.
@@ -202,6 +226,8 @@ export default function App() {
               else engine.send(EV.START_KEYBOARD);
             }}
             onKeyboard={() => engine.send(EV.START_KEYBOARD)}
+            onSelectSchool={selectSchool}
+            selectedSchool={schoolSel}
           />
         ) : null}
 

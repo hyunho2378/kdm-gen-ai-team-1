@@ -6,7 +6,7 @@
 // 그 둘의 시그니처와 의미를 보존하므로 대본이 그대로 돌고 서명이 그대로 나온다.
 // 새로 생긴 emit()은 그 위에 얹은 전송 계층이고, 두 함수가 내부에서 emit()으로 위임한다.
 
-import { INPUT_EVENT } from '../../../shared/protocol.js';
+import { INPUT_EVENT, SCHOOL } from '../../../shared/protocol.js';
 
 export const INPUT = {
   ADVANCE: 'ADVANCE',
@@ -119,13 +119,22 @@ const KEY_MAP = {
   ShiftRight: INPUT_EVENT.GUARD_ON,
 };
 
+/** 로컬 유파 선택 키. 1/2/3/4가 진입점의 school 인자로 접힌다(앱 select 메시지와 같은 값). */
+const SCHOOL_KEY = {
+  Digit1: SCHOOL.SABRE,
+  Digit2: SCHOOL.EPEE,
+  Digit3: SCHOOL.HUNGARIAN,
+  Digit4: SCHOOL.MIXED,
+};
+
 /**
  * 키보드를 큐에 붙인다. F9는 게임 입력이 아니라 모드 토글이므로 따로 뺀다.
  * 반환값은 해제 함수다.
  *
  * 내부는 emit()으로 갈아끼웠고 **외부 동작은 무변경이다.**
+ * onSelectSchool은 게임 입력이 아니라 로비 선택이라 큐를 거치지 않는다(F9, Enter와 같은 등급).
  */
-export function attachKeyboard(queue, { onToggleKeyboardMode, onStart } = {}) {
+export function attachKeyboard(queue, { onToggleKeyboardMode, onStart, onSelectSchool } = {}) {
   const send = (type, power) =>
     queue.emit({ type, power, ts: performance.now(), source: SOURCE.KEYBOARD });
 
@@ -144,6 +153,11 @@ export function attachKeyboard(queue, { onToggleKeyboardMode, onStart } = {}) {
     }
     if (e.code === 'Enter') {
       onStart?.();
+      return;
+    }
+    if (SCHOOL_KEY[e.code] && onSelectSchool) {
+      e.preventDefault();
+      onSelectSchool(SCHOOL_KEY[e.code]);
       return;
     }
     const mapped = KEY_MAP[e.code];

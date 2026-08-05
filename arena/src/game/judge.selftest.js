@@ -23,6 +23,9 @@ import {
 import { createEngine } from './engine.js';
 import { EV, PHASE } from './machine.js';
 import { INPUT } from './input.js';
+import { getSchool, lockoutOf, createSchoolScheduler } from './opponents.js';
+import { createRng } from './rng.js';
+import { SCHOOL } from '../../../shared/protocol.js';
 
 function scenario(name, fn) {
   try {
@@ -37,7 +40,10 @@ function expect(cond, message) {
   if (!cond) throw new Error(message);
 }
 
-/** 시나리오 10종. 사양의 검증 항목과 1:1이다. D3에서 런지 2종, R3에서 피스트와 락아웃 2종이 붙었다. */
+/**
+ * 시나리오 13종. 사양의 검증 항목과 1:1이다. D3에서 런지 2종, R3에서 피스트와 락아웃 2종,
+ * AI-유파에서 헝가리안 계열/고FEINT, MIXED 전환 결정성, 유파 선택 진입점 3종이 붙었다.
+ */
 export function runJudgeSelftest() {
   const results = [];
 
@@ -239,27 +245,96 @@ export function runJudgeSelftest() {
     })
   );
 
+  results.push(
+    scenario('헝가리안 유파 계열과 고FEINT', () => {
+      const h = getSchool('hungarian');
+      const saber = getSchool('italian-saber');
+      const epee = getSchool('french-epee');
+      expect(h.key === 'hungarian', '헝가리안 유파가 존재해야 한다');
+      // 심리전형: FEINT 비율과 거리 흔들기가 3유파 중 최고
+      expect(h.feintRatio > saber.feintRatio && h.feintRatio > epee.feintRatio, 'FEINT 비율은 3유파 중 최고');
+      expect(h.stepFeintChance >= saber.stepFeintChance && h.stepFeintChance >= epee.stepFeintChance, '거리 흔들기 최고');
+      // 템포 브레이크: 매 공격 구간 전환(shiftEvery 1)이 셋 중 가장 잦다
+      expect(h.tempoShiftEvery <= saber.tempoShiftEvery && h.tempoShiftEvery <= epee.tempoShiftEvery, '템포 전환 최다');
+      // 라다엘리 사브르 계승 → 세이버 계열 락아웃(170ms 시뮬타네)
+      expect(h.family === 'sabre', '헝가리안은 사브르 계열');
+      const lk = lockoutOf(h);
+      expect(lk.lockoutMs === 170 && lk.doubleTouch === false, '사브르 계열은 170ms 시뮬타네');
+      expect(lockoutOf(epee).lockoutMs === 40 && lockoutOf(epee).doubleTouch === true, '에페 계열은 40ms 더블');
+      // 고FEINT 대응: 페인트를 읽어내면 명중(4분기 그대로)
+      const s = createJudgeState({ d: 45 });
+      s.ai = { mode: AI_MODE.TELEGRAPH, kind: ATTACK_KIND.FEINT, until: 0, nextAttackAt: 0 };
+      expect(resolveThrust(s, 1000).outcome === OUTCOME.HIT, '페인트 판독은 명중');
+      return `feint 세이버 ${saber.feintRatio} < 에페 ${epee.feintRatio} < 헝가리안 ${h.feintRatio}, 계열 sabre 170ms`;
+    })
+  );
+
+  results.push(
+    scenario('MIXED 전환 결정성', () => {
+      const seq = (seed) => {
+        const sc = createSchoolScheduler(SCHOOL.MIXED, createRng(seed));
+        const out = [sc.school.styleName];
+        for (let i = 0; i < 6; i += 1) {
+          sc.advance();
+          out.push(sc.school.styleName);
+        }
+        return out;
+      };
+      const a = seq(20260802);
+      const b = seq(20260802);
+      expect(JSON.stringify(a) === JSON.stringify(b), '같은 시드는 같은 전환 순서를 낸다');
+      // 직전과 다른 유파 우선: 연속 동일 없음
+      for (let i = 1; i < a.length; i += 1) expect(a[i] !== a[i - 1], '연속 동일 스타일이 없어야 한다');
+      // 강화(+@): 통합 프로필이 원본보다 페인트를 더 내고 간격이 더 짧다. key는 스프레드로 보존된다
+      const sc = createSchoolScheduler(SCHOOL.MIXED, createRng(20260802));
+      const base = getSchool(sc.school.key);
+      expect(sc.school.feintRatio >= base.feintRatio, '통합 모드는 페인트를 원본 이상으로 낸다');
+      expect(sc.school.tempoBands[0].min < base.tempoBands[0].min, '통합 모드는 공격 간격이 더 짧다');
+      expect(sc.school.name.startsWith('MIXED'), '통합 모드 이름은 MIXED로 시작한다');
+      return `전환 ${a.join('>')}`;
+    })
+  );
+
+  results.push(
+    scenario('유파 선택 진입점', () => {
+      const startSchool = (school) => {
+        const e = createEngine({ seed: 20260802, school, onPublish: null });
+        e.send(EV.START_KEYBOARD);
+        return e.snapshot().school;
+      };
+      expect(startSchool(SCHOOL.SABRE).key === 'italian-saber', 'sabre 선택은 이탈리아 세이버');
+      expect(startSchool(SCHOOL.EPEE).key === 'french-epee', 'epee 선택은 프랑스 에페');
+      expect(startSchool(SCHOOL.HUNGARIAN).key === 'hungarian', 'hungarian 선택은 헝가리안');
+      expect(startSchool(SCHOOL.MIXED).name.startsWith('MIXED'), 'mixed 선택은 통합 모드');
+      // 미지정은 시드로 뽑는다(기본 경로 = 기준 서명 경로). 시드 20260802는 세이버를 뽑는다
+      expect(startSchool(undefined).key === 'italian-saber', '미지정은 시드로 뽑는다(세이버)');
+      return 'sabre/epee/hungarian/mixed/default 진입점 확인';
+    })
+  );
+
   return results;
 }
 
 /**
  * 기준 서명. 같은 시드와 같은 대본이 같은 경기를 내는지 보는 회귀 가드다.
  *
- * **D3과 R3에서 갱신했다.** 의도적 게임플레이 변경이므로 서명이 바뀌는 것이 정상이다.
+ * **D3, R3, AI-유파에서 갱신했다.** 의도적 게임플레이 변경이므로 서명이 바뀌는 것이 정상이다.
  * 절차: 변경 전 그린 확인 → 변경 → 같은 시드 2회 동일 확인 → 새 서명 채택.
  *
- * R3 변경분: 피스트 절대 위치와 후방 경계 실점, 유파별 동시타 락아웃,
- * 그리고 **맞불이 phase를 멈추지 않게 한 것**(멈추면 락아웃 창이 구조적으로 닫힌다).
- * 직전 D3 서명은 길이 244 / 해시 8c2f910 / 꼬리 `SCORE:6-2:53.633#6-2#ME`였다.
+ * **AI-유파 변경분(이 트랙, 1회 갱신):** 헝가리안 유파 신설과 통합 모드 MIXED.
+ * 직전 R3 서명은 길이 205 / 해시 ef4b27d5 / 꼬리 `JUDGE:6-1:51.833#6-1#ME`였다.
+ * R3 서명은 기본 경로(시드가 뽑는 세이버) 한 판만 봤는데, 시드 20260802의 첫 난수가
+ * 유파 2종에서도 3종에서도 세이버를 뽑아 헝가리안이 서명 밖에 통째로 있었다.
+ * 그래서 이번에 **서명이 진입점의 네 모드(sabre/epee/hungarian/mixed)와 기본 경로를
+ * 전부 대본에 태워 하나로 합치게** 바꿨다(runDeterminismCheck 참조). 새 유파가 바뀌면 이제 잡힌다.
  *
- * 이전 기록은 앞 80자만 남겨 두었는데 **그 구간은 D3 전후가 똑같았다.**
- * 대본의 앞부분은 AI가 아직 갈리기 전이라 변경이 뒤쪽에서만 드러나기 때문이다.
- * 접두만 보는 가드는 회귀를 놓친다. 그래서 이제 길이와 해시와 꼬리를 함께 박는다.
+ * R3 이전(D3): 길이 244 / 해시 8c2f910. 대본 앞부분은 AI가 갈리기 전이라 접두만 보는 가드는
+ * 회귀를 놓친다. 그래서 길이와 해시와 꼬리를 함께 박고, 이제 모드별 트레이스까지 접붙였다.
  */
 export const BASELINE = {
-  length: 205,
-  hash: 'ef4b27d5',
-  tail: 'JUDGE:6-1:51.833#6-1#ME',
+  length: 1097,
+  hash: 'c820d0f2',
+  tail: 'GARDE:4-0:45.250#5-0#ME',
 };
 
 function signatureHash(sig) {
@@ -273,8 +348,8 @@ function signatureHash(sig) {
  * 실시간 입력이 아니라 고정 스텝 대본이므로 재현이 성립한다.
  */
 export function runDeterminismCheck(seed = 20260802) {
-  function play() {
-    const engine = createEngine({ seed, onPublish: null });
+  function play(school) {
+    const engine = createEngine({ seed, school, onPublish: null });
     engine.send(EV.START_KEYBOARD);
     const trace = [];
     // 6000 스텝 = 100초. 매 스텝 대본대로 입력을 넣는다.
@@ -294,8 +369,14 @@ export function runDeterminismCheck(seed = 20260802) {
     return `${trace.join('|')}#${s.score.me}-${s.score.ai}#${s.winner ?? 'none'}`;
   }
 
-  const a = play();
-  const b = play();
+  // **네 유파 + 기본 경로를 한 서명에 접붙인다.** 유파 하나가 바뀌어도 서명이 잡는다.
+  // D3의 교훈: 기본 경로만 보는 서명은 새 유파를 뽑지 못해(시드가 세이버를 뽑는다) 가드가
+  // 그 유파를 통째로 놓친다. 그래서 진입점의 네 모드를 전부 대본에 태워 하나로 합친다.
+  const MODES = [undefined, SCHOOL.SABRE, SCHOOL.EPEE, SCHOOL.HUNGARIAN, SCHOOL.MIXED];
+  const whole = () => MODES.map((m) => `${m ?? 'default'}=${play(m)}`).join('||');
+
+  const a = whole();
+  const b = whole();
   const hash = signatureHash(a);
   return {
     pass: a === b,
