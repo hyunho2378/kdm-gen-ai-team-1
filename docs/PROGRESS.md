@@ -1079,9 +1079,30 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **P-C VORTEX 네이밍. 트랙 선점.** 화면 표시 제품명을 영문 VORTEX로 통일한다.
-  대상은 arena controller brand server의 표시 텍스트뿐이고 저장소명 ganhap과 내부 식별자는 유지한다.
-  presentation-v2와 presentation 폴더는 불가침이다. judge machine opponents 무변경, 기준 서명 유지가 통과 조건이다
+- **P-C VORTEX 네이밍 통일 완료(확인 대기).** 화면 표시 제품명이 전부 영문 VORTEX다
+  - 탭 제목 3개: `VORTEX Arena` / `VORTEX Controller` / `VORTEX Brand`.
+    arena IDLE 워드마크와 brand 히어로는 `{BRAND}`를 읽는다(실측 스크린샷 확인)
+  - **제품명을 컴포넌트에서 뺐다.** `arena/src/copy.js`와 `brand/src/copy.js` 신설.
+    `presentation-v2/src/copy.js`와 같은 규약이다. 이름이 또 바뀌면 앱마다 이 파일 하나와
+    정적 HTML의 `<title>` 한 줄만 고친다(정적 HTML은 상수를 못 읽으므로 주석에 명시했다)
+  - **간합을 제품명 자리와 게임 용어 자리로 갈랐다.** 워드마크는 VORTEX가 됐고,
+    거리를 뜻하던 두 곳은 **거리**로 옮겼다(arena HUD 게이지 라벨, IDLE 조작 안내 문장).
+    거리 게이지에 VORTEX를 넣으면 계기 라벨이 제품명이 되어 뜻이 사라진다.
+    실측 확인: HUD가 `거리 52`로 뜬다
+  - **controller 5화면에는 제품명이 원래 없다.** JOIN PERMISSION CALIBRATION PLAY를 실제로 밟아
+    화면 텍스트를 떠 봤고 넷 다 제품명 문자열이 0이다(탭 제목만 VORTEX Controller).
+    END는 arena가 `MSG.STATE`를 안 보내 도달하지 못하는 기존 이슈라 소스로만 확인했고 역시 0이다.
+    **워드마크를 새로 넣지는 않았다.** 그것은 교체가 아니라 신설이고 VORTEX 앱 신설 트랙의 HOME 화면 몫이다
+  - server는 표시 문자열 자체가 없다. brand는 SETUP 골격이라 워드마크 한 줄이 전부다
+  - `<meta>`는 **네 앱 어디에도 없다.** 불가침인 presentation-v2도 title 하나뿐이라 그것이 집 규칙이고
+    교체할 대상이 없었다. description과 og를 새로 세우려면 별도 판단이 필요하다(OG 이미지는 절대 URL 필수)
+  - shared의 헤더 주석 두 줄(`tokens.js`, `protocol.js`)도 제품명이라 VORTEX로 옮겼다.
+    나머지 주석의 간합은 전부 **거리를 뜻하는 경기 용어**라 그대로 뒀다(판정 3파일 포함)
+  - **presentation 폴더는 규칙대로 안 건드렸다.** 그래서 탭 제목이 `간합 프레젠테이션`으로 남아 있다.
+    구버전 동결본이고 발표는 presentation-v2가 쓰지만, 그 폴더를 여는 트랙이 한 줄만 바꾸면 된다
+  - 검증: 셀프테스트 10/10, **R3 서명 유지**(205 / ef4b27d5 / `JUDGE:6-1:51.833#6-1#ME`),
+    judge machine opponents diff 0줄, presentation과 presentation-v2 diff 0줄,
+    화면 표시 코드의 간합 間合 GANHAP 잔존 0, 4앱 빌드 성공, 추가분 이모지 em대시 가운데점 0
 - **controller C3 소켓 S0~S3 전체 완료. 사용자 실기 확인 대기.**
   - 데모 코어 루프(폰이 검이 된다)가 성립했다. 로컬 통합 검증 11/11
   - 남은 것은 **실기 하나**다. 폰으로 QR을 찍고 검이 따라오는지, 지연이 체감되는지,
@@ -1193,6 +1214,10 @@
   **타임박스 3세션.** 초과 시 즉시 중단하고 그 시점 상태를 커밋한 뒤 2D 폴백으로 데모를 확정한다.
 
 ## 다음 작업
+- **AI 유파 완성(프롬프트 ARENA_AI_SCHOOLS.md).** VORTEX 네이밍 통일 다음 순서다.
+  헝가리안 신설 + 통합 모드(3유파 시드 스케줄링) + 유파별 심화.
+  **opponents와 judge를 고치므로 서명 갱신 1회가 예정된 유일한 트랙이다.**
+  절차는 변경 전 그린 → 변경 → 같은 시드 2회 동일 → 새 서명 채택 + selftest BASELINE과 이 문서 동시 갱신
 - **E4 확인 후 E3(히트 이펙트 게이밍 증폭), 그 다음 E5(웹캠 시간 팽창 트리거 + 머리 패럴랙스).**
   순서 고정이고 확인 전 착수 금지다. E5는 아래 V4e 항목과 겹치므로 착수 시 함께 정리한다
 - **C3에서 지울 것 하나.** `ThreeRenderer.js`의 `AIM_JITTER_X` / `AIM_JITTER_Y`와
@@ -1232,6 +1257,11 @@
     arena controller brand 셋은 `#101010` / `#FDFDFD`로 옮겼다
   - 증상은 첫 페인트 한 프레임의 색이 앱 렌더와 다른 것뿐이고 컴포넌트는 전부 토큰을 읽는다.
     그 폴더를 여는 트랙이 한 줄만 바꾸면 된다
+- **`presentation/index.html`의 탭 제목이 `간합 프레젠테이션`으로 남아 있다.**
+  - VORTEX 네이밍 통일이 "presentation 폴더는 건드리지 않는다"를 받아 손대지 않았다.
+    arena controller brand 셋은 `VORTEX Arena` / `VORTEX Controller` / `VORTEX Brand`로 옮겼다
+  - 구버전 동결본이라 발표 경로에는 안 뜨지만 그 폴더를 여는 트랙이 한 줄만 바꾸면 된다.
+    위의 첫 페인트 색 한 줄과 같이 처리하면 된다
 - **`presentation/src`에 토큰을 안 거치는 rgba 파생값 4곳이 남아 있다.**
   - `CoverSection.jsx:221`의 `rgba(5,5,6,0.4)`, `StageBackground.jsx:17`의 `rgba(216,226,240,0.05)`,
     `OutputsSection.jsx:94,96`의 `rgba(242,246,255,0.05)`와 `rgba(21,21,26,0.72)`

@@ -1,4 +1,4 @@
-// 간합 디자인 토큰 v2. 실체는 이 파일 하나다. 위치: shared/tokens.js
+// VORTEX 디자인 토큰 v2. 실체는 이 파일 하나다. 위치: shared/tokens.js
 // 각 앱의 src/tokens.js는 이 파일을 재수출한다. 값 수정은 여기서만 한다.
 // 근거와 사용 규칙: docs/DESIGN.md v2
 //

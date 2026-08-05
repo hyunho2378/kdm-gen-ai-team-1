@@ -47,7 +47,7 @@ export default function DistanceGauge({ getD, missReason }) {
           lineHeight: typography.hud.leading,
         }}
       >
-        <span style={{ color: colors.text.dim }}>간합</span>
+        <span style={{ color: colors.text.dim }}>거리</span>
         <span style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
           {missReason ? (
             <span style={{ color: colors.red.light, fontSize: typography.caption.size }}>{missReason}</span>

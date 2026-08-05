@@ -1,4 +1,5 @@
 import { typography, spacing } from './tokens.js';
+import { BRAND } from './copy.js';
 
 // SETUP 단계 최소 화면. 페이지 구현은 pages/에서 진행한다.
 export default function App() {
@@ -15,7 +16,7 @@ export default function App() {
           lineHeight: typography.title.leading,
         }}
       >
-        간합 브랜드
+        {BRAND}
       </h1>
       <p className="text-txt-secondary" style={{ fontSize: typography.body.size }}>
         SETUP 완료

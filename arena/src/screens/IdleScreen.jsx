@@ -2,6 +2,7 @@
 // C1에서는 서버 경로가 없으므로 [경기 시작]도 키보드 경기로 들어간다.
 
 import { colors, spacing, typography, zIndex } from '../tokens.js';
+import { BRAND } from '../copy.js';
 import ChromeText from '../components/ui/ChromeText.jsx';
 import { ButtonPrimary, ButtonGhost } from '../components/ui/Button.jsx';
 
@@ -22,7 +23,7 @@ export default function IdleScreen({ onStart, onKeyboard }) {
       }}
     >
       <ChromeText as="h1" variant="display">
-        간합
+        {BRAND}
       </ChromeText>
       <p
         style={{
@@ -34,7 +35,7 @@ export default function IdleScreen({ onStart, onKeyboard }) {
           wordBreak: 'keep-all',
         }}
       >
-        거리와 타이밍을 겨루는 검술 대전. 방향키로 간합을 만들고, 시프트로 막고, 스페이스로 찌른다.
+        거리와 타이밍을 겨루는 검술 대전. 방향키로 거리를 잡고, 시프트로 막고, 스페이스로 찌른다.
       </p>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
