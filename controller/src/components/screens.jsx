@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { colors, motion, radius, typography } from '../tokens.js';
 import { Body, ButtonGhost, ButtonPrimary, Screen, StatusChip, Title } from './ui.jsx';
 import { CALIB_MS } from '../pipeline.js';
+import { LINK_ERROR } from '../net/socket.js';
 
 /** 혼동 문자를 뺀 코드 알파벳. 0/O와 1/I를 서로 못 읽는 사고를 막는다. */
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -93,7 +94,7 @@ export function JoinScreen({ initialCode, onDone }) {
           다음
         </ButtonPrimary>
       </div>
-      <Body tone={colors.text.dim}>연결은 다음 단계에서 붙는다. 지금은 센서만 준비한다.</Body>
+      <Body tone={colors.text.dim}>다음을 누르면 그 방으로 접속한다.</Body>
     </Screen>
   );
 }
@@ -172,7 +173,7 @@ export function CalibrationScreen({ onDone }) {
  * PLAY. 화면 전체가 입력 면이다.
  * 상단 방 코드와 상태, 중앙 안내 최소, 하단 절반이 스와이프 영역(엄지 도달권).
  */
-export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd, onTapThrust, onTapGuard, lastAction }) {
+export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd, onTapThrust, onTapGuard, lastAction, linkLabel = '대기', linkOk = false }) {
   const startY = useRef(null);
   const dir = useRef(null);
 
@@ -208,7 +209,7 @@ export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: 16 }}>
         <StatusChip label="방" value={code || '없음'} />
-        <StatusChip label="연결" value="대기" degraded />
+        <StatusChip label="연결" value={linkLabel} degraded={!linkOk} />
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '0 20px' }}>
@@ -269,6 +270,31 @@ export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd
         <Body tone={colors.text.dim}>{lastAction ?? '아래로 밀면 후퇴'}</Body>
       </div>
     </div>
+  );
+}
+
+/**
+ * 연결 실패. **무한 스피너 대신 사유와 재시도 버튼을 낸다.**
+ * 사유마다 사람이 할 수 있는 다음 행동이 다르므로 문구를 따로 쓴다.
+ */
+const LINK_REASON_TEXT = {
+  [LINK_ERROR.NO_URL]: '서버 주소가 설정되지 않았다. 배포 환경 변수 VITE_SERVER_URL을 확인한다.',
+  [LINK_ERROR.UNREACHABLE]: '서버에 닿지 않는다. 서버가 깨어나는 중이거나 주소가 틀렸다.',
+  [LINK_ERROR.NOT_FOUND]: '그 방이 없다. arena 화면에 떠 있는 코드를 다시 확인한다.',
+  [LINK_ERROR.BAD_ROLE]: '서버가 접속을 거부했다.',
+};
+
+export function LinkErrorScreen({ reason, onRetry, onBack }) {
+  return (
+    <Screen>
+      <Title>연결되지 않았다</Title>
+      <Body tone={colors.red.light}>{LINK_REASON_TEXT[reason] ?? '알 수 없는 이유로 끊겼다.'}</Body>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <ButtonGhost onClick={onBack}>코드 다시 입력</ButtonGhost>
+        <ButtonPrimary onClick={onRetry}>재시도</ButtonPrimary>
+      </div>
+      <Body tone={colors.text.dim}>연결이 없어도 폰은 계속 센서를 읽는다. 붙으면 그때부터 검이 된다.</Body>
+    </Screen>
   );
 }
 

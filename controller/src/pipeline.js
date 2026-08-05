@@ -135,6 +135,10 @@ export function createPipeline() {
     getPose() {
       return orientation.read();
     },
+    /** 캘리브레이션 기준 자세. MSG.CALIB이 싣는 값이다. */
+    getBaseline() {
+      return orientation.getBaseline();
+    },
     getHz() {
       return orientation.getHz();
     },

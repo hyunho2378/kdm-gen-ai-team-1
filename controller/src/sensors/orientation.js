@@ -40,6 +40,8 @@ export function createOrientation() {
   let hz = 0;
   // 캘리브레이션 기준의 켤레. 상대 회전을 만들 때 쓴다
   let baseConj = null;
+  // 기준 자세 원본. MSG.CALIB이 이 값을 싣는다(ARENA_INPUT 4절의 기준 쿼터니언)
+  let base = null;
   const raw = [0, 0, 0, 1];
   const rel = [0, 0, 0, 1];
   const cb = { pose: null };
@@ -102,7 +104,16 @@ export function createOrientation() {
     },
     /** 캘리브레이션. 지금 자세를 원점으로 삼는다(켤레를 저장). */
     setBaseline() {
+      base = [raw[0], raw[1], raw[2], raw[3]];
       baseConj = [-raw[0], -raw[1], -raw[2], raw[3]];
+    },
+    /**
+     * 기준 자세 원본. **read()를 대신 쓰면 안 된다.**
+     * rel은 다음 센서 이벤트에서야 다시 계산되므로 setBaseline 직후에 읽으면
+     * 보정 전 값이 나온다(실측으로 92도짜리 엉뚱한 쿼터니언이 나갔다).
+     */
+    getBaseline() {
+      return base;
     },
     /** 마지막 상대 자세. debug 화면이 읽는다. */
     read() {
