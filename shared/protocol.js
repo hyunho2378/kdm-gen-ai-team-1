@@ -5,6 +5,9 @@ export const MSG = {
   HELLO: 'hello', ROOM: 'room', PAIRED: 'paired', PEER_LEFT: 'peer_left', ERROR: 'error',
   CALIB: 'calib',
   MOTION: 'motion', ACTION: 'action', HAPTIC: 'haptic', STATE: 'state',
+  // SELECT: 폰이 고른 유파를 arena로. { school: SCHOOL 값 }. arena는 A3의 진입점으로 유파를 세운다.
+  // RESULT: 경기 종료 시 arena가 폰으로 보내는 결과 요약(B4). 판정 변경이 아니라 표시용 데이터다.
+  SELECT: 'select', RESULT: 'result',
 };
 export const ACTION = { THRUST: 'thrust', GUARD: 'guard', ADVANCE: 'advance', RETREAT: 'retreat' };
 export const HAPTIC = { HIT: 'hit', PARRY: 'parry', LOSE: 'lose' };

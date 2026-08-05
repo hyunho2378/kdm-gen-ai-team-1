@@ -22,6 +22,7 @@ import {
 import DebugPanel, { debugEnabled } from './components/DebugPanel.jsx';
 import ScreenContainer from './layout/ScreenContainer.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
+import SelectScreen from './components/SelectScreen.jsx';
 import {
   CalibrationScreen,
   ConnectScreen,
@@ -31,7 +32,6 @@ import {
   PermissionScreen,
   PlayScreen,
   ResultScreen,
-  SelectScreen,
 } from './components/screens.jsx';
 
 // 화면 순서. HANDOVER 3절 앱 화면 흐름 그대로다.
@@ -219,11 +219,15 @@ export default function App() {
     setConnecting(false);
   }, [link]);
 
-  // SELECT에서 유파 확정 → 다음(권한). 선택값 소켓 전송은 B2에서 붙인다.
-  const onSelect = useCallback(() => {
-    if (!motionSupported()) setDenied(true);
-    setPhase(PHASE.PERMISSION);
-  }, []);
+  // SELECT에서 유파 확정 → arena로 선택 전송(A3 진입점에 꽂힌다) → 권한 단계로.
+  const onSelect = useCallback(
+    (school) => {
+      link.sendSelect(school);
+      if (!motionSupported()) setDenied(true);
+      setPhase(PHASE.PERMISSION);
+    },
+    [link]
+  );
 
   const back = useCallback(() => {
     setPhase((p) => BACK_OF[p] ?? p);

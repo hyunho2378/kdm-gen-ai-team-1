@@ -18,7 +18,7 @@ const HINT = {
   [LINK.IDLE]: '서버 주소가 없다. 키보드로 바로 시작할 수 있다.',
 };
 
-export default function PairingScreen({ status, code, controllerUrl, calibrating = false, onKeyboard }) {
+export default function PairingScreen({ status, code, controllerUrl, calibrating = false, selected = null, onKeyboard }) {
   const joinUrl = controllerUrl && code ? `${controllerUrl.replace(/\/+$/, '')}/?room=${code}` : '';
   // 폰이 붙은 뒤에는 QR을 치운다. 이미 들어온 사람에게 들어오는 길을 계속 보여줄 이유가 없다
   const showCode = !calibrating && (status === LINK.WAITING || status === LINK.PAIRED);
@@ -57,6 +57,21 @@ export default function PairingScreen({ status, code, controllerUrl, calibrating
       >
         {calibrating ? '폰 준비 중' : '폰을 검으로 연결'}
       </p>
+
+      {/* 폰이 유파를 고르면 로비가 그것을 반영한다(표시 전용). */}
+      {selected ? (
+        <p
+          style={{
+            margin: 0,
+            fontFamily: typography.family,
+            fontSize: typography.body.size,
+            color: colors.text.primary,
+          }}
+        >
+          <span style={{ color: colors.text.dim }}>선택된 유파 </span>
+          {selected}
+        </p>
+      ) : null}
 
       {showCode ? <RoomCode code={code} /> : null}
       {showCode && joinUrl ? <QRPanel url={joinUrl} /> : null}

@@ -28,6 +28,14 @@ function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+// 폰 select 값(protocol SCHOOL) → 로비에 띄울 유파 라벨. 표시 전용이라 여기 둔다.
+const SCHOOL_LABEL = {
+  sabre: '이탈리아 세이버',
+  epee: '프랑스 에페',
+  hungarian: '헝가리안',
+  mixed: '통합 MIXED',
+};
+
 export default function App() {
   const reduced = useMemo(prefersReducedMotion, []);
   const rendererRef = useRef(null);
@@ -41,6 +49,8 @@ export default function App() {
   const [camStatus, setCamStatus] = useState(CAM.OFF);
   const [linkStatus, setLinkStatus] = useState(LINK.IDLE);
   const [roomCode, setRoomCode] = useState('');
+  // 폰이 고른 유파 라벨. 로비가 "OO 유파 선택됨"으로 반영한다(경기 밖 표시, 판정 무관)
+  const [selectedSchool, setSelectedSchool] = useState(null);
   // 유파 선택값(protocol SCHOOL). undefined면 시드로 뽑는다(기존 기본 경로).
   // 로컬 키보드 1/2/3/4와 유파 카드가 이 값을 세우고, 그러면 엔진이 그 유파로 다시 선다.
   const [schoolSel, setSchoolSel] = useState(undefined);
@@ -121,6 +131,11 @@ export default function App() {
     const detach = attachSocket(link, engine.input, poseChannel, {
       // 폰이 준비를 마쳤다. 캘리브레이션 자체는 폰이 이미 적용했고 여기서는 phase만 넘긴다
       onCalibrated: () => engine.send(EV.CALIBRATED),
+      // 폰이 유파를 골랐다. A3의 진입점(setSchool)으로 세우고 로비에 반영한다. 경기 시작 전이라 안전하다
+      onSelect: (school) => {
+        engine.setSchool(school);
+        setSelectedSchool(SCHOOL_LABEL[school] ?? school);
+      },
     });
     return () => {
       detach();
@@ -237,7 +252,11 @@ export default function App() {
             code={roomCode}
             controllerUrl={controllerUrl()}
             calibrating={phase === PHASE.CALIBRATION}
-            onKeyboard={() => engine.send(EV.RESET)}
+            selected={selectedSchool}
+            onKeyboard={() => {
+              setSelectedSchool(null);
+              engine.send(EV.RESET);
+            }}
           />
         ) : null}
 

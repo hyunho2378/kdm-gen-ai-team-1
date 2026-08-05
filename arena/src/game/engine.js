@@ -40,7 +40,7 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
   const rng = createRng(seed);
   const input = createInputQueue();
   // 유파 결정은 스케줄러 하나로 모은다. mixed면 라운드마다 갈아타고, 아니면 고정이다.
-  const scheduler = createSchoolScheduler(schoolSel, rng);
+  let scheduler = createSchoolScheduler(schoolSel, rng);
   let school = scheduler.school;
   let state = createJudgeState();
 
@@ -316,6 +316,17 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     drainFx() {
       if (fxQueue.length === 0) return [];
       return fxQueue.splice(0, fxQueue.length);
+    },
+    /**
+     * 유파를 바꾼다(폰 select 또는 로비 선택). **경기 시작 전에만 부른다**(로비/CALIBRATION 단계).
+     * 엔진을 다시 만들지 않고 스케줄러만 갈아 끼워 machine 진행 상태를 보존한다. 게임플레이 rng가
+     * 아직 안 쓰인 구간이라 결정성에 영향이 없고, 기준 서명 경로(createEngine의 school 인자)와도 별개다.
+     */
+    setSchool(sel) {
+      scheduler = createSchoolScheduler(sel, rng);
+      school = scheduler.school;
+      view.school = school;
+      publish();
     },
     send(event) {
       if (event === EV.REMATCH || event === EV.RESET) {

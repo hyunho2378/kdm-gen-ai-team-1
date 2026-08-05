@@ -141,23 +141,6 @@ export function ConnectScreen({ initialCode, onDone, onBack, connecting, linkSta
 }
 
 /**
- * SELECT 자리표시자(B0). 실제 유파 4카드와 소켓 select 전송은 B2에서 채운다.
- * 지금은 흐름(CONNECT → SELECT → PERMISSION)을 잇기 위한 최소 화면이다.
- */
-export function SelectScreen({ onConfirm, onBack }) {
-  return (
-    <>
-      {onBack ? <TopBarBack title="AI 대전자" onBack={onBack} /> : null}
-      <Screen>
-        <Title>AI 대전자 선택</Title>
-        <Body tone={colors.text.dim}>유파 4카드는 B2에서 채운다. 지금은 흐름 확인용이다.</Body>
-        <ButtonPrimary onClick={() => onConfirm?.()}>다음</ButtonPrimary>
-      </Screen>
-    </>
-  );
-}
-
-/**
  * PERMISSION. **버튼 핸들러 첫 줄에서 권한을 부른다.**
  * 앞에 await를 하나라도 두면 iOS가 제스처 컨텍스트를 잃고 조용히 거부한다.
  */

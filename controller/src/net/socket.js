@@ -148,6 +148,12 @@ export function createLink() {
       socket.emit(MSG.MOTION, { q: [q[0], q[1], q[2], q[3]], ts: Math.round(performance.now()) });
     },
 
+    /** 유파 선택 통지. arena가 A3의 진입점으로 유파를 세운다. school은 SCHOOL 값이다. */
+    sendSelect(school) {
+      if (!live()) return;
+      socket.emit(MSG.SELECT, { school });
+    },
+
     /** 캘리브레이션 완료 통지. arena가 이걸 받고 EN_GARDE로 넘어간다. */
     sendCalib(q) {
       if (!live()) return;

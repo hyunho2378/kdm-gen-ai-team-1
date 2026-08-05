@@ -50,7 +50,7 @@ export function createLink() {
   let code = '';
   let status = LINK.IDLE;
   let timer = 0;
-  const cb = { status: null, action: null, motion: null, calib: null, peerLeft: null };
+  const cb = { status: null, action: null, motion: null, calib: null, peerLeft: null, select: null };
 
   function setStatus(next) {
     if (status === next) return;
@@ -110,10 +110,12 @@ export function createLink() {
         cb.peerLeft?.();
       });
 
-      // 아래 셋이 arena가 실제로 소비하는 전부다. 이산과 연속이 여기서 갈린 뒤 다시 안 만난다
+      // 아래 넷이 arena가 실제로 소비하는 전부다. 이산과 연속이 여기서 갈린 뒤 다시 안 만난다.
+      // select는 유파 선택(로비 단계). 판정 경로가 아니라 경기 시작 전 설정이라 결정성과 무관하다
       socket.on(MSG.ACTION, (p) => cb.action?.(p));
       socket.on(MSG.MOTION, (p) => cb.motion?.(p));
       socket.on(MSG.CALIB, (p) => cb.calib?.(p));
+      socket.on(MSG.SELECT, (p) => cb.select?.(p?.school));
       return true;
     },
 
@@ -158,13 +160,16 @@ export function createLink() {
  * 보내므로 여기서 poseChannel.setCalibration을 또 부르면 두 번 보정되어 검이 엉뚱한 데를 본다.
  * MSG.CALIB의 q는 통지와 기록용이고 보정에 쓰지 않는다.
  */
-export function attachSocket(link, queue, poseChannel, { onCalibrated, onAction } = {}) {
+export function attachSocket(link, queue, poseChannel, { onCalibrated, onAction, onSelect } = {}) {
   link.on('action', (msg) => {
     const ev = fromWireAction(msg);
     if (!ev) return;
     queue.emit({ ...ev, ts: performance.now(), source: SOURCE.CONTROLLER });
     onAction?.(ev);
   });
+
+  // 유파 선택. 경기 밖 로비 신호라 판정 큐를 거치지 않는다(결정성 무관, ARENA_INPUT과 별개).
+  link.on('select', (school) => onSelect?.(school));
 
   link.on('motion', (msg) => {
     if (Array.isArray(msg?.q)) poseChannel.setQuaternion(msg.q);
@@ -184,5 +189,6 @@ export function attachSocket(link, queue, poseChannel, { onCalibrated, onAction 
     link.on('motion', null);
     link.on('calib', null);
     link.on('peerLeft', null);
+    link.on('select', null);
   };
 }
