@@ -1,9 +1,10 @@
-// 책임: controller 5 phase 화면 (C2-2). IA.md 5절 순서 그대로다.
-// JOIN → PERMISSION → CALIBRATION → PLAY → END.
+// 책임: controller VORTEX 앱 화면. HANDOVER 3절 흐름:
+// HOME(별도 파일) → CONNECT → SELECT → PERMISSION → CALIBRATION → PLAY → RESULT.
+// **센서·소켓 로직 무변경. 화면 계층만.**
 
 import { useEffect, useRef, useState } from 'react';
-import { colors, motion, radius, typography } from '../tokens.js';
-import { Body, ButtonGhost, ButtonPrimary, Screen, StatusChip, Title } from './ui.jsx';
+import { colors, ig, motion, radius, typography } from '../tokens.js';
+import { Body, ButtonGhost, ButtonPrimary, Screen, StatusChip, Title, TopBarBack } from './ui.jsx';
 import { CALIB_MS } from '../pipeline.js';
 import { LINK_ERROR } from '../net/socket.js';
 
@@ -12,10 +13,10 @@ const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const CODE_LEN = 4;
 
 /**
- * JOIN. 네이티브 input 대신 칸 4개를 직접 그린다(PITFALLS 네이티브 UI 노출).
- * 실제 접속은 C3이고 여기서는 코드를 보관만 한다.
+ * CONNECT(구 JOIN). 네이티브 input 대신 칸 4개를 직접 그린다(PITFALLS 네이티브 UI 노출).
+ * 코드 확정 후 접속한다. paired 게이팅과 상태 표시 강화는 B1이 맡는다.
  */
-export function JoinScreen({ initialCode, onDone }) {
+export function ConnectScreen({ initialCode, onDone, onBack }) {
   const [code, setCode] = useState(initialCode ?? '');
   const boxRef = useRef(null);
 
@@ -23,8 +24,10 @@ export function JoinScreen({ initialCode, onDone }) {
   const push = (ch) => setCode((c) => (c.length >= CODE_LEN ? c : c + ch));
 
   return (
+    <>
+      {onBack ? <TopBarBack title="세션 연결" onBack={onBack} /> : null}
     <Screen>
-      <Title>방 코드</Title>
+      <Title>세션 코드</Title>
       <Body>arena 화면의 QR을 찍으면 코드가 자동으로 들어온다. 직접 입력해도 된다.</Body>
 
       {/* 코드 칸 4개. 탭하면 숨은 입력이 아니라 아래 키패드로 넣는다 */}
@@ -96,6 +99,24 @@ export function JoinScreen({ initialCode, onDone }) {
       </div>
       <Body tone={colors.text.dim}>다음을 누르면 그 방으로 접속한다.</Body>
     </Screen>
+    </>
+  );
+}
+
+/**
+ * SELECT 자리표시자(B0). 실제 유파 4카드와 소켓 select 전송은 B2에서 채운다.
+ * 지금은 흐름(CONNECT → SELECT → PERMISSION)을 잇기 위한 최소 화면이다.
+ */
+export function SelectScreen({ onConfirm, onBack }) {
+  return (
+    <>
+      {onBack ? <TopBarBack title="AI 대전자" onBack={onBack} /> : null}
+      <Screen>
+        <Title>AI 대전자 선택</Title>
+        <Body tone={colors.text.dim}>유파 4카드는 B2에서 채운다. 지금은 흐름 확인용이다.</Body>
+        <ButtonPrimary onClick={() => onConfirm?.()}>다음</ButtonPrimary>
+      </Screen>
+    </>
   );
 }
 
@@ -103,8 +124,10 @@ export function JoinScreen({ initialCode, onDone }) {
  * PERMISSION. **버튼 핸들러 첫 줄에서 권한을 부른다.**
  * 앞에 await를 하나라도 두면 iOS가 제스처 컨텍스트를 잃고 조용히 거부한다.
  */
-export function PermissionScreen({ needsPrompt, onRequest, denied, onTapMode }) {
+export function PermissionScreen({ needsPrompt, onRequest, denied, onTapMode, onBack }) {
   return (
+    <>
+      {onBack ? <TopBarBack title="센서 준비" onBack={onBack} /> : null}
     <Screen>
       <Title>폰이 검이 된다</Title>
       <Body>
@@ -122,6 +145,7 @@ export function PermissionScreen({ needsPrompt, onRequest, denied, onTapMode }) 
       )}
       <Body tone={colors.text.dim}>세로로 들고 손잡이를 쥐듯 잡는다.</Body>
     </Screen>
+    </>
   );
 }
 
@@ -129,7 +153,7 @@ export function PermissionScreen({ needsPrompt, onRequest, denied, onTapMode }) 
  * CALIBRATION. 검처럼 쥐고 정지 3초.
  * 진행 링은 검끝 곡선 문법을 따라 stroke-dashoffset으로 그린다(COMPONENTS TrailDivider 계열).
  */
-export function CalibrationScreen({ onDone }) {
+export function CalibrationScreen({ onDone, onBack }) {
   const [t, setT] = useState(0);
   useEffect(() => {
     const t0 = performance.now();
@@ -147,6 +171,8 @@ export function CalibrationScreen({ onDone }) {
   const R = 62;
   const C = 2 * Math.PI * R;
   return (
+    <>
+      {onBack ? <TopBarBack title="캘리브레이션" onBack={onBack} /> : null}
     <Screen>
       <Title>검처럼 쥐고 멈춘다</Title>
       <svg width={R * 2 + 20} height={R * 2 + 20} aria-hidden="true">
@@ -166,6 +192,7 @@ export function CalibrationScreen({ onDone }) {
       <Body>{Math.ceil((1 - t) * (CALIB_MS / 1000))}초</Body>
       <Body tone={colors.text.dim}>이 자세가 기준이 된다. 흔들지 않는다.</Body>
     </Screen>
+    </>
   );
 }
 
@@ -199,7 +226,8 @@ export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd
   return (
     <div
       style={{
-        minHeight: '100dvh',
+        flex: 1,
+        minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
         background: colors.bg.base,
@@ -286,7 +314,22 @@ const LINK_REASON_TEXT = {
 
 export function LinkErrorScreen({ reason, onRetry, onBack }) {
   return (
-    <Screen>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 120,
+        background: colors.bg.base,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 20,
+        padding: '24px 20px',
+        maxWidth: 390,
+        margin: '0 auto',
+      }}
+    >
       <Title>연결되지 않았다</Title>
       <Body tone={colors.red.light}>{LINK_REASON_TEXT[reason] ?? '알 수 없는 이유로 끊겼다.'}</Body>
       <div style={{ display: 'flex', gap: 10 }}>
@@ -294,17 +337,26 @@ export function LinkErrorScreen({ reason, onRetry, onBack }) {
         <ButtonPrimary onClick={onRetry}>재시도</ButtonPrimary>
       </div>
       <Body tone={colors.text.dim}>연결이 없어도 폰은 계속 센서를 읽는다. 붙으면 그때부터 검이 된다.</Body>
-    </Screen>
+    </div>
   );
 }
 
-/** END. 결과 한 줄과 다시. 실제 결과는 C3에서 온다. */
-export function EndScreen({ onAgain }) {
+/**
+ * RESULT 자리표시자(B0). 통계 카드(명중률, 부위 분포, 손떨림 등)와 arena result 합성은 B4에서 채운다.
+ * 지금은 흐름(PLAY → RESULT → SELECT/HOME)을 잇기 위한 최소 화면이다.
+ */
+export function ResultScreen({ onAgain, onHome }) {
   return (
     <Screen>
       <Title>경기 종료</Title>
-      <Body tone={colors.text.dim}>결과는 연결된 화면에서 확인한다.</Body>
-      <ButtonPrimary onClick={onAgain}>다시</ButtonPrimary>
+      <Body tone={colors.text.dim}>통계 카드는 B4에서 채운다.</Body>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <ButtonGhost onClick={onHome}>처음으로</ButtonGhost>
+        <ButtonPrimary onClick={onAgain}>다시 대전</ButtonPrimary>
+      </div>
+      <span style={{ fontFamily: typography.family, fontSize: ig.footnote.size, color: colors.text.dim }}>
+        이 기록은 저장되지 않습니다.
+      </span>
     </Screen>
   );
 }

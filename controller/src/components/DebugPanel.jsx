@@ -11,10 +11,13 @@ const W = 320;
 const H = 90;
 const KEEP = W;
 
-/** 프로덕션 번들에서도 파라미터가 있으면 뜬다. dev 빌드는 파라미터 없이도 뜬다. */
+/** 프로덕션 번들에서도 파라미터가 있으면 뜬다. dev 빌드는 파라미터 없이도 뜬다.
+ * ?debug=0이면 dev에서도 강제로 끈다(UI 미리보기용). */
 export function debugEnabled(isDev) {
   if (typeof window === 'undefined') return false;
-  return isDev || new URLSearchParams(window.location.search).get('debug') === '1';
+  const p = new URLSearchParams(window.location.search).get('debug');
+  if (p === '0') return false;
+  return isDev || p === '1';
 }
 
 /** 쿼터니언 → 오일러(도). 숫자로 보는 편이 작은 화면에서 읽기 쉽다. */

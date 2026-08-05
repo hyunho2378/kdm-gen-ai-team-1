@@ -1,9 +1,11 @@
-// controller 루트. IA.md 5절 phase 순서를 그대로 화면으로 만든다.
-// C3에서 소켓이 붙었다. 이산은 즉시, 쿼터니언은 30Hz(orientation.js 스로틀)로 나간다.
+// controller 루트 = VORTEX 폰 앱. 화면 상태 머신 HOME → CONNECT → SELECT → PERMISSION →
+// CALIBRATION → PLAY → RESULT. 강릉페이 시스템 이식(ScreenContainer 프레임 + HIG).
 //
-// **센서와 연결은 서로를 막지 않는다.** 서버가 안 붙어도 센서 준비는 진행되고,
-// 센서가 없어도 탭 모드로 연결은 산다. 둘 중 하나가 죽었을 때 다른 하나까지 세우면
-// 발표장에서 복구할 길이 없다(PATTERNS 8절 우아한 저하).
+// **센서(C2)와 소켓(C3) 로직은 무변경이다.** 아래 pipeline/link 배선과 핸들러는 그대로 옮겨 왔고,
+// 화면 계층(phase 순서, HOME/SELECT/RESULT 신설, ScreenContainer 래핑)만 확장했다.
+//
+// **센서와 연결은 서로를 막지 않는다.** 서버가 안 붙어도 센서 준비는 진행되고, 센서가 없어도
+// 탭 모드로 연결은 산다(PATTERNS 8절 우아한 저하).
 //
 // 절대 규칙: localStorage 금지(보정치는 메모리 변수), 100dvh, 터치 타깃 44px, 세로 고정.
 
@@ -18,30 +20,50 @@ import {
   requestMotionPermission,
 } from './sensors/permission.js';
 import DebugPanel, { debugEnabled } from './components/DebugPanel.jsx';
+import ScreenContainer from './layout/ScreenContainer.jsx';
+import HomeScreen from './components/HomeScreen.jsx';
 import {
   CalibrationScreen,
-  EndScreen,
+  ConnectScreen,
   HapticFlash,
-  JoinScreen,
   LandscapeGuard,
   LinkErrorScreen,
   PermissionScreen,
   PlayScreen,
+  ResultScreen,
+  SelectScreen,
 } from './components/screens.jsx';
 
+// 화면 순서. HANDOVER 3절 앱 화면 흐름 그대로다.
 const PHASE = {
-  JOIN: 'JOIN',
+  HOME: 'HOME',
+  CONNECT: 'CONNECT',
+  SELECT: 'SELECT',
   PERMISSION: 'PERMISSION',
   CALIBRATION: 'CALIBRATION',
   PLAY: 'PLAY',
-  END: 'END',
+  RESULT: 'RESULT',
 };
 
-/** 가로 여부. resize와 orientationchange 양쪽을 듣는다(기기마다 하나만 오는 경우가 있다). */
+// 뒤로가기(N3 사용자 제어) 대상. PLAY는 경기 중이라 뒤로가기가 없다.
+const BACK_OF = {
+  [PHASE.CONNECT]: PHASE.HOME,
+  [PHASE.SELECT]: PHASE.CONNECT,
+  [PHASE.PERMISSION]: PHASE.SELECT,
+  [PHASE.CALIBRATION]: PHASE.PERMISSION,
+  [PHASE.RESULT]: PHASE.HOME,
+};
+
+/**
+ * 가로 안내가 필요한가. **터치 기기가 가로일 때만 true.**
+ * 데스크톱은 모니터가 늘 가로라 예전엔 프레임 미리보기가 통째로 가려졌다. 실기 폰이 옆으로
+ * 누웠을 때만 안내해야 한다. resize와 orientationchange 양쪽을 듣는다(기기마다 하나만 오기도 한다).
+ */
 function useLandscape() {
   const [land, setLand] = useState(false);
   useEffect(() => {
-    const read = () => setLand(window.innerWidth > window.innerHeight);
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const read = () => setLand(isTouch && window.innerWidth > window.innerHeight);
     read();
     window.addEventListener('resize', read);
     window.addEventListener('orientationchange', read);
@@ -65,7 +87,7 @@ export default function App() {
     return v ? v.toUpperCase().slice(0, 4) : '';
   }, []);
 
-  const [phase, setPhase] = useState(PHASE.JOIN);
+  const [phase, setPhase] = useState(PHASE.HOME);
   const [code, setCode] = useState(roomFromUrl);
   const [denied, setDenied] = useState(false);
   const [tapMode, setTapMode] = useState(false);
@@ -166,49 +188,70 @@ export default function App() {
     setPhase(PHASE.PLAY);
   }, [pipeline, link]);
 
+  // CONNECT에서 코드 확정 → 접속. paired 게이팅은 B1에서 강화한다.
+  const onConnect = useCallback(
+    (c) => {
+      setCode(c);
+      link.connect(c);
+      setPhase(PHASE.SELECT);
+    },
+    [link]
+  );
+
+  // SELECT에서 유파 확정 → 다음(권한). 선택값 소켓 전송은 B2에서 붙인다.
+  const onSelect = useCallback(() => {
+    if (!motionSupported()) setDenied(true);
+    setPhase(PHASE.PERMISSION);
+  }, []);
+
+  const back = useCallback(() => {
+    setPhase((p) => BACK_OF[p] ?? p);
+  }, []);
+
   return (
     <>
-      {phase === PHASE.JOIN ? (
-        <JoinScreen
-          initialCode={roomFromUrl}
-          onDone={(c) => {
-            setCode(c);
-            link.connect(c);
-            // 센서가 없는 기기는 권한 화면에서 바로 탭 모드 안내로 간다
-            if (!motionSupported()) setDenied(true);
-            setPhase(PHASE.PERMISSION);
-          }}
-        />
-      ) : null}
+      {/* statusBarBg 미지정 → colors.bg.base 기본. 다크 배경이라 light 스테이터스바. */}
+      <ScreenContainer statusBarLight>
+        {phase === PHASE.HOME ? <HomeScreen onGuest={() => setPhase(PHASE.CONNECT)} /> : null}
 
-      {phase === PHASE.PERMISSION ? (
-        <PermissionScreen
-          needsPrompt={motionPermissionNeeded()}
-          denied={denied}
-          onRequest={onRequest}
-          onTapMode={startTapMode}
-        />
-      ) : null}
+        {phase === PHASE.CONNECT ? (
+          <ConnectScreen initialCode={roomFromUrl} onDone={onConnect} onBack={back} />
+        ) : null}
 
-      {phase === PHASE.CALIBRATION ? <CalibrationScreen onDone={onCalibrated} /> : null}
+        {phase === PHASE.SELECT ? <SelectScreen onConfirm={onSelect} onBack={back} /> : null}
 
-      {phase === PHASE.PLAY ? (
-        <PlayScreen
-          code={code}
-          linkLabel={LINK_LABEL[linkStatus]}
-          linkOk={linkStatus === LINK.PAIRED}
-          support={pipeline.getSupport()}
-          tapMode={tapMode}
-          guarding={guarding}
-          lastAction={lastAction}
-          onStep={(d) => pipeline.emitStep(d)}
-          onStepEnd={(d) => pipeline.endStep(d)}
-          onTapThrust={() => pipeline.tapThrust()}
-          onTapGuard={(on) => pipeline.tapGuard(on)}
-        />
-      ) : null}
+        {phase === PHASE.PERMISSION ? (
+          <PermissionScreen
+            needsPrompt={motionPermissionNeeded()}
+            denied={denied}
+            onRequest={onRequest}
+            onTapMode={startTapMode}
+            onBack={back}
+          />
+        ) : null}
 
-      {phase === PHASE.END ? <EndScreen onAgain={() => setPhase(PHASE.PLAY)} /> : null}
+        {phase === PHASE.CALIBRATION ? <CalibrationScreen onDone={onCalibrated} onBack={back} /> : null}
+
+        {phase === PHASE.PLAY ? (
+          <PlayScreen
+            code={code}
+            linkLabel={LINK_LABEL[linkStatus]}
+            linkOk={linkStatus === LINK.PAIRED}
+            support={pipeline.getSupport()}
+            tapMode={tapMode}
+            guarding={guarding}
+            lastAction={lastAction}
+            onStep={(d) => pipeline.emitStep(d)}
+            onStepEnd={(d) => pipeline.endStep(d)}
+            onTapThrust={() => pipeline.tapThrust()}
+            onTapGuard={(on) => pipeline.tapGuard(on)}
+          />
+        ) : null}
+
+        {phase === PHASE.RESULT ? (
+          <ResultScreen onAgain={() => setPhase(PHASE.SELECT)} onHome={() => setPhase(PHASE.HOME)} />
+        ) : null}
+      </ScreenContainer>
 
       {/* 연결 실패는 화면을 덮는다. 센서는 계속 돌고 있으므로 재시도가 즉시 붙는다 */}
       {linkStatus === LINK.ERROR ? (
@@ -217,7 +260,7 @@ export default function App() {
           onRetry={() => link.connect(code)}
           onBack={() => {
             link.close();
-            setPhase(PHASE.JOIN);
+            setPhase(PHASE.CONNECT);
           }}
         />
       ) : null}

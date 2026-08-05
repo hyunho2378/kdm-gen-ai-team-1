@@ -48,6 +48,8 @@ export const colors = {
     // 버튼 press. 채움 전용. 이전 팔레트의 fill 대비 press 비율(0.76)을 그대로 옮겼다
     press: '#610509',
     glow: withAlpha(RED, 0.45),
+    // Tonal 버튼(MD3 위계 2순위)의 저알파 red 채움. 강릉페이 primary[100] 자리(색만 VORTEX red)
+    tonal: withAlpha(RED, 0.14),
   },
   blue: {
     light: BLUE,          // AI 상대 궤적, 상대 소유 표시 전용. bg.base 위 9.8:1
@@ -103,6 +105,24 @@ export const spacing = {
 
 export const radius = {
   xs: 4, sm: 8, md: 12, lg: 16, pill: 999,
+  // 강릉페이 이식 시맨틱 별칭(controller VORTEX 앱). 값은 위 스케일과 같은 격자다.
+  small: 8, button: 12, card: 16, chip: 20, modal: 20,
+};
+
+// iOS HIG 고정 타이포 스케일. controller VORTEX 폰 앱(390px 고정) 전용이다.
+// arena의 fluid typography(clamp)와는 별개 — 폰은 뷰포트가 고정이라 고정 px가 맞다.
+// 자간 규칙: 본문 -0.01em, 제목 -0.02em(강릉페이 DESIGN 이식).
+export const ig = {
+  largeTitle: { size: 34, weight: 700, tracking: '-0.02em', leading: 1.12 },
+  title1:     { size: 28, weight: 700, tracking: '-0.02em', leading: 1.18 },
+  title2:     { size: 22, weight: 700, tracking: '-0.02em', leading: 1.25 },
+  title3:     { size: 20, weight: 600, tracking: '-0.01em', leading: 1.3 },
+  body:       { size: 17, weight: 400, tracking: '-0.01em', leading: 1.5 },
+  callout:    { size: 16, weight: 400, tracking: '-0.01em', leading: 1.45 },
+  subhead:    { size: 15, weight: 400, tracking: '-0.01em', leading: 1.4 },
+  footnote:   { size: 13, weight: 400, tracking: '0', leading: 1.38 },
+  caption1:   { size: 12, weight: 400, tracking: '0', leading: 1.33 },
+  caption2:   { size: 11, weight: 400, tracking: '0', leading: 1.3 },
 };
 
 export const glow = {
@@ -110,6 +130,16 @@ export const glow = {
   red: `0 0 24px ${colors.red.glow}`,
   blue: `0 0 24px ${colors.blue.glow}`,
   steel: `0 0 16px ${withAlpha(WHITE, 0.18)}`,
+};
+
+// 크롬(메탈릭) 텍스트. steel 그라디언트를 글자 모양으로 클립한다. 워드마크·디스플레이 전용.
+// arena ChromeText와 같은 기법이고, controller 워드마크가 라이브러리 없이 재사용한다.
+export const steelText = {
+  backgroundImage: colors.steel.gradient,
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  color: 'transparent',
+  WebkitTextFillColor: 'transparent',
 };
 
 export const breakpoints = {
