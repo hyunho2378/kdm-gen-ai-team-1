@@ -21,6 +21,7 @@ import {
 import Section, { TempMark } from '../components/Section.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import ArenaCta from '../components/ArenaCta.jsx';
+import HeroTrail from '../components/HeroTrail.jsx';
 
 export default function Landing() {
   return (
@@ -34,23 +35,39 @@ export default function Landing() {
   );
 }
 
-/** 히어로. 궤적 모션은 다음 세션이라 지금은 워드마크와 한 줄 정의만 선다. */
+/**
+ * 히어로. 검끝 궤적이 주인공이라 배경을 비운다.
+ * 궤적 캔버스는 inset 0으로 깔리고 콘텐츠는 그 위 층에서 선다.
+ */
 function HeroSection() {
   return (
     <section
       id={SECTION.HERO}
       style={{
+        position: 'relative',
+        overflow: 'hidden',
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        gap: spacing.unit * 3,
         padding: `${spacing.section} ${spacing.gutter}`,
         maxWidth: spacing.maxWide,
         margin: '0 auto',
         width: '100%',
       }}
     >
+      <HeroTrail />
+
+      {/* 콘텐츠 층. 궤적 위에 선다 */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.unit * 3,
+        }}
+      >
       <Eyebrow en={HERO.eyebrow.en} ko={HERO.eyebrow.ko} />
 
       {/* 워드마크는 메탈릭이다(VORTEX_DESIGN_SYSTEM 3.1, 3.7). shared의 steelText를 그대로 쓴다.
@@ -94,6 +111,7 @@ function HeroSection() {
       <p style={{ margin: 0, fontFamily: typography.family, fontSize: typography.caption.size, color: colors.text.dim }}>
         {HERO.team}
       </p>
+      </div>
     </section>
   );
 }

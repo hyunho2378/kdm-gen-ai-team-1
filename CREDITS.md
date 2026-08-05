@@ -14,13 +14,14 @@
 | Tailwind CSS | MIT | 전 앱 유틸리티 | https://github.com/tailwindlabs/tailwindcss |
 | lucide-react | ISC | 전 앱 아이콘 | https://github.com/lucide-icons/lucide |
 | GSAP | GreenSock 표준 "No Charge" 라이선스 | presentation 스크롤 연출 전반(ScrollTrigger, SplitText, Flip) | https://github.com/greensock/GSAP |
-| Lenis | MIT | presentation 스무스 스크롤 | https://github.com/darkroomengineering/lenis |
+| Lenis | MIT | presentation 스무스 스크롤, brand 전역 스무스 스크롤(1.3.26, `autoRaf`) | https://github.com/darkroomengineering/lenis |
 | Socket.IO | MIT | arena, controller, server 실시간 릴레이 | https://github.com/socketio/socket.io |
 | Express | MIT | server HTTP와 헬스체크 | https://github.com/expressjs/express |
 | magnetic-elements | MIT | presentation demo 섹션 CTA 자석 인력 | https://github.com/ToonRombaut/magnetic-elements |
-| three.js | MIT | arena 1인칭 렌더러 | https://github.com/mrdoob/three.js |
+| three.js | MIT | arena 1인칭 렌더러, brand 히어로 궤적 캔버스(양쪽 0.185.1로 맞춤) | https://github.com/mrdoob/three.js |
 | postprocessing | Zlib | arena 후처리(Bloom, Afterimage, ShockWave, ChromaticAberration, Vignette, HueSaturation) | https://github.com/pmndrs/postprocessing |
 | 궤적 리본 | 자체 구현 | arena 궤적. `ribbon-geometry`(MIT)를 검토했으나 생성자 전용이라 in-place 갱신이 없고 폭이 단일 상수여서 나이별 감쇠를 못 한다. 매 프레임 지오메트리를 새로 만들면 가비지가 쌓여 미채택 | (참고) https://github.com/yomotsu/ribbon-geometry |
+| 궤적 리본 재사용 | 자체 구현(사내) | brand 히어로가 `arena/src/game/render/three/trail.js`의 `createTrailRibbon`을 그대로 import한다. arena 파일은 읽기만 하고 수정하지 않는다(BRAND_SITE_GUIDE 8절). brand 쪽은 좌표계와 추종 로직만 소유한다 | (사내 모듈) |
 | 카메라 셰이크 (trauma 방식) | MIT, **로직 포팅** | arena 명중 연출. `three-screenshake`가 npm에 없어(404) `sajmoni/screen-shake`의 trauma 방식을 JS로 포팅 | https://github.com/sajmoni/screen-shake |
 | snoise (simplex 3D) | MIT, **GLSL 코드 이식** | presentation 배경 셰이더(StageShader). Ashima/stegu webgl-noise의 3D simplex를 프래그먼트에 그대로 이식. three.js 없이 raw WebGL 사용(P5 판정) | https://github.com/stegu/webgl-noise |
 | qrcode-generator | MIT | arena PAIRING 화면 QR(`components/QRPanel.jsx`). **인코딩만 라이브러리가 하고 그리기는 우리가 한다.** 모듈 배열만 받아 SVG 사각형으로 직접 그려 canvas도 이미지도 만들지 않는다. 2.0.4, 의존성 0. npm 메타와 `dist/qrcode.js` 헤더 양쪽에서 MIT를 확인했다(Copyright 2009 Kazuhiko Arase). 저장소에 별도 LICENSE 파일은 없고 소스 헤더가 라이선스 표기다 | https://github.com/kazuhikoarase/qrcode-generator |
@@ -71,6 +72,13 @@ brand 작업에서 확정되면 그때 추가한다.
   **비상업 조건이 대회 제출물의 상업성 여부에 걸린다.** 그 리스크를 표지에 지고 갈 이유가 없어
   퍼블릭 도메인인 ogl Polyline으로 갈아탔다. `components/TubesBackground.jsx` 파일은 지우지 않고 보존한다(현재 import 0건)
 
+- **@newkrok/three-particles. MIT지만 미채택(brand 히어로 궤적 후보 B).**
+  실제로 설치해 확인했다. 3.0.0, LICENSE 파일 있음(MIT, Copyright 2021 Istvan Krisztian Somoracz),
+  `RendererType.TRAIL`과 `TrailConfig`(length, widthOverTrail, opacityOverTrail, colorOverTrail)가 실재한다.
+  **기각 사유 둘.** (1) peer가 `three@^0.182.0`이라 리포 표준 0.185.1과 충돌한다
+  (`npm install three@0.185.1`에서 ERESOLVE 경고를 실측했다). (2) 검끝 한 줄을 그리려고
+  파티클 엔진과 전이 의존성 셋(@newkrok/three-utils, easing-functions, three-noise)을 들인다.
+  arena 리본이 이미 단일 리본이고 검증돼 있어 후보 A를 택했다. **설치본은 임시 폴더에서만 확인하고 리포에 남기지 않았다**
 - ZiCog/madgwick.js — LICENSE 파일 없음. 기본적으로 사용 불가
 - EmmaPoliakova/WebRTCSmartphoneController — LICENSE 파일 없음. 기본적으로 사용 불가
 - naughtyduk/glitchGL — 개인 무료와 상업 유료 듀얼 라이선스

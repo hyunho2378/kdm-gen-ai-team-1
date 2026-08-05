@@ -17,8 +17,27 @@ import {
   useLocation,
   useNavigationType,
 } from 'react-router-dom';
+import Lenis from 'lenis';
 import Landing from './pages/Landing.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
+
+/**
+ * 스무스 스크롤(실설치 lenis 1.3.26). **일반 스크롤이다.**
+ * 방향키 셸을 두지 않는다. Lenis는 휠과 터치의 관성만 다듬고 스크롤 위치 자체는 문서가 쥔다.
+ *
+ * `autoRaf`로 Lenis가 자기 rAF를 돌린다(설치본 기본값은 false다).
+ * 이 앱에는 묶어야 할 다른 시계가 없어 GSAP ticker 같은 외부 루프에 태우지 않는다.
+ * 히어로 궤적은 자기 rAF를 따로 돌리고 둘은 서로를 기다리지 않는다.
+ *
+ * reduced motion은 Lenis가 `respectReducedMotion` 기본값(true)으로 스스로 처리한다.
+ * 그때는 lerp가 1이 되어 입력에 1:1로 붙는다.
+ */
+function useSmoothScroll() {
+  useEffect(() => {
+    const lenis = new Lenis({ autoRaf: true });
+    return () => lenis.destroy();
+  }, []);
+}
 
 /**
  * 라우트가 바뀌면 맨 위로. v6는 스크롤을 자동으로 되돌리지 않아
@@ -38,6 +57,7 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  useSmoothScroll();
   return (
     <BrowserRouter>
       <ScrollToTop />
