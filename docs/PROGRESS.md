@@ -1091,15 +1091,19 @@
     `shared/tokens`에 HIG 스케일 `ig`, 시맨틱 radius, `red.tonal`, `steelText` 추가. usePlatform은 sessionStorage 제거.
     데스크톱 프레임 미리보기 살림(가로 안내는 터치 기기만, ?debug=0으로 dev 패널 끔). **센서·소켓 로직 무변경.**
     실브라우저 확인: 폰 프레임+iOS 상태바+워드마크+로그인 시트+게스트→CONNECT 전환.
-  - **남은 단계 B1~B4(다음 세션, 단계 경계에서 중단함):**
-    - **B1 CONNECT 리스킨 + arena 로비.** CONNECT: paired 게이팅(paired 수신 → SELECT), ?room= 스킵,
-      연결 중 스피너/실패 평문+재시도(N1/N9). arena 로비 신설(React 계층, machine 무변경): 세션 코드 크게 +
-      고정 QR(controller 프로덕션 URL, 경량 QR) + "폰 연결 대기" + "키보드로 진행" 상시 버튼 → 1/2/3/4 화면.
-    - **B2 SELECT 4카드 + 소켓 select.** 4카드(VORTEX 3.11 카피 원문 = presentation-v2/copy.js DUELIST_STYLES,
-      인용문 포함) + 확장 상세(FENCING_RULES 근거 한 줄). `shared/protocol.js`에 `MSG.SELECT` 추가.
-      controller `link.sendSelect(school)`, arena socket.js에서 select 수신 → **A3의 진입점(createEngine school 인자)**
-      으로 유파 설정. arena 로비에 선택 유파 표시. 온보딩 첫 판이면 5-4-3-2-1 카운트다운 후 EN_GARDE.
-      사진 라이선스 캐비앗 미해결 기록(제출 전 교체, CREDITS 기재 금지).
+  - **B1 페어링 화면과 arena 로비 완료(커밋 4a20e81, push됨).** controller CONNECT: paired 게이팅(paired 수신 →
+    App이 SELECT로), ?room= 스킵, 연결 중 스피너 + 상태 문구(N1), 상한 8s 뒤 평문 에러 + 재시도/코드 다시 입력(N9).
+    ui.jsx Spinner(reduced 정지). arena 로비(PairingScreen 강화): VORTEX 워드마크(ChromeText) + FUI 프레임(GlassFrame) +
+    "키보드로 진행 (유파 선택)" → IDLE 1/2/3/4 카드(EV.RESET). 코드/QR은 C3 QRPanel 재사용.
+    실브라우저 확인: ?room=ABCD 자동 스킵→스피너→8s 에러→재시도, arena 로비 코드/QR/키보드 진행.
+  - **B2 대전자 선택과 유파 전달 완료(커밋 45895ab, push됨).** controller SelectScreen(세로 스크롤 4카드,
+    **VORTEX 3.11 원문 카피** copy.js SELECT, 인용문 포함, FENCING_RULES 근거 한 줄, "이 상대와 대전").
+    사진은 라이선스 미확인이라 그라디언트 플레이스홀더(제출 전 교체 필수, CREDITS 기재 금지 — 아래 미해결).
+    MSG.SELECT/RESULT 신설, server RELAY_TYPES에 추가. arena socket select 수신 → **engine.setSchool**
+    (A3 스케줄러 갈아끼움, 엔진 재생성 없이 machine 보존, 경기 전이라 결정성 무관) → 로비 "선택된 유파 OO".
+    **셀프테스트 13/13, 서명 1097/c820d0f2 유지.** 로컬 3자 페어링 검증: 선택 세이버 → arena 로비 반영 → PERMISSION.
+    **카운트다운(5-4-3-2-1)은 B3 온보딩으로 이관**(첫 판 플래그 공유).
+  - **남은 단계 B3~B4(다음 세션, 단계 경계에서 중단함):**
     - **B3 온보딩 코치마크 + PLAY 리스킨.** arena 온보딩(첫 판, 코치마크 3~4개: 게이지/텔레그래프/램프/피스트,
       게임 시계 timeScale 0 = hitstop 경로, 판정 무영향, 둘째 판부터 생략 메모리 플래그, reduced 정적).
       폰 PLAY 온보딩(코치마크 2개, 강릉페이 CoachMarkOverlay 이식 = `docs/reference/gnpay/common/CoachMarkOverlay.jsx`).
@@ -1304,6 +1308,9 @@
 - 시각디자이너 워드마크 SVG 슬롯 전달(크롬 레터링)
 
 ## 미해결 이슈
+- **controller SELECT 카드의 유파 사진이 없다(그라디언트 플레이스홀더).** B2에서 유파 사진(강릉페이 style-1~3
+  대응 + MIXED)을 라이선스 미확인이라 반입하지 않았다. `SelectScreen`의 카드 상단 그라디언트 자리에 다크 처리한
+  사진을 얹으면 되고 코드 수정은 최소다. **제출 전 자체 제작 이미지로 교체 필수, CREDITS 기재 금지(미확인).**
 - **arena 소켓이 서버에 못 붙으면 브라우저 콘솔에 재시도 로그가 계속 쌓인다.**
   - `ERR_CONNECTION_REFUSED`가 socket.io 재시도마다 한 줄씩 남는다(실측 14건/30초).
     **앱 예외가 아니라 브라우저 네트워크 로그이고 경기는 그대로 돈다.**
