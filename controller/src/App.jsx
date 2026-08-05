@@ -21,8 +21,10 @@ import {
 } from './sensors/permission.js';
 import DebugPanel, { debugEnabled } from './components/DebugPanel.jsx';
 import ScreenContainer from './layout/ScreenContainer.jsx';
+import CoachMarkOverlay from './components/common/CoachMarkOverlay.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
 import SelectScreen from './components/SelectScreen.jsx';
+import { PLAY_COACH } from './copy.js';
 import {
   CalibrationScreen,
   ConnectScreen,
@@ -91,6 +93,9 @@ export default function App() {
   const [code, setCode] = useState(roomFromUrl);
   const [connecting, setConnecting] = useState(false);
   const [denied, setDenied] = useState(false);
+  // PLAY 첫 진입 코치마크. 0=꺼짐, 1~2=단계. ref로 세션 내 1회만(둘째 판부터 생략).
+  const [playCoach, setPlayCoach] = useState(0);
+  const playCoachShownRef = useRef(false);
   const [tapMode, setTapMode] = useState(false);
   const [guarding, setGuarding] = useState(false);
   const [lastAction, setLastAction] = useState(null);
@@ -214,6 +219,14 @@ export default function App() {
     }
   }, [linkStatus, phase]);
 
+  // PLAY 첫 진입에 코치마크 2종을 한 번만 띄운다(둘째 판부터 생략).
+  useEffect(() => {
+    if (phase === PHASE.PLAY && !playCoachShownRef.current) {
+      playCoachShownRef.current = true;
+      setPlayCoach(1);
+    }
+  }, [phase]);
+
   const onConnectCancel = useCallback(() => {
     link.close();
     setConnecting(false);
@@ -287,6 +300,17 @@ export default function App() {
 
         {phase === PHASE.RESULT ? (
           <ResultScreen onAgain={() => setPhase(PHASE.SELECT)} onHome={() => setPhase(PHASE.HOME)} />
+        ) : null}
+
+        {/* PLAY 첫 진입 코치마크(강릉페이 S7). 제스처 안내라 중앙 툴팁. 둘째 판부터 생략 */}
+        {phase === PHASE.PLAY && playCoach > 0 ? (
+          <CoachMarkOverlay
+            message={PLAY_COACH[playCoach - 1]}
+            step={playCoach}
+            totalSteps={PLAY_COACH.length}
+            onNext={() => setPlayCoach((s) => (s >= PLAY_COACH.length ? 0 : s + 1))}
+            onSkip={() => setPlayCoach(0)}
+          />
         ) : null}
       </ScreenContainer>
 

@@ -13,6 +13,7 @@ import { OUTCOME, OWNER } from './game/judge.js';
 import { attachKeyboard } from './game/input.js';
 import { EV, PHASE } from './game/machine.js';
 import GameCanvas from './game/GameCanvas.jsx';
+import ArenaOnboarding from './components/ArenaOnboarding.jsx';
 import HUD from './components/hud/HUD.jsx';
 import CamDebug from './components/hud/CamDebug.jsx';
 import FpsMeter from './components/hud/FpsMeter.jsx';
@@ -51,6 +52,9 @@ export default function App() {
   const [roomCode, setRoomCode] = useState('');
   // 폰이 고른 유파 라벨. 로비가 "OO 유파 선택됨"으로 반영한다(경기 밖 표시, 판정 무관)
   const [selectedSchool, setSelectedSchool] = useState(null);
+  // 첫 판 온보딩(코치마크 + 카운트다운). 활성 동안 게임 시계를 세운다(timeScale 0, 판정 무관).
+  const [onboardingActive, setOnboardingActive] = useState(false);
+  const onboardingShownRef = useRef(false);
   // 유파 선택값(protocol SCHOOL). undefined면 시드로 뽑는다(기존 기본 경로).
   // 로컬 키보드 1/2/3/4와 유파 카드가 이 값을 세우고, 그러면 엔진이 그 유파로 다시 선다.
   const [schoolSel, setSchoolSel] = useState(undefined);
@@ -187,6 +191,14 @@ export default function App() {
     import('./game/judge.selftest.js').then((m) => m.reportSelftest());
   }, []);
 
+  // 첫 EN_GARDE 진입에 온보딩을 한 번만 띄운다(첫 판 한정, 둘째 판부터 생략). ref로 세션 내 1회.
+  useEffect(() => {
+    if (snapshot?.phase === PHASE.EN_GARDE && !onboardingShownRef.current) {
+      onboardingShownRef.current = true;
+      setOnboardingActive(true);
+    }
+  }, [snapshot?.phase]);
+
   if (!snapshot) return null;
 
   const { phase } = snapshot;
@@ -199,6 +211,7 @@ export default function App() {
           poseChannel={poseChannel}
           perf={perf}
           reduced={reduced}
+          frozen={onboardingActive}
           onRendererReady={(r) => {
             rendererRef.current = r;
             setRendererFallback(r.isFallback);
@@ -232,6 +245,9 @@ export default function App() {
         {showMeter ? <FpsMeter perf={perf} rendererRef={rendererRef} /> : null}
         {showCam ? <CamDebug face={face} rendererRef={rendererRef} reduced={reduced} /> : null}
         <VignetteOverlay active={snapshot.dilating} />
+
+        {/* 첫 판 온보딩. 활성 동안 GameCanvas가 frozen이라 게임 시계가 서 있다 */}
+        {onboardingActive ? <ArenaOnboarding onDone={() => setOnboardingActive(false)} /> : null}
 
         {phase === PHASE.IDLE ? (
           <IdleScreen

@@ -263,7 +263,7 @@ export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '0 20px' }}>
         {tapMode ? (
           <>
-            <ButtonPrimary onPointerDown={onTapThrust} style={{ width: '100%', minHeight: 108, fontSize: typography.heading.size }}>
+            <ButtonPrimary onPointerDown={onTapThrust} style={{ width: '100%', minHeight: 108, fontSize: ig.title2.size, fontWeight: ig.title2.weight }}>
               찌르기
             </ButtonPrimary>
             <button
@@ -279,7 +279,7 @@ export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd
                 background: 'transparent',
                 color: colors.text.primary,
                 fontFamily: typography.family,
-                fontSize: typography.body.size,
+                fontSize: ig.body.size,
                 touchAction: 'manipulation',
               }}
             >

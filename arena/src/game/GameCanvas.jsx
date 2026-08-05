@@ -14,7 +14,7 @@ import { PRESET } from './pose.js';
 import { OUTCOME } from './judge.js';
 import { IMPACT } from './render/three/post.js';
 
-export default function GameCanvas({ engine, poseChannel, perf, reduced = false, onRendererReady, onFallback, onFx, onGameFx }) {
+export default function GameCanvas({ engine, poseChannel, perf, reduced = false, frozen = false, onRendererReady, onFallback, onFx, onGameFx }) {
   const mountRef = useRef(null);
   // 콜백을 의존성에 넣으면 부모가 리렌더될 때마다 렌더러가 통째로 재생성된다.
   // 폴백 직후 three가 다시 서면서 전환이 취소되는 버그를 실측으로 확인했다. ref로 고정한다.
@@ -22,10 +22,13 @@ export default function GameCanvas({ engine, poseChannel, perf, reduced = false,
   const fallbackRef = useRef(onFallback);
   const fxRef = useRef(onFx);
   const gameFxRef = useRef(onGameFx);
+  // 온보딩·카운트다운 동안 로직 시계를 세운다. hitstop과 같은 경로(timeScale 0)라 판정에 영향이 없다.
+  const frozenRef = useRef(frozen);
   readyRef.current = onRendererReady;
   fallbackRef.current = onFallback;
   fxRef.current = onFx;
   gameFxRef.current = onGameFx;
+  frozenRef.current = frozen;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -46,7 +49,7 @@ export default function GameCanvas({ engine, poseChannel, perf, reduced = false,
       update: (stepSec) => engine.update(stepSec),
       render: (_alpha, realDtSec) => {
         const now = performance.now();
-        loop.setTimeScale(now < hitstopUntil ? 0 : engine.getTimeScale());
+        loop.setTimeScale(frozenRef.current || now < hitstopUntil ? 0 : engine.getTimeScale());
 
         // 키보드 모드의 자세 프리셋. 연속 채널은 판정을 거치지 않는다.
         // 컨트롤러가 붙으면(C3) setQuaternion이 이 값을 덮는다.

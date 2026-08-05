@@ -4,6 +4,12 @@
 
 export const BRAND = 'VORTEX';
 
+// PLAY 첫 진입 코치마크 2종(강릉페이 S7). 폰 조작은 제스처라 특정 요소가 아닌 중앙 툴팁으로 안내한다.
+export const PLAY_COACH = [
+  '폰을 검처럼 세로로 쥐고, 앞으로 뻗으면 찌르기입니다.',
+  '폰을 세우면 가드. 화면 하단을 위아래로 밀면 전진과 후퇴입니다.',
+];
+
 export const HOME = {
   sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 XR',
   guest: '게스트로 시작',
