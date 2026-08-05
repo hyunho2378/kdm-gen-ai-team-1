@@ -1079,6 +1079,10 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **shared 토큰 press 파생 작업중. 트랙 선점.** `shared/tokens.js`의 `red.press` 리터럴 `#610509`를
+  `red.fill` 명도 파생으로 교체한다(DESIGN 2절 press 행과 일치시키는 작업).
+  **단일 원천 수정이라 4앱 전부에 값이 흘러간다.** 이 트랙이 끝날 때까지 arena와 controller의
+  버튼과 색 관련 동시 작업을 붙이지 않는다. 코드 변경은 `shared/tokens.js` 한 파일이다
 - **P-B brand 세션 1 기반 세팅 완료(확인 대기).** 라우팅, 토큰, copy, 랜딩 5섹션 뼈대, 상세 4종, 체험하기 연결.
   **비주얼 라이브러리 0개 설치.** 궤적, 셰이더, 유리, morph 전환은 세션 2 이후다
   - **패키지는 이미 서 있었다.** SETUP이 만든 React 18 + Vite + react-router-dom 6.30.4 + vercel.json SPA rewrite +
