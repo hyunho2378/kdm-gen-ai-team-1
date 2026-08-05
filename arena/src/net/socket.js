@@ -68,11 +68,16 @@ export function createLink() {
   }
 
   return {
-    /** 서버 주소가 없으면 아무 일도 하지 않는다. 경기는 키보드로 그대로 돈다. */
+    /**
+     * 서버 주소가 없으면 아무 일도 하지 않는다. 경기는 키보드로 그대로 돈다.
+     * **주소 없음은 ERROR가 아니라 IDLE이다.** 로비가 "닿지 않는다"와 "주소가 없다"를
+     * 다른 문구로 내야 사람이 고칠 곳을 안다(서버를 깨울 것인가 환경 변수를 넣을 것인가).
+     * 칩 라벨은 둘 다 '없음'이라 HUD 표시는 그대로다.
+     */
     connect() {
       const url = serverUrl();
       if (!url) {
-        setStatus(LINK.ERROR);
+        setStatus(LINK.IDLE);
         return false;
       }
       stopTimer();

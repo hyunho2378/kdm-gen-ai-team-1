@@ -270,11 +270,13 @@ export default function App() {
 
         {phase === PHASE.IDLE ? (
           <IdleScreen
-            onStart={() => {
-              // 서버 주소가 없으면 페어링 화면에 세우지 않고 곧장 키보드 경기로 간다
-              if (link.connect()) engine.send(EV.START);
-              else engine.send(EV.START_KEYBOARD);
+            onPair={() => {
+              // **주소가 없어도 PAIRING으로 간다.** 조용히 키보드로 새면 폰 연결이 왜 안 되는지
+              // 화면에 남는 것이 없다. PairingScreen이 상태별로 사유를 내고 키보드 폴백을 늘 낀다
+              link.connect();
+              engine.send(EV.START);
             }}
+            onStart={() => engine.send(EV.START_KEYBOARD)}
             onKeyboard={() => engine.send(EV.START_KEYBOARD)}
             onSelectSchool={selectSchool}
             selectedSchool={schoolSel}
