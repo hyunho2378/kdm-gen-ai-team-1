@@ -12,6 +12,7 @@
 
 import { io } from 'socket.io-client';
 import { MSG, ROLE, toWireAction } from '../../../shared/protocol.js';
+// cb 키에 result가 있어야 arena의 경기 결과를 받는다(B4).
 
 /** 연결 상태. 화면 칩이 이 값 하나만 본다. */
 export const LINK = {
@@ -58,7 +59,7 @@ export function createLink() {
   let status = LINK.IDLE;
   let error = null;
   let timer = 0;
-  const cb = { status: null, haptic: null };
+  const cb = { status: null, haptic: null, result: null };
 
   function setStatus(next, err = null) {
     if (status === next && error === err) return;
@@ -133,6 +134,8 @@ export function createLink() {
       socket.on(MSG.HAPTIC, (p) => {
         if (p?.pattern) cb.haptic?.(p.pattern);
       });
+      // 경기 결과(B4). arena가 MATCH_END에 보낸다. 표시용 데이터다
+      socket.on(MSG.RESULT, (p) => cb.result?.(p));
     },
 
     /** 이산 이벤트. 스로틀하지 않는다. 판정으로 가는 것은 이 경로뿐이다. */

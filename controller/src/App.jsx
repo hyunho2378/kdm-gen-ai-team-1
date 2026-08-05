@@ -24,6 +24,7 @@ import ScreenContainer from './layout/ScreenContainer.jsx';
 import CoachMarkOverlay from './components/common/CoachMarkOverlay.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
 import SelectScreen from './components/SelectScreen.jsx';
+import ResultScreen from './components/ResultScreen.jsx';
 import { PLAY_COACH } from './copy.js';
 import {
   CalibrationScreen,
@@ -33,7 +34,6 @@ import {
   LinkErrorScreen,
   PermissionScreen,
   PlayScreen,
-  ResultScreen,
 } from './components/screens.jsx';
 
 // 화면 순서. HANDOVER 3절 앱 화면 흐름 그대로다.
@@ -55,6 +55,33 @@ const BACK_OF = {
   [PHASE.CALIBRATION]: PHASE.PERMISSION,
   [PHASE.RESULT]: PHASE.HOME,
 };
+
+/** 손떨림 등급. 표본당 회전각(라디안) 평균이 작을수록 안정. **근사 지표라 임계는 대략값(실기 튜닝 여지).** */
+function gradeStability(meanAngRad) {
+  if (meanAngRad < 0.02) return { grade: '안정', value: meanAngRad };
+  if (meanAngRad < 0.06) return { grade: '보통', value: meanAngRad };
+  return { grade: '흔들림', value: meanAngRad };
+}
+
+/** arena 결과 + 폰 센서 통계를 화면용 하나로 합친다(B4). 표시 전용이라 판정과 무관하다. */
+function buildMatchResult(a = {}, phone) {
+  const meanTremor = phone.tremorCount > 5 ? phone.tremorSum / phone.tremorCount : null;
+  return {
+    win: a.winner === 'ME',
+    score: Array.isArray(a.score) ? a.score : [0, 0],
+    durationMs: a.durationMs ?? 0,
+    accuracy: a.thrusts > 0 ? a.hits / a.thrusts : 0,
+    hits: a.hits ?? 0,
+    ripostes: a.ripostes ?? 0,
+    pisteOut: a.pisteOut ?? 0,
+    parts: a.parts ?? {},
+    phoneThrusts: phone.thrusts,
+    avgPower: phone.thrusts > 0 ? phone.powerSum / phone.thrusts : 0,
+    maxPower: phone.powerMax,
+    guards: phone.guards,
+    stability: meanTremor == null ? null : gradeStability(meanTremor),
+  };
+}
 
 /**
  * 가로 안내가 필요한가. **터치 기기가 가로일 때만 true.**
@@ -96,6 +123,12 @@ export default function App() {
   // PLAY 첫 진입 코치마크. 0=꺼짐, 1~2=단계. ref로 세션 내 1회만(둘째 판부터 생략).
   const [playCoach, setPlayCoach] = useState(0);
   const playCoachShownRef = useRef(false);
+  // 경기 중 폰 센서 통계(메모리만, localStorage 금지). 손떨림 근사 + 찌르기 파워 + 가드 수.
+  const phoneStatsRef = useRef({ thrusts: 0, powerSum: 0, powerMax: 0, guards: 0, tremorSum: 0, tremorCount: 0, lastQ: null });
+  const [matchResult, setMatchResult] = useState(null);
+  const resetPhoneStats = useCallback(() => {
+    phoneStatsRef.current = { thrusts: 0, powerSum: 0, powerMax: 0, guards: 0, tremorSum: 0, tremorCount: 0, lastQ: null };
+  }, []);
   const [tapMode, setTapMode] = useState(false);
   const [guarding, setGuarding] = useState(false);
   const [lastAction, setLastAction] = useState(null);
@@ -122,10 +155,29 @@ export default function App() {
       }
       setLastAction(`${ev.type} ${ev.power.toFixed(2)}`);
       push(`${(ev.ts / 1000).toFixed(1)}s ${ev.type} power ${ev.power.toFixed(2)}`);
+      // 결과 통계 축적(메모리). 찌르기 수/파워, 가드 수
+      const st = phoneStatsRef.current;
+      if (ev.type === INPUT_EVENT.THRUST) {
+        st.thrusts += 1;
+        st.powerSum += ev.power;
+        st.powerMax = Math.max(st.powerMax, ev.power);
+      }
+      if (ev.type === INPUT_EVENT.GUARD_ON) st.guards += 1;
       link.sendAction(ev);
     });
     // 연속 채널 소비처. 렌더 전용이라 판정에 닿지 않는다. 30Hz는 orientation.js가 이미 조였다
-    pipeline.on('pose', (q) => link.sendMotion(q));
+    pipeline.on('pose', (q) => {
+      link.sendMotion(q);
+      // 손떨림 근사: 연속 쿼터니언 사이 회전각을 누적한다. 평균이 작을수록 자세가 안정적이다.
+      const st = phoneStatsRef.current;
+      if (st.lastQ) {
+        const p = st.lastQ;
+        const dot = Math.min(1, Math.abs(p[0] * q[0] + p[1] * q[1] + p[2] * q[2] + p[3] * q[3]));
+        st.tremorSum += 2 * Math.acos(dot);
+        st.tremorCount += 1;
+      }
+      st.lastQ = q;
+    });
     return () => {
       pipeline.on('action', null);
       pipeline.on('pose', null);
@@ -143,9 +195,15 @@ export default function App() {
       setFlash(pattern);
       setTimeout(() => setFlash(null), 10);
     });
+    // 경기 결과 수신 → 폰 센서 통계와 합쳐 RESULT로. arena가 MATCH_END에 보낸다
+    link.on('result', (r) => {
+      setMatchResult(buildMatchResult(r, phoneStatsRef.current));
+      setPhase(PHASE.RESULT);
+    });
     return () => {
       link.on('status', null);
       link.on('haptic', null);
+      link.on('result', null);
     };
   }, [link, push]);
 
@@ -182,8 +240,9 @@ export default function App() {
     link.sendCalib(pipeline.getBaseline());
     // 센서가 아예 안 붙는 기기는 여기서 탭 모드로 내려간다
     if (pipeline.getSupport() === SUPPORT.NONE) setTapMode(true);
+    resetPhoneStats();
     setPhase(PHASE.PLAY);
-  }, [pipeline, link, push]);
+  }, [pipeline, link, push, resetPhoneStats]);
 
   const startTapMode = useCallback(() => {
     setTapMode(true);
@@ -191,8 +250,9 @@ export default function App() {
     // 탭 모드는 캘리브레이션을 건너뛴다. 그래도 준비됐다는 통지는 보내야
     // arena가 CALIBRATION에서 폰을 기다리다 멈추지 않는다. 기준 자세는 없으므로 null이다
     link.sendCalib(null);
+    resetPhoneStats();
     setPhase(PHASE.PLAY);
-  }, [pipeline, link]);
+  }, [pipeline, link, resetPhoneStats]);
 
   // CONNECT에서 코드 확정 → 접속. **화면은 CONNECT에 머물며 접속 중 상태를 보인다.**
   // paired가 되면 아래 효과가 SELECT로 넘긴다(무한 스피너 금지, 상태 가시성 N1/N9).
@@ -299,7 +359,7 @@ export default function App() {
         ) : null}
 
         {phase === PHASE.RESULT ? (
-          <ResultScreen onAgain={() => setPhase(PHASE.SELECT)} onHome={() => setPhase(PHASE.HOME)} />
+          <ResultScreen result={matchResult} onAgain={() => setPhase(PHASE.SELECT)} onHome={() => setPhase(PHASE.HOME)} />
         ) : null}
 
         {/* PLAY 첫 진입 코치마크(강릉페이 S7). 제스처 안내라 중앙 툴팁. 둘째 판부터 생략 */}

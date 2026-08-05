@@ -46,6 +46,9 @@ export default function App() {
   // 렌더러가 투영해 준 마지막 연출 좌표. FUI 층이 이것 하나만 본다
   const [fxShot, setFxShot] = useState(null);
   const fxId = useRef(0);
+  // 내 명중의 부위 분포(표시 전용). 부위는 렌더가 정하므로 fx에서 모은다. MATCH_END에 결과로 폰에 보낸다.
+  const partsRef = useRef({});
+  const resultSentRef = useRef(false);
   // 웹캠 상태. 어느 경로로 실패해도 게임은 안 멈춘다(R5)
   const [camStatus, setCamStatus] = useState(CAM.OFF);
   const [linkStatus, setLinkStatus] = useState(LINK.IDLE);
@@ -199,6 +202,20 @@ export default function App() {
     }
   }, [snapshot?.phase]);
 
+  // 경기 종료 시 결과 요약을 폰으로 한 번 보낸다(B4). 표시용이라 판정과 무관하다.
+  // 폰이 자기 센서 통계(손떨림, 파워, 가드)와 합쳐 RESULT 화면을 그린다.
+  useEffect(() => {
+    if (snapshot?.phase === PHASE.MATCH_END && !resultSentRef.current) {
+      resultSentRef.current = true;
+      link.sendResult({
+        score: [snapshot.score.me, snapshot.score.ai],
+        winner: snapshot.winner,
+        parts: { ...partsRef.current },
+        ...engine.getMatchStats(),
+      });
+    }
+  }, [snapshot?.phase, engine, link]);
+
   if (!snapshot) return null;
 
   const { phase } = snapshot;
@@ -222,6 +239,8 @@ export default function App() {
           onFx={(e) => {
             fxId.current += 1;
             setFxShot({ ...e, id: fxId.current });
+            // 내가 낸 명중의 부위만 센다(상대 몸의 어디를 맞혔는가). 표시 전용 집계다
+            if (e.owner === OWNER.ME && e.part) partsRef.current[e.part] = (partsRef.current[e.part] ?? 0) + 1;
           }}
           onGameFx={onGameFx}
         />
@@ -283,10 +302,14 @@ export default function App() {
             schoolName={snapshot.school.name}
             onRematch={() => {
               rendererRef.current?.clear();
+              partsRef.current = {};
+              resultSentRef.current = false;
               engine.send(EV.REMATCH);
             }}
             onReset={() => {
               rendererRef.current?.clear();
+              partsRef.current = {};
+              resultSentRef.current = false;
               engine.send(EV.RESET);
             }}
           />

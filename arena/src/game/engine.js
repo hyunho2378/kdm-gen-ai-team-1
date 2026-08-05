@@ -54,6 +54,13 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
   let judgeShown = false;
   const fxQueue = [];
 
+  // 경기 결과 통계(B4). 표시 전용이라 판정·결정성과 무관하다. 부위 분포는 렌더가 정하므로 App이 fx로 모은다.
+  let matchStats = null;
+  function resetStats() {
+    matchStats = { thrusts: 0, hits: 0, ripostes: 0, pisteOut: 0, startMs: null };
+  }
+  resetStats();
+
   // 렌더러가 읽는 시각 상태. 판정에 영향을 주지 않는다.
   const view = {
     d: state.d,
@@ -77,6 +84,8 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
         enter() {
           phaseTimer = 0;
           lastResult = null;
+          // 첫 앙가르드가 경기 시작. 이후 득점마다 다시 들어와도 시작 시각은 한 번만 잡는다
+          if (matchStats.startMs == null) matchStats.startMs = clockMs;
         },
       },
       [PHASE.JUDGE]: {
@@ -239,6 +248,7 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     // 후방 경계 실점. 위치가 경계에 물려 있으므로 판정 직후 앙가르드로 되돌린다
     const out = resolvePisteOut(state);
     if (out) {
+      matchStats.pisteOut += 1;
       resetPositions(state);
       view.d = state.d;
       applyResult(out);
@@ -252,6 +262,10 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
       const lunge = input.isHeld(INPUT.ADVANCE);
       const result = resolveThrust(state, clockMs, { lunge });
       if (result.reason === MISS_REASON.COOLDOWN) continue; // 쿨다운은 판정 연출 없이 무시한다
+      // 결과 통계(표시 전용). 쿨다운으로 무시된 찌르기는 시도로 세지 않는다
+      matchStats.thrusts += 1;
+      if (result.outcome === OUTCOME.HIT || result.outcome === OUTCOME.RIPOSTE) matchStats.hits += 1;
+      if (result.outcome === OUTCOME.RIPOSTE) matchStats.ripostes += 1;
       // 진짜 공격에 맞불을 놓은 시각을 남긴다. 상대 공격이 닿을 때 동시타 창으로 다시 본다(R3-2)
       if (result.reason === MISS_REASON.INTO_ATTACK) state.counterAt = clockMs;
       state.lastThrustAt = clockMs;
@@ -287,6 +301,7 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
 
   function reset({ keepScore = false } = {}) {
     const keptScore = keepScore ? { ...state.score } : null;
+    resetStats();
     state = createJudgeState();
     if (keptScore) state.score = keptScore;
     clockMs = 0;
@@ -357,6 +372,17 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     getPiste() {
       const warn = pisteWarning(state);
       return { me: state.mePos, ai: state.aiPos, warnMe: warn.me, warnAi: warn.ai };
+    },
+    /** 경기 결과 통계(표시 전용). 부위 분포는 렌더가 정하므로 여기 없다(App이 fx로 모은다). */
+    getMatchStats() {
+      const s = matchStats;
+      return {
+        thrusts: s.thrusts,
+        hits: s.hits,
+        ripostes: s.ripostes,
+        pisteOut: s.pisteOut,
+        durationMs: Math.max(0, clockMs - (s.startMs ?? clockMs)),
+      };
     },
   };
 }

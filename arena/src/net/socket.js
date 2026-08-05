@@ -125,6 +125,12 @@ export function createLink() {
       socket.emit(MSG.HAPTIC, { pattern });
     },
 
+    /** 경기 종료 시 결과 요약을 폰에 보낸다(B4). 표시용 데이터이고 판정 변경이 아니다. */
+    sendResult(payload) {
+      if (!live() || !payload) return;
+      socket.emit(MSG.RESULT, payload);
+    },
+
     on(name, fn) {
       if (name in cb) cb[name] = typeof fn === 'function' ? fn : null;
     },

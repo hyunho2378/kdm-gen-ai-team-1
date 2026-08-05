@@ -361,26 +361,6 @@ export function LinkErrorScreen({ reason, onRetry, onBack }) {
   );
 }
 
-/**
- * RESULT 자리표시자(B0). 통계 카드(명중률, 부위 분포, 손떨림 등)와 arena result 합성은 B4에서 채운다.
- * 지금은 흐름(PLAY → RESULT → SELECT/HOME)을 잇기 위한 최소 화면이다.
- */
-export function ResultScreen({ onAgain, onHome }) {
-  return (
-    <Screen>
-      <Title>경기 종료</Title>
-      <Body tone={colors.text.dim}>통계 카드는 B4에서 채운다.</Body>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <ButtonGhost onClick={onHome}>처음으로</ButtonGhost>
-        <ButtonPrimary onClick={onAgain}>다시 대전</ButtonPrimary>
-      </div>
-      <span style={{ fontFamily: typography.family, fontSize: ig.footnote.size, color: colors.text.dim }}>
-        이 기록은 저장되지 않습니다.
-      </span>
-    </Screen>
-  );
-}
-
 /** 가로 회전 안내. 센서 스트림은 끊지 않는다(회전해도 계속 돈다). */
 export function LandscapeGuard() {
   return (
