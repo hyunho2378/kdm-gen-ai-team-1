@@ -16,3 +16,65 @@ export const PHASE = {
 
 // 접속 역할. hello 메시지의 role 값
 export const ROLE = { ARENA: 'arena', CONTROLLER: 'controller' };
+
+// 이산 입력 소스. judge는 이 값을 절대 읽지 않는다(ARENA_INPUT 2절).
+// 존재 이유는 디버깅 로그와 HUD 표시 둘뿐이다.
+export const SOURCE = { KEYBOARD: 'keyboard', CONTROLLER: 'controller' };
+
+/**
+ * 이산 채널 이벤트 타입 (ARENA_INPUT 2절 스키마).
+ * 컨트롤러 파이프라인과 arena 입력 큐가 이 이름으로 말한다.
+ *
+ * **선 위의 이름과 다르다.** SERVER.md는 `action.kind`를 넷(thrust, guard, advance, retreat)으로
+ * 규정하고 on/off를 `power`로 표현한다. 가드도 같은 규칙을 따르므로 여기 다섯이 저기 넷으로 접힌다.
+ * 두 이름을 손으로 옮기지 않게 아래 두 매퍼가 유일한 변환 통로다.
+ */
+export const INPUT_EVENT = {
+  THRUST: 'thrust',
+  GUARD_ON: 'guard_on',
+  GUARD_OFF: 'guard_off',
+  ADVANCE: 'advance',
+  RETREAT: 'retreat',
+};
+
+/** 이산 이벤트를 선 위 형식으로. `{ kind, power }`이고 나머지는 로컬 정보라 안 싣는다. */
+export function toWireAction(ev) {
+  if (!ev || typeof ev.type !== 'string') return null;
+  const power = Number.isFinite(ev.power) ? ev.power : 1;
+  switch (ev.type) {
+    case INPUT_EVENT.THRUST:
+      return { kind: ACTION.THRUST, power };
+    case INPUT_EVENT.GUARD_ON:
+      return { kind: ACTION.GUARD, power: 1 };
+    case INPUT_EVENT.GUARD_OFF:
+      return { kind: ACTION.GUARD, power: 0 };
+    case INPUT_EVENT.ADVANCE:
+      return { kind: ACTION.ADVANCE, power };
+    case INPUT_EVENT.RETREAT:
+      return { kind: ACTION.RETREAT, power };
+    default:
+      return null;
+  }
+}
+
+/**
+ * 선 위 형식을 이산 이벤트로. 모르는 kind는 null이라 큐에 안 들어간다.
+ * **여기서 THRUST를 만들어 내지 않는다.** 폰이 1차 감지한 것만 넘어오고
+ * arena는 연속 스트림에서 재추론하지 않는다(이중 판정 금지, ARENA_INPUT 4절).
+ */
+export function fromWireAction(msg) {
+  if (!msg || typeof msg.kind !== 'string') return null;
+  const power = Number.isFinite(msg.power) ? msg.power : 1;
+  switch (msg.kind) {
+    case ACTION.THRUST:
+      return { type: INPUT_EVENT.THRUST, power };
+    case ACTION.GUARD:
+      return { type: power > 0 ? INPUT_EVENT.GUARD_ON : INPUT_EVENT.GUARD_OFF, power };
+    case ACTION.ADVANCE:
+      return { type: INPUT_EVENT.ADVANCE, power };
+    case ACTION.RETREAT:
+      return { type: INPUT_EVENT.RETREAT, power };
+    default:
+      return null;
+  }
+}

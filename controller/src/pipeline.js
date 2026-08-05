@@ -8,12 +8,16 @@
 //
 // **지금은 소켓에 안 보낸다.** C2 범위는 폰 단독 동작까지이고, 여기 콜백이 C3의 연결점이다.
 
+import { INPUT_EVENT, SOURCE } from '../../shared/protocol.js';
 import { createMotion, SUPPORT } from './sensors/motion.js';
 import { createOrientation } from './sensors/orientation.js';
 import { createWakeLock } from './sensors/wakelock.js';
 
 /** 캘리브레이션 정지 시간. arena CALIBRATION 링과 같은 3초다. */
 export const CALIB_MS = 3000;
+
+/** 스와이프 방향. 화면과 파이프라인이 같은 이름을 쓴다. */
+export const STEP = { ADVANCE: 'advance', RETREAT: 'retreat' };
 
 export function createPipeline() {
   const motion = createMotion();
@@ -32,15 +36,15 @@ export function createPipeline() {
       return;
     }
     // ARENA_INPUT 2절 스키마 그대로. ts는 소스 시계다(판정은 engine 시계를 쓴다)
-    listeners.action?.({ type: 'thrust', power, ts: performance.now(), source: 'controller' });
+    listeners.action?.({ type: INPUT_EVENT.THRUST, power, ts: performance.now(), source: SOURCE.CONTROLLER });
   });
 
   motion.on('guard', (on) => {
     listeners.action?.({
-      type: on ? 'guard_on' : 'guard_off',
+      type: on ? INPUT_EVENT.GUARD_ON : INPUT_EVENT.GUARD_OFF,
       power: on ? 1 : 0,
       ts: performance.now(),
-      source: 'controller',
+      source: SOURCE.CONTROLLER,
     });
   });
 
@@ -94,31 +98,31 @@ export function createPipeline() {
     /** 스와이프는 화면 입력이다. 센서가 아니라 터치가 낸다. */
     emitStep(dir) {
       listeners.action?.({
-        type: dir === 'advance' ? 'advance' : 'retreat',
+        type: dir === STEP.ADVANCE ? INPUT_EVENT.ADVANCE : INPUT_EVENT.RETREAT,
         power: 1,
         ts: performance.now(),
-        source: 'controller',
+        source: SOURCE.CONTROLLER,
       });
     },
     endStep(dir) {
       listeners.action?.({
-        type: dir === 'advance' ? 'advance' : 'retreat',
+        type: dir === STEP.ADVANCE ? INPUT_EVENT.ADVANCE : INPUT_EVENT.RETREAT,
         power: 0,
         ts: performance.now(),
-        source: 'controller',
+        source: SOURCE.CONTROLLER,
       });
     },
 
     /** 탭 버튼 모드에서 쓰는 수동 경로. 센서 없이도 경기가 성립한다. */
     tapThrust() {
-      listeners.action?.({ type: 'thrust', power: 1, ts: performance.now(), source: 'controller' });
+      listeners.action?.({ type: INPUT_EVENT.THRUST, power: 1, ts: performance.now(), source: SOURCE.CONTROLLER });
     },
     tapGuard(on) {
       listeners.action?.({
-        type: on ? 'guard_on' : 'guard_off',
+        type: on ? INPUT_EVENT.GUARD_ON : INPUT_EVENT.GUARD_OFF,
         power: on ? 1 : 0,
         ts: performance.now(),
-        source: 'controller',
+        source: SOURCE.CONTROLLER,
       });
     },
 
