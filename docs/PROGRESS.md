@@ -1079,6 +1079,9 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **P-C VORTEX 네이밍. 트랙 선점.** 화면 표시 제품명을 영문 VORTEX로 통일한다.
+  대상은 arena controller brand server의 표시 텍스트뿐이고 저장소명 ganhap과 내부 식별자는 유지한다.
+  presentation-v2와 presentation 폴더는 불가침이다. judge machine opponents 무변경, 기준 서명 유지가 통과 조건이다
 - **controller C3 소켓 S0~S3 전체 완료. 사용자 실기 확인 대기.**
   - 데모 코어 루프(폰이 검이 된다)가 성립했다. 로컬 통합 검증 11/11
   - 남은 것은 **실기 하나**다. 폰으로 QR을 찍고 검이 따라오는지, 지연이 체감되는지,
