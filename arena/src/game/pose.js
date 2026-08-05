@@ -12,7 +12,11 @@ export const PRESET = { REST: 'rest', THRUST: 'thrust', GUARD: 'guard' };
  *   { kind: 'quaternion', value: [x, y, z, w] }
  */
 export function createPoseChannel() {
-  let kind = 'preset';
+  // **모드는 소스가 바꾼다. 프리셋 갱신은 모드를 건드리지 않는다.**
+  // GameCanvas가 매 프레임 setPreset을 부르는데 그것이 모드까지 바꾸면
+  // 컨트롤러가 쿼터니언을 흘려도 다음 프레임에 프리셋이 덮어써 검이 영원히 안 돈다(C3 실측).
+  // 쿼터니언에서 내려오는 길은 fallbackToPreset 하나뿐이다(끊김과 F9).
+  let mode = 'preset';
   let preset = PRESET.REST;
   // 보정 전 원본과 캘리브레이션 기준. 둘 다 판정에 쓰이지 않는다.
   let raw = null;
@@ -47,26 +51,26 @@ export function createPoseChannel() {
   }
 
   return {
+    /** 키보드 프리셋 갱신. 모드는 안 바꾼다. 폴백했을 때 최신값이 서 있도록 계속 받는다. */
     setPreset(id) {
       preset = id;
-      kind = 'preset';
     },
     /** C3에서 소켓 어댑터가 30Hz로 부른다. */
     setQuaternion(q) {
       if (!Array.isArray(q) || q.length !== 4) return;
       raw = q;
-      kind = 'quaternion';
+      mode = 'quaternion';
     },
     setCalibration(q0) {
       calib = Array.isArray(q0) && q0.length === 4 ? q0 : null;
     },
-    /** 컨트롤러가 끊기면 프리셋으로 되돌린다. 경기는 계속 돈다. */
+    /** 컨트롤러가 끊기거나 F9를 누르면 프리셋으로 되돌린다. 경기는 계속 돈다. */
     fallbackToPreset() {
-      kind = 'preset';
+      mode = 'preset';
       raw = null;
     },
     read() {
-      if (kind === 'quaternion' && raw) {
+      if (mode === 'quaternion' && raw) {
         out.kind = 'quaternion';
         out.value = applyCalibration(raw, calib);
       } else {
@@ -76,7 +80,7 @@ export function createPoseChannel() {
       return out;
     },
     reset() {
-      kind = 'preset';
+      mode = 'preset';
       preset = PRESET.REST;
       raw = null;
       calib = null;

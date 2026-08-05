@@ -14,16 +14,18 @@ import { PRESET } from './pose.js';
 import { OUTCOME } from './judge.js';
 import { IMPACT } from './render/three/post.js';
 
-export default function GameCanvas({ engine, poseChannel, perf, reduced = false, onRendererReady, onFallback, onFx }) {
+export default function GameCanvas({ engine, poseChannel, perf, reduced = false, onRendererReady, onFallback, onFx, onGameFx }) {
   const mountRef = useRef(null);
   // 콜백을 의존성에 넣으면 부모가 리렌더될 때마다 렌더러가 통째로 재생성된다.
   // 폴백 직후 three가 다시 서면서 전환이 취소되는 버그를 실측으로 확인했다. ref로 고정한다.
   const readyRef = useRef(onRendererReady);
   const fallbackRef = useRef(onFallback);
   const fxRef = useRef(onFx);
+  const gameFxRef = useRef(onGameFx);
   readyRef.current = onRendererReady;
   fallbackRef.current = onFallback;
   fxRef.current = onFx;
+  gameFxRef.current = onGameFx;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -66,6 +68,8 @@ export default function GameCanvas({ engine, poseChannel, perf, reduced = false,
           if (e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE) {
             hitstopUntil = now + IMPACT.hitstopMs;
           }
+          // 판정이 낸 사건 그대로다. 렌더러를 안 거치므로 2D 폴백에서도 폰이 반응한다(C3)
+          gameFxRef.current?.(e);
         }
         // render 벽시계를 잰다. 헤드리스 fps는 무효라도 이 값의 전후 비교는 유효한 대리 지표다
         const t0 = performance.now();

@@ -58,17 +58,27 @@ function rand(ref) {
  * 키보드 한정 조준 변주 (E4). 찌르기마다 프리셋 호의 칼끝을 조금씩 다른 곳으로 민다.
  * 키보드는 프리셋 트윈이라 이것이 없으면 찌르기 호가 매번 완전히 같고 착탄도 한 점에 박힌다.
  *
+ * **C3: 폰이 붙으면 이 변주가 꺼진다(상수와 코드는 남는다).** 폰이 검을 쥐는 동안에는
+ * 조준이 진짜라 인공 변주를 얹을 이유가 없고, 얹으면 겨눈 곳과 꽂히는 곳이 어긋난다.
+ * 키보드 폴백은 여전히 프리셋 트윈이라 변주가 계속 필요하다. 그래서 제거가 아니라 분기다.
+ *
  * 중앙값이 0이 아니라 +x인 것은 찌르기 프리셋의 칼끝이 그립보다 왼쪽에 있어
  * 그대로 상대 평면에 투영하면 착탄이 늘 몸 왼쪽에 몰리기 때문이다
  * (실측 -0.26m. 몸 반폭이 0.50m라 절반이 한쪽 끝에서 잘린다).
  * y를 아래로 치우친 것은 투구(1.55m) 문턱을 실제로 넘나들게 하기 위해서다.
  *
- * **C3에서 폰 쿼터니언이 검 자세를 쥐면 이 변주만 지우면 된다.**
- * 아래 착탄 투영식(그립에서 칼끝으로 뻗은 직선을 상대 평면까지 늘린다)은 그대로 남아
- * 그 순간부터 진짜 조준이 된다. 임시인 것은 이 변주 하나뿐이고 투영식은 미래 코드다.
+ * 착탄 투영식(그립에서 칼끝으로 뻗은 직선을 상대 평면까지 늘린다)은 손대지 않았다.
+ * 폰이 그 직선의 방향을 쥐는 순간 같은 식이 그대로 진짜 조준이 된다.
  */
 const AIM_JITTER_X = [-0.05, 0.21];
 const AIM_JITTER_Y = [-0.22, 0.10];
+
+/**
+ * 폰 쿼터니언으로 넘어가고 돌아오는 데 걸리는 시간(초). C3.
+ * 소스가 바뀌는 순간 회전을 끊어 갈아끼우면 검이 한 프레임에 홱 돈다.
+ * 컨트롤러가 끊겼다 붙는 것은 발표 중에도 일어날 수 있으므로 그 전환이 사고로 보이면 안 된다.
+ */
+const POSE_BLEND_SEC = 0.35;
 
 /**
  * 유파별 기술 성향 (R4). E4의 표적 다양화를 기술 카탈로그로 확장한 것이다.
@@ -180,6 +190,8 @@ export function createThreeRenderer() {
   // 이번 찌르기의 칼끝 변주(카메라 로컬). 찌르기 시작 순간 한 번 뽑는다
   let jitterX = 0;
   let jitterY = 0;
+  // 폰 쿼터니언이 회전을 쥔 정도 0~1. 소스가 바뀌면 이 값이 부드럽게 오르내린다(C3)
+  let poseBlend = 0;
   // 가드 홀드 진행도 0~1. 홀드 구간에만 1로 올라간다(R1)
   let guardBlend = 0;
   // 헤드 패럴랙스 (R5). 웹캠이 없으면 전부 0이라 카메라가 기준 자세에 그대로 앉는다
@@ -246,10 +258,15 @@ export function createThreeRenderer() {
     }
 
     // 찌르기마다 칼끝이 조금씩 다른 곳으로 간다. 그립은 그대로라 검이 겨냥을 바꾼 것으로 읽힌다.
-    // 궤적 리본이 이 칼끝을 따라가므로 호 자체가 매번 달라진다(키보드 한정. 위 상수 주석 참조)
-    tmpTip.x += jitterX * reach;
-    tmpTip.y += jitterY * reach;
+    // 궤적 리본이 이 칼끝을 따라가므로 호 자체가 매번 달라진다.
+    // **폰이 검을 쥐는 동안에는 0이다.** 그때는 조준이 진짜라 인공 변주가 겨냥과 착탄을 어긋나게 한다.
+    const phone = pose.kind === 'quaternion';
+    const jitterOn = phone ? 0 : 1;
+    tmpTip.x += jitterX * reach * jitterOn;
+    tmpTip.y += jitterY * reach * jitterOn;
 
+    // **위치는 언제나 프리셋 트윈이 쥔다.** 찌르기의 뻗음과 가드의 올림이 여기서 나온다.
+    // 폰은 위치를 만들지 않는다. 폰이 아는 것은 방향뿐이고 팔이 얼마나 나갔는지는 판정이 안다.
     sword.group.position.copy(tmpGrip);
     // lookAt을 쓰지 않는다. 비카메라 객체의 lookAt은 +z를 타깃으로 향하는데 검신은 -z로 뻗어 있고,
     // 인자를 월드 좌표로 해석해 카메라 자식인 이 그룹과 좌표계가 어긋난다(실측으로 검이 뒤집혔다).
@@ -257,11 +274,21 @@ export function createThreeRenderer() {
     tmpDir.copy(tmpTip).sub(tmpGrip).normalize();
     sword.group.quaternion.setFromUnitVectors(BLADE_AXIS, tmpDir);
 
-    // 컨트롤러가 붙으면(C3) 프리셋 회전을 쿼터니언으로 대체한다. 위치는 그립 그대로 둔다.
-    if (pose.kind === 'quaternion') {
+    // 소스 전환 블렌드. 붙는 순간과 끊기는 순간에 검이 홱 돌지 않게 한다
+    const target = phone ? 1 : 0;
+    const k = Math.min(1, dtSec / POSE_BLEND_SEC);
+    poseBlend += (target - poseBlend) * k;
+
+    // **회전은 폰이 쥔다(C3).** 프리셋 회전에서 폰 회전으로 슬러프한다.
+    //
+    // 왜 찌르기 구간에서도 폰이 회전을 쥐는가. 착탄점은 그립에서 칼끝으로 뻗은 직선을
+    // 상대 평면까지 늘린 곳이고, 그 직선이 곧 이 회전이다. 찌르기 순간에 프리셋으로 되돌리면
+    // 겨눈 곳이 아니라 프리셋이 정한 곳에 꽂힌다. 그러면 폰으로 조준한다는 말이 성립하지 않는다.
+    // 트윈은 뻗는 호를 계속 쥐고 있으므로 찌르기 연출 자체는 그대로 산다.
+    if (poseBlend > 0.001 && Array.isArray(pose.value)) {
       const [x, y, z, wq] = pose.value;
       tmpQuat.set(x, y, z, wq);
-      sword.group.quaternion.copy(tmpQuat);
+      sword.group.quaternion.slerp(tmpQuat, poseBlend);
     }
   }
 
@@ -617,6 +644,7 @@ export function createThreeRenderer() {
       jitterX = 0;
       jitterY = 0;
       guardBlend = 0;
+      poseBlend = 0;
     },
     segmentCount() {
       return (meTrail?.segmentCount() ?? 0) + (aiTrail?.segmentCount() ?? 0);

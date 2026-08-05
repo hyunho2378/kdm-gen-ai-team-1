@@ -160,8 +160,11 @@ export default function App() {
   const startTapMode = useCallback(() => {
     setTapMode(true);
     pipeline.start();
+    // 탭 모드는 캘리브레이션을 건너뛴다. 그래도 준비됐다는 통지는 보내야
+    // arena가 CALIBRATION에서 폰을 기다리다 멈추지 않는다. 기준 자세는 없으므로 null이다
+    link.sendCalib(null);
     setPhase(PHASE.PLAY);
-  }, [pipeline]);
+  }, [pipeline, link]);
 
   return (
     <>

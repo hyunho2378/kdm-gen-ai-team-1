@@ -2,11 +2,14 @@
 // ROUTES.md: phase는 URL에 싣지 않는다. 상태머신이 소유한다.
 // C1은 키보드 모드만 있다. PAIRING과 CALIBRATION은 C3에서 붙는다.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createEngine } from './game/engine.js';
 import { createPoseChannel } from './game/pose.js';
 import { createPerfStats, meterEnabled } from './game/perf.js';
 import { CAM, CAM_LABEL, camDebugEnabled, createFaceTracker } from './game/faceTracker.js';
+import { LINK, LINK_LABEL, attachSocket, controllerUrl, createLink } from './net/socket.js';
+import { HAPTIC } from '../../shared/protocol.js';
+import { OUTCOME, OWNER } from './game/judge.js';
 import { attachKeyboard } from './game/input.js';
 import { EV, PHASE } from './game/machine.js';
 import GameCanvas from './game/GameCanvas.jsx';
@@ -18,6 +21,7 @@ import GlassFrame from './components/hud/GlassFrame.jsx';
 import VignetteOverlay from './components/VignetteOverlay.jsx';
 import IdleScreen from './screens/IdleScreen.jsx';
 import MatchEndScreen from './screens/MatchEndScreen.jsx';
+import PairingScreen from './screens/PairingScreen.jsx';
 import ViewportGuard from './screens/ViewportGuard.jsx';
 
 function prefersReducedMotion() {
@@ -35,11 +39,15 @@ export default function App() {
   const fxId = useRef(0);
   // 웹캠 상태. 어느 경로로 실패해도 게임은 안 멈춘다(R5)
   const [camStatus, setCamStatus] = useState(CAM.OFF);
+  const [linkStatus, setLinkStatus] = useState(LINK.IDLE);
+  const [roomCode, setRoomCode] = useState('');
   // 연속 채널. engine과 분리되어 있고 렌더러만 소비한다(ARENA_INPUT 3절).
   const poseChannel = useMemo(() => createPoseChannel(), []);
   const perf = useMemo(() => createPerfStats(), []);
   // 웹캠 추적기. engine과 렌더러 양쪽에 지표를 넘기지만 **판정 경로에는 불리언 하나만 간다**
   const face = useMemo(() => createFaceTracker(), []);
+  // 소켓 링크. **경기를 인질로 잡지 않는다.** 서버가 없으면 키보드로 그대로 완주한다
+  const link = useMemo(() => createLink(), []);
   // dev이거나 주소에 ?fps=1이 있으면 미터를 띄운다. 실기 확인이 최종 성능 게이트다
   const showMeter = useMemo(() => meterEnabled(import.meta.env.DEV), []);
   // ?cam=1이면 캠 디버그. 캠이 약한 것과 안 붙은 것을 사용자가 눈으로 가른다(V2)
@@ -66,12 +74,46 @@ export default function App() {
   useEffect(
     () =>
       attachKeyboard(engine.input, {
-        onToggleKeyboardMode: () => engine.forceKeyboard(),
+        onToggleKeyboardMode: () => {
+          engine.forceKeyboard();
+          // 연속 채널도 내린다. engine은 pose.js를 모르므로 여기서 한다(ARENA_INPUT 5절)
+          poseChannel.fallbackToPreset();
+        },
         onStart: () => {
           if (engine.phase === PHASE.IDLE) engine.send(EV.START_KEYBOARD);
         },
       }),
-    [engine]
+    [engine, poseChannel]
+  );
+
+  // 소켓 배선 (C3). 이산은 키보드와 같은 큐로, 연속은 렌더러 전용 채널로 간다.
+  // 두 경로가 여기서 갈린 뒤 다시 만나지 않는 것이 결정성의 생명선이다(ARENA_INPUT 3절).
+  useEffect(() => {
+    link.on('status', (st, code) => {
+      setLinkStatus(st);
+      setRoomCode(code ?? '');
+      if (st === LINK.PAIRED) engine.send(EV.PAIRED);
+    });
+    const detach = attachSocket(link, engine.input, poseChannel, {
+      // 폰이 준비를 마쳤다. 캘리브레이션 자체는 폰이 이미 적용했고 여기서는 phase만 넘긴다
+      onCalibrated: () => engine.send(EV.CALIBRATED),
+    });
+    return () => {
+      detach();
+      link.on('status', null);
+      link.close();
+    };
+  }, [engine, link, poseChannel]);
+
+  // 명중과 패리를 폰으로 되돌린다. 렌더러가 아니라 판정이 낸 사건이라 2D 폴백에서도 나간다
+  const onGameFx = useCallback(
+    (e) => {
+      if (e.outcome === OUTCOME.PARRY) link.sendHaptic(HAPTIC.PARRY);
+      else if (e.outcome === OUTCOME.HIT || e.outcome === OUTCOME.RIPOSTE) {
+        link.sendHaptic(e.owner === OWNER.ME ? HAPTIC.HIT : HAPTIC.LOSE);
+      }
+    },
+    [link]
   );
 
   // 웹캠 배선 (R5). 팽창 트리거는 불리언만, 패럴랙스는 렌더러 전용 연속 채널이다.
@@ -129,6 +171,7 @@ export default function App() {
             fxId.current += 1;
             setFxShot({ ...e, id: fxId.current });
           }}
+          onGameFx={onGameFx}
         />
 
         {/* 프레임은 HUD보다 먼저 그린다. 같은 층에서 HUD가 위로 온다 */}
@@ -140,6 +183,8 @@ export default function App() {
           getPiste={getPiste}
           camValue={CAM_LABEL[camStatus]}
           camOk={camStatus === CAM.READY}
+          linkValue={LINK_LABEL[linkStatus]}
+          linkOk={linkStatus === LINK.PAIRED}
           fpsDegraded={degraded}
           rendererFallback={rendererFallback}
           bottomDebug={showMeter || showCam}
@@ -151,8 +196,22 @@ export default function App() {
 
         {phase === PHASE.IDLE ? (
           <IdleScreen
-            onStart={() => engine.send(EV.START_KEYBOARD)}
-            onKeyboard={() => engine.forceKeyboard()}
+            onStart={() => {
+              // 서버 주소가 없으면 페어링 화면에 세우지 않고 곧장 키보드 경기로 간다
+              if (link.connect()) engine.send(EV.START);
+              else engine.send(EV.START_KEYBOARD);
+            }}
+            onKeyboard={() => engine.send(EV.START_KEYBOARD)}
+          />
+        ) : null}
+
+        {phase === PHASE.PAIRING || phase === PHASE.CALIBRATION ? (
+          <PairingScreen
+            status={linkStatus}
+            code={roomCode}
+            controllerUrl={controllerUrl()}
+            calibrating={phase === PHASE.CALIBRATION}
+            onKeyboard={() => engine.send(EV.START_KEYBOARD)}
           />
         ) : null}
 
