@@ -123,6 +123,32 @@ export function ButtonGhost({ children, style, ...rest }) {
   );
 }
 
+/**
+ * 연결 스피너. 무한 스피너는 금지(N9)라 호출자가 상한 뒤 에러로 바꾼다. 여기선 회전만.
+ * reduced motion에서는 회전을 멈추고 점만 보인다(정적 표시).
+ */
+export function Spinner({ size = 40 }) {
+  return (
+    <div
+      role="status"
+      aria-label="연결 중"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        border: `3px solid ${colors.line.default}`,
+        borderTopColor: colors.red.light,
+        animation: 'vortexSpin 0.9s linear infinite',
+      }}
+    >
+      <style>{`
+        @keyframes vortexSpin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { [role="status"] { animation: none !important; } }
+      `}</style>
+    </div>
+  );
+}
+
 /** COMPONENTS.md StatusChip. 상태 텍스트 라벨 필수(색 단독 구분 금지). */
 export function StatusChip({ label, value, degraded = false }) {
   return (

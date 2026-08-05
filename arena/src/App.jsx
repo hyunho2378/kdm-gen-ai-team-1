@@ -237,7 +237,7 @@ export default function App() {
             code={roomCode}
             controllerUrl={controllerUrl()}
             calibrating={phase === PHASE.CALIBRATION}
-            onKeyboard={() => engine.send(EV.START_KEYBOARD)}
+            onKeyboard={() => engine.send(EV.RESET)}
           />
         ) : null}
 

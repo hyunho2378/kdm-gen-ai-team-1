@@ -89,6 +89,7 @@ export default function App() {
 
   const [phase, setPhase] = useState(PHASE.HOME);
   const [code, setCode] = useState(roomFromUrl);
+  const [connecting, setConnecting] = useState(false);
   const [denied, setDenied] = useState(false);
   const [tapMode, setTapMode] = useState(false);
   const [guarding, setGuarding] = useState(false);
@@ -188,15 +189,35 @@ export default function App() {
     setPhase(PHASE.PLAY);
   }, [pipeline, link]);
 
-  // CONNECT에서 코드 확정 → 접속. paired 게이팅은 B1에서 강화한다.
+  // CONNECT에서 코드 확정 → 접속. **화면은 CONNECT에 머물며 접속 중 상태를 보인다.**
+  // paired가 되면 아래 효과가 SELECT로 넘긴다(무한 스피너 금지, 상태 가시성 N1/N9).
   const onConnect = useCallback(
     (c) => {
       setCode(c);
+      setConnecting(true);
       link.connect(c);
-      setPhase(PHASE.SELECT);
     },
     [link]
   );
+
+  // HOME에서 게스트 시작 → CONNECT. ?room= 자동 주입이면 코드 입력을 건너뛰고 바로 접속한다.
+  const onGuest = useCallback(() => {
+    setPhase(PHASE.CONNECT);
+    if (roomFromUrl.length === 4) onConnect(roomFromUrl);
+  }, [roomFromUrl, onConnect]);
+
+  // paired 수신 → SELECT. CONNECT에 있을 때만 넘긴다(경기 중 재연결이 화면을 튀게 하지 않도록).
+  useEffect(() => {
+    if (linkStatus === LINK.PAIRED && phase === PHASE.CONNECT) {
+      setConnecting(false);
+      setPhase(PHASE.SELECT);
+    }
+  }, [linkStatus, phase]);
+
+  const onConnectCancel = useCallback(() => {
+    link.close();
+    setConnecting(false);
+  }, [link]);
 
   // SELECT에서 유파 확정 → 다음(권한). 선택값 소켓 전송은 B2에서 붙인다.
   const onSelect = useCallback(() => {
@@ -212,10 +233,22 @@ export default function App() {
     <>
       {/* statusBarBg 미지정 → colors.bg.base 기본. 다크 배경이라 light 스테이터스바. */}
       <ScreenContainer statusBarLight>
-        {phase === PHASE.HOME ? <HomeScreen onGuest={() => setPhase(PHASE.CONNECT)} /> : null}
+        {phase === PHASE.HOME ? <HomeScreen onGuest={onGuest} /> : null}
 
         {phase === PHASE.CONNECT ? (
-          <ConnectScreen initialCode={roomFromUrl} onDone={onConnect} onBack={back} />
+          <ConnectScreen
+            initialCode={roomFromUrl}
+            onDone={onConnect}
+            onBack={back}
+            connecting={connecting}
+            linkStatus={linkStatus}
+            linkError={linkError}
+            onRetry={() => {
+              setConnecting(true);
+              link.connect(code);
+            }}
+            onCancel={onConnectCancel}
+          />
         ) : null}
 
         {phase === PHASE.SELECT ? <SelectScreen onConfirm={onSelect} onBack={back} /> : null}
@@ -253,13 +286,15 @@ export default function App() {
         ) : null}
       </ScreenContainer>
 
-      {/* 연결 실패는 화면을 덮는다. 센서는 계속 돌고 있으므로 재시도가 즉시 붙는다 */}
-      {linkStatus === LINK.ERROR ? (
+      {/* 경기 중(PLAY) 끊김만 전체 덮개로 알린다. CONNECT 단계의 실패는 ConnectScreen이 인라인으로 다룬다.
+          센서는 계속 돌고 있으므로 재시도가 즉시 붙는다 */}
+      {linkStatus === LINK.ERROR && phase === PHASE.PLAY ? (
         <LinkErrorScreen
           reason={linkError}
           onRetry={() => link.connect(code)}
           onBack={() => {
             link.close();
+            setConnecting(false);
             setPhase(PHASE.CONNECT);
           }}
         />

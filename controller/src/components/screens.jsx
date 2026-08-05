@@ -4,24 +4,61 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { colors, ig, motion, radius, typography } from '../tokens.js';
-import { Body, ButtonGhost, ButtonPrimary, Screen, StatusChip, Title, TopBarBack } from './ui.jsx';
+import { Body, ButtonGhost, ButtonPrimary, Screen, Spinner, StatusChip, Title, TopBarBack } from './ui.jsx';
 import { CALIB_MS } from '../pipeline.js';
-import { LINK_ERROR } from '../net/socket.js';
+import { LINK, LINK_ERROR } from '../net/socket.js';
 
 /** 혼동 문자를 뺀 코드 알파벳. 0/O와 1/I를 서로 못 읽는 사고를 막는다. */
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const CODE_LEN = 4;
 
+/** 접속 진행 중 상태 문구. 상태마다 사람이 기대할 다음이 다르다(N1 시스템 상태 가시성). */
+const CONNECTING_TEXT = {
+  [LINK.CONNECTING]: '서버에 연결하는 중입니다. 무료 플랜은 첫 접속이 느릴 수 있습니다.',
+  [LINK.JOINED]: 'arena 화면을 기다리는 중입니다.',
+  [LINK.RECONNECTING]: '연결이 끊겨 다시 붙는 중입니다.',
+};
+
 /**
- * CONNECT(구 JOIN). 네이티브 input 대신 칸 4개를 직접 그린다(PITFALLS 네이티브 UI 노출).
- * 코드 확정 후 접속한다. paired 게이팅과 상태 표시 강화는 B1이 맡는다.
+ * CONNECT(구 JOIN). 두 모드다.
+ * - 코드 입력: 네이티브 input 대신 칸 4개 + 자체 키패드(PITFALLS 네이티브 UI 노출, 혼동 문자 제외).
+ * - 접속 중/실패: 스피너(연결 중) 또는 평문 에러 + 재시도(무한 스피너 금지 N9, N1 상태 가시성).
+ *   paired가 되면 App이 SELECT로 넘긴다.
  */
-export function ConnectScreen({ initialCode, onDone, onBack }) {
+export function ConnectScreen({ initialCode, onDone, onBack, connecting, linkStatus, linkError, onRetry, onCancel }) {
   const [code, setCode] = useState(initialCode ?? '');
   const boxRef = useRef(null);
 
   const ok = code.length === CODE_LEN;
   const push = (ch) => setCode((c) => (c.length >= CODE_LEN ? c : c + ch));
+
+  // 접속 진행/실패 모드. 코드 입력 위에 덮지 않고 화면을 통째로 바꾼다(한 화면 한 초점).
+  if (connecting) {
+    const failed = linkStatus === LINK.ERROR;
+    return (
+      <>
+        <TopBarBack title="세션 연결" onBack={onCancel} />
+        <Screen>
+          {failed ? (
+            <>
+              <Title>연결되지 않았다</Title>
+              <Body tone={colors.red.light}>{LINK_REASON_TEXT[linkError] ?? '알 수 없는 이유로 끊겼다.'}</Body>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <ButtonGhost onClick={onCancel}>코드 다시 입력</ButtonGhost>
+                <ButtonPrimary onClick={onRetry}>재시도</ButtonPrimary>
+              </div>
+            </>
+          ) : (
+            <>
+              <Spinner />
+              <Title>{code || initialCode} 방에 연결 중</Title>
+              <Body tone={colors.text.dim}>{CONNECTING_TEXT[linkStatus] ?? '연결하는 중입니다.'}</Body>
+            </>
+          )}
+        </Screen>
+      </>
+    );
+  }
 
   return (
     <>

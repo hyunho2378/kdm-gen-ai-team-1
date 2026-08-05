@@ -5,6 +5,7 @@
 
 import { colors, spacing, typography, zIndex } from '../tokens.js';
 import { ButtonGhost } from '../components/ui/Button.jsx';
+import ChromeText from '../components/ui/ChromeText.jsx';
 import QRPanel, { RoomCode } from '../components/QRPanel.jsx';
 import { LINK } from '../net/socket.js';
 
@@ -37,6 +38,13 @@ export default function PairingScreen({ status, code, controllerUrl, calibrating
         textAlign: 'center',
       }}
     >
+      {/* 로비 워드마크. 폰이 붙기 전 이 화면이 발표장에 떠 있는 얼굴이다 */}
+      {!calibrating ? (
+        <ChromeText as="div" variant="title">
+          VORTEX
+        </ChromeText>
+      ) : null}
+
       <p
         style={{
           margin: 0,
@@ -73,7 +81,8 @@ export default function PairingScreen({ status, code, controllerUrl, calibrating
         </p>
       ) : null}
 
-      <ButtonGhost onClick={onKeyboard}>키보드로 시작</ButtonGhost>
+      {/* 폰/서버가 없어도 발표는 계속된다. 키보드로 진행하면 유파 선택(1234) 화면으로 돌아간다 */}
+      <ButtonGhost onClick={onKeyboard}>키보드로 진행 (유파 선택)</ButtonGhost>
     </section>
   );
 }
