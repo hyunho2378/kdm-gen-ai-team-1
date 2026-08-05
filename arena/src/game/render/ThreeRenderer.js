@@ -88,14 +88,17 @@ const POSE_BLEND_SEC = 0.35;
  *
  * 사브르는 절단계라 베기가 주력이고 **전진 발 교차가 반칙이라 플레슈를 못 쓴다.**
  * 그래서 장거리가 플런지다. 에페는 찌르기 종목이고 플레슈가 허용된다.
+ *
+ * **유파가 아니라 계열(family)로 키를 잡는다.** 헝가리안은 라다엘리 사브르 계승이라
+ * 세이버와 같은 베기 호와 플런지를 그대로 재사용한다(FENCING_RULES 판정표).
  */
 const TECH_NEAR = {
-  'italian-saber': [TECH.CUT_HEAD, TECH.CUT_HEAD, TECH.CUT_FLANK, TECH.CUT_CHEEK, TECH.STOP_CUT],
-  'french-epee': [TECH.THRUST, TECH.THRUST, TECH.THRUST, TECH.STOP_HIT],
+  sabre: [TECH.CUT_HEAD, TECH.CUT_HEAD, TECH.CUT_FLANK, TECH.CUT_CHEEK, TECH.STOP_CUT],
+  epee: [TECH.THRUST, TECH.THRUST, TECH.THRUST, TECH.STOP_HIT],
 };
 const TECH_FAR = {
-  'italian-saber': [TECH.PLUNGE, TECH.PLUNGE, TECH.CUT_HEAD],
-  'french-epee': [TECH.FLECHE, TECH.FLECHE, TECH.THRUST],
+  sabre: [TECH.PLUNGE, TECH.PLUNGE, TECH.CUT_HEAD],
+  epee: [TECH.FLECHE, TECH.FLECHE, TECH.THRUST],
 };
 const TECH_FALLBACK = [TECH.THRUST, TECH.CUT_HEAD, TECH.CUT_FLANK];
 /** 이 아래면 장거리 기술을 고른다. 유효 범위 먼쪽 경계(35) 근처다 */
@@ -453,7 +456,7 @@ export function createThreeRenderer() {
       if (gameState.aiMode === AI_MODE.TELEGRAPH && prevAiMode !== AI_MODE.TELEGRAPH) {
         // 거리가 멀면 장거리 기술(플런지 / 플레슈), 가까우면 근거리 기술을 뽑는다
         const table = gameState.d < FAR_D ? TECH_FAR : TECH_NEAR;
-        const bag = table[gameState.school?.key] ?? TECH_FALLBACK;
+        const bag = table[gameState.school?.family] ?? TECH_FALLBACK;
         opponent.setAttack(bag[Math.floor(rand(seed) * bag.length) % bag.length]);
       }
       prevAiMode = gameState.aiMode;

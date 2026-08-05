@@ -6,7 +6,7 @@ import { motion } from '../tokens.js';
 import { createRng } from './rng.js';
 import { createMachine, EV, PHASE } from './machine.js';
 import { createInputQueue, INPUT } from './input.js';
-import { pickSchool, stepOpponent } from './opponents.js';
+import { pickSchool, stepOpponent, lockoutOf } from './opponents.js';
 import {
   RULES,
   OUTCOME,
@@ -250,11 +250,8 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
 
     if (telegraphEnded) {
       const kind = state.ai.kind;
-      // 유파의 락아웃 창을 넘긴다. judge는 유파를 모르고 창 길이와 더블 인정 여부만 본다
-      const result = resolveTelegraphEnd(state, clockMs, {
-        lockoutMs: school.lockoutMs,
-        doubleTouch: school.doubleTouch,
-      });
+      // 유파 계열의 락아웃 창을 넘긴다. judge는 유파도 계열도 모르고 창 길이와 더블 인정 여부만 본다
+      const result = resolveTelegraphEnd(state, clockMs, lockoutOf(school));
       // 이번 공격에 대한 맞불 기록은 여기서 소진한다. 다음 공격으로 넘기지 않는다
       state.counterAt = -Infinity;
       if (kind === ATTACK_KIND.REAL) {

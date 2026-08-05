@@ -5,7 +5,25 @@ import { colors } from '../tokens.js';
 import { RULES, AI_MODE, ATTACK_KIND, moveOpponent } from './judge.js';
 
 /**
- * 유파 2종. 두 유파가 "다르게 싸운다"는 것이 체감되어야 하므로 파라미터가 넷 늘었다(D3).
+ * 무기 계열 (R4, FENCING_RULES 판정표). 락아웃 동시타 규칙과 시각 기술(베기 호/플런지)이
+ * 계열을 공유한다. 유파가 늘어도 계열은 둘뿐이라 규칙을 유파마다 베끼지 않고 여기 한곳에 둔다.
+ *
+ * - 사브르계: 우선권 종목이라 동시 개시가 무득점(시뮬타네). 락아웃 창은 실측 170ms.
+ *   이탈리아 세이버와 **헝가리안(라다엘리 사브르 계승)**이 함께 여기에 속한다.
+ * - 에페계: 우선권이 없어 양쪽 다 득점(더블 투셰). 창은 실측 40ms로 훨씬 좁다.
+ */
+export const FAMILY = {
+  sabre: { lockoutMs: 170, doubleTouch: false },
+  epee: { lockoutMs: 40, doubleTouch: true },
+};
+
+/** 유파의 계열 락아웃 규칙. judge는 유파도 계열도 모르고 이 창 길이와 더블 인정 여부만 받는다. */
+export function lockoutOf(school) {
+  return FAMILY[school?.family] ?? { lockoutMs: 0, doubleTouch: false };
+}
+
+/**
+ * 유파 3종. 세 유파가 "다르게 싸운다"는 것이 체감되어야 한다(D3, ARENA_AI_SCHOOLS).
  *
  * - attackIntervalMs: 폴백 대기 분포. 템포 구간이 없을 때만 쓴다
  * - tempoBands: 공격 간격 분포를 구간별로 갈아탄다. **같은 리듬이 계속되면 읽혀 버린다**
@@ -14,9 +32,12 @@ import { RULES, AI_MODE, ATTACK_KIND, moveOpponent } from './judge.js';
  * - stepFeintChance: 대치 중 앞으로 훅 들어왔다 빠지는 거리 흔들기 확률
  * - ripostePressure: 내가 패리해 리포스트 창이 열렸을 때 곧바로 되받아치려 들 확률
  * - feintRatio / preferredD / stepSpeed: 기존 의미 그대로
+ * - family: 무기 계열(FAMILY). 락아웃과 시각 기술이 계열을 공유한다
+ * - styleName: 통합 모드 HUD가 "MIXED 세이버 스타일"처럼 짧게 부를 때 쓰는 스타일명
  *
- * 이탈리아 세이버는 콤보와 빠른 템포로 몰아친다. 프랑스 에페는 거리를 흔들며 재고
- * 패리를 당하면 즉시 되받아 온다. 난수는 전부 주입된 rng를 거친다.
+ * 이탈리아 세이버는 콤보와 빠른 템포로 몰아친다(공격형). 프랑스 에페는 거리를 흔들며 재고
+ * 패리를 당하면 즉시 되받아 온다(카운터형). 헝가리안은 페인트와 템포 브레이크로 판단을
+ * 교란한다(심리전형). 난수는 전부 주입된 rng를 거친다.
  */
 export const SCHOOLS = [
   {
@@ -36,9 +57,9 @@ export const SCHOOLS = [
     feintRatio: 0.3,
     preferredD: 52,
     stepSpeed: 20,
-    // R3. 우선권 종목이라 동시 개시는 무득점(시뮬타네)이다. 창은 FENCING_RULES 실측 170ms
-    lockoutMs: 170,
-    doubleTouch: false,
+    // 사브르계. 우선권 종목이라 동시 개시는 무득점(시뮬타네), 창 170ms(FAMILY)
+    family: 'sabre',
+    styleName: '세이버',
     // 라인 몰기 성향. 세이버는 몰아치는 유파라 높다
     lineDrive: 0.55,
     color: colors.blue.light,
@@ -60,11 +81,42 @@ export const SCHOOLS = [
     feintRatio: 0.55,
     preferredD: 38,
     stepSpeed: 15,
-    // R3. 우선권이 없는 종목이라 양쪽 다 득점(더블 투셰)이다. 창은 실측 40ms로 훨씬 좁다
-    lockoutMs: 40,
-    doubleTouch: true,
+    // 에페계. 우선권이 없어 양쪽 다 득점(더블 투셰), 창 40ms(FAMILY)
+    family: 'epee',
+    styleName: '에페',
     // 거리를 재는 유파라 몰아붙이는 성향이 낮다
     lineDrive: 0.22,
+    color: colors.blue.light,
+  },
+  {
+    key: 'hungarian',
+    name: '헝가리안',
+    rhythm: '급변하는 템포와 페인트',
+    attackIntervalMs: { min: 1000, max: 2400 },
+    // **템포 브레이크.** 느린 밴드와 빠른 밴드가 멀리 떨어져 있고, 매 공격마다 갈아탄다
+    // (tempoShiftEvery 1). 리듬을 읽으려는 순간 리듬이 뒤집힌다 — 심리전형의 정체성이다.
+    tempoBands: [
+      { min: 2000, max: 2800 },
+      { min: 700, max: 1150 },
+    ],
+    tempoShiftEvery: 1,
+    // 콤보 최저. 몰아치지 않고 단발로 교란한다
+    comboChance: 0.08,
+    comboGapMs: { min: 300, max: 480 },
+    // 거리 흔들기 최다(세이버 0.12 < 에페 0.45 < 헝가리안). 간합을 끊임없이 흔든다
+    stepFeintChance: 0.55,
+    // 리포스트 압박은 중간(세이버 0.25 < 헝가리안 < 에페 0.55)
+    ripostePressure: 0.4,
+    // 페인트 비율 최고(세이버 0.3 < 에페 0.55 < 헝가리안). 진짜와 가짜를 못 가르게 한다
+    feintRatio: 0.6,
+    // 선호 간합 중간~원거리(세이버 52 근접, 에페 38 원거리 사이)
+    preferredD: 43,
+    stepSpeed: 16,
+    // 사브르계(라다엘리 계승). 락아웃 170ms 시뮬타네를 세이버와 공유한다(FAMILY)
+    family: 'sabre',
+    styleName: '헝가리안',
+    // 몰아붙이기보다 흔들기 위주라 라인 몰기는 중간 이하
+    lineDrive: 0.3,
     color: colors.blue.light,
   },
 ];
