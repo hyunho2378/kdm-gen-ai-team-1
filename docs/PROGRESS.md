@@ -1079,6 +1079,12 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **controller VORTEX 앱. 트랙 선점.** controller 폴더를 VORTEX 폰 앱으로 확장한다(별도 앱 안 만듦, 하나의 주소).
+  화면 흐름 HOME → CONNECT → SELECT → PERMISSION → CALIBRATION → PLAY → RESULT.
+  강릉페이 리뉴얼 디자인 시스템 이식(구조·규율만, 색은 VORTEX 다크). 반입 파일은 `docs/reference/gnpay/`.
+  **센서(C2)·소켓(C3) 로직 무변경, 화면 계층만 확장. arena machine.js 무변경, 최신 서명 유지가 통과 조건**
+  (이 트랙은 게임플레이 변경 없음). 폴더 소유: controller/arena/shared/server/docs만. presentation-v2 불가침.
+  B0~B4 단계별 커밋과 즉시 push. 커밋 접두 `[controller]`/`[arena]`.
 - **P-C AI 유파 완성(확인 대기).** VORTEX 유파 3종 + 통합 모드로 게임을 맞췄다. **유파 4종 완성.**
   - **A1 헝가리안 신설(심리전형).** `family 'sabre'`(라다엘리 사브르 계승). FEINT 최고(0.6),
     거리 흔들기 최고(0.55), 템포 브레이크(느린 2000~2800 / 빠른 700~1150 밴드를 매 공격 교체 shiftEvery 1),
