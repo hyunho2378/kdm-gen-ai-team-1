@@ -6,7 +6,7 @@ import { motion } from '../tokens.js';
 import { createRng } from './rng.js';
 import { createMachine, EV, PHASE } from './machine.js';
 import { createInputQueue, INPUT } from './input.js';
-import { pickSchool, stepOpponent, lockoutOf } from './opponents.js';
+import { stepOpponent, lockoutOf, createSchoolScheduler } from './opponents.js';
 import {
   RULES,
   OUTCOME,
@@ -33,11 +33,15 @@ const SCORE_MS = 420;
  * @param seed 정수. 같은 시드와 같은 입력 순서는 같은 경기를 만든다
  * @param onPublish 이산 상태 변화 알림(phase, score, judge 등). 프레임마다 부르지 않는다
  * @param reducedMotion true면 시간 팽창을 끈다
+ * @param school 유파 선택값(protocol SCHOOL). 미지정이면 시드로 뽑는다(기준 서명 경로).
+ *   'mixed'면 득점마다 유파를 갈아타는 통합 모드다. 이 인자가 경기 진입의 단일 창구다.
  */
-export function createEngine({ seed = 20260802, onPublish, reducedMotion = false } = {}) {
+export function createEngine({ seed = 20260802, onPublish, reducedMotion = false, school: schoolSel } = {}) {
   const rng = createRng(seed);
   const input = createInputQueue();
-  let school = pickSchool(rng);
+  // 유파 결정은 스케줄러 하나로 모은다. mixed면 라운드마다 갈아타고, 아니면 고정이다.
+  const scheduler = createSchoolScheduler(schoolSel, rng);
+  let school = scheduler.school;
   let state = createJudgeState();
 
   // 팽창된 로직 시계. update가 받은 dt를 누적한다. performance.now를 쓰지 않는다.
@@ -129,6 +133,16 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     }
     // 더블 투셰. 양쪽이 함께 가져간다(R3-2). 에페에만 성립한다
     if (result.aiPoints > 0) state.score.ai += result.aiPoints;
+
+    // 통합 모드는 라운드(득점)마다 유파를 갈아탄다. 고정/기본 모드에서는 no-op(rng 무소비)이라
+    // 기준 서명이 이 갈래에 영향받지 않는다. 다음 교환부터 새 유파의 케이던스와 계열을 쓴다.
+    if (result.points > 0 || result.aiPoints > 0) {
+      if (scheduler.advance()) {
+        school = scheduler.school;
+        view.school = school;
+      }
+    }
+
     if (result.counted) state.form.push(isSuccess(result));
     if (result.opensRiposte) state.riposteUntil = clockMs + RULES.RIPOSTE_WINDOW_MS;
     else state.riposteUntil = 0;
@@ -306,7 +320,8 @@ export function createEngine({ seed = 20260802, onPublish, reducedMotion = false
     send(event) {
       if (event === EV.REMATCH || event === EV.RESET) {
         reset();
-        school = pickSchool(rng);
+        scheduler.reset();
+        school = scheduler.school;
         view.school = school;
       }
       machine.send(event);

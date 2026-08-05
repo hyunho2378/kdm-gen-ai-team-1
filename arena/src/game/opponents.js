@@ -2,6 +2,7 @@
 // 색은 blue.light 고정(DESIGN 2절: 블루는 상대의 색이고 내 것에 쓰지 않는다).
 
 import { colors } from '../tokens.js';
+import { SCHOOL } from '../../../shared/protocol.js';
 import { RULES, AI_MODE, ATTACK_KIND, moveOpponent } from './judge.js';
 
 /**
@@ -141,6 +142,87 @@ export function getSchool(key) {
 /** 시드로 유파를 고른다. 같은 시드는 같은 상대를 준다. */
 export function pickSchool(rng) {
   return SCHOOLS[Math.floor(rng.next() * SCHOOLS.length) % SCHOOLS.length];
+}
+
+/** 선택값(protocol SCHOOL) → SCHOOLS 유파 키. mixed와 미지정은 여기 없다(스케줄러가 처리). */
+const SELECT_KEY = {
+  [SCHOOL.SABRE]: 'italian-saber',
+  [SCHOOL.EPEE]: 'french-epee',
+  [SCHOOL.HUNGARIAN]: 'hungarian',
+};
+
+/**
+ * 통합 모드 난이도 계수(+@). "세 스타일을 조합하고 진화시키는 코치이자 상대"의 구현이다.
+ * 공격 간격을 0.9배로 줄여(빨라지고) 페인트를 조금 더 낸다. 전부 소폭이고 상한을 둔다.
+ */
+const MIX_BOOST = { interval: 0.9, feint: 1.12, feintCap: 0.72 };
+const scaleRange = (r, f) => ({ min: r.min * f, max: r.max * f });
+
+/** 유파 프로필에 난이도 계수를 곱한 통합 모드 프로필. 이름은 활성 스타일로 바꾼다. */
+function intensify(school) {
+  return {
+    ...school,
+    name: `MIXED ${school.styleName} 스타일`,
+    attackIntervalMs: scaleRange(school.attackIntervalMs, MIX_BOOST.interval),
+    tempoBands: school.tempoBands.map((b) => scaleRange(b, MIX_BOOST.interval)),
+    comboGapMs: scaleRange(school.comboGapMs, MIX_BOOST.interval),
+    feintRatio: Math.min(MIX_BOOST.feintCap, school.feintRatio * MIX_BOOST.feint),
+  };
+}
+
+/**
+ * 유파 스케줄러. 진입점이 넘긴 선택값(protocol SCHOOL) 하나로 네 모드를 모두 처리한다.
+ *
+ * - 특정 유파(sabre/epee/hungarian): 고정. advance는 no-op.
+ * - mixed: 득점(라운드)마다 3유파 프로필 중 하나로 전환한다. **직전과 다른 유파 우선**(항상
+ *   나머지 둘 중에서 뽑는다). 각 프로필에 난이도 계수를 곱한다(강화 +@).
+ * - 미지정(기본): pickSchool(rng)로 한 번 뽑고 고정한다. **기준 서명 경로다.**
+ *
+ * 난수는 주입된 rng만 쓴다. 고정/기본 경로의 advance는 rng를 건드리지 않으므로
+ * 스케줄러 도입이 기준 서명에 영향을 주지 않는다.
+ */
+export function createSchoolScheduler(select, rng) {
+  const isMixed = select === SCHOOL.MIXED;
+  const fixedKey = SELECT_KEY[select] ?? null;
+  let idx = 0;
+  let current = null;
+
+  function setIndex(i) {
+    idx = i;
+    current = isMixed ? intensify(SCHOOLS[i]) : SCHOOLS[i];
+  }
+  function init() {
+    if (isMixed) {
+      setIndex(Math.floor(rng.next() * SCHOOLS.length) % SCHOOLS.length);
+    } else if (fixedKey) {
+      const s = getSchool(fixedKey);
+      idx = SCHOOLS.indexOf(s);
+      current = s;
+    } else {
+      const s = pickSchool(rng); // 기본 경로: 기존과 동일한 rng 소비
+      idx = SCHOOLS.indexOf(s);
+      current = s;
+    }
+  }
+  init();
+
+  return {
+    mixed: isMixed,
+    get school() {
+      return current;
+    },
+    /** 득점마다 호출. mixed면 직전과 다른 유파로 바꾸고 true, 아니면 no-op false. */
+    advance() {
+      if (!isMixed) return false;
+      const others = [];
+      for (let i = 0; i < SCHOOLS.length; i += 1) if (i !== idx) others.push(i);
+      setIndex(others[Math.floor(rng.next() * others.length) % others.length]);
+      return true;
+    },
+    reset() {
+      init();
+    },
+  };
 }
 
 /**

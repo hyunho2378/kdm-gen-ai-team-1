@@ -17,6 +17,11 @@ export const PHASE = {
 // 접속 역할. hello 메시지의 role 값
 export const ROLE = { ARENA: 'arena', CONTROLLER: 'controller' };
 
+// AI 대전자 유파 선택 값. arena 경기 진입점이 받는 단일 인자이고,
+// 로컬 키보드 선택(1/2/3/4)과 앱 select 메시지가 같은 값을 쓴다.
+// mixed는 세 유파를 라운드마다 갈아타는 통합 모드다.
+export const SCHOOL = { SABRE: 'sabre', EPEE: 'epee', HUNGARIAN: 'hungarian', MIXED: 'mixed' };
+
 // 이산 입력 소스. judge는 이 값을 절대 읽지 않는다(ARENA_INPUT 2절).
 // 존재 이유는 디버깅 로그와 HUD 표시 둘뿐이다.
 export const SOURCE = { KEYBOARD: 'keyboard', CONTROLLER: 'controller' };
