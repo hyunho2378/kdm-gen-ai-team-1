@@ -17,6 +17,7 @@ import ArenaOnboarding from './components/ArenaOnboarding.jsx';
 import HUD from './components/hud/HUD.jsx';
 import CamDebug from './components/hud/CamDebug.jsx';
 import FpsMeter from './components/hud/FpsMeter.jsx';
+import PoseTest, { poseTestEnabled } from './components/hud/PoseTest.jsx';
 import FuiLayer from './components/hud/FuiLayer.jsx';
 import GlassFrame from './components/hud/GlassFrame.jsx';
 import VignetteOverlay from './components/VignetteOverlay.jsx';
@@ -73,6 +74,8 @@ export default function App() {
   const showMeter = useMemo(() => meterEnabled(import.meta.env.DEV), []);
   // ?cam=1이면 캠 디버그. 캠이 약한 것과 안 붙은 것을 사용자가 눈으로 가른다(V2)
   const showCam = useMemo(camDebugEnabled, []);
+  // ?posetest=1이면 자세 미리보기. 폰을 흔들지 않고 검 자세와 조작 판정을 확인한다
+  const showPoseTest = useMemo(poseTestEnabled, []);
 
   const engine = useMemo(
     () =>
@@ -263,6 +266,7 @@ export default function App() {
         <FuiLayer shot={fxShot} reduced={reduced} />
         {showMeter ? <FpsMeter perf={perf} rendererRef={rendererRef} /> : null}
         {showCam ? <CamDebug face={face} rendererRef={rendererRef} reduced={reduced} /> : null}
+        {showPoseTest ? <PoseTest poseChannel={poseChannel} /> : null}
         <VignetteOverlay active={snapshot.dilating} />
 
         {/* 첫 판 온보딩. 활성 동안 GameCanvas가 frozen이라 게임 시계가 서 있다 */}
