@@ -1,20 +1,17 @@
-// S1 표지. 포스터 문법 + OGL Polyline 커서 궤적. **라이트 반전: 배경 #F6F6F6.**
-// 사진(정사각, 인물 중앙)이 화면 하단에 앉고 그 위에 커서 궤적, 위에 시그니처와 서브카피.
+// S1 표지. 포스터 문법. **라이트 반전: 배경 #F6F6F6.**
+// fencer 다크 사진 패널을 제거했고, 그 사진 위에 얹던 OGL 커서 궤적(VortexLine)도 함께 걷었다
+// (로고가 화면 중앙으로 오면서 궤적의 idle 나선이 로고를 관통해 아티팩트로 보였다).
+// 시그니처 로고를 화면 정중앙(가로/세로)에 두고, 서브카피는 그 바로 아래, 팀/행사 표기는
+// 상단 두 모서리에 둔다(중앙 로고를 프레임하는 균형).
 //
 // **시그니처는 logo_main.svg를 잉크(#101010)로 평평하게 찍는다(질감/섀도우 0).**
 // SVG 도형이 흰 채움이라 CSS mask로 알파만 취해 잉크 박스를 그 모양으로 오려낸다.
-// 그래서 원본 에셋을 안 건드리고도 정확히 #101010 단색 로고가 된다(기존 VORTEX 텍스트 자리에).
-//
-// 사진은 인물-온-블랙(정사각)이라 라이트 위에서는 의도된 다크 패널로 읽힌다(contain이라 좌우는 라이트가 통과).
-// 시그니처가 그 검은 패널에 겹치면 잉크 로고가 안 보이므로, 패널을 낮춰 상단 라이트 밴드에 로고를 앉힌다.
-// (레드 글로우와 screen 합성은 걷었다.)
+// 그래서 원본 에셋을 안 건드리고도 정확히 #101010 단색 로고가 된다. 크기는 PV2 display 스케일(대형).
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { colors, typography, motion } from '../tokens.js';
 import { TITLE, COVER } from '../copy.js';
-import AssetImage from '../components/AssetImage.jsx';
-import VortexLine from '../components/VortexLine.jsx';
 
 // 시그니처 로고를 잉크로 찍는 mask 세트. 원본 SVG(흰 도형/투명 배경)의 알파를 마스크로 쓴다.
 const LOGO_MASK = {
@@ -42,27 +39,23 @@ const CORNER = {
   pointerEvents: 'none',
 };
 
-export default function S1Cover({ active }) {
-  const photoRef = useRef(null);
+export default function S1Cover() {
   const markRef = useRef(null);
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const photo = photoRef.current;
     const mark = markRef.current;
-    if (!photo || !mark) return undefined;
+    if (!mark) return undefined;
 
     if (reduced) {
-      gsap.set([photo, mark], { opacity: 1, y: 0 });
+      gsap.set(mark, { opacity: 1, y: 0 });
       return undefined;
     }
 
-    // 사진은 페이드만(위치 이동 없음), 워드마크 묶음은 0.3s 지연 페이드업. transform과 opacity만 만진다.
-    gsap.set(photo, { opacity: 0 });
-    gsap.set(mark, { opacity: 0, yPercent: 8 });
+    // 중앙 시그니처 묶음 페이드업. transform과 opacity만 만진다.
+    gsap.set(mark, { opacity: 0, yPercent: 6 });
     const tl = gsap.timeline();
-    tl.to(photo, { opacity: 1, duration: 1.2, ease: motion.gsapOut });
-    tl.to(mark, { opacity: 1, yPercent: 0, duration: 0.9, ease: motion.gsapOut }, 0.3);
+    tl.to(mark, { opacity: 1, yPercent: 0, duration: 1, ease: motion.gsapOut }, 0.2);
 
     return () => {
       tl.kill();
@@ -71,25 +64,6 @@ export default function S1Cover({ active }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* 사진. 하단 정렬 contain이라 인물이 잘리지 않고 정사각 비율이 유지된다.
-          multiply 합성이라 사진의 검정 배경은 라이트 배경을 통과시키고 어두운 인물만 남는다. */}
-      <div
-        ref={photoRef}
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: '68%',
-          zIndex: 1,
-        }}
-      >
-        <AssetImage src="/images/cover/fencer.png" fit="contain" position="center bottom" />
-      </div>
-
-      {/* OGL Polyline 커서 궤적. 사진 위, 워드마크 아래(zIndex 3). 선이 텍스트를 가리지 않는다. */}
-      <VortexLine active={active} />
-
       {/* 포스터 좌상단: 팀과 이름. 가운데점 대신 얇은 세로선으로 두 필드를 가른다. */}
       <div style={{ ...CORNER, left: 'clamp(20px, 3.4vw, 56px)', display: 'flex', gap: 10 }}>
         <span style={{ color: colors.text.secondary }}>{COVER.team}</span>
@@ -102,46 +76,55 @@ export default function S1Cover({ active }) {
         {COVER.event}
       </div>
 
-      {/* 중앙 상단: 메탈릭 워드마크 + 서브카피 한 줄 */}
+      {/* 정중앙: 시그니처 로고 + 서브카피.
+          **로고를 정확히 화면 중앙에 둔다.** 서브카피는 out-of-flow(absolute)라 로고 위치를 밀지 않고
+          로고 바로 아래에 걸린다. 그래서 로고 자체가 가로/세로 정중앙에 온다. */}
       <div
         ref={markRef}
         style={{
           position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 'clamp(44px, 7vh, 96px)',
+          inset: 0,
           zIndex: 3,
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
-          gap: 'clamp(10px, 1.8vh, 22px)',
-          padding: '0 24px',
+          justifyContent: 'center',
           pointerEvents: 'none',
-          textAlign: 'center',
         }}
       >
-        {/* 시그니처. logo_main.svg를 잉크로 평평하게 찍는다(질감/드롭섀도우/그라디언트 0).
-            기존 VORTEX 텍스트 자리와 크기에 맞춘 폭. 로고 자체가 워드마크라 aria-label로 텍스트를 준다. */}
-        <div
-          role="img"
-          aria-label={TITLE}
-          style={{
-            ...LOGO_MASK,
-            width: 'clamp(148px, 20vw, 272px)',
-            aspectRatio: '250 / 180',
-          }}
-        />
-        <div
-          style={{
-            position: 'relative',
-            fontFamily: typography.family,
-            fontSize: typography.body.size,
-            fontWeight: 500,
-            letterSpacing: '0.1em',
-            color: colors.text.secondary,
-          }}
-        >
-          {COVER.sub}
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+          {/* 시그니처. logo_main.svg를 잉크로 평평하게(질감/드롭섀도우/그라디언트 0).
+              PV2 display 스케일에 준하는 대형 — 다른 슬라이드 VORTEX 워드마크와 같은 존재감. */}
+          <div
+            role="img"
+            aria-label={TITLE}
+            style={{
+              ...LOGO_MASK,
+              width: 'clamp(240px, 34vw, 520px)',
+              aspectRatio: '250 / 180',
+            }}
+          />
+          {/* 서브카피. 로고 바로 아래 중앙. absolute라 로고를 중앙에서 밀지 않는다. */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              marginTop: 'clamp(12px, 2.2vh, 28px)',
+              // 명시 폭. 자연폭(약 321px)보다 넉넉해 넓은 화면에선 한 줄, 좁은 화면(320)에선 90vw로 줄바꿈.
+              width: 'min(90vw, 380px)',
+              wordBreak: 'keep-all', // 한글이 단어 중간에서 끊기지 않게(몰입형이 몰입/형으로 갈리던 문제)
+              fontFamily: typography.family,
+              fontSize: typography.body.size,
+              fontWeight: 500,
+              letterSpacing: '0.1em',
+              lineHeight: 1.6,
+              color: colors.text.secondary,
+              textAlign: 'center',
+            }}
+          >
+            {COVER.sub}
+          </div>
         </div>
       </div>
     </div>
