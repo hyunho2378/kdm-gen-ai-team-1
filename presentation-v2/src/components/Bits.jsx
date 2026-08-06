@@ -141,8 +141,8 @@ export function Badge({ text, filled }) {
         fontWeight: 700,
         letterSpacing: '0.2em',
         color: filled ? colors.text.onFill : colors.text.secondary,
-        // 라이트 반전: 전역 액센트는 잉크 단색. filled면 잉크 채움 + 밝은 글자, 아니면 잉크 아웃라인.
-        background: filled ? colors.ink : colors.surface.pill,
+        // filled면 네이비 프라이머리 채움 + 밝은 글자(유파 활성 배지), 아니면 잉크 아웃라인.
+        background: filled ? colors.navy : colors.surface.pill,
         boxShadow: filled ? 'none' : `inset 0 0 0 1px ${colors.line.strong}`,
       }}
     >

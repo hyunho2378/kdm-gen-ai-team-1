@@ -139,8 +139,8 @@ export default function S7Demo({ active }) {
           borderRadius: '50%',
           border: 'none',
           padding: 0,
-          // 라이트 반전: 레드 CTA를 잉크 원으로. 밝은 배경 위 잉크 원 + 밝은 화살표.
-          background: colors.ink,
+          // 네이비 프라이머리 CTA 원. 밝은 배경 위 네이비 원 + 밝은 화살표.
+          background: colors.navy,
           color: colors.text.onFill,
           display: 'flex',
           alignItems: 'center',

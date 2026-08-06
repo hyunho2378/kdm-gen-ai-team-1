@@ -205,7 +205,7 @@ export default function App() {
                 }}
               >
                 <SlideHeader
-                  eyebrow={{ en: s.en, ko: s.ko }}
+                  eyebrow={{ en: s.en, ko: s.ko, tone: colors.navy }}
                   headline="콘텐츠 확정 예정"
                   headlineColor={colors.text.faint}
                 />

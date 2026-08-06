@@ -76,9 +76,19 @@ export default function S4Experience({ active }) {
         padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
-      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 우). */}
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 네이비 | 헤드라인 + 설명 본문 우). */}
       <div ref={headRef} style={{ flexShrink: 0, opacity: 0 }}>
-        <SlideHeader eyebrow={{ en: EXPERIENCE.label.en, ko: EXPERIENCE.label.ko }} headline={EXPERIENCE.headline} />
+        <SlideHeader
+          eyebrow={{ en: EXPERIENCE.label.en, ko: EXPERIENCE.label.ko, tone: colors.navy }}
+          headline={EXPERIENCE.headline}
+          sub={[
+            <span key="body">
+              {EXPERIENCE.body.map((seg, i) => (
+                <span key={i} style={{ fontWeight: seg.b ? 700 : 400 }}>{seg.t}</span>
+              ))}
+            </span>,
+          ]}
+        />
       </div>
 
       {/* 4열 카드. 아주 좁은 폭에서는 2x2로 접힌다. */}
@@ -124,8 +134,8 @@ export default function S4Experience({ active }) {
                   width: 'clamp(48px, 4.6vw, 96px)',
                   height: 'clamp(48px, 4.6vw, 96px)',
                   borderRadius: '50%',
-                  // 라이트 반전: 레드 아이콘 원을 잉크로. 안의 아이콘은 밝은색(onFill).
-                  background: colors.ink,
+                  // 네이비 프라이머리 아이콘 원. 안의 아이콘은 밝은색(onFill).
+                  background: colors.navy,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

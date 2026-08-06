@@ -25,7 +25,7 @@ import { useEffect, useRef, useState } from 'react';
 import { colors, typography, motion, grid } from '../tokens.js';
 import { DUELIST, DUELIST_STYLES } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SlideHeader, Badge, StepDots } from '../components/Bits.jsx';
+import { SlideHeader, Badge } from '../components/Bits.jsx';
 
 const N = DUELIST_STYLES.length;
 const STATES = N * 2; // 0 인트로 + (전진, 복귀) x 3 → 마지막 복귀는 없으므로 0~5
@@ -117,7 +117,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
       >
         {/* 공용 2단 헤더. 포커스 상태에서는 우측 열(헤드라인/서브)만 물리고 아이브로우는 남는다. */}
         <SlideHeader
-          eyebrow={{ en: DUELIST.label.en, ko: DUELIST.label.ko }}
+          eyebrow={{ en: DUELIST.label.en, ko: DUELIST.label.ko, tone: colors.navy }}
           headline={DUELIST.headline}
           sub={DUELIST.sub}
           rightStyle={{
@@ -262,7 +262,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
               style={{
                 marginTop: 'clamp(12px, 2.2vh, 26px)',
                 paddingLeft: 'clamp(10px, 1vw, 16px)',
-                borderLeft: `2px solid ${colors.ink}`,
+                borderLeft: `2px solid ${colors.navy}`,
                 fontFamily: typography.family,
                 fontSize: typography.body.size,
                 fontWeight: 500,
@@ -301,8 +301,6 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
           </>
         ) : null}
       </div>
-
-      <StepDots count={STATES} active={state} />
     </div>
   );
 }

@@ -127,8 +127,8 @@ export default function S3Concept({ active }) {
             willChange: 'transform, opacity',
           }}
         >
-          {/* 1. CONCEPT */}
-          <Eyebrow en={CONCEPT.label} />
+          {/* 1. CONCEPT (네이비 프라이머리) */}
+          <Eyebrow en={CONCEPT.label} tone={colors.navy} />
 
           {/* 2. VORTEX 워드마크. 라이트 반전: 메탈릭/드롭섀도우를 걷고 잉크로 평평하게(질감 0). */}
           <div
