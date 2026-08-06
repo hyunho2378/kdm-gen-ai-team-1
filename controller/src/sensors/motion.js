@@ -19,7 +19,7 @@
 //   - 폰 고쳐잡기는 크기가 작고 지속이 짧아 최소 지속 필터에 걸린다
 // 이러면 어떤 파지법에서도 같은 규칙이 돈다.
 
-import { nextGuard } from '../../../shared/pose.js';
+import { nextGuardTwist } from '../../../shared/pose.js';
 
 const G = 9.80665;
 
@@ -62,12 +62,13 @@ export const SUPPORT = {
 };
 
 /**
- * @param opts.readTilt 지금 폰이 기준에서 얼마나 기울었는지 돌려주는 함수. 자세는 자이로가 알고
- *   여기는 가속만 안다. 그래서 **주입받는다.** pipeline이 orientation을 물려 준다.
- *   없으면 가드가 안 나가고 찌르기만 산다(센서가 약한 기기의 우아한 저하).
+ * @param opts.readTwist 지금 폰이 장축 둘레로 얼마나 비틀렸는지(누수 적분값, 도)를 돌려주는 함수.
+ *   **가드는 비틀림이 낸다(GUARD_TWIST).** 비틀림은 자이로가 알고 여기는 가속만 안다. 그래서 **주입받는다.**
+ *   pipeline이 orientation.twistDeg를 물려 준다. 없으면 가드가 안 나가고 찌르기만 산다(우아한 저하).
+ * @param opts.readTilt 기준 대비 기울기(pitch/roll). **더는 가드를 내지 않는다.** ?debug 표시 전용이다.
  */
 export function createMotion(opts = {}) {
-  const { readTilt = null, ...rest } = opts;
+  const { readTilt = null, readTwist = null, ...rest } = opts;
   const cfg = { ...DEFAULTS, ...rest };
   let support = SUPPORT.NONE;
   let attached = false;
@@ -88,6 +89,8 @@ export function createMotion(opts = {}) {
   let holdPeak = 0;
   let holdAt = 0;
   let tilt = { pitchDeg: 0, rollDeg: 0 };
+  // 비틀림 누수 적분값(도). 가드 소스이자 ?debug 표시값이다. 판정에는 이 값이 아니라 가드 불리언만 간다
+  let twist = 0;
 
   const cb = { thrust: null, guard: null, sample: null };
 
@@ -138,24 +141,25 @@ export function createMotion(opts = {}) {
   }
 
   /**
-   * 가드. **좌우로 기울이면 켜지고 세로로 돌아오면 풀린다.**
+   * 가드. **장축 둘레로 비틀면 켜지고 풀면 풀린다 (GUARD_TWIST, 길 B).**
    *
-   * 전에는 "기준 자세 부근이면 가드"였다. 기준이 곧 쉬는 자세라 **가드가 상시로 켜졌고**
-   * `judge.js`의 `resolveTelegraphEnd`가 guarding이면 무조건 패리라 AI가 공격으로
-   * 득점하지 못했다(4유파 x 5시드 20경기 실측: AI 득점 8점에서 0점, 사용자 20/20 승).
-   * 그래서 가드를 **능동적 동작**으로 옮겼다. 세로는 앙가르드이고 아무 이벤트도 내지 않는다.
+   * 이전(길 A)은 좌우로 기울이기(roll)였다. 그 전(더 이전)은 "기준 자세 부근이면 가드"라
+   * **상시로 켜졌고** AI가 공격으로 득점하지 못했다. 그래서 가드를 능동적 동작으로 옮겼고,
+   * 이제 사용자가 실제로 하는 동작인 "잡은 채 화면이 몸을 보게 비틀기"로 소스를 바꿨다.
    *
-   * 각도 규칙과 히스테리시스는 `shared/pose.js`가 쥔다. arena의 `?posetest=1` 미리보기가
-   * 같은 함수를 읽어야 미리보기와 실기가 다른 말을 하지 않는다.
+   * **소스는 비틀림 각속도의 누수 적분이다.** 비틀림은 swing에서 구조적으로 잘려 있어(트위스트 제거)
+   * 절대각으로 재면 드리프트한다. orientation.js가 각속도를 누수 적분해 드리프트 면역인 값을 주고,
+   * 여기서는 그 **크기**로 히스테리시스를 건다. 히스테리시스 규칙은 `shared/pose.js`의 `nextGuardTwist`가
+   * 쥐고, arena의 `?posetest=1` 미리보기가 같은 함수를 읽어 미리보기와 실기가 같은 말을 한다.
    *
-   * **정지 조건을 두지 않는다.** 가드는 반응이고 홀드 대기를 걸면 지연이 그대로 보인다
-   * (MOTION 1절, ThreeRenderer의 GUARD_IN_SEC 55ms와 같은 이유).
-   * 대신 앞뒤가 우세하면 가드로 안 읽어서 찌르기 궤적과 섞이지 않는다.
+   * **roll 기반 가드는 더 이상 라이브 가드를 내지 않는다.** 두 소스가 동시에 가드를 내면 기울임과
+   * 비틀림이 싸운다. 세로 정지에서는 비틀림 적분이 0 근처라 아무 이벤트도 안 낸다(세로 중립 불변식).
+   * 비틀기는 자이로 각속도라 thrust의 가속 채널과 축, 소스가 완전히 직교해 서로 싸우지 않는다.
    */
   function detectGuard() {
-    if (!readTilt) return;
-    tilt = readTilt();
-    const next = nextGuard(guarding, tilt);
+    if (!readTwist) return;
+    twist = readTwist();
+    const next = nextGuardTwist(guarding, Math.abs(twist));
     if (next === guarding) return;
     guarding = next;
     cb.guard?.(guarding);
@@ -206,6 +210,8 @@ export function createMotion(opts = {}) {
 
     detectThrust(now, horiz, vertAbs);
     detectGuard();
+    // 자세는 가드 결정에서 빠졌지만 ?debug 표시용으로 계속 읽는다(가드 소스는 위 twist다)
+    if (readTilt) tilt = readTilt();
 
     // 최근 최대 수평. 실기에서 자기 손목 스냅이 임계에 닿는지 눈으로 재는 값이다
     if (horiz > holdPeak || now - holdAt > PEAK_HOLD_MS) {
@@ -223,6 +229,7 @@ export function createMotion(opts = {}) {
       threshold: cfg.thrust,
       peak: holdPeak,
       tilt,
+      twist,
     });
   }
 

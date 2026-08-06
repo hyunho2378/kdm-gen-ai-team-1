@@ -21,9 +21,12 @@ export const STEP = { ADVANCE: 'advance', RETREAT: 'retreat' };
 
 export function createPipeline() {
   const orientation = createOrientation();
-  // **가드는 자세가 낸다.** 자이로가 아는 값을 가속 쪽에 물려 준다(motion.js의 readTilt).
-  // orientation을 먼저 세워야 하는 이유가 이 한 줄이다.
-  const motion = createMotion({ readTilt: () => orientation.tilt() });
+  // **가드는 비틀림이 낸다(GUARD_TWIST).** 자이로 장축 각속도의 누수 적분값을 가속 쪽에 물려 준다.
+  // orientation을 먼저 세워야 하는 이유가 이 한 줄이다. readTilt는 ?debug 표시 전용으로 남긴다.
+  const motion = createMotion({
+    readTwist: () => orientation.twistDeg(),
+    readTilt: () => orientation.tilt(),
+  });
   const wake = createWakeLock();
 
   // 캘리브레이션 중 관측한 정지 노이즈. 개인 임계의 근거다

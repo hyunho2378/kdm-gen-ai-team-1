@@ -16,11 +16,10 @@ import { useEffect, useState } from 'react';
 import { colors, radius, typography, zIndex } from '../../tokens.js';
 import {
   POSE_STATE,
-  TILT,
-  nextGuard,
+  TWIST,
+  nextGuardTwist,
   poseState,
   quaternionFromTilt,
-  tiltFromQuaternion,
 } from '../../../../shared/pose.js';
 
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
@@ -40,25 +39,31 @@ const STATE_LABEL = {
   [POSE_STATE.THRUST_ZONE]: '찌르기 구간',
 };
 
-/** 한 번에 확인할 자세들. 슬라이더를 안 만져도 네 상태를 바로 볼 수 있다. */
+/** 한 번에 확인할 자세들. [pitch, roll, twist]. 슬라이더를 안 만져도 세 상태를 바로 볼 수 있다. */
 const PRESETS = [
-  ['중립', 0, 0],
-  ['가드 좌', 0, -30],
-  ['가드 우', 0, 30],
-  ['찌르기', 85, 0],
+  ['중립', 0, 0, 0],
+  ['가드(비틀기)', 0, 0, 40],
+  ['찌르기', 85, 0, 0],
 ];
 
 export default function PoseTest({ poseChannel }) {
   const [pitch, setPitch] = useState(0);
   const [roll, setRoll] = useState(0);
+  // 비틀림 누수 적분값(도). **가드 소스다(GUARD_TWIST).** 폰 없이 확인하려고 슬라이더로 그 출력을 넣는다.
+  // 실기에서는 orientation.js가 자이로 장축 각속도를 누수 적분해 이 값을 만든다.
+  const [twist, setTwist] = useState(0);
   // 가드는 이력이 있는 상태다(히스테리시스). 실기와 같게 이전 상태를 이어 간다
   const [guarding, setGuarding] = useState(false);
 
+  // **검 자세는 pitch/roll만 쥔다. roll은 더는 가드를 안 켠다(GUARD_TWIST).**
   useEffect(() => {
-    const q = quaternionFromTilt(pitch, roll);
-    poseChannel.setQuaternion(q);
-    setGuarding((prev) => nextGuard(prev, tiltFromQuaternion(q)));
+    poseChannel.setQuaternion(quaternionFromTilt(pitch, roll));
   }, [pitch, roll, poseChannel]);
+
+  // 가드는 비틀림이 낸다. 실기와 같은 `nextGuardTwist`를 크기로 통과시켜 미리보기가 같은 말을 한다.
+  useEffect(() => {
+    setGuarding((prev) => nextGuardTwist(prev, Math.abs(twist)));
+  }, [twist]);
 
   const tilt = { pitchDeg: pitch, rollDeg: roll };
   const state = poseState(guarding, tilt);
@@ -116,15 +121,19 @@ export default function PoseTest({ poseChannel }) {
 
       {slider('앞뒤 pitch', pitch, setPitch, -30, 90)}
       {slider('좌우 roll', roll, setRoll, -60, 60)}
+      {/* **가드 소스(GUARD_TWIST).** 실기의 누수 적분 출력을 슬라이더로 대신 넣는다.
+          roll이 아니라 이 값이 가드를 켠다 */}
+      {slider('비틀림 twist', twist, setTwist, 0, 60)}
 
       <div style={{ display: 'flex', gap: 6 }}>
-        {PRESETS.map(([label, p, r]) => (
+        {PRESETS.map(([label, p, r, w]) => (
           <button
             key={label}
             type="button"
             onClick={() => {
               setPitch(p);
               setRoll(r);
+              setTwist(w);
             }}
             style={{
               flex: 1,
@@ -153,8 +162,8 @@ export default function PoseTest({ poseChannel }) {
       </div>
       {/* 문턱을 함께 낸다. "왜 아직 가드가 아니지"를 숫자로 답한다 */}
       <div style={{ color: colors.text.dim }}>
-        가드 문턱 좌우 {TILT.rollOnDeg}도에서 켜지고 {TILT.rollOffDeg}도에서 풀린다.
-        앞뒤가 좌우보다 크면 가드가 아니다.
+        가드는 비틀림이 낸다. {TWIST.onDeg}도에서 켜지고 {TWIST.offDeg}도에서 풀린다.
+        좌우 기울임(roll)은 더는 가드를 켜지 않는다.
       </div>
     </div>
   );
