@@ -57,7 +57,7 @@ export default function NotFound() {
           wordBreak: 'keep-all',
         }}
       >
-        {NOT_FOUND.body}
+        {NOT_FOUND.line}
       </p>
       <Link
         to="/"

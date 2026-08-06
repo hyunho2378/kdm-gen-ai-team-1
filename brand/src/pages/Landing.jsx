@@ -8,10 +8,12 @@
 
 import { Link } from 'react-router-dom';
 import { brandGradient, colors, displayFamily, radius, spacing, steelText, typography } from '../tokens.js';
-import { GATEWAYS, HERO, SECTION, WORLD } from '../copy.js';
-import Section, { TempMark } from '../components/Section.jsx';
+import { LANDING, SECTION } from '../copy.js';
+import Section from '../components/Section.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import HeroTrail from '../components/HeroTrail.jsx';
+
+const { hero, world, gates } = LANDING;
 
 export default function Landing() {
   return (
@@ -56,7 +58,7 @@ function HeroSection() {
           gap: spacing.unit * 3,
         }}
       >
-        <Eyebrow en={HERO.eyebrow.en} ko={HERO.eyebrow.ko} />
+        <Eyebrow en={hero.eyebrow.en} ko={hero.eyebrow.ko} />
 
         {/* 워드마크는 메탈릭이다(VORTEX_DESIGN_SYSTEM 3.1, 3.7). shared의 steelText를 그대로 쓴다.
             **브랜드 그라디언트를 글자에 넣지 않는다.** 마지막 스톱이 #101010이라 X가 배경에 묻힌다(실측). */}
@@ -72,7 +74,7 @@ function HeroSection() {
             ...steelText,
           }}
         >
-          {HERO.wordmark}
+          {hero.wordmark}
         </h1>
 
         {/* 검끝 한 줄 모티프의 자리(2.5절). 지금은 브랜드 그라디언트 실선이다 */}
@@ -92,42 +94,34 @@ function HeroSection() {
             wordBreak: 'keep-all',
           }}
         >
-          {HERO.sub}
+          {hero.sub}
         </p>
 
         <p style={{ margin: 0, fontFamily: typography.family, fontSize: typography.caption.size, color: colors.text.dim }}>
-          {HERO.team}
+          {hero.team}
+        </p>
+
+        {/* 스크롤 힌트. 첫 화면이 꽉 차 있어 아래가 있다는 것을 말로 알린다 */}
+        <p
+          style={{
+            margin: 0,
+            fontFamily: typography.family,
+            fontSize: typography.caption.size,
+            letterSpacing: typography.hud.tracking,
+            fontWeight: 600,
+            color: colors.red.light,
+          }}
+        >
+          {hero.scrollHint}
         </p>
       </div>
     </section>
   );
 }
 
-/** 월드빌딩. **확정 카피가 없어 자리만 잡는다.** 지어낸 문장을 확정처럼 두지 않는다. */
+/** 월드빌딩. B4에서 확정 문구가 들어와 자리표시 상자를 걷었다. */
 function WorldSection() {
-  return (
-    <Section id={SECTION.WORLD} eyebrow={WORLD.eyebrow}>
-      <div
-        style={{
-          minHeight: 'clamp(220px, 30vh, 420px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: radius.lg,
-          border: `1px solid ${colors.line.default}`,
-          background: colors.bg.raised,
-          fontFamily: typography.family,
-          fontSize: typography.body.size,
-          color: colors.text.dim,
-          textAlign: 'center',
-          padding: spacing.gutter,
-          wordBreak: 'keep-all',
-        }}
-      >
-        {WORLD.todo}
-      </div>
-    </Section>
-  );
+  return <Section id={SECTION.WORLD} eyebrow={world.eyebrow} headline={world.title} sub={world.body} />;
 }
 
 /**
@@ -136,7 +130,7 @@ function WorldSection() {
  */
 function GatewaySection() {
   return (
-    <Section id={SECTION.PRODUCTS}>
+    <Section id={SECTION.GATES}>
       <ul
         style={{
           listStyle: 'none',
@@ -147,7 +141,7 @@ function GatewaySection() {
           gap: spacing.unit * 2,
         }}
       >
-        {GATEWAYS.map((g) => (
+        {gates.map((g) => (
           <li key={g.key}>
             <Link
               to={g.to}
@@ -164,6 +158,17 @@ function GatewaySection() {
                 textDecoration: 'none',
               }}
             >
+              <span
+                style={{
+                  fontFamily: typography.family,
+                  fontSize: typography.caption.size,
+                  fontWeight: 600,
+                  letterSpacing: typography.hud.tracking,
+                  color: colors.red.light,
+                }}
+              >
+                {g.eyebrow}
+              </span>
               <span
                 style={{
                   fontFamily: typography.family,
@@ -185,7 +190,6 @@ function GatewaySection() {
                 }}
               >
                 {g.line}
-                {g.temp ? <TempMark /> : null}
               </span>
               <span
                 aria-hidden="true"
@@ -195,10 +199,10 @@ function GatewaySection() {
                   fontSize: typography.caption.size,
                   letterSpacing: typography.hud.tracking,
                   fontWeight: 600,
-                  color: colors.red.light,
+                  color: colors.text.primary,
                 }}
               >
-                VIEW
+                {g.link}
               </span>
             </Link>
           </li>

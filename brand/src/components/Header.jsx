@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { colors, displayFamily, radius, spacing, steelText, typography, withAlpha, zIndex } from '../tokens.js';
-import { BRAND, DEMO, NAV } from '../copy.js';
+import { HEADER } from '../copy.js';
 
 // 이 높이를 넘어가면 헤더가 판을 깐다. 히어로 첫 화면에서는 투명하게 둔다
 const SOLID_AT = 60;
@@ -48,7 +48,7 @@ export default function Header() {
         transition: 'background-color 200ms, border-color 200ms',
       }}
     >
-      <Link to="/" aria-label={BRAND} style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>
+      <Link to="/" aria-label={HEADER.wordmark} style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>
         <span
           style={{
             fontFamily: displayFamily,
@@ -59,13 +59,13 @@ export default function Header() {
             ...steelText,
           }}
         >
-          {BRAND}
+          {HEADER.wordmark}
         </span>
       </Link>
 
       {/* md 미만에서는 index.css가 이 묶음을 접는다. 햄버거는 B8 이후다 */}
       <nav className="vx-nav" style={{ display: 'flex', alignItems: 'center', gap: spacing.unit * 3 }}>
-        {NAV.map((item) => {
+        {HEADER.nav.map((item) => {
           const active = pathname === item.to;
           return (
             <Link
@@ -121,7 +121,7 @@ export default function Header() {
           whiteSpace: 'nowrap',
         }}
       >
-        {DEMO.cta}
+        {HEADER.cta}
       </Link>
     </header>
   );

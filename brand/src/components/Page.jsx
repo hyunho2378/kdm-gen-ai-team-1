@@ -3,9 +3,8 @@
 
 import { colors, spacing, typography } from '../tokens.js';
 import Eyebrow from './Eyebrow.jsx';
-import { TempMark } from './Section.jsx';
 
-export default function Page({ eyebrow, headline, sub, temp = false, children }) {
+export default function Page({ eyebrow, headline, sub, children }) {
   return (
     <main
       style={{
@@ -37,7 +36,6 @@ export default function Page({ eyebrow, headline, sub, temp = false, children })
           }}
         >
           {headline}
-          {temp ? <TempMark /> : null}
         </h1>
       ) : null}
 

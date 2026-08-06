@@ -5,13 +5,12 @@
 
 import { Link } from 'react-router-dom';
 import { colors, radius, spacing, typography } from '../tokens.js';
-import { PAGES, PRODUCTS } from '../copy.js';
+import { PRODUCTS } from '../copy.js';
 import Page from '../components/Page.jsx';
-import { TempMark } from '../components/Section.jsx';
 
 export default function Products() {
   return (
-    <Page eyebrow={PAGES.products.eyebrow} headline={PAGES.products.headline} temp={PAGES.products.headlineTemp}>
+    <Page eyebrow={PRODUCTS.index.eyebrow} headline={PRODUCTS.index.title} sub={PRODUCTS.index.line}>
       <ul
         style={{
           listStyle: 'none',
@@ -23,7 +22,7 @@ export default function Products() {
           gap: spacing.unit * 2,
         }}
       >
-        {PRODUCTS.map((p) => (
+        {PRODUCTS.cards.map((p) => (
           <li key={p.slug}>
             <Link to={`/product/${p.slug}`} data-flip-id={`product-${p.slug}`} style={cardStyle}>
               {/* 대표 비주얼 자리. 갤러리와 3D는 이후 세션이다 */}
@@ -48,7 +47,6 @@ export default function Products() {
                 }}
               >
                 {p.line}
-                {p.temp ? <TempMark /> : null}
               </span>
             </Link>
           </li>

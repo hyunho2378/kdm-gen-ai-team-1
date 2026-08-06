@@ -3,15 +3,29 @@
 // **이번 세션은 정적 3카드 배치까지다.** 전진과 좌측 이동과 상세가 붙는 셀렉션 안무는 B7이다.
 // 카드에 `data-flip-id`를 미리 달아 둔다. 값은 ver(Ver.1 Ver.2 Ver.3)이다.
 //
-// 문구는 VORTEX_DESIGN_SYSTEM 3.11 원문이다.
+// 문구는 B4 확정 라이팅이다. VORTEX_DESIGN_SYSTEM 3.11 원문에서 어미가 다듬어졌다
+// (예 "유발시키자" -> "유발한다"). 두 문서가 갈린 것은 PROGRESS 미해결에 적었다.
 
 import { colors, radius, spacing, typography } from '../tokens.js';
-import { DUELISTS, PAGES } from '../copy.js';
+import { DUELISTS } from '../copy.js';
 import Page from '../components/Page.jsx';
 
 export default function Duelists() {
   return (
-    <Page eyebrow={PAGES.duelists.eyebrow} headline={PAGES.duelists.headline} sub={PAGES.duelists.sub}>
+    <Page eyebrow={DUELISTS.header.eyebrow} headline={DUELISTS.header.title} sub={DUELISTS.header.sub}>
+      {/* 셀렉션 안무는 B7이고 지금은 안내 라벨만 선다 */}
+      <span
+        style={{
+          fontFamily: typography.family,
+          fontSize: typography.caption.size,
+          fontWeight: 600,
+          letterSpacing: typography.hud.tracking,
+          color: colors.text.dim,
+        }}
+      >
+        {DUELISTS.selection.guide}
+      </span>
+
       <ul
         style={{
           listStyle: 'none',
@@ -22,7 +36,7 @@ export default function Duelists() {
           gap: spacing.unit * 2,
         }}
       >
-        {DUELISTS.map((d) => (
+        {DUELISTS.cards.map((d) => (
           <li
             key={d.key}
             data-flip-id={`duelist-${d.ver}`}

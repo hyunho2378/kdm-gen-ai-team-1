@@ -7,7 +7,7 @@
 import { spacing, typography, colors } from '../tokens.js';
 import Eyebrow from './Eyebrow.jsx';
 
-export default function Section({ id, eyebrow, headline, sub, temp = false, children }) {
+export default function Section({ id, eyebrow, headline, sub, children }) {
   return (
     <section
       id={id}
@@ -40,7 +40,6 @@ export default function Section({ id, eyebrow, headline, sub, temp = false, chil
           }}
         >
           {headline}
-          {temp ? <TempMark /> : null}
         </h2>
       ) : null}
 
@@ -65,25 +64,3 @@ export default function Section({ id, eyebrow, headline, sub, temp = false, chil
   );
 }
 
-/** 확정 카피가 아님을 화면에 드러낸다. 임시 문장이 확정처럼 보이면 검수에서 못 걸린다. */
-export function TempMark() {
-  return (
-    <span
-      style={{
-        marginLeft: 8,
-        padding: '2px 8px',
-        borderRadius: 999,
-        border: `1px solid ${colors.line.strong}`,
-        fontFamily: typography.family,
-        fontSize: typography.caption.size,
-        fontWeight: 400,
-        letterSpacing: typography.hud.tracking,
-        color: colors.text.dim,
-        verticalAlign: 'middle',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      임시
-    </span>
-  );
-}
