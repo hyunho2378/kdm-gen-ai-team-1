@@ -1079,6 +1079,7 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **brand 구조 버그 진단과 수정 작업중.** 배포본과 의도가 어긋난 세 곳을 본다
 - **brand 워드마크 크롬 셰이더 승격 완료(확인 대기). 판정 넷 다 통과했다.** 트랙 선점 해제
   - **MetalFlow에서 막혔던 것을 대체재로 뚫었다.** `@paper-design/shaders` 0.0.78(Apache-2.0)의
     `liquidMetalFragmentShader`와 자체 런타임 `ShaderMount`를 쓴다. three도 R3F도 안 쓴다(의존성 0)
