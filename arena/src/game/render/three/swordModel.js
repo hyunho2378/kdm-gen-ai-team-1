@@ -41,7 +41,8 @@ const FINISH = {
 };
 
 // 득점 플레어 최대 세기. 이 순간만 칼날이 블룸을 넘긴다. 레드는 사건의 색이다.
-const FLARE_PEAK = 1.8;
+// 시연 안정화(DEMO_STABILIZE): 번짐을 줄이려 한 단계 낮췄다(1.8 → 1.4). 득점은 여전히 붉게 읽힌다.
+const FLARE_PEAK = 1.4;
 // 평시 칼날. 스틸 톤으로 아주 옅게만 살아 있다(문턱 근처에도 못 간다)
 const IDLE_EMISSIVE_INTENSITY = 0.06;
 

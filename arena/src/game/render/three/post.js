@@ -35,10 +35,13 @@ import {
  * 상대 빌보드의 림도 이 선 아래로 묶는다(opponent.js RIM_ALPHA).
  */
 export const BLOOM = {
+  // **문턱 0.42는 그대로다(올리지 않는다).** 궤적과 검끝만 넘기고 배경은 안 넘긴다.
   threshold: 0.42,
   smoothing: 0.28,
-  intensity: 1.15,
-  radius: 0.62,
+  // 시연 안정화(DEMO_STABILIZE): 글로우 번짐을 줄이려 세기와 반경을 한 단계 낮췄다
+  // (intensity 1.15 → 1.0, radius 0.62 → 0.55). 발광은 남되 덜 퍼진다. 문턱은 손대지 않는다.
+  intensity: 1.0,
+  radius: 0.55,
   // 블룸을 절반 해상도로 굽는다. 발광은 원래 번지는 것이라 눈에 띄는 손실이 없고
   // 컴포저 비용이 크게 준다. V4f 감축 사다리의 마지막 칸(Bloom 해상도 하향)을 기본값으로 당겨 둔다.
   resolutionScale: 0.5,
@@ -48,12 +51,14 @@ export const BLOOM = {
 export const BLOOM_LOW = { resolutionScale: 0.25, intensity: 0.9 };
 
 /**
- * 잔상 damp. 남는 비율이라 값이 클수록 오래 끈다.
+ * 잔상 damp. 남는 비율이라 값이 클수록 오래 끈다. **화면 전체 고스트라 검 잔상의 주된 출처다.**
  * 60fps에서 n프레임 뒤 잔량은 damp^n이다. 한 호흡(0.3초 = 18프레임) 안에
  * 1/255 아래로 내려가려면 damp < 0.735여야 한다. 0.82는 0.47초를 끌어 과했다.
- * 0.70은 18프레임 뒤 0.0016(0.4/255)으로 사라지고 10퍼센트까지는 108ms를 남긴다.
+ * 시연 안정화(DEMO_STABILIZE): 검·글로우 잔상을 줄이려 한 단계 낮췄다(평시 0.70 → 0.58,
+ * 팽창 0.92 → 0.86). 0.58은 18프레임 뒤 0.00008로 더 빨리 사라져 급회전 번짐이 준다.
+ * 밋밋하면 0.70/0.92 쪽으로 한 단계 되돌린다.
  */
-export const AFTERIMAGE = { damp: 0.70, dampDilated: 0.92 };
+export const AFTERIMAGE = { damp: 0.58, dampDilated: 0.86 };
 
 /**
  * 명중 연출 상수(D5). ARENA_SCENE 11절 타임라인을 이 값들이 진다.
