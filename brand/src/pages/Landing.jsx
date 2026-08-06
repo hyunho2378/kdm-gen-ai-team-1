@@ -14,6 +14,7 @@ import { gsap, isReduced } from '../lib/motion.js';
 import Section from '../components/Section.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import HeroTrail from '../components/HeroTrail.jsx';
+import WorldScene from '../components/WorldScene.jsx';
 
 const { hero, world, gates } = LANDING;
 
@@ -164,9 +165,9 @@ function HeroSection() {
   );
 }
 
-/** 월드빌딩. B4에서 확정 문구가 들어와 자리표시 상자를 걷었다. */
+/** 월드빌딩. B5에서 sticky 시네마틱으로 올렸다. 연출은 WorldScene이 소유한다. */
 function WorldSection() {
-  return <Section id={SECTION.WORLD} eyebrow={world.eyebrow} headline={world.title} sub={world.body} />;
+  return <WorldScene id={SECTION.WORLD} eyebrow={world.eyebrow} title={world.title} body={world.body} />;
 }
 
 /**

@@ -216,6 +216,10 @@ export default function HeroTrail() {
       stop();
       scene.remove(ribbon.mesh);
       ribbon.dispose();
+      // **컨텍스트를 명시적으로 놓는다.** dispose만으로는 GPU 컨텍스트가 GC까지 남는다.
+      // dev StrictMode는 효과를 두 번 돌려 컨텍스트를 둘 만드는데(실측 생성 2, 살아 있는 canvas 1),
+      // 놓아 주지 않으면 브라우저 컨텍스트 한도를 향해 쌓인다. 프로덕션은 생성 1이다
+      renderer.forceContextLoss();
       renderer.dispose();
       renderer.domElement.remove();
     };
