@@ -107,7 +107,7 @@ export default function ProductDetail({ slug }) {
               fontSize: typography.heading.size,
               lineHeight: typography.heading.leading,
               color: colors.text.secondary,
-              maxWidth: 560,
+              maxWidth: 'var(--measure)',
               wordBreak: 'keep-all',
             }}
           >

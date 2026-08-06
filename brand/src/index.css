@@ -2,12 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body { background: #101010; color: #FDFDFD; }
+/* **첫 페인트용 부트스트랩 값.** tokens가 붙기 전 한 프레임을 위한 유일한 HEX 예외다.
+   v2 라이트 시스템의 배경 그라디언트와 메인 텍스트를 그대로 적는다(BRAND_SITE_V2_PLAN 1절).
+   그라디언트가 짧은 페이지에서도 끝까지 흐르도록 body를 최소 뷰포트 높이로 세우고
+   배경을 고정한다. 안 그러면 콘텐츠가 짧을 때 최하단 #F6F6F6에 닿지 못한다. */
+/* **그라디언트는 body가 아니라 html이 진다.** body에 두면 `scrollbar-gutter`가 비워 둔
+   좌우 띠에 html의 색이 그대로 드러나서, 화면 위쪽에서 양 가장자리만 밝게 뜬다(실측으로 잡았다).
+   canvas를 칠하는 것은 html이므로 여기 두어야 거터까지 같은 배경이 된다.
+   var()의 폴백이 JS(theme.js)가 붙기 전 한 프레임을 덮는다. 값의 원천은 tokens다. */
+html {
+  background: var(--page-bg, linear-gradient(180deg, #C1C1C1 0%, #F6F6F6 100%));
+  background-attachment: fixed;
+}
+body {
+  min-height: 100dvh;
+  color: #101010;
+}
 
 /* **스크롤바 자리를 항상 비워 둔다.** 안 그러면 스크롤이 있는 페이지와 없는 페이지 사이를
-   오갈 때 콘텐츠가 가로로 튄다(실측: 오른쪽 여백이 15px, 3840에서 중앙 정렬이 7.5px 어긋났다).
-   `both-edges`라야 양쪽을 같이 비워 가운데 정렬이 그대로 유지된다. */
-html { scrollbar-gutter: stable both-edges; }
+   오갈 때 콘텐츠가 가로로 튄다. 그 역할은 `stable` 하나가 이미 한다(늘 비워 두므로 튀지 않는다).
+   **`both-edges`를 걷었다(BV2-1).** 대칭 정렬을 얻는 대신 좌측에 15px 띠가 생기는데
+   **브라우저가 그 띠를 캔버스 배경으로 칠하지 않는다.** 다크 시절에는 검은 화면 왼쪽의 흰 선이었고
+   라이트 그라디언트에서도 그대로 남는다. 실측으로 원인을 갈랐다.
+
+     both-edges                  좌측 흰 띠 15px
+     both-edges + fixed 레이어    좌측 흰 띠 15px (fixed는 거터 안쪽이라 못 덮는다)
+     stable                      좌측 흰 띠 0px
+
+   대가는 콘텐츠 중심이 뷰포트 중심에서 7.5px 왼쪽이라는 것인데, 모든 페이지에 똑같이
+   적용되는 상수라 페이지 사이에 움직임이 없다. 눈에 보이는 흰 띠보다 낫다. */
+html { scrollbar-gutter: stable; }
 /* 위 두 값은 부트스트랩 시점의 유일한 예외. 첫 페인트 깜빡임 방지용.
    컴포넌트 레벨에서는 반드시 tokens 경유. */
 
@@ -30,6 +54,12 @@ html { scrollbar-gutter: stable both-edges; }
   max-width: var(--page-max);
   margin-inline: auto;
   padding-inline: var(--page-gutter);
+}
+
+/* 읽기 한도. **우측에 자리가 남는데 줄이 꺾이는 것을 막는다**(PLAN 1절 마진 그리드).
+   ch 단위라 폰트 크기가 바뀌면 한도도 같이 움직인다. 값은 --measure 하나에서 나온다. */
+.vx-measure {
+  max-width: var(--measure);
 }
 
 /* 하위 페이지. 헤더가 상주하므로 상단만 헤더 높이를 더한다 */
@@ -269,7 +299,8 @@ html { scrollbar-gutter: stable both-edges; }
   position: fixed;
   inset: 0;
   z-index: var(--z-preloader);
-  background: var(--bg-base);
+  /* **페이지와 같은 그라디언트다.** 단색으로 두면 프리로더가 걷히는 순간 배경이 한 번 바뀐다 */
+  background: var(--page-bg);
   overflow: hidden;
 }
 

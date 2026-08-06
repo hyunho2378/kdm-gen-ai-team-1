@@ -1,20 +1,150 @@
-// 실체는 shared/tokens.js. 값을 여기서 수정하지 마라.
+// brand 디자인 시스템 v2 (BRAND_SITE_V2_PLAN 1절). **라이트다.**
 //
-// shared의 4색이 이미 VORTEX_DESIGN_SYSTEM 2.1 확정값과 같다.
-// black #101010, white #FDFDFD, red #E60D15, redDeep #80070C, redGlow rgba(230,13,21,0.45).
-// 그래서 값을 다시 적지 않고 재수출한다. 두 벌로 적으면 한쪽만 고쳐지는 날이 온다.
+// **shared/tokens.js를 고치지 않는다.** 그것은 arena와 controller와 presentation의 다크 무대이고
+// 여기만 라이트로 뒤집는다. 그래서 재수출한 뒤 바뀌는 것만 이 파일이 덮어쓴다.
+// `export *`는 아래에 같은 이름의 지역 export가 있으면 그 이름을 건너뛴다(ES 모듈 규칙).
+// 안 덮은 것(motion, radius, spacing, zIndex, breakpoints, withAlpha, steel, trail)은 shared 그대로다.
+//
+// ── 값의 근거 ────────────────────────────────────────────────────────────────
+// 레퍼런스를 문서 요약이 아니라 **직접 브라우저로 열어 computed style로 쟀다**(1440 폭).
+//
+//   Satisfy   헤드라인 60 / 48 / 43.2px, 전부 weight 900, 자간 normal
+//             워드마크 24px/900/-0.48px, 내비와 본문 14px/400, 캡션 12px
+//   Apple     디스플레이 56px/600/-0.28px, 섹션 h2 28px/600, 카드 24px/700
+//             본문과 CTA 17px/400/-0.374px, 내비 12px/400/-0.12px
+//
+// **두 곳 다 "전부 작다"가 아니다.** 헤드라인은 48~60px로 크고 나머지 전부가 12~17px로 작다.
+// 위계는 그 간극과 굵기가 만든다. 그래서 축소의 대상은 헤드라인을 12px로 줄이는 것이 아니라
+// **136px까지 가던 display를 60px대로 끌어내리는 것**이다.
+
 export * from '../../shared/tokens.js';
+import { colors as sharedColors, withAlpha, darken } from '../../shared/tokens.js';
 
-// 아래 둘은 shared에 없는 brand 전용 추가분이다. shared는 이 세션에서 수정 금지라 여기 둔다.
+// ── 원색 3개. HEX를 적는 유일한 자리다(AGENTS 예외 조항) ──────────────────────
+const INK = '#101010';          // 메인 텍스트
+const BG_TOP = '#C1C1C1';       // 배경 그라디언트 최상단
+const BG_BOTTOM = '#F6F6F6';    // 배경 그라디언트 최하단
+const PAPER = '#FDFDFD';        // 어두운 채움 위 글자
 
-// 2.1 Brand Gradient. 스톱 순서 FDFDFD, E60D15, 80070C, 101010.
-// HEX를 적는 유일한 자리다. 스톱이 넷이라 shared의 파생 함수로는 나오지 않는다.
-//
-// **배경에 쓰지 마라(REBOOT_PLAN 2.1).** 넓은 면을 먹는 레드 그라디언트는 전량 금지다.
-// R1에서 히어로의 검끝 실선이 이 값을 쓰다가 걷혔고 지금은 참조처가 없다.
-// 브랜드 자산이라 값은 남겨 두되, 다시 쓰려면 작은 발광 요소 안쪽으로만 들어가야 한다.
-export const brandGradient = 'linear-gradient(105deg, #FDFDFD 0%, #E60D15 42%, #80070C 72%, #101010 100%)';
+/**
+ * 페이지 배경. 일자 수직 그라디언트다.
+ * **배경 전용이고 요소 색이 아니다**(PLAN 1절). 카드나 버튼 채움에 쓰지 마라.
+ */
+export const pageGradient = `linear-gradient(180deg, ${BG_TOP} 0%, ${BG_BOTTOM} 100%)`;
 
-// 2.2 제목(디스플레이) 폰트는 미정이다. 지금은 본문과 같은 Pretendard를 가리키고
+/**
+ * 색 v2.
+ *
+ * **애매한 중간 회색이 없다.** 회색으로 보여야 하는 것은 전부 INK의 알파이고,
+ * 그래서 배경 그라디언트가 어디를 지나든 같은 잉크의 농도로만 읽힌다.
+ *
+ * **알파는 실측으로 정했다.** 어두운 글자는 배경이 어두울수록 불리하므로 최악은
+ * 그라디언트 최상단 #C1C1C1이다. 거기서 잰 대비가 아래와 같다.
+ *
+ *   알파 0.78  6.6:1   secondary
+ *   알파 0.66  4.8:1   dim (본문 4.5 통과. 이보다 옅은 텍스트 금지)
+ *   알파 0.55  3.5:1   미달. 다크 시절 dim 알파를 그대로 옮기면 여기서 깨진다
+ */
+export const colors = {
+  bg: {
+    // 단색이 필요한 자리(프리로더, 시트)는 그라디언트의 밝은 끝을 쓴다
+    base: BG_BOTTOM,
+    deep: BG_TOP,
+    // 카드 판. 라이트에서는 흰 오버레이가 아니라 **잉크를 아주 옅게 얹어** 한 단계 눌린다
+    raised: withAlpha(INK, 0.04),
+    // 시트 뒤 스크림. 라이트 페이지 위에서도 뒤가 죽어야 한다
+    overlay: withAlpha(INK, 0.45),
+  },
+  /**
+   * 레드. **실측으로 갈아탔다.**
+   *
+   *   #E60D15  #C1C1C1 위 2.63:1   #F6F6F6 위 4.38:1   대형 3.0조차 미달
+   *   #80070C  #C1C1C1 위 5.97:1   #F6F6F6 위 9.95:1   본문 4.5 통과
+   *
+   * 그래서 light와 fill을 둘 다 딥 레드로 내린다. 채움으로 쓸 때 흰 글자 대비가 10.57이고
+   * 버튼 경계도 배경 대비 5.97이라 UI 요소 3:1을 넘긴다(#E60D15 채움은 경계가 2.63이라 미달했다).
+   * 값은 shared의 RED_DEEP과 같으므로 새 HEX가 아니다.
+   */
+  red: {
+    light: sharedColors.red.deep,
+    fill: sharedColors.red.deep,
+    deep: sharedColors.red.deep,
+    press: darken(sharedColors.red.deep, 0.2),
+    // 라이트 배경에서 발광은 성립하지 않는다. glow와 함께 걷었다
+    glow: 'transparent',
+    tonal: withAlpha(sharedColors.red.deep, 0.1),
+  },
+  text: {
+    primary: INK,
+    secondary: withAlpha(INK, 0.78),
+    dim: withAlpha(INK, 0.66),
+    // 딥 레드 채움 위. 대비 10.57
+    onFill: PAPER,
+  },
+  line: {
+    default: withAlpha(INK, 0.12),
+    strong: withAlpha(INK, 0.28),
+  },
+  // 아래 둘은 페이지 색이 아니라 **재질 팔레트**다. 3D 크롬 재질과 조명, 검 궤적이 쓴다.
+  // 라이트로 뒤집을 대상이 아니라 그대로 둔다
+  steel: sharedColors.steel,
+  trail: sharedColors.trail,
+  blue: sharedColors.blue,
+};
+
+/**
+ * 타이포 v2. **위계를 크기로 벌리지 않는다.**
+ *
+ * 헤드라인이 둘(display, title)이고 그 아래는 전부 12~17px 계열이다. 슬라이드마다
+ * 제목 크기를 새로 정하는 일이 없게 헤드라인 계열을 이 둘로 못 박는다.
+ *
+ * 상한을 레퍼런스에 맞춰 잘랐다. 예전 display는 8.5rem(136px)까지 갔는데 Satisfy가 60px,
+ * Apple이 56px에서 멈춘다. 그 위로 올릴 근거가 실측에 없었다.
+ *
+ *   display  136px → 64px (1440에서 52.8px)
+ *   title     68px → 36px (1440에서 32.8px)
+ *   heading   28px → 22px
+ *   body      18px → 17px (Apple 본문과 같다)
+ *   hud/eyebrow                12px (Apple 내비와 같다)
+ */
+export const typography = {
+  family: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif",
+  // 히어로 딥다이브의 한 순간에만 쓴다. 섹션 제목에 쓰지 마라
+  display: { size: 'clamp(2.5rem, 1.5rem + 2vw, 4rem)', weight: 800, tracking: '-0.02em', leading: 1.04 },
+  // 섹션 헤드라인. **전 페이지가 이 하나를 쓴다**
+  title: { size: 'clamp(1.5rem, 1.15rem + 1vw, 2.25rem)', weight: 700, tracking: '-0.02em', leading: 1.2 },
+  // 서브 헤드라인(카드 제목, 블록 제목). Satisfy 상품명 18px/900과 같은 자리다
+  heading: { size: 'clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem)', weight: 700, tracking: '-0.01em', leading: 1.3 },
+  body: { size: 'clamp(0.9375rem, 0.9rem + 0.15vw, 1.0625rem)', weight: 400, tracking: '-0.01em', leading: 1.6 },
+  caption: { size: '0.8125rem', weight: 400, tracking: '0', leading: 1.5 },
+  // 내비와 라벨. Apple 내비 12px/-0.12px(=-0.01em)을 그대로 따른다
+  hud: { size: '0.75rem', weight: 600, tracking: '0.06em', leading: 1.2 },
+  /**
+   * 아이브로우 v3. **21px에서 12px로 줄였다.**
+   * 21px/700이던 것은 다크 시절 red.light가 4.02:1이라 대형 텍스트 예외로만 통과했기 때문이다.
+   * 지금 레드는 #80070C라 최악 배경에서도 5.97:1이고, 12px 본문 기준 4.5를 그냥 넘긴다.
+   * 크기로 버틸 이유가 사라져서 레퍼런스의 작고 정밀한 라벨로 되돌린다.
+   */
+  eyebrow: { size: '0.75rem', weight: 700, tracking: '0.1em', leading: 1.3 },
+};
+
+/** 라이트 배경에서 발광은 성립하지 않는다. 전부 걷는다(PLAN 1절 모션). */
+export const glow = { red: 'none', blue: 'none', steel: 'none' };
+
+/**
+ * 워드마크와 대형 제목의 글자 처리. **크롬 그라디언트를 걷고 평면 잉크로 간다.**
+ * 흰색에서 스틸로 흐르는 그라디언트는 어두운 무대를 전제한 것이라 밝은 배경에서는
+ * 글자가 배경에 녹는다. 레퍼런스도 흰 배경 위 단색 워드마크다(Satisfy 검정 24px/900).
+ * 키 이름을 유지해서 부르는 쪽(Header, HeroWordmark, Landing)이 안 바뀐다.
+ */
+export const steelText = { color: INK };
+
+// 제목(디스플레이) 폰트는 미정이다. 지금은 본문과 같은 Pretendard를 가리키고
 // 폰트가 정해지면 **이 키 한 줄만** 바꾼다. 워드마크와 대형 제목이 이 키를 참조한다.
 export const displayFamily = "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif";
+
+// 2.1 Brand Gradient. 스톱 순서 FDFDFD, E60D15, 80070C, 101010.
+//
+// **배경에 쓰지 마라(REBOOT_PLAN 2.1).** 넓은 면을 먹는 레드 그라디언트는 전량 금지다.
+// v2에서 페이지 배경은 위의 pageGradient가 진다. 이 값은 브랜드 자산으로만 남는다.
+export const brandGradient = 'linear-gradient(105deg, #FDFDFD 0%, #E60D15 42%, #80070C 72%, #101010 100%)';

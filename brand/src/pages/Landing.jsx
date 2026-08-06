@@ -117,7 +117,7 @@ function HeroSection() {
             fontSize: typography.heading.size,
             lineHeight: typography.heading.leading,
             color: colors.text.secondary,
-            maxWidth: 720,
+            maxWidth: 'var(--measure)',
             wordBreak: 'keep-all',
           }}
         >
@@ -199,14 +199,14 @@ function GatewaySection() {
 
               {/* 개별 구현이던 자리다. 컴포넌트로 통합해 크기와 굵기가 전 페이지와 같아진다 */}
               <Eyebrow en={g.eyebrow} />
-              {/* **관문 제목을 키워 위계를 세운다.** 히어로 워드마크 다음가는 존재감이라
-                  heading(최대 28px)에서 title 계열(최대 42px)로 올린다. 굵기와 자간은 title을 써
-                  제목으로 확실히 읽힌다. 셋이 같은 크기라 균형이 선다 */}
+              {/* **손으로 적은 clamp를 걷었다(BV2-1).** 여기만 `clamp(1.5rem, 1rem + 1.9vw, 2.6rem)`이라
+                  1440에서 41.6px가 나와 다른 섹션 제목(32.8px)과 갈렸다. 섹션마다 제목 크기를 새로
+                  정하는 것이 v2가 금지하는 바로 그것이다. 이제 셋 다 title 토큰 하나를 쓴다 */}
               <span
                 className="vx-gate-title"
                 style={{
                   fontFamily: typography.family,
-                  fontSize: 'clamp(1.5rem, 1rem + 1.9vw, 2.6rem)',
+                  fontSize: typography.title.size,
                   fontWeight: typography.title.weight,
                   letterSpacing: typography.title.tracking,
                   lineHeight: typography.title.leading,

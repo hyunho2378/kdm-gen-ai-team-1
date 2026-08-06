@@ -186,7 +186,14 @@ export default function Header() {
   );
 }
 
-/** 메뉴 한 줄. 바와 시트가 같은 것을 쓴다. `block`이면 시트용으로 폭을 채운다. */
+/**
+ * 메뉴 한 줄. 바와 시트가 같은 것을 쓴다. `block`이면 시트용으로 폭을 채운다.
+ *
+ * **불릿을 걷었다(BV2-1).** 현재 항목을 red 점으로 찍던 자리인데 v2는 불릿 전면 금지다.
+ * 그래도 색 하나로 구분하지는 않는다. 현재 항목은 **굵기 700 대 500**과 **잉크 대 dim**이
+ * 함께 움직여서 두 신호가 남는다(DESIGN 13절 색 단독 구분 금지). 굵기 차이는 200이라
+ * 흑백으로 봐도 갈린다.
+ */
 function NavItem({ item, active, block }) {
   return (
     <Link
@@ -195,28 +202,16 @@ function NavItem({ item, active, block }) {
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: block ? 10 : 6,
         minHeight: 44,
         padding: block ? '10px 4px' : '0 4px',
         fontFamily: typography.family,
-        fontSize: block ? typography.body.size : typography.caption.size,
-        // 색 단독 구분 금지라 현재 항목은 굵기도 함께 올린다
+        fontSize: block ? typography.body.size : typography.hud.size,
         fontWeight: active ? 700 : 500,
         letterSpacing: typography.hud.tracking,
         color: active ? colors.text.primary : colors.text.dim,
         textDecoration: 'none',
       }}
     >
-      <span
-        aria-hidden="true"
-        style={{
-          width: block ? 6 : 5,
-          height: block ? 6 : 5,
-          borderRadius: '50%',
-          background: active ? colors.red.light : 'transparent',
-          flex: 'none',
-        }}
-      />
       {item.label}
     </Link>
   );

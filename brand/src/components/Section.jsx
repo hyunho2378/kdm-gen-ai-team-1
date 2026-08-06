@@ -49,7 +49,7 @@ export default function Section({ id, eyebrow, headline, sub, children }) {
             fontSize: typography.body.size,
             lineHeight: typography.body.leading,
             color: colors.text.secondary,
-            maxWidth: 720,
+            maxWidth: 'var(--measure)',
             wordBreak: 'keep-all',
           }}
         >
