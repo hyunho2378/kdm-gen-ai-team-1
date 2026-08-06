@@ -1,0 +1,42 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1920" height="1080" fill="white"/>
+<text fill="black" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="20" letter-spacing="0em"><tspan x="60" y="235.408">Color System</tspan></text>
+<text fill="black" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="24" letter-spacing="0em"><tspan x="60" y="281.864">&#xceec;&#xb7ec; &#xc2dc;&#xc2a4;&#xd15c;</tspan></text>
+<text fill="black" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="24" letter-spacing="0em"><tspan x="402.664" y="241.864">&#xbe0c;&#xb79c;&#xb529; </tspan><tspan x="834.406" y="241.864">&#xb97c;, &#xbe0c;&#xb79c;&#xb529; &#xc2e4;&#xbc84;&#xb294; </tspan><tspan x="1356.62" y="241.864">&#xc744; &#xd45c;&#xd604;&#xd55c;&#xb2e4;.&#x2028;</tspan><tspan x="402.664" y="286.864">&#xb450; &#xceec;&#xb7ec;&#xb294; &#xc0ac;&#xc6a9;&#xc790;&#xc758; &#xc9d1;&#xc911;&#xc744; &#xb3d5;&#xb294; &#xade0;&#xd615; &#xc7a1;&#xd78c; &#xb300;&#xbe44;&#xb97c; &#xc774;&#xb8e8;&#xba70;, VORTEX&#xb9cc;&#xc758; &#xc77c;&#xad00;&#xb41c; XR &#xbe0c;&#xb79c;&#xb4dc; &#xacbd;&#xd5d8;&#xc744; &#xc644;&#xc131;&#xd55c;&#xb2e4;.</tspan></text>
+<text fill="black" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="24" font-weight="bold" letter-spacing="0em"><tspan x="471.125" y="241.864">&#xb124;&#xc774;&#xbe44;&#xb294; &#xae4a;&#xc774; &#xc788;&#xb294; &#xbab0;&#xc785;&#xacfc; &#xae30;&#xc220;&#xc801; &#xc2e0;&#xb8b0;</tspan><tspan x="1004.4" y="241.864">&#xc815;&#xad50;&#xd55c; &#xc778;&#xd130;&#xd398;&#xc774;&#xc2a4;&#xc640; &#xc9c1;&#xad00;&#xc801;&#xc778; &#xc0ac;&#xc6a9;&#xc131;</tspan></text>
+<text opacity="0.6" fill="black" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="20" font-weight="500" letter-spacing="0em"><tspan x="1682" y="82.3288">Team 1&#10;</tspan><tspan x="1682" y="112.329">&#xae40;&#xb2e4;&#xc601;, &#xc8fc;&#xd604;&#xd638;, &#xc724;&#xc18c;&#xd76c;  </tspan></text>
+<text opacity="0.6" fill="black" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="20" font-weight="500" letter-spacing="0em"><tspan x="798.422" y="82.3288">XR Fencing Glass &#10;</tspan><tspan x="798.422" y="112.329">: VORTEX</tspan></text>
+<text opacity="0.6" fill="black" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="20" font-weight="500" letter-spacing="0em"><tspan x="60" y="82.3288">2026 KDM+ &#10;</tspan><tspan x="60" y="112.329">AI Workshap</tspan></text>
+<g filter="url(#filter0_n_201_1384)">
+<rect x="60" y="345.628" width="1064" height="674" rx="20" fill="url(#paint0_linear_201_1384)"/>
+</g>
+<rect x="1164" y="345.628" width="696" height="674" rx="20" fill="url(#paint1_linear_201_1384)"/>
+<text fill="#FDFDFD" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="32" letter-spacing="0em"><tspan x="100" y="414.776">Branding Navy</tspan></text>
+<text fill="black" style="white-space: pre" xml:space="preserve" font-family="SUIT" font-size="32" letter-spacing="0em"><tspan x="1204" y="414.776">Branding Silver</tspan></text>
+<defs>
+<filter id="filter0_n_201_1384" x="60" y="345.628" width="1064" height="674" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="3.3333332538604736 3.3333332538604736" stitchTiles="stitch" numOctaves="3" result="noise" seed="2040" />
+<feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
+<feComponentTransfer in="alphaNoise" result="coloredNoise1">
+<feFuncA type="discrete" tableValues="1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/>
+</feComponentTransfer>
+<feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped" />
+<feFlood flood-color="rgba(0, 0, 0, 0.25)" result="color1Flood" />
+<feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
+<feMerge result="effect1_noise_201_1384">
+<feMergeNode in="shape" />
+<feMergeNode in="color1" />
+</feMerge>
+</filter>
+<linearGradient id="paint0_linear_201_1384" x1="592" y1="345.628" x2="592" y2="1019.63" gradientUnits="userSpaceOnUse">
+<stop stop-color="#101925"/>
+<stop offset="1" stop-color="#3C5E8B"/>
+</linearGradient>
+<linearGradient id="paint1_linear_201_1384" x1="1512" y1="1019.63" x2="1512" y2="345.628" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDFDFD"/>
+<stop offset="1" stop-color="#C4C4C4"/>
+</linearGradient>
+</defs>
+</svg>
