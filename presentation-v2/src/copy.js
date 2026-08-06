@@ -123,9 +123,10 @@ export const TARGET_ITEMS = [
 export const KEYWORD = {
   label: { en: 'Design Keyword', ko: '디자인 키워드' },
   headline: '빠르게 움직이고, 정확하게 판단하며, 끝까지 몰입한다.',
+  // 인트로 둘째 줄('이를 위해 Dynamic, Precision, Immersion의 세가지...')은 제거했다(PV3).
+  // 카드 자체가 세 키워드를 보여주므로 중복이고, 그 줄을 없애 카드를 위로 올린다.
   body: [
     '본 제품은 펜싱의 핵심 경험을 XR 기술로 확장하여 실시간 피드백과 직관적인 인터페이스를 통해 더욱 효과적인 트레이닝 환경을 제공한다.',
-    '이를 위해 Dynamic, Precision, Immersion의 세가지 디자인 키워드를 바탕으로 형태와 사용자 경험을 전개한다.',
   ],
 };
 

@@ -171,8 +171,11 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
               flexDirection: 'column',
               minWidth: 0,
               minHeight: 0,
-              // **중앙 기준 확대.** 좌우 위치가 안 흔들린다.
-              transformOrigin: 'center center',
+              // **확장이 그리드 마진을 안 넘게 가장자리 카드는 안쪽 기준으로 키운다.**
+              // 첫 카드는 좌측 고정(우로 확장), 끝 카드는 우측 고정(좌로 확장), 가운데는 중앙.
+              // 중앙 기준이면 포커스 1.08배에서 가장자리 카드/캡션이 marginX를 17px 넘었다(실측).
+              transformOrigin:
+                i === 0 ? 'left center' : i === KEYWORDS.length - 1 ? 'right center' : 'center center',
               willChange: 'transform, opacity, filter',
             }}
           >
