@@ -5,14 +5,14 @@
 // 옆에 사유를 적는다. 눌러도 아무 일이 없는 버튼이 제일 나쁜 실패다.
 
 import { colors, radius, spacing, typography, weight } from '../tokens.js';
-import { EXPERIENCE } from '../copy.js';
+import { ARENA_CTA } from '../copy.js';
 
 export function arenaUrl() {
   const v = import.meta.env.VITE_ARENA_URL;
   return typeof v === 'string' ? v.trim() : '';
 }
 
-export default function ArenaCta({ label = EXPERIENCE.cta }) {
+export default function ArenaCta({ label = ARENA_CTA.label }) {
   const url = arenaUrl();
 
   if (!url) {
@@ -30,7 +30,7 @@ export default function ArenaCta({ label = EXPERIENCE.cta }) {
             color: colors.text.dim,
           }}
         >
-          {EXPERIENCE.unavailable}
+          {ARENA_CTA.unavailable}
         </span>
       </div>
     );

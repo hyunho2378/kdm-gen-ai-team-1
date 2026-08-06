@@ -9,12 +9,6 @@
 
 import { colors, displayFamily, motion, pageGradient, radius, spacing, withAlpha, zIndex } from './tokens.js';
 
-/**
- * 헤더가 상주하는 높이. 하위 페이지 상단 여백이 이 값을 더해야 제목이 안 가린다.
- * 예전에는 페이지마다 `68px`을 손으로 적었다.
- */
-export const HEADER_H = 68;
-
 export function applyThemeVars(root = document.documentElement) {
   const vars = {
     // ── 페이지 골격 (REBOOT_PLAN 2.3) ────────────────────────────────────
@@ -42,11 +36,10 @@ export function applyThemeVars(root = document.documentElement) {
     '--measure': 'min(100%, 88rem)',
     // 세로 리듬. 섹션 간격도 한 곳에서 나온다
     '--section-gap': spacing.section,
-    '--header-h': `${HEADER_H}px`,
-    // 하위 페이지 콘텐츠 상단. **헤더 바로 아래 완만한 거리**에서 시작한다.
-    // 예전에는 `섹션 간격 + 헤더`(최대 228px)라 헤더와 제목 사이가 통째로 비었다(화면 위 3분의 1).
-    // 이제 헤더 높이에 8pt 격자의 완만한 gap(clamp 24~48px)만 더해 콘텐츠가 위로 붙는다.
-    '--page-top': `calc(${HEADER_H}px + clamp(1.5rem, 1rem + 2vw, 3rem))`,
+    // 하위 페이지(NotFound) 콘텐츠 상단. **전역 헤더가 사라져 그 높이를 안 더한다.**
+    // 8pt 격자의 완만한 gap만 남는다. 제품 페이지는 자기 서브내비를 스스로 이고 있어
+    // 이 값을 쓰지 않는다
+    '--page-top': 'clamp(1.5rem, 1rem + 2vw, 3rem)',
 
     // ── 카드 판 (제품 인덱스, 관문) ──────────────────────────────────────
     // **선이 아니라 아주 낮은 대비의 배경 차이로 경계를 만든다**(R1 선 금지 유지, 판독 개선).
@@ -56,9 +49,9 @@ export function applyThemeVars(root = document.documentElement) {
     '--card-bg-hover': withAlpha(colors.text.primary, 0.07),
     '--card-radius': `${radius.lg}px`,
 
+    // **서브내비가 곧 헤더다.** 전역 헤더를 걷어내 이 바가 헤더 층을 그대로 물려받는다
+    '--z-pnav': String(zIndex.header),
     // 커서는 토스트보다도 위다. 화면의 어떤 것도 커서를 가리면 안 된다
-    // 서브내비는 헤더 바로 아래 층이다. 헤더보다 낮고 콘텐츠보다 높다
-    '--z-pnav': String(zIndex.header - 1),
     // 서브내비 판. 페이지 그라디언트 위에 얹히므로 밝은 끝을 옅게 깔아 글자가 뚫리지 않게 한다
     '--pnav-bg': withAlpha(colors.bg.base, 0.82),
     '--z-cursor': String(zIndex.toast + 10),
@@ -80,13 +73,8 @@ export function applyThemeVars(root = document.documentElement) {
     '--dur-press': `${motion.duration.press}ms`,
     // 호버 반응. DOM UI라 300ms 미만이어야 하고(DESIGN 7절) 커서를 스쳐도 거슬리지 않는 길이가 tooltip이다
     '--dur-hover': `${motion.duration.tooltip}ms`,
-    // 모바일 메뉴 시트. 시트와 드로어는 DESIGN 7절이 ease-drawer를 지정한다.
-    // 지속은 dropdown(200ms)을 쓴다. 헤더에서 내려오는 메뉴이고 DOM UI라 300ms 미만이어야 한다
-    '--ease-drawer': motion.easeDrawer,
-    '--dur-sheet': `${motion.duration.dropdown}ms`,
-    // 시트 판과 스크림. 배경은 bg.base 계열이고 뒤가 비치되 글자가 읽히는 알파다
-    '--sheet-bg': withAlpha(colors.bg.base, 0.96),
-    '--scrim-bg': colors.bg.overlay,
+    // **모바일 메뉴 시트 변수 넷을 걷었다.** 전역 헤더가 사라지면서 시트와 스크림이 함께
+    // 사라졌고, 남은 서브내비는 좁은 화면에서 접히지 않고 두 줄로 눕는다
   };
   for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
 }

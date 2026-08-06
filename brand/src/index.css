@@ -62,18 +62,14 @@ html { scrollbar-gutter: stable; }
   max-width: var(--measure);
 }
 
-/* 하위 페이지. 헤더가 상주하므로 상단만 헤더 높이를 더한다 */
+/* 하위 페이지(NotFound). **전역 헤더가 사라져 헤더 높이를 더하지 않는다.**
+   제품 페이지는 자기 서브내비를 스스로 이고 있어 이 클래스를 쓰지 않는다 */
 .vx-page {
   padding-top: var(--page-top);
   padding-bottom: var(--section-gap);
 }
 
-/* 랜딩 섹션. 위아래 같은 간격 */
-.vx-section {
-  padding-block: var(--section-gap);
-}
-
-/* ── 카드 판 (제품 인덱스, 관문) ──────────────────────────────────────────
+/* ── 카드 판 (제품 섹션 미디어 자리) ──────────────────────────────────────────
    **카드로 읽히게 한다.** 선을 다시 넣지 않고(R1) 아주 낮은 대비의 배경 상승으로 경계를 만든다.
    검은 페이지 위 흰 오버레이(--card-bg)라 판이 아니라 은은한 상승으로 읽히고, 호버/포커스에
    한 단계 밝아져 클릭 대상임이 읽힌다(R1 커스텀 커서가 a를 이미 확대 대상으로 본다).
@@ -86,35 +82,6 @@ html { scrollbar-gutter: stable; }
 .vx-card:hover,
 .vx-card:focus-visible {
   background: var(--card-bg-hover);
-}
-
-/* 목록 카드의 비주얼 자리(이미지 슬롯). 카드 상단에서 남는 세로를 먹어 첫 화면 안에서 늘어난다.
-   자리표시 문구를 가운데 놓아 **비어 있는 이미지 영역**으로 읽힌다(이미지가 오면 이 자리에 들어간다).
-   **좁은 화면에서는 접는다.** 320에서 여러 장을 한 화면에 넣으면 이 자리에 줄 높이가 안 남아
-   카드끼리 글자가 겹쳤다(실측). 좁을 때는 이름과 한 줄만 남기는 것이 맞다.
-   md 이상에서만 자리가 선다. 요소는 계속 있으므로 Flip 전환의 짝은 그대로 성립한다 */
-.vx-card-visual {
-  display: none;
-}
-@media (min-width: 768px) {
-  .vx-card-visual {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: var(--card-radius);
-  }
-}
-
-/* 헤더 바. 배경과 블러는 헤더가 전폭으로 깔고, 안쪽 줄만 페이지와 같은 골격을 쓴다.
-   그래야 워드마크가 페이지 제목과 같은 세로선에서 시작한다 */
-.vx-bar {
-  width: 100%;
-  max-width: var(--page-max);
-  margin-inline: auto;
-  padding: 12px var(--page-gutter);
 }
 
 /* CTA 채움. **배경을 인라인 style로 걸지 않는다.**
@@ -136,218 +103,20 @@ html { scrollbar-gutter: stable; }
   transform: scale(0.97);
 }
 
-/* ── 제품 상세 Kew 무배경 (REBOOT_PLAN 3.3) ──────────────────────────────
-   판과 보더를 전부 걷어냈다. 3D는 페이지 배경 위에 직접 뜨고 글자는 배경 없이 얹힌다.
-
-   **열을 갈라 겹침을 원천 차단한다.** 3D는 상시 autoRotate라 밝은 크롬 면이 글자 뒤를
-   지나가면 대비가 그 순간에만 무너진다. 그림자나 딤 판으로 때우는 것은 금지라
-   배치 자체가 보증이 되게 했다. 격자 열은 서로 겹칠 수 없다(실측 교집합 0).
-
-   좁은 폭에서는 한 열로 쌓이고 **3D가 먼저, 정보가 그 아래**다. 순서가 곧 층이라
-   글자가 3D 위에 얹히는 경우가 생기지 않는다. */
-.vx-kew {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 32px;
-  align-items: start;
-}
-/* 3D 무대. **판도 보더도 라운드도 없다.** 캔버스가 투명해 페이지 배경이 그대로 비친다 */
-.vx-kew-stage {
-  position: relative;
-  width: 100%;
-  min-height: 320px;
-}
-
-@media (min-width: 900px) {
-  .vx-kew {
-    /* 3D 쪽을 넓게 준다. Kew 구도가 3D 중앙~좌측, 텍스트 우측이다 */
-    grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
-    gap: 48px;
-    /* **첫 화면 안에서 완결한다**(REBOOT_PLAN 2.3). main이 100dvh 세로 flex라
-       남는 세로를 이 격자가 통째로 먹고, 그 안에서 3D가 남는 만큼 늘어난다.
-       고정 높이를 주면 위계 블록 길이에 따라 3D가 첫 화면 밖으로 밀린다(실측으로 잡았다) */
-    flex: 1;
-    min-height: 0;
-    align-items: stretch;
-  }
-  .vx-kew-stage {
-    /* 격자가 stretch라 행 높이를 그대로 받되 **바닥을 뷰포트에 맞춰 깐다.**
-       오른쪽 열의 글자 길이가 행 높이를 정하게 두면 3D가 240px로 눌려 제품이 안 읽힌다(실측).
-       42vh는 위계 블록까지 더해도 900 높이 화면 안에서 3D가 잘리지 않는 상한이다 */
-    min-height: min(42vh, 400px);
-  }
-  /* **정보 열의 자리를 못박는다.** Flip 전환은 무대를 absolute로 띄워 흐름에서 빼는데,
-     그러면 격자에 남는 항목이 이것뿐이라 첫 열로 올라와 전환 내내 왼쪽으로 튄다
-     (실측 스크린샷에서 잡았다). 열 번호를 지정하면 무대가 빠져도 자리를 지킨다 */
-  .vx-kew-info {
-    grid-column: 2;
-  }
-}
-
-/* 좌측 상단 위계의 마지막 줄. 탭이 제목 아래 가로로 눕는다 */
-.vx-kew-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-/* 헤더 반응형. **`display`를 컴포넌트 인라인 style로 걸지 않는다.**
-   인라인은 아래 media query를 이겨서 규칙이 통째로 죽는다. 320에서 nav가 안 접히던 원인이
-   정확히 그것이었다(arena press, brand CTA에 이은 세 번째 사례. PITFALLS 참조).
-   배치는 여기가 쥐고 컴포넌트는 클래스 이름만 준다. */
-
-/* 데스크톱 묶음. md 이상에서만 선다 */
-.vx-nav {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-/* CTA 배치. 바용과 시트용을 따로 둔다. 한 요소의 display가 정확히 한 클래스에만 있어야
-   md 미만에서 바 CTA만 접히고 시트 CTA는 산다 */
-.vx-cta-bar,
-.vx-cta-sheet {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 모바일 묶음. md 이상에서는 `display: none`이라 **탭 순서와 접근성 트리에서도 빠진다.**
-   숨기지 않고 두면 넓은 화면에서 같은 링크가 두 벌로 읽힌다 */
-.vx-burger,
-.vx-scrim,
-.vx-sheet {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  .vx-nav,
-  .vx-cta-bar {
-    display: none;
-  }
-  .vx-burger {
-    display: inline-flex;
-  }
-  .vx-scrim {
-    display: block;
-  }
-  .vx-sheet {
-    display: flex;
-  }
-}
-
-/* 시트와 스크림의 열고 닫힘. **transform과 opacity만 건드린다**(DESIGN 7절).
-   닫힘 상태의 `visibility: hidden`이 포커스와 접근성 트리에서 시트를 빼므로
-   닫힌 메뉴로 탭이 새지 않는다. 나가는 동안 보이게 visibility만 지속시간만큼 늦춘다.
-   **애니메이션을 CSS에 두면 아래 전역 reduced-motion 규칙이 그대로 먹는다.** */
-.vx-scrim,
-.vx-sheet {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity var(--dur-sheet) var(--ease-drawer),
-    transform var(--dur-sheet) var(--ease-drawer),
-    visibility 0s linear var(--dur-sheet);
-}
-.vx-sheet {
-  transform: translateY(-12px);
-}
-[data-nav-open='true'] .vx-scrim,
-[data-nav-open='true'] .vx-sheet {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity var(--dur-sheet) var(--ease-drawer),
-    transform var(--dur-sheet) var(--ease-drawer),
-    visibility 0s linear 0s;
-}
-[data-nav-open='true'] .vx-sheet {
-  transform: translateY(0);
-}
-
-/* ── 히어로 비주얼 슬롯 (BRAND_SITE_V2_PLAN 2절, BV2-2) ────────────────────
-   **전폭이다.** shell 거터를 뚫고 화면 끝까지 간다. Satisfy의 히어로 비주얼이 1440 전폭이고
-   그 폭이 문법의 절반이다. 안쪽 카피만 `.vx-shell`로 격자에 되돌린다.
-
-   **빈 박스가 아니라 표면이다.** 카드와 같은 `--card-bg`(잉크 3.5퍼센트)라 페이지 위에 한 단계
-   눌린 판으로 읽힌다. 선을 긋지 않는다(R1 선 금지). 이미지가 오면 이 자리를 그대로 덮는다. */
-.vx-hero-slot {
-  width: 100vw;
-  margin-inline: calc(50% - 50vw);
-  background: var(--card-bg);
-}
-/* 스크롤바가 있으면 100vw가 스크롤바까지 세어 가로 스크롤이 생긴다.
-   `scrollbar-gutter: stable`이 자리를 늘 비워 두므로 그 폭만큼 뺀다 */
-@supports (width: 100dvw) {
-  .vx-hero-slot {
-    width: 100dvw;
-    margin-inline: calc(50% - 50dvw);
-  }
-}
-
-/* ── 제품 딥다이브 (BRAND_SITE_V2_PLAN 2절, BV2-4) ────────────────────────
-   **고정 미디어 옆을 비트가 지나간다.** Apple Vision Pro의 sticky 패널이 top 52px에 붙는
-   구조를 그대로 옮겼고 우리는 헤더 높이를 쓴다(실측: 그쪽 sticky-element는 1425x848).
-
-   좁은 화면에서는 한 열로 쌓이고 **고정을 푼다.** 세로가 모자란 화면에서 미디어를 붙들면
-   비트를 읽을 자리가 안 남는다. 그때는 미디어가 먼저 한 번 나오고 글이 그 아래로 흐른다. */
-.vx-dive {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
-  padding-block: var(--section-gap);
-  align-items: start;
-}
-/* 격자 칸. 좁은 화면에서는 이 자체가 미디어 높이를 정한다 */
-.vx-dive-media {
-  position: relative;
-  width: 100%;
-}
-.vx-dive-media-inner {
-  position: relative;
-  width: 100%;
-  /* 좁은 화면에서도 제품이 읽히는 높이. 고정이 아니라 화면을 다 먹지 않는다 */
-  height: 46vh;
-  min-height: 260px;
-}
-.vx-dive-body {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(3rem, 1.5rem + 6vh, 7rem);
-}
-
-@media (min-width: 900px) {
-  .vx-dive {
-    grid-template-columns: minmax(0, 47fr) minmax(0, 53fr);
-    gap: 56px;
-    /* **칸을 행 높이만큼 늘린다.** start로 두면 미디어 칸이 제 콘텐츠 높이에서 멈춰
-       안쪽 sticky가 붙을 구간이 없다(실측: top 92에서 곧바로 밀려 올라갔다) */
-    align-items: stretch;
-  }
-  .vx-dive-media-inner {
-    position: sticky;
-    /* 헤더가 상주하므로 그 아래에 붙는다. Apple은 52px, 우리 헤더는 68px다 */
-    top: calc(var(--header-h) + 24px);
-    height: min(68vh, 640px);
-  }
-  /* **이 최소 높이가 곧 딥다이브의 길이다.** Apple의 긴 섹션이 2.4화면 이상인 것을
-     여기서 만든다. 비트를 그 안에 고르게 흩어 미디어가 붙어 있는 동안 하나씩 지나간다 */
-  .vx-dive-body {
-    min-height: 210vh;
-    justify-content: space-between;
-    padding-top: 8vh;
-    padding-bottom: 8vh;
-  }
-}
-
-/* ── 제품 서브내비 (PRODUCT_PAGE_APPLE_MAPPING, PD-1) ─────────────────────
-   Apple 실측: nav가 sticky top 0, 높이 52px, 전폭. 좌측 제품명, 우측 탭 3개와 CTA 2개.
+/* ── 제품 서브내비 (PRODUCT_PAGE_APPLE_MAPPING) ───────────────────────────
+   Apple 실측: nav가 sticky top 0, 높이 52px, 전폭. 좌측 제품명, 우측 탭과 CTA.
 
    **sticky이지 fixed가 아니다.** fixed는 transform이 걸린 조상(R3 워프)에 잡혀
    뷰포트가 아니라 그 조상 기준이 된다(PITFALLS). sticky는 그 함정을 안 밟는다.
 
-   우리 헤더는 늘 fixed로 상주하므로 그 아래에 붙는다. Apple에서 글로벌내비가 사라진 뒤
-   서브내비가 top 0을 차지하는 것과 같은 자리다. */
+   **top이 0이다(헤더 통합 세션).** 예전에는 전역 헤더가 fixed로 상주해서 그 높이(68px)
+   아래에 붙였는데, **바 둘이 위아래로 겹쳐 서로 자리를 다퉜다.** 그 헤더를 걷어내
+   이제 이 바가 사이트의 유일한 헤더다. 문서의 첫 요소이므로 처음부터 top 0에 서 있고
+   스크롤해도 그 자리에서 안 움직인다. Apple에서 글로벌내비가 사라진 뒤 서브내비가
+   top 0을 차지하는 그 자리와 같다. */
 .vx-pnav {
   position: sticky;
-  top: var(--header-h);
+  top: 0;
   z-index: var(--z-pnav);
   /* 배경이 없으면 아래 콘텐츠가 글자를 뚫고 지나간다. 페이지 배경과 같은 계열로 덮되
      선을 긋지 않는다(R1 선 금지). 살짝 눌린 판이 경계를 대신한다 */
@@ -408,9 +177,14 @@ html { scrollbar-gutter: stable; }
   }
 }
 
-/* 앵커 섹션. **서브내비 아래로 제목이 숨지 않게** 스크롤 여백을 준다 */
+/* 앵커 섹션. **서브내비 아래로 제목이 숨지 않게** 스크롤 여백을 준다.
+   전역 헤더가 사라져 서브내비 높이와 한 뼘만 남는다.
+
+   **높이를 숫자로 적지 않는다.** 좁은 화면에서 바가 두 줄로 접혀 52가 아니라 147이 된다
+   (320에서 실측). ProductNav가 자기 높이를 재서 `--pnav-h`로 내보내고 여기가 그것을 읽는다.
+   폴백 52는 그 변수가 붙기 전 한 프레임과 서브내비가 없는 화면(NotFound)을 위한 값이다 */
 .vx-pd-section {
-  scroll-margin-top: calc(var(--header-h) + 52px + 16px);
+  scroll-margin-top: calc(var(--pnav-h, 52px) + 16px);
   padding-block: var(--section-gap);
 }
 
@@ -464,38 +238,9 @@ html { scrollbar-gutter: stable; }
   width: 100%;
 }
 
-/* ── 관문 카드 호버 (REBOOT_PLAN 4절) ────────────────────────────────────
-   **선을 쓰지 않는다.** 제목이 조금 나아가고 이미지 자리가 밝아지는 둘뿐이다.
-   커서 확대는 R1 커서가 `a`를 이미 대상으로 보고 있어 여기서 따로 걸 것이 없다.
-
-   호버와 focus-visible을 같이 건다. 키보드로 훑는 사람도 같은 신호를 받아야 한다. */
-.vx-gate-title {
-  display: inline-block; /* transform이 먹으려면 인라인이 아니어야 한다 */
-  transition: transform var(--dur-hover) var(--ease-out);
-}
-.vx-gate-visual {
-  /* 평시는 dim, 호버에 또렷해진다. 색을 갈아끼우지 않고 밝기만 올린다 */
-  opacity: 0.55;
-  transition: opacity var(--dur-hover) var(--ease-out);
-}
-.vx-gate:hover .vx-gate-title,
-.vx-gate:focus-visible .vx-gate-title {
-  transform: translateX(8px);
-}
-.vx-gate:hover .vx-gate-visual,
-.vx-gate:focus-visible .vx-gate-visual {
-  opacity: 1;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
-  }
-  /* 모션을 줄여 달라고 했으면 **호버는 밝기만 남긴다.** 위 규칙은 지속시간만 줄여서
-     제목이 순간이동하듯 튄다. 이동 자체를 없애야 한다 */
-  .vx-gate:hover .vx-gate-title,
-  .vx-gate:focus-visible .vx-gate-title {
-    transform: none;
   }
 }

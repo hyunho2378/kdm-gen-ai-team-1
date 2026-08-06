@@ -1,12 +1,16 @@
-// brand 루트. React Router v6(실설치 6.30.4)로 랜딩과 상세 4종을 건다.
+// brand 루트. **사이트가 제품 5탭 페이지 하나다.**
 //
 // BrowserRouter를 쓴다. 데이터 라우터(createBrowserRouter)가 아니므로
 // **ScrollRestoration은 쓸 수 없다**(데이터 라우터 전용이라 던진다). 스크롤은 아래 훅이 맡는다.
 // 새로고침과 직접 진입은 brand/vercel.json의 SPA rewrite가 받는다.
 //
-// 상세는 **있는 slug만 라우트로 연다.** `/product/:slug` 하나로 받으면 없는 제품도 상세 골격이
-// 뜨고 그 안에서 다시 안내를 내야 한다. 명시 라우트로 두면 `/product/branding` 같은 폐기 경로가
-// 전역 NotFound로 그냥 떨어진다. 라우트 목록은 copy.js의 제품 카드가 곧 원천이다.
+// ── 라우트 (헤더 통합 세션) ─────────────────────────────────────────────────
+// 랜딩과 `/about`과 `/duelists`와 `/experience`와 제품 상세를 전부 걷었다.
+// **남은 화면이 하나뿐이라 그 화면이 루트다.** 사이트의 유일한 페이지가 하위 주소에 사는 것은
+// 주소만 보고는 읽히지 않는다.
+//
+// 걷어낸 넷은 리다이렉트를 두지 않는다. 갈 자리가 없어진 것이라 없는 주소가 맞고,
+// 조용히 홈으로 튕기면 주소가 틀렸다는 사실이 화면에 안 남는다(NotFound와 같은 규율).
 
 import { useEffect, useRef } from 'react';
 import {
@@ -19,17 +23,10 @@ import {
 } from 'react-router-dom';
 import Lenis from 'lenis';
 import { ScrollTrigger } from './lib/motion.js';
-import { PRODUCTS } from './copy.js';
 import { applyThemeVars } from './theme.js';
 import Cursor from './components/Cursor.jsx';
 import ScrollWarp from './components/ScrollWarp.jsx';
-import Header from './components/Header.jsx';
-import Landing from './pages/Landing.jsx';
-import ProductDetail from './pages/ProductDetail.jsx';
 import Products from './pages/Products.jsx';
-import Duelists from './pages/Duelists.jsx';
-import Experience from './pages/Experience.jsx';
-import About from './pages/About.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 /**
@@ -90,22 +87,15 @@ export default function App() {
           **프리로더 스플래시를 걷었다.** 최초 로드에 히어로가 바로 선다.
           스크롤 잠금도 함께 사라져서 Lenis를 멈췄다 다시 켜는 배선이 없다 */}
       <Cursor />
-      <Header />
-      {/* 스크롤 워프는 **스크롤되는 콘텐츠에만** 건다. 위의 프리로더와 커서와 헤더는
-          전부 position fixed이고, transform이 걸린 조상 안에서는 fixed가 뷰포트 기준을 잃는다.
-          그래서 셋을 이 래퍼의 형제로 남긴다(실측: main에 skew를 걸자 pin된 섹션이
-          뷰포트 top 0에서 -1836으로 날아갔다) */}
+      {/* 스크롤 워프는 **스크롤되는 콘텐츠에만** 건다. 위의 커서는 position fixed이고,
+          transform이 걸린 조상 안에서는 fixed가 뷰포트 기준을 잃는다. 그래서 이 래퍼의
+          형제로 남긴다(실측: main에 skew를 걸자 pin된 섹션이 뷰포트 top 0에서 -1836으로 날아갔다).
+          **제품 서브내비는 안에 있어도 된다. sticky는 그 함정을 안 밟는다** */}
       <ScrollWarp>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<Products />} />
           <Route path="/products" element={<Products />} />
-          {PRODUCTS.cards.map((p) => (
-            <Route key={p.slug} path={`/product/${p.slug}`} element={<ProductDetail slug={p.slug} />} />
-          ))}
-          <Route path="/duelists" element={<Duelists />} />
-          <Route path="/experience" element={<Experience />} />
-          <Route path="/about" element={<About />} />
-          {/* **랜딩으로 튕기지 않는다.** 주소가 틀렸다는 사실이 화면에 남아야 사람이 오타를 찾는다 */}
+          {/* **홈으로 튕기지 않는다.** 주소가 틀렸다는 사실이 화면에 남아야 사람이 오타를 찾는다 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </ScrollWarp>
