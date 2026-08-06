@@ -29,6 +29,9 @@ export const TODO_PRODUCT_MODEL = `제품 3D 모델 ${TODO_MARK}`;
 // 제품군이 4종에서 3종으로 줄면서 "각 장치가 거리, 자세, 타이밍, 대결을 맡는다"가
 // 네 개 전제라 안 맞게 됐다. 새 문장을 지어내지 않고 자리표시로 둔다
 export const PRODUCTS_INDEX_LINE_TODO = `제품군 한 줄 ${TODO_MARK}`;
+// 이미지와 영상이 아직 없는 자리. **빈 박스나 다크 사각형을 두지 않는다**(REBOOT_PLAN 2.1).
+// 자리표시 문구만 dim으로 둔다. 에셋이 들어오면 이 상수를 참조하는 자리가 이미지로 바뀐다
+export const MEDIA_PENDING = '이미지 첨부 예정';
 
 // 섹션 식별자. 랜딩 앵커가 쓴다.
 export const SECTION = {

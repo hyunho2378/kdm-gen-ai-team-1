@@ -174,7 +174,8 @@ export default function DuelistSelector({ reduced }) {
               minHeight: 44,
               padding: spacing.unit * 3,
               borderRadius: radius.lg,
-              border: `1px solid ${isActive ? colors.red.light : colors.line.default}`,
+              // **테두리를 걷어냈다(REBOOT_PLAN 2.1).** 선택 상태는 글로우와 배율과 흐림이 낸다.
+              // 셋이 함께 움직이므로 색 단독 구분이 아니다(DESIGN 13절)
               background: colors.bg.raised,
               boxShadow: isActive && !reduced ? glow.red : 'none',
               cursor: 'pointer',
@@ -183,7 +184,7 @@ export default function DuelistSelector({ reduced }) {
               // 원본의 전환 패턴. DESIGN 7절 easeOut과 같은 계열이다
               transition: reduced
                 ? 'none'
-                : `transform 560ms ${motion.easeOut}, filter 560ms ${motion.easeOut}, opacity 560ms ${motion.easeOut}, border-color 240ms ${motion.easeOut}, box-shadow 240ms ${motion.easeOut}`,
+                : `transform 560ms ${motion.easeOut}, filter 560ms ${motion.easeOut}, opacity 560ms ${motion.easeOut}, box-shadow 240ms ${motion.easeOut}`,
               opacity: 1 - dim,
             }}
           >
@@ -194,7 +195,7 @@ export default function DuelistSelector({ reduced }) {
               style={{
                 height: 'clamp(180px, 24vh, 300px)',
                 borderRadius: radius.md,
-                border: `1px solid ${colors.line.default}`,
+                // 테두리를 걷어냈다. 사진이 들어차는 자리라 판은 남는다
                 background: colors.bg.deep,
                 overflow: 'hidden',
                 display: 'flex',
@@ -258,7 +259,7 @@ export default function DuelistSelector({ reduced }) {
               style={{
                 margin: 0,
                 paddingLeft: 12,
-                borderLeft: `2px solid ${isActive ? colors.red.light : colors.line.strong}`,
+                // **인용 왼쪽 선을 걷어냈다(REBOOT_PLAN 2.1).** 들여쓰기와 기울임이 인용을 낸다
                 fontFamily: typography.family,
                 fontSize: typography.caption.size,
                 lineHeight: 1.6,

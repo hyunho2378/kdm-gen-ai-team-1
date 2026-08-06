@@ -120,6 +120,10 @@ export const typography = {
   body:    { size: 'clamp(1rem, 0.95rem + 0.2vw, 1.125rem)', weight: 400, tracking: '0', leading: 1.7 },
   caption: { size: '0.8125rem', weight: 400, tracking: '0.01em', leading: 1.5 },
   hud:     { size: 'clamp(0.875rem, 0.8rem + 0.3vw, 1.125rem)', weight: 600, tracking: '0.06em', leading: 1.2 },
+  // 아이브로우 v2 (DESIGN 4절 개정). 예전에는 caption(0.8125rem = 13px)을 그대로 썼다.
+  // **불릿 원을 없앤 대신 크기가 존재감을 진다.** 13px + 8px = 21px = 1.3125rem.
+  // rem이라 사용자 글자 크기 설정을 그대로 따른다. weight 600 세미볼드 유지.
+  eyebrow: { size: '1.3125rem', weight: 600, tracking: '0.06em', leading: 1.25 },
 };
 
 export const spacing = {

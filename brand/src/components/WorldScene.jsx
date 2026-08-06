@@ -26,12 +26,6 @@ export default function WorldScene({ id, eyebrow, title, body }) {
     if (!root || isReduced()) return undefined;
 
     const ctx = gsap.context(() => {
-      // **dash 길이를 손으로 적지 않는다.** 상수로 박으면 실제 path 길이와 어긋나
-      // 선이 중간에 끊겨 조각으로 보인다(실측). 브라우저가 잰 길이를 그대로 쓴다
-      const stroke = root.querySelector('[data-world="stroke"]');
-      const len = stroke ? stroke.getTotalLength() : 0;
-      if (stroke) gsap.set(stroke, { strokeDasharray: len, strokeDashoffset: len });
-
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root,
@@ -45,13 +39,9 @@ export default function WorldScene({ id, eyebrow, title, body }) {
         defaults: { ease: 'none' },
       });
 
-      // 1단계. 제목이 서고 배경 원이 깊이로 물러난다
+      // **두 단계만 남는다.** 배경 원과 검끝 선을 걷어내면서 그 두 단계도 함께 빠졌다.
+      // 제목이 서고 본문이 뒤따르는 시차가 이 구간의 전부다
       tl.from('[data-world="title"]', { opacity: 0, y: 40 })
-        .from('[data-world="depth"]', { scale: 1.35, opacity: 0.2 }, 0)
-        // 2단계. 검끝 선이 그려진다. stroke-dashoffset은 transform이 아니지만
-        // SVG 경로 그리기의 유일한 통로이고 레이아웃을 만들지 않는다
-        .to(stroke, { strokeDashoffset: 0 }, 0.35)
-        // 3단계. 본문이 뒤따라 뜬다
         .from('[data-world="body"]', { opacity: 0, y: 24 }, 0.55);
     }, root);
 
@@ -64,6 +54,7 @@ export default function WorldScene({ id, eyebrow, title, body }) {
     <section
       id={id}
       ref={rootRef}
+      className="vx-shell vx-section"
       style={{
         position: 'relative',
         overflow: 'hidden',
@@ -72,53 +63,12 @@ export default function WorldScene({ id, eyebrow, title, body }) {
         flexDirection: 'column',
         justifyContent: 'center',
         gap: spacing.unit * 3,
-        padding: `${spacing.section} ${spacing.gutter}`,
-        maxWidth: spacing.maxWide,
-        margin: '0 auto',
-        width: '100%',
       }}
     >
-      {/* 깊이층. 아주 낮은 알파의 원 하나가 뒤로 물러나며 공간을 만든다 */}
-      <div
-        aria-hidden="true"
-        data-world="depth"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 0,
-          background: `radial-gradient(circle at 62% 50%, ${colors.line.default} 0%, transparent 55%)`,
-        }}
-      />
-
-      {/* 검끝 선. 히어로 궤적과 같은 문법이되 WebGL이 아니라 SVG다.
-          **경로를 하단으로 눌렀다.** 화면 중앙을 지나던 곡선이 본문을 가로질러
-          읽는 줄 위에 선이 얹혔다(실측 스크린샷). 텍스트 블록 아래에서만 흐른다 */}
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 800 400"
-        preserveAspectRatio="none"
-        style={{ position: 'absolute', inset: 0, zIndex: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-      >
-        <defs>
-          <linearGradient id="world-stroke" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={colors.steel.shadow} />
-            <stop offset="55%" stopColor={colors.steel.mid} />
-            <stop offset="100%" stopColor={colors.red.light} />
-          </linearGradient>
-        </defs>
-        <path
-          data-world="stroke"
-          d="M -20 388 C 200 378, 300 330, 460 306 S 720 246, 820 176"
-          fill="none"
-          stroke="url(#world-stroke)"
-          strokeWidth="1.5"
-          strokeOpacity="0.7"
-          vectorEffect="non-scaling-stroke"
-          strokeDasharray="0"
-          strokeDashoffset="0"
-        />
-      </svg>
-
+      {/* **깊이 radial과 검끝 SVG 선을 둘 다 걷어냈다(REBOOT_PLAN 2.1).**
+          radial은 배경을 물들이는 그라디언트이고 선은 장식 선이라 각각 금지 항목에 걸린다.
+          공간은 여백과 타이포 스케일이 만들고, 연출은 제목과 본문의 시차만으로 남는다.
+          검끝 문법은 히어로의 진짜 궤적 리본이 이미 지고 있다 */}
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: spacing.unit * 3 }}>
         <Eyebrow en={eyebrow.en} ko={eyebrow.ko} />
 

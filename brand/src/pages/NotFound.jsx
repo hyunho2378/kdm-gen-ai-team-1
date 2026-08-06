@@ -10,6 +10,7 @@ import { NOT_FOUND } from '../copy.js';
 export default function NotFound() {
   return (
     <main
+      className="vx-shell vx-page"
       style={{
         minHeight: '100dvh',
         display: 'flex',
@@ -17,10 +18,6 @@ export default function NotFound() {
         alignItems: 'flex-start',
         justifyContent: 'center',
         gap: spacing.unit * 2,
-        padding: `calc(${spacing.section} + 68px) ${spacing.gutter} ${spacing.section}`,
-        maxWidth: spacing.maxContent,
-        margin: '0 auto',
-        width: '100%',
       }}
     >
       <span

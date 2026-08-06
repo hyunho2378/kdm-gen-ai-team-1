@@ -100,6 +100,21 @@ export default function Header() {
     <header ref={headerRef} data-nav-open={open ? 'true' : 'false'} style={headerStyle}>
       {/* 바. **DOM에서 먼저 두고 z로 올린다.** 그래야 탭 순서가 워드마크, 햄버거, 시트 항목 순으로
           사람이 누른 차례를 따라간다. 칠하는 차례는 z가 정하므로 시트 위에 그대로 남는다 */}
+      {/* 배경과 블러는 전폭으로 깔고 안쪽 줄만 페이지 골격을 쓴다(index.css의 .vx-bar).
+          그래야 워드마크가 페이지 제목과 같은 세로선에서 시작한다.
+          **헤어라인은 없다.** 장식 선 전량 제거(REBOOT_PLAN 2.1). 판이 깔리는 것만으로 층이 읽힌다 */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          background: filled ? withAlpha(colors.bg.base, 0.85) : 'transparent',
+          backdropFilter: filled ? 'blur(12px)' : 'none',
+          WebkitBackdropFilter: filled ? 'blur(12px)' : 'none',
+          transition: 'background-color 200ms',
+        }}
+      />
       <div
         className="vx-bar"
         style={{
@@ -109,13 +124,6 @@ export default function Header() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: spacing.unit * 2,
-          padding: `12px ${spacing.gutter}`,
-          background: filled ? withAlpha(colors.bg.base, 0.85) : 'transparent',
-          backdropFilter: filled ? 'blur(12px)' : 'none',
-          WebkitBackdropFilter: filled ? 'blur(12px)' : 'none',
-          // 헤어라인은 판이 깔린 뒤에만. 투명 상태에서 선만 뜨면 그 선이 떠 보인다
-          borderBottom: `1px solid ${filled ? colors.line.default : 'transparent'}`,
-          transition: 'background-color 200ms, border-color 200ms',
         }}
       >
         <Link to="/" aria-label={HEADER.wordmark} style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>
@@ -229,6 +237,8 @@ const scrimStyle = {
   background: 'var(--scrim-bg)',
 };
 
+// 시트는 md 미만에서만 뜨고 그 폭에서는 최대폭 제한이 걸리지 않으므로 거터만 쓴다.
+// **하단 헤어라인은 없다.** 장식 선 전량 제거(REBOOT_PLAN 2.1). 판과 블러가 층을 낸다
 const sheetStyle = {
   position: 'absolute',
   top: '100%',
@@ -237,11 +247,10 @@ const sheetStyle = {
   zIndex: 1,
   flexDirection: 'column',
   gap: spacing.unit * 2,
-  padding: `${spacing.unit * 2}px ${spacing.gutter} ${spacing.unit * 3}px`,
+  padding: `${spacing.unit * 2}px var(--page-gutter) ${spacing.unit * 3}px`,
   background: 'var(--sheet-bg)',
   backdropFilter: 'blur(12px)',
   WebkitBackdropFilter: 'blur(12px)',
-  borderBottom: `1px solid ${colors.line.default}`,
 };
 
 // **채움과 press는 `.vx-cta`가, 배치는 `.vx-cta-bar`와 `.vx-cta-sheet`가 쥔다.**

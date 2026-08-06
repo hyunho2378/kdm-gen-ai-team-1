@@ -7,8 +7,8 @@
 
 import { useLayoutEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { colors, radius, spacing, typography } from '../tokens.js';
-import { PRODUCTS } from '../copy.js';
+import { colors, spacing, typography } from '../tokens.js';
+import { MEDIA_PENDING, PRODUCTS } from '../copy.js';
 import { captureFlip, pendingFlipId, playFlip } from '../lib/flip.js';
 import Page from '../components/Page.jsx';
 
@@ -28,12 +28,17 @@ export default function Products() {
   }, []);
 
   return (
-    <Page eyebrow={PRODUCTS.index.eyebrow} headline={PRODUCTS.index.title} sub={PRODUCTS.index.line}>
+    <Page eyebrow={PRODUCTS.index.eyebrow} headline={PRODUCTS.index.title} sub={PRODUCTS.index.line} fit>
+      {/* **첫 화면에서 완결한다(REBOOT_PLAN 2.3).** 남는 세로를 격자가 통째로 먹고
+          카드 안에서는 비주얼 자리가 늘어난다. 그래서 어느 폭에서도 스크롤 없이 카드 셋이 다 보인다.
+          고정 높이(aspect-ratio)를 주면 좁은 화면에서 반드시 화면을 넘긴다 */}
       <ul
         style={{
           listStyle: 'none',
           margin: 0,
           padding: 0,
+          flex: 1,
+          minHeight: 0,
           display: 'grid',
           // 3종이라 최소폭을 280으로 올려 유파 격자와 같은 리듬으로 맞춘다.
           // 320에서 1열, 768에서 2열, 넓은 화면에서 3열이 한 줄에 선다. 미디어쿼리 없이 폭만 보고 접힌다
@@ -42,7 +47,7 @@ export default function Products() {
         }}
       >
         {PRODUCTS.cards.map((p) => (
-          <li key={p.slug}>
+          <li key={p.slug} style={{ minHeight: 0 }}>
             <Link
               to={`/product/${p.slug}`}
               style={cardStyle}
@@ -50,13 +55,22 @@ export default function Products() {
               // 상태를 모듈 변수에 맡긴다(lib/flip.js)
               onClick={() => captureFlip(visualRefs.current[p.slug])}
             >
-              {/* 대표 비주얼 자리. 갤러리와 3D는 이후 세션이다 */}
+              {/* 대표 비주얼 자리. **박스 없이 문구만 둔다.** Flip 전환의 짝이라 요소 자체는 남는다 */}
               <span
                 ref={(el) => { visualRefs.current[p.slug] = el; }}
                 data-flip-id={`product-${p.slug}`}
-                style={cardVisualStyle}
-                aria-hidden="true"
-              />
+                className="vx-card-visual"
+              >
+                <span
+                  style={{
+                    fontFamily: typography.family,
+                    fontSize: typography.caption.size,
+                    color: colors.text.dim,
+                  }}
+                >
+                  {MEDIA_PENDING}
+                </span>
+              </span>
               <span
                 style={{
                   fontFamily: typography.family,
@@ -86,22 +100,16 @@ export default function Products() {
   );
 }
 
+// **카드 보더와 판을 걷어냈다(REBOOT_PLAN 2.1).** 구분은 여백과 타이포 스케일이 진다.
 const cardStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: 10,
   height: '100%',
-  padding: spacing.unit * 2,
-  borderRadius: radius.lg,
-  border: `1px solid ${colors.line.default}`,
-  background: colors.bg.raised,
+  minHeight: 0,
+  paddingBlock: spacing.unit,
   textDecoration: 'none',
 };
 
-const cardVisualStyle = {
-  display: 'block',
-  aspectRatio: '4 / 3',
-  borderRadius: radius.md,
-  border: `1px solid ${colors.line.default}`,
-  background: colors.bg.deep,
-};
+// 대표 비주얼 자리의 배치는 `.vx-card-visual`(index.css)이 쥔다.
+// **인라인으로 display를 걸지 않는다.** 걸면 좁은 화면에서 접는 media query가 죽는다(PITFALLS).

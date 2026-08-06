@@ -4,19 +4,22 @@
 import { colors, spacing, typography } from '../tokens.js';
 import Eyebrow from './Eyebrow.jsx';
 
-export default function Page({ eyebrow, headline, sub, children }) {
+/**
+ * @param fit 첫 화면 완결 모드(REBOOT_PLAN 2.3). 높이를 화면에 고정해 자식이 남는 세로를
+ *   나눠 갖게 한다. 목록 페이지가 스크롤 없이 끝나야 할 때 쓴다.
+ *   기본(false)은 내용만큼 늘어나는 일반 페이지다.
+ */
+export default function Page({ eyebrow, headline, sub, fit = false, children }) {
   return (
     <main
+      className="vx-shell vx-page"
       style={{
-        minHeight: '100dvh',
+        // fit이면 최소가 아니라 **높이 자체**를 화면으로 잡는다. 최소만 주면 자식의 flex가
+        // 기댈 바닥이 없어 내용만큼 늘어나고 결국 스크롤이 생긴다
+        [fit ? 'height' : 'minHeight']: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.unit * 3,
-        // 위쪽만 고정 헤더 높이(68)를 더한다. 헤더가 제목을 덮지 않게 한다
-        padding: `calc(${spacing.section} + 68px) ${spacing.gutter} ${spacing.section}`,
-        maxWidth: spacing.maxWide,
-        margin: '0 auto',
-        width: '100%',
       }}
     >
       {eyebrow ? <Eyebrow en={eyebrow.en} ko={eyebrow.ko} /> : null}

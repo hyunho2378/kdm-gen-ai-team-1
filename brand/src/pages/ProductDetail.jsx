@@ -14,6 +14,7 @@ import { colors, radius, spacing, typography } from '../tokens.js';
 import { PRODUCTS, PRODUCT_DETAIL } from '../copy.js';
 import { captureFlip, playFlip } from '../lib/flip.js';
 import ArenaCta from '../components/ArenaCta.jsx';
+import Eyebrow from '../components/Eyebrow.jsx';
 import ProductViewer from '../components/ProductViewer.jsx';
 
 const TABS = PRODUCT_DETAIL.tabs;
@@ -55,16 +56,12 @@ export default function ProductDetail({ slug }) {
 
   return (
     <main
+      className="vx-shell vx-page"
       style={{
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         gap: spacing.unit * 3,
-        // 위쪽만 고정 헤더 높이(68)를 더한다
-        padding: `calc(${spacing.section} + 68px) ${spacing.gutter} ${spacing.section}`,
-        maxWidth: spacing.maxContent,
-        margin: '0 auto',
-        width: '100%',
       }}
     >
       {/* 라벨이 "제품군으로"라서 실제로 제품군 인덱스로 간다. 이력이 아니라 자리로 돌아간다.
@@ -73,17 +70,8 @@ export default function ProductDetail({ slug }) {
         {PRODUCT_DETAIL.back}
       </Link>
 
-      <span
-        style={{
-          fontFamily: typography.family,
-          fontSize: typography.caption.size,
-          fontWeight: 600,
-          letterSpacing: typography.hud.tracking,
-          color: colors.red.light,
-        }}
-      >
-        {product.name}
-      </span>
+      {/* 개별 구현이던 자리다. 컴포넌트로 통합해 크기와 굵기가 전 페이지와 같아진다 */}
+      <Eyebrow en={product.name} />
 
       <h1
         style={{
@@ -138,20 +126,10 @@ export default function ProductDetail({ slug }) {
                 tabIndex={on ? 0 : -1}
                 onClick={() => setTab(t.key)}
                 onKeyDown={onTabKeyDown}
-                style={{ ...tabStyle, borderColor: on ? colors.line.strong : 'transparent' }}
+                style={tabStyle}
               >
-                {/* 아이브로우 문법의 레드 점. **색 단독 구분 금지라 굵기도 같이 올린다**(DESIGN 13절) */}
-                <span
-                  aria-hidden="true"
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: '50%',
-                    flex: 'none',
-                    background: on ? colors.red.light : 'transparent',
-                    border: on ? 'none' : `1px solid ${colors.line.strong}`,
-                  }}
-                />
+                {/* **레드 점을 걷어냈다.** 아이브로우 불릿과 같은 문법이라 함께 빠진다.
+                    선택 상태는 굵기(700 대 600)와 글자색 둘이 낸다. 색 단독 구분이 아니다(DESIGN 13절) */}
                 <span style={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left' }}>
                   <span
                     style={{
@@ -185,7 +163,8 @@ export default function ProductDetail({ slug }) {
               minHeight: 240,
               overflow: 'hidden',
               borderRadius: radius.lg,
-              border: `1px solid ${colors.line.default}`,
+              // 테두리를 걷어냈다. 판 자체는 3D가 사는 자리라 남는다.
+              // 배경 없이 페이지 위에 직접 띄우는 것은 R4 상세 리레이아웃의 몫이다
               background: colors.bg.raised,
             }}
           >
@@ -202,10 +181,8 @@ export default function ProductDetail({ slug }) {
               display: 'flex',
               flexDirection: 'column',
               gap: spacing.unit * 1.5,
-              padding: spacing.unit * 2,
-              borderRadius: radius.lg,
-              border: `1px solid ${colors.line.default}`,
-              background: colors.bg.raised,
+              // 판과 테두리를 걷어냈다. 정보 패널은 글자만 남고 구분은 여백이 진다
+              paddingBlock: spacing.unit,
             }}
           >
             {tab === 'overview' ? <Overview product={product} /> : <Features slug={product.slug} />}
@@ -303,6 +280,8 @@ const todoStyle = {
   color: colors.text.dim,
 };
 
+// **탭 테두리를 걷어냈다(REBOOT_PLAN 2.1).** 선택 상태는 레드 점과 굵기와 글자색 셋이 함께 낸다.
+// 색 단독 구분 금지(DESIGN 13절)는 굵기 700 대 600이 이미 만족시킨다
 const tabStyle = {
   display: 'flex',
   alignItems: 'flex-start',
@@ -311,13 +290,15 @@ const tabStyle = {
   minHeight: 44,
   padding: '10px 12px',
   borderRadius: radius.md,
-  border: '1px solid transparent',
   background: 'transparent',
+  border: 'none',
   fontFamily: typography.family,
   cursor: 'pointer',
   textAlign: 'left',
 };
 
+// **아웃라인 버튼의 테두리는 남긴다.** 이건 장식이 아니라 버튼의 형태다.
+// 테두리가 없으면 본문 링크와 구분되지 않아 누를 수 있다는 것이 안 읽힌다
 const backStyle = {
   alignSelf: 'flex-start',
   display: 'inline-flex',

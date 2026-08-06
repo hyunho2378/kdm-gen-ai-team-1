@@ -11,16 +11,13 @@ export default function Section({ id, eyebrow, headline, sub, children }) {
   return (
     <section
       id={id}
+      className="vx-shell vx-section"
       style={{
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         gap: spacing.unit * 3,
-        padding: `${spacing.section} ${spacing.gutter}`,
-        maxWidth: spacing.maxWide,
-        margin: '0 auto',
-        width: '100%',
       }}
     >
       {eyebrow ? <Eyebrow en={eyebrow.en} ko={eyebrow.ko} /> : null}

@@ -9,6 +9,10 @@ export * from '../../shared/tokens.js';
 
 // 2.1 Brand Gradient. 스톱 순서 FDFDFD, E60D15, 80070C, 101010.
 // HEX를 적는 유일한 자리다. 스톱이 넷이라 shared의 파생 함수로는 나오지 않는다.
+//
+// **배경에 쓰지 마라(REBOOT_PLAN 2.1).** 넓은 면을 먹는 레드 그라디언트는 전량 금지다.
+// R1에서 히어로의 검끝 실선이 이 값을 쓰다가 걷혔고 지금은 참조처가 없다.
+// 브랜드 자산이라 값은 남겨 두되, 다시 쓰려면 작은 발광 요소 안쪽으로만 들어가야 한다.
 export const brandGradient = 'linear-gradient(105deg, #FDFDFD 0%, #E60D15 42%, #80070C 72%, #101010 100%)';
 
 // 2.2 제목(디스플레이) 폰트는 미정이다. 지금은 본문과 같은 Pretendard를 가리키고

@@ -2,7 +2,7 @@
 //
 // 문구는 B4 확정 라이팅이다. 주의 사항 한 줄만 아직 미확정이라 자리표시가 뜬다.
 
-import { colors, radius, spacing, typography } from '../tokens.js';
+import { colors, spacing, typography } from '../tokens.js';
 import { EXPERIENCE } from '../copy.js';
 import Page from '../components/Page.jsx';
 import ArenaCta from '../components/ArenaCta.jsx';
@@ -22,32 +22,25 @@ export default function Experience() {
           counterReset: 'step',
         }}
       >
+        {/* 카드 보더와 판, 번호 원 테두리를 걷어냈다(REBOOT_PLAN 2.1).
+            번호는 원 없이 크기와 색으로 선다. 순서는 내용이라 남고 장식만 빠진다 */}
         {EXPERIENCE.steps.map((step, i) => (
           <li
             key={step}
             style={{
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'baseline',
               gap: 12,
-              padding: spacing.unit * 2,
-              borderRadius: radius.lg,
-              border: `1px solid ${colors.line.default}`,
-              background: colors.bg.raised,
+              paddingBlock: spacing.unit,
             }}
           >
             <span
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 28,
-                height: 28,
                 flex: 'none',
-                borderRadius: '50%',
-                border: `1px solid ${colors.red.light}`,
                 fontFamily: typography.family,
-                fontSize: typography.caption.size,
+                fontSize: typography.eyebrow.size,
                 fontWeight: 700,
+                lineHeight: 1,
                 color: colors.red.light,
               }}
             >

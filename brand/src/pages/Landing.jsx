@@ -8,7 +8,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { brandGradient, colors, displayFamily, radius, spacing, steelText, typography, withAlpha } from '../tokens.js';
+import { colors, spacing, typography } from '../tokens.js';
 import { LANDING, SECTION } from '../copy.js';
 import { gsap, isReduced } from '../lib/motion.js';
 import Section from '../components/Section.jsx';
@@ -19,12 +19,9 @@ import WorldScene from '../components/WorldScene.jsx';
 
 const { hero, world, gates } = LANDING;
 
-// 배경 글로우. 중심에서 번지는 vortex 암시다.
-// **알파를 아주 낮게 둔다.** 레드가 넓은 면을 먹으면 사건의 색이 배경색이 된다(DESIGN 2절).
-const HERO_GLOW = `radial-gradient(circle at 50% 45%, ${withAlpha(colors.red.light, 0.13)} 0%, ${withAlpha(
-  colors.red.light,
-  0.05
-)} 28%, transparent 62%)`;
+// **히어로 배경 레드 radial을 걷어냈다(REBOOT_PLAN 2.1).**
+// 알파를 아무리 낮춰도 넓은 면을 먹는 레드는 배경을 물들이고, 그러면 사건의 색이 배경색이 된다.
+// 레드는 어두운 곳에서 빛나는 요소로만 남는다. 여기서는 궤적 리본이 그 역할을 이미 하고 있다.
 
 export default function Landing() {
   return (
@@ -57,10 +54,10 @@ function HeroSection() {
       // 모션을 줄여 달라고 했으면 등장을 생략한다. 원래 자리에 그대로 선다
       if (isReduced()) return;
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      // 워드마크가 먼저 서고 나머지가 뒤따른다. 순서가 곧 위계다
+      // 워드마크가 먼저 서고 나머지가 뒤따른다. 순서가 곧 위계다.
+      // rule(검끝 실선) 단계는 그 요소가 사라져 함께 걷어냈다
       tl.from('[data-enter="wordmark"]', { opacity: 0, y: 28, duration: 0.7 })
         .from('[data-enter="eyebrow"]', { opacity: 0, y: 12, duration: 0.45 }, '-=0.35')
-        .from('[data-enter="rule"]', { opacity: 0, scaleX: 0, transformOrigin: 'left center', duration: 0.5 }, '-=0.3')
         .from('[data-enter="sub"]', { opacity: 0, y: 14, duration: 0.5 }, '-=0.3')
         .from('[data-enter="tail"]', { opacity: 0, y: 10, duration: 0.4, stagger: 0.08 }, '-=0.25');
     }, root);
@@ -70,6 +67,7 @@ function HeroSection() {
   return (
     <section
       id={SECTION.HERO}
+      className="vx-shell vx-section"
       style={{
         position: 'relative',
         overflow: 'hidden',
@@ -77,15 +75,9 @@ function HeroSection() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: `${spacing.section} ${spacing.gutter}`,
-        maxWidth: spacing.maxWide,
-        margin: '0 auto',
-        width: '100%',
       }}
     >
-      {/* 배경층. 궤적과 텍스트 아래에 깔리는 낮은 알파 레드 글로우 하나 */}
-      <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0, background: HERO_GLOW }} />
-
+      {/* 배경은 순흑이다. 깔던 레드 글로우를 걷어냈다. 빛나는 것은 궤적뿐이다 */}
       <HeroTrail />
 
       {/* 콘텐츠 층. 궤적 위에 선다 */}
@@ -108,13 +100,9 @@ function HeroSection() {
             **브랜드 그라디언트를 글자에 넣지 않는다.** 마지막 스톱이 #101010이라 X가 배경에 묻힌다(실측). */}
         <HeroWordmark text={hero.wordmark} />
 
-        {/* 검끝 한 줄 모티프의 자리(2.5절). 지금은 브랜드 그라디언트 실선이다 */}
-        <span
-          aria-hidden="true"
-          data-enter="rule"
-          style={{ display: 'block', height: 2, width: 'min(560px, 60vw)', background: brandGradient }}
-        />
-
+        {/* **검끝 실선을 걷어냈다.** 브랜드 그라디언트(흰-레드-딥레드-블랙) 2px 선이었는데
+            장식 선 금지와 레드 그라데이션 금지에 동시에 걸린다. 워드마크와 본문 사이의
+            구분은 여백이 진다(REBOOT_PLAN 2.1) */}
         <p
           data-enter="sub"
           style={{
@@ -177,32 +165,22 @@ function GatewaySection() {
       >
         {gates.map((g) => (
           <li key={g.key}>
+            {/* **카드 보더와 판을 걷어냈다.** 구분은 여백과 타이포 스케일이 진다(REBOOT_PLAN 2.1).
+                링크 영역은 그대로라 터치 타깃과 포커스는 줄지 않는다 */}
             <Link
               to={g.to}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 10,
+                gap: spacing.unit * 1.5,
                 height: '100%',
                 minHeight: 180,
-                padding: spacing.unit * 3,
-                borderRadius: radius.lg,
-                border: `1px solid ${colors.line.default}`,
-                background: colors.bg.raised,
+                paddingBlock: spacing.unit * 2,
                 textDecoration: 'none',
               }}
             >
-              <span
-                style={{
-                  fontFamily: typography.family,
-                  fontSize: typography.caption.size,
-                  fontWeight: 600,
-                  letterSpacing: typography.hud.tracking,
-                  color: colors.red.light,
-                }}
-              >
-                {g.eyebrow}
-              </span>
+              {/* 개별 구현이던 자리다. 컴포넌트로 통합해 크기와 굵기가 전 페이지와 같아진다 */}
+              <Eyebrow en={g.eyebrow} />
               <span
                 style={{
                   fontFamily: typography.family,
