@@ -2,20 +2,35 @@
 //
 // 블랙 배경 위에서 실루엣이 읽히는 법 (D2 개정):
 // **흰 펜싱 유니폼 전제로 몸체를 밝게** 채운다. 블랙 무대 위 흰 선수가 우리 무채색 규칙과 정합이다.
-// 밝은 몸체는 그 자체로 실루엣이 되므로 바깥 림에 기대지 않고, 대신 부위마다 어두운 테두리를 둘러
-// 겹친 팔다리가 서로 갈린다(2패스. 굵게 어둡게 한 번, 그 위에 유니폼 톤으로 한 번).
 //
 // **몸체 밝기는 Bloom threshold(0.42, 선형) 아래로 묶는다.** 블룸은 궤적의 전유물이다.
 // 알파 합성은 선형 버퍼에서 일어나므로 흰색 불투명은 선형 1.0이라 상대 전체가 번진다.
 // 순백 대신 steel.mid를 bg.deep으로 눌러 sRGB 약 0.60(선형 0.32)에 앉힌다.
 // 배경 0.04 대비 15:1이라 블랙 무대에서는 이것이 흰색으로 읽힌다.
 //
+// ── 실루엣 후처리 (비주얼 C) ────────────────────────────────────────────────
+// **예전에는 부위마다 어두운 테두리를 둘러 겹친 팔다리를 갈랐다. 그 선이 목각 인형의 원인이었다.**
+// 테두리가 관절마다 경계를 그어서 몸이 조각난 종이 인형으로 읽혔다(실측 스크린샷).
+//
+// 지금은 반대로 간다. 부위 구조와 그리는 순서는 그대로 두되,
+//   1. 부위를 **합집합 마스크**로 합쳐 관절이 애초에 이어지게 하고,
+//   2. 앞뒤 톤 차이는 선이 아니라 **크게 흐린 그늘**로 주고,
+//   3. 실루엣 가장자리를 **페더링**해 하드 컷을 없애고,
+//   4. 바깥은 **알파가 퍼지는 헤일로**로 흡수한다.
+//
+// **헤일로는 밝기가 아니라 알파로 만든다.** destination-over로 몸 뒤에 깔아서 몸 위에 더해지지
+// 않는다. 밝은 색을 더 밝게 하는 것이 아니라 같은 밝기가 바깥으로 사라지는 방식이라
+// 블룸 천장이 그대로 유지된다.
+//
+// **블러는 전부 로드 시 한 번만 굽는다.** 포즈 5장을 만들 때만 오프스크린에서 돌고
+// 런타임 비용은 0이다. 매 프레임 캔버스 필터는 fps 예산을 깬다.
+//
 // 검은 텍스처에 그리지 않는다. 3D 골동 레이피어가 손 앵커에 따로 붙는다.
 //
 // 색은 tokens에서만 온다. 텍스처는 생성 1회 후 재사용한다(포즈 5장, 평면 2장이 공유).
 
 import * as THREE from 'three';
-import { colors } from '../../../tokens.js';
+import { colors, withAlpha } from '../../../tokens.js';
 import { attachSwordModel } from './swordModel.js';
 
 export const POSE = {
@@ -54,13 +69,49 @@ const PLANE_W = (PLANE_H * TEX_W) / TEX_H;
 // 유니폼 톤. steel.mid를 bg.deep으로 이만큼 눌러 문턱 아래에 앉힌다.
 // 0.30이면 sRGB 약 0.60, 선형 약 0.32다. 올리면 상대가 블룸에 걸리므로 올릴 때 반드시 실측하라.
 const UNIFORM_DARKEN = 0.30;
-// 뒤쪽 팔다리는 더 눌러 깊이를 만든다. sRGB 약 0.42로 앞쪽 0.60과 확실히 갈린다
-const SHADE_DARKEN = 0.52;
-// 부위 경계용 어두운 테두리 두께(텍셀). 겹친 팔다리를 가르는 유일한 수단이다
-const EDGE = 11;
-// 바깥 헤일로. 밝은 몸체라 강할 필요가 없다. 홀로그램 기운만 남긴다
-const GLOW_ALPHA = 0.07;
-const GLOW_R = 14;
+
+/**
+ * 볼륨 암시용 세로 명암 폭. 위가 밝고 아래가 어둡다.
+ * **사실적 셰이딩까지 가지 않는다.** 균일한 회색 평면만 면하면 되고 그 이상은 실루엣 추상을 깬다.
+ */
+const VOLUME = 0.09;
+
+/**
+ * 뒤쪽 팔다리를 누르는 세기와 그 경계의 흐림 반경(텍셀).
+ * **흐림이 큰 것이 핵심이다.** 작으면 그늘이 다시 선으로 굳어 목각으로 돌아간다.
+ */
+const SHADE_STRENGTH = 0.36;
+const SEAM_BLUR = 16;
+
+/** 실루엣 가장자리 페더 반경(텍셀). 하드 컷을 지워 안팎이 한 재질로 이어진다. */
+const FEATHER = 3;
+
+/** 장비(마스크 메시, 장갑, 신발) 가장자리 흐림. 얹은 티가 안 나게 살짝만. */
+const GEAR_BLUR = 2;
+
+/**
+ * 바깥 헤일로. **알파 확산이지 밝기 상승이 아니다.**
+ * destination-over라 몸 위에 더해지지 않으므로 실루엣 밝기가 안 올라간다.
+ */
+const HALO_BLUR = 16;
+const HALO_ALPHA = 0.12;
+
+/**
+ * 금속 하이라이트 한 줄. 크롬 정체성의 최소 표현이다.
+ * **상한이 실측으로 정해져 있다.** 유니폼이 sRGB 0.60인데 블룸 문턱 선형 0.42는 sRGB 0.669라
+ * 흰빛을 (0.669 - 0.60) / (0.99 - 0.60) = 0.177보다 진하게 얹으면 문턱을 넘는다. 그 절반으로 둔다.
+ */
+const SHEEN_ALPHA = 0.09;
+
+/** 모션 감소에서 후처리 강도를 낮추는 배수. 목각 티는 여전히 줄인 채로 남는다. */
+const REDUCED_SCALE = 0.45;
+
+/**
+ * 찌를 때 칼날이 서는 정도. `setFlare` 인자라 밝기가 `0.06 + 1.8 x k^2`로 오른다.
+ * 0.42면 최대 약 0.38이고 emissive 색이 steel.mid(선형 0.686)라 기여가 약 0.26이다.
+ * **문턱 0.42 아래로 두려고 역산한 값이다.** 올릴 때는 반드시 다시 실측하라.
+ */
+const BLADE_RISE = 0.42;
 
 /**
  * 풋워크 (E4). 상대가 거리 축(z) 말고는 전혀 안 움직여 "서 있는 그림"으로 읽히던 것을 푼다.
@@ -364,19 +415,16 @@ function drawPart(ctx, P, part, color, pad) {
 const BACK_PARTS = ['legBack', 'armBack'];
 const FRONT_PARTS = ['torso', 'neck', 'head', 'legFront', 'armFront'];
 
-/** 실루엣 전체. 바깥 헤일로를 만들 때만 쓴다. */
-function drawFigure(ctx, P, color, pad) {
-  for (const part of [...BACK_PARTS, ...FRONT_PARTS]) drawPart(ctx, P, part, color, pad);
-}
-
 /** 마스크와 장갑과 신발. 유니폼 위에 얹는 어두운 부위들이 선수로 읽히게 만든다. */
 function drawGear(ctx, P) {
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // 펜싱 마스크. 어두운 메시에 밝은 테두리 한 줄
-  ctx.fillStyle = colors.bg.raised;
+  // 펜싱 마스크. **불투명 검정이 아니라 반투명 어둠이다.**
+  // 밝은 테두리를 걷어내고 나니 불투명으로 채운 두상이 몸에 뚫린 구멍으로 읽혔다(실측).
+  // 유니폼 톤을 비쳐 두면 같은 몸의 어두운 구역으로 읽힌다
+  ctx.fillStyle = withAlpha(colors.bg.deep, 0.62);
   ctx.beginPath();
   ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2]) - 7, Y(P.head[3]) - 7, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -405,12 +453,9 @@ function drawGear(ctx, P) {
   }
   ctx.globalAlpha = 1;
 
-  // 마스크 테두리. 두상이 또렷해진다
-  ctx.strokeStyle = colors.steel.mid;
-  ctx.lineWidth = 6;
-  ctx.beginPath();
-  ctx.ellipse(X(P.head[0]), Y(P.head[1]), X(P.head[2]) - 5, Y(P.head[3]) - 5, 0, 0, Math.PI * 2);
-  ctx.stroke();
+  // **마스크 테두리를 걷어냈다(비주얼 C).** steel.mid 6px 링이었는데 두 가지로 걸렸다.
+  // 하나는 실루엣에서 가장 밝은 점이라 상위 1퍼센트가 블룸 문턱에 닿았고(실측 0.4272),
+  // 다른 하나는 이것이 곧 "목각 티"의 윤곽선이었다. 두상은 아래 메시와 그늘로 충분히 읽힌다.
 
   // 검 든 손의 장갑과 소매 커프. 어느 팔이 검을 쥐었는지가 이 둘로 읽힌다
   ctx.fillStyle = colors.bg.raised;
@@ -439,59 +484,119 @@ function drawGear(ctx, P) {
   ctx.restore();
 }
 
-/** 도형을 반지름 r만큼 부풀린다. 원본이 불투명이라 몇 번을 겹쳐도 값이 튀지 않는다. */
-function dilate(src, r, steps = 16) {
+/**
+ * `ctx.filter` 블러를 쓸 수 있는가. 한 번만 재고 재사용한다.
+ * **못 쓰면 후처리 없이 예전처럼 하드 엣지로 내려앉는다.** 화면이 비는 것보다 목각이 낫다.
+ */
+let blurOk = null;
+function canBlur() {
+  if (blurOk !== null) return blurOk;
+  const g = document.createElement('canvas').getContext('2d');
+  g.filter = 'blur(2px)';
+  blurOk = g.filter === 'blur(2px)';
+  if (!blurOk) console.warn('[arena] 캔버스 블러를 못 쓴다. 실루엣 후처리를 생략한다.');
+  return blurOk;
+}
+
+/** 소스를 반지름 r로 흐린 새 캔버스. **bake 때만 부른다**(런타임 비용 0). */
+function blurred(src, r) {
   const out = makeCanvas();
-  const ctx = out.getContext('2d');
-  for (let i = 0; i < steps; i += 1) {
-    const a = (i / steps) * Math.PI * 2;
-    ctx.drawImage(src, Math.cos(a) * r, Math.sin(a) * r);
-  }
+  const g = out.getContext('2d');
+  if (r > 0 && canBlur()) g.filter = `blur(${r}px)`;
+  g.drawImage(src, 0, 0);
+  return out;
+}
+
+/** 마스크 모양을 한 색으로 칠한 판. `source-in`이라 결과 알파가 마스크 알파에 색 알파를 곱한 값이다. */
+function tinted(mask, color) {
+  const out = makeCanvas();
+  const g = out.getContext('2d');
+  g.drawImage(mask, 0, 0);
+  g.globalCompositeOperation = 'source-in';
+  g.fillStyle = color;
+  g.fillRect(0, 0, TEX_W, TEX_H);
   return out;
 }
 
 /**
- * 부위 묶음 하나를 한 톤으로 굽는다.
- * steel.mid를 bg.deep으로 눌러 블룸 문턱 아래에 앉힌다. darken이 클수록 어둡다.
- * 부위마다 어두운 테두리를 먼저 두르므로 같은 톤 안에서도 팔다리가 갈린다.
+ * 부위 묶음의 **합집합** 마스크. 부위마다 테두리를 두르지 않는다.
+ * 겹친 캡슐들의 합집합이라 어깨, 팔꿈치, 무릎, 골반이 애초에 이어진 하나의 영역이 된다.
  */
-function tonedLayer(P, parts, darken) {
+function unionMask(P, parts) {
   const c = makeCanvas();
   const g = c.getContext('2d');
-  for (const part of parts) {
-    drawPart(g, P, part, colors.bg.deep, EDGE);
-    drawPart(g, P, part, colors.steel.mid, 0);
-  }
-  g.globalCompositeOperation = 'source-atop';
-  g.globalAlpha = darken;
-  g.fillStyle = colors.bg.deep;
-  g.fillRect(0, 0, TEX_W, TEX_H);
+  for (const part of parts) drawPart(g, P, part, colors.steel.hi, 0);
   return c;
 }
 
 /**
- * 포즈 한 장. 어두운 테두리 → 유니폼 채움 → 장비 → 바깥 헤일로 순이다.
- * 부풀린 도형을 불투명으로 만든 뒤 합성할 때 알파를 한 번만 먹인다.
- * 반투명 이미지를 여러 방향으로 겹치면 알파가 1로 수렴해 흰 덩어리가 된다(실측).
+ * 포즈 한 장. 합집합 마스크 → 볼륨 그라디언트 → 뒤쪽 그늘 → 금속 한 줄 →
+ * 페더 클립 → 장비 → 바깥 헤일로 순이다.
+ *
+ * **클립을 마지막에 가까이 두는 것이 요령이다.** 채움을 먼저 화면 전체에 만들고 마지막에
+ * 페더된 실루엣으로 잘라내면, 가장자리에서 색이 아니라 알파가 떨어져 발광으로 이어진다.
  */
-function bakePose(P) {
+function bakePose(P, reduced) {
+  const k = reduced ? REDUCED_SCALE : 1;
   const out = makeCanvas();
   const ctx = out.getContext('2d');
 
-  // 뒤쪽 팔다리를 어둡게 깔고 그 위에 몸통과 앞쪽을 밝게 덮는다.
-  // 두 톤이 있어야 평면이 아니라 몸으로 읽힌다(E2).
-  ctx.drawImage(tonedLayer(P, BACK_PARTS, SHADE_DARKEN), 0, 0);
-  ctx.drawImage(tonedLayer(P, FRONT_PARTS, UNIFORM_DARKEN), 0, 0);
+  const bodyMask = unionMask(P, [...BACK_PARTS, ...FRONT_PARTS]);
+  const backMask = unionMask(P, BACK_PARTS);
+  const feathered = blurred(bodyMask, FEATHER * k);
 
-  drawGear(ctx, P);
+  // ── 몸 채움 ──
+  const body = makeCanvas();
+  const bg = body.getContext('2d');
 
-  // 바깥 헤일로. 밝은 몸체 뒤에 옅게만 깐다
-  const solid = makeCanvas();
-  drawFigure(solid.getContext('2d'), P, colors.steel.hi, EDGE);
-  const glow = dilate(solid, GLOW_R);
+  // 1. 유니폼 톤에 세로 명암을 얹는다. 균일한 회색 평면을 면하는 최소한이다
+  bg.fillStyle = colors.steel.mid;
+  bg.fillRect(0, 0, TEX_W, TEX_H);
+  const vol = bg.createLinearGradient(0, 0, 0, TEX_H);
+  vol.addColorStop(0, withAlpha(colors.bg.deep, UNIFORM_DARKEN - VOLUME));
+  vol.addColorStop(0.52, withAlpha(colors.bg.deep, UNIFORM_DARKEN));
+  vol.addColorStop(1, withAlpha(colors.bg.deep, UNIFORM_DARKEN + VOLUME));
+  bg.fillStyle = vol;
+  bg.fillRect(0, 0, TEX_W, TEX_H);
+
+  // 2. 뒤쪽 팔다리를 눌러 깊이를 만든다. **크게 흐려서 선이 아니라 그늘이 되게 한다.**
+  // 이 한 줄이 예전의 어두운 테두리를 대신한다. 팔다리는 여전히 갈리는데 경계가 안 보인다
+  bg.drawImage(
+    tinted(blurred(backMask, SEAM_BLUR * k), withAlpha(colors.bg.deep, SHADE_STRENGTH)),
+    0,
+    0
+  );
+
+  // 3. 금속 하이라이트 한 줄. 어깨에서 허리로 비스듬히 흐른다
+  const sheen = bg.createLinearGradient(X(0.20), Y(0.08), X(0.72), Y(0.62));
+  sheen.addColorStop(0, withAlpha(colors.steel.hi, 0));
+  sheen.addColorStop(0.42, withAlpha(colors.steel.hi, 0));
+  sheen.addColorStop(0.5, withAlpha(colors.steel.hi, SHEEN_ALPHA));
+  sheen.addColorStop(0.58, withAlpha(colors.steel.hi, 0));
+  sheen.addColorStop(1, withAlpha(colors.steel.hi, 0));
+  bg.fillStyle = sheen;
+  bg.fillRect(0, 0, TEX_W, TEX_H);
+
+  // 4. 페더된 실루엣으로 잘라낸다. 가장자리가 하드 컷이 아니라 알파 경사가 된다
+  bg.globalCompositeOperation = 'destination-in';
+  bg.drawImage(feathered, 0, 0);
+  ctx.drawImage(body, 0, 0);
+
+  // 5. 장비. **자기 캔버스에 그려 살짝 흐린 뒤 실루엣 안으로 클립한다.**
+  // 그대로 얹으면 마스크와 장갑만 하드 엣지로 남아 그 자리만 붙여 놓은 티가 난다
+  const gear = makeCanvas();
+  drawGear(gear.getContext('2d'), P);
+  const gearSoft = blurred(gear, GEAR_BLUR * k);
+  const gsg = gearSoft.getContext('2d');
+  gsg.globalCompositeOperation = 'destination-in';
+  gsg.drawImage(feathered, 0, 0);
+  ctx.drawImage(gearSoft, 0, 0);
+
+  // 6. 바깥 헤일로. **몸 뒤에 깔아서 몸 밝기를 안 올린다.**
+  // 가장자리 발광이 밝기가 아니라 알파 확산으로 만들어지는 지점이다
   ctx.globalCompositeOperation = 'destination-over';
-  ctx.globalAlpha = GLOW_ALPHA;
-  ctx.drawImage(glow, 0, 0);
+  ctx.globalAlpha = HALO_ALPHA * k;
+  ctx.drawImage(tinted(blurred(bodyMask, HALO_BLUR * k), colors.steel.hi), 0, 0);
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
 
@@ -533,9 +638,9 @@ const AIM = {
 // 상대 검은 화면을 가로질러야 읽히므로 대기와 예고는 비스듬히 세우고,
 // 런지만 카메라 쪽 성분을 키워 찔러 들어오는 인상을 만든다.
 
-export function createOpponent(scene, { tipDistance } = {}) {
+export function createOpponent(scene, { tipDistance, reduced = false } = {}) {
   const textures = {};
-  for (const name of Object.values(POSE)) textures[name] = bakePose(POSES[name]);
+  for (const name of Object.values(POSE)) textures[name] = bakePose(POSES[name], reduced);
 
   const geometry = new THREE.PlaneGeometry(PLANE_W, PLANE_H);
   // 발바닥(SOLE_V)이 y 0에 오게 민다. 평면 아래끝은 바닥 밑으로 조금 내려가지만
@@ -794,6 +899,18 @@ export function createOpponent(scene, { tipDistance } = {}) {
       }
       // 검이 없을 때만 쓰는 대체 검끝
       if (!sword) tip.position.lerp(aimTarget, k);
+
+      // **찌를 때 칼날을 세운다(비주얼 C).** 실루엣이 하나로 이어지면서 그 앞을 지나는 검이
+      // 묻히기 쉬워졌다. 검끝이 나를 향해 뻗는 것은 페인트와 리얼을 가르는 1차 단서라
+      // 가독성이 곧 게임플레이다.
+      //
+      // 상대 검은 `flareColor`를 안 주고 붙였으므로 setFlare가 **색은 안 건드리고 밝기만 올린다**
+      // (idle과 flare 둘 다 steel.mid다). red는 사건 전용이라는 규칙이 그대로 지켜진다.
+      // 예고에서도 조금 올려 두면 "온다"가 칼에서도 읽힌다
+      if (sword) {
+        const rise = poseName === POSE.LUNGE ? swing : poseName === POSE.TELEGRAPH ? 0.45 : 0;
+        sword.setFlare(BLADE_RISE * rise);
+      }
 
       // 림 색조. 피격 틴트가 예고 색조를 이긴다
       if (tintHit > 0) tmpColor.copy(baseColor).lerp(hitColor, tintHit);

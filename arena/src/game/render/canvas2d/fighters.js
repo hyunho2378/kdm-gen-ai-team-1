@@ -2,12 +2,18 @@
 // 포즈 5종(대기, 전진, 런지, 가드, 피격) x 2인. 이미지 도착 시 setPoses로 교체한다.
 // 잔상은 오프스크린 누적(renderer/index.js)이 담당한다. 여기서는 현재 프레임만 그린다.
 
-import { colors, motion, withAlpha } from '../../../tokens.js';
+import { colors, darken, motion, withAlpha } from '../../../tokens.js';
 import { swordTip, swordHilt } from './geometry.js';
 
 export const POSE = { IDLE: 'IDLE', ADVANCE: 'ADVANCE', LUNGE: 'LUNGE', GUARD: 'GUARD', HIT: 'HIT' };
 
 const CROSSFADE_MS = 120;
+
+/**
+ * 실루엣 몸통 톤. three 경로의 유니폼과 같은 계산이다(steel.mid를 30퍼센트 누른다).
+ * **밝기가 형태를 세운다.** 테두리를 걷어냈으므로 채움이 그 몫까지 진다.
+ */
+const BODY_TONE = darken(colors.steel.mid, 0.3);
 
 export function createFighters() {
   // 이미지 슬롯. { [owner]: { [pose]: HTMLImageElement } }
@@ -63,19 +69,23 @@ export function createFighters() {
       ctx.translate(0, -6 * scale * telegraph);
     }
 
-    // 실루엣 본체. 배경보다 밝은 무채색으로 두고 림 라이트로 크롬 느낌을 준다.
-    ctx.fillStyle = withAlpha(colors.bg.raised, 0.96);
-    ctx.strokeStyle = colors.steel.edge;
+    // 실루엣 본체. **윤곽선을 걷어내고 발광으로 흡수한다(비주얼 C).**
+    // three 경로와 같은 방향이다. 예전에는 steel.edge 선으로 몸과 다리를 각각 둘러
+    // 조각난 종이 인형으로 읽혔다. 여기서는 그림자 블러가 페더링을 대신한다.
+    // **2D는 매 프레임 그리므로 블러 대신 shadowBlur를 쓴다.** 캔버스 필터보다 훨씬 싸다
+    ctx.save();
+    ctx.shadowColor = withAlpha(colors.steel.hi, 0.30);
+    ctx.shadowBlur = 12 * scale;
+    // **몸을 밝게 채운다.** 예전에는 bg.raised(거의 검정)를 깔고 밝은 테두리로 형태를 세웠다.
+    // 테두리를 걷어내니 몸이 배경에 잠겨 안 보였다(실측 스크린샷). three 경로와 같은 해법으로
+    // steel.mid를 눌러 채우면 선 없이도 실루엣이 선다. 블룸 문턱과 같은 계산이라 값도 같다
+    ctx.fillStyle = BODY_TONE;
+    ctx.strokeStyle = BODY_TONE;
+    // 다리를 먼저 깔고 몸통으로 덮는다. 둘 다 같은 톤이라 관절에 선이 안 생긴다
+    legs(ctx, fighter, scale, spread);
     bodyPath(ctx, fighter, scale, lean);
     ctx.fill();
-    ctx.lineWidth = 2 * scale;
-    ctx.stroke();
-
-    ctx.strokeStyle = withAlpha(colors.bg.raised, 0.96);
-    legs(ctx, fighter, scale, spread);
-    ctx.strokeStyle = colors.steel.edge;
-    ctx.lineWidth = 1.5 * scale;
-    legs(ctx, fighter, scale, spread);
+    ctx.restore();
 
     // 검신. 크롬 그라디언트로 채운다(DESIGN 3절 크롬 오브젝트)
     const hilt = swordHilt(fighter, scale, lungeT);

@@ -373,7 +373,8 @@ export function createThreeRenderer() {
       background = createBackground(scene);
       sword = createSword(camera);
       swordTip = sword.tipMarker;
-      opponent = createOpponent(scene, { tipDistance: sword.tipDistance });
+      // reduced를 넘겨 실루엣 후처리 강도를 낮춘다. 굽는 값이라 런타임 비용은 양쪽 다 0이다
+      opponent = createOpponent(scene, { tipDistance: sword.tipDistance, reduced: reducedMotion });
       // 포즈 텍스처를 미리 올린다. 첫 표시 프레임의 업로드 히치를 개막 전으로 옮긴다
       opponent.prewarm(renderer);
 
