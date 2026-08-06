@@ -20,25 +20,16 @@ import { colors, displayFamily, radius, spacing, steelText, typography, weight, 
 import { HEADER } from '../copy.js';
 
 // 이 높이를 넘어가면 헤더가 판을 깐다. 히어로 첫 화면에서는 투명하게 둔다
-const SOLID_AT = 60;
 const SHEET_ID = 'vx-nav-sheet';
 // index.css의 헤더 분기와 같은 값. 여기서는 넓어질 때 시트를 닫는 데만 쓴다
 const MD = '(min-width: 768px)';
 
 export default function Header() {
   const { pathname } = useLocation();
-  const [solid, setSolid] = useState(false);
   const [open, setOpen] = useState(false);
   const burgerRef = useRef(null);
   const headerRef = useRef(null);
   const close = useCallback(() => setOpen(false), []);
-
-  useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > SOLID_AT);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   // 라우트가 바뀌면 반드시 닫는다. 열린 채로 페이지가 넘어가면 새 화면이 시트에 가린다
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -94,7 +85,10 @@ export default function Header() {
   }, [open, close]);
 
   // 시트가 열려 있으면 바에 판을 깐다. 투명한 바 아래로 시트가 비쳐 글자가 겹친다
-  const filled = solid || open;
+  // **판을 늘 깐다(레드 제거 세션).** 예전에는 맨 위에서 투명이라 히어로가 헤더를 뚫고
+  // 올라왔는데, 제품 사이트의 서브내비가 헤더 바로 아래에 판을 깔면서 위아래가 어긋나 보였다.
+  // Apple 글로벌 내비도 늘 불투명하다. 스크롤에 따라 채우던 상태와 그 리스너는 함께 걷었다
+  const filled = true;
 
   return (
     <header ref={headerRef} data-nav-open={open ? 'true' : 'false'} style={headerStyle}>

@@ -414,6 +414,14 @@ html { scrollbar-gutter: stable; }
   padding-block: var(--section-gap);
 }
 
+/* 제품 섹션 미디어. 이미지가 오면 이 자리를 cover로 덮는다 */
+.vx-pd-media {
+  position: relative;
+  width: 100%;
+  height: 46vh;
+  min-height: 260px;
+}
+
 /* ── 커스텀 커서 (REBOOT_PLAN 2.4) ────────────────────────────────────────
    **기본 커서는 커스텀이 실제로 떠 있을 때만 감춘다.** 터치 기기와 모션 감소에서는
    컴포넌트가 렌더 자체를 안 하고 이 속성도 안 붙어서 기본 커서가 그대로 산다.

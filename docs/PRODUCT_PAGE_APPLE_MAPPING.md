@@ -10,8 +10,14 @@ Apple Vision Pro 페이지의 구조와 레이아웃을 그대로 따르고, 콘
 
 제품 상세 상단에 고정 서브내비. 좌측 제품명(VORTEX 또는 마스크/컨트롤러), 우측에 탭과 CTA.
 
-- 탭: OVERVIEW, TECH SPECS, EXPERIENCE(Apple의 visionOS 자리)
-- CTA: Book a demo, Buy 형태의 두 버튼. Book a demo가 우리 시연 사이트(arena/데모)로 연결. Buy는 자리표시 또는 사전예약.
+- 탭: **5탭이다(개정).** OVERVIEW, MASK, CONTROLLER, VISION, EXPERIENCE.
+  **Apple의 Tech Specs 한 자리를 마스크와 컨트롤러 둘로 쪼갰다.** 제품이 둘뿐이라
+  각각 자기 탭을 가지는 편이 스펙을 깊게 편다. VISION은 Apple의 visionOS 자리다.
+- **다섯 다 `/products` 한 페이지 안의 앵커 섹션이다.** 라우트를 나누지 않는다.
+  `/product/mask`와 `/product/controller`는 `/products#mask`와 `#controller`로 보낸다
+  (밖에 나간 링크를 살리고 화면은 한 벌만 둔다).
+- **히어로는 중앙 정렬이다**(Apple 오버뷰 히어로). 제품명이 가운데 서고 한 줄이 붙는다.
+- CTA: Book a demo, Buy 두 버튼. **레드를 걷어 잉크 채움이다.** Book a demo는 `VITE_ARENA_URL`로 나가고 Buy는 비활성 자리표시다.
 - 스크롤 시 이 서브내비 고정(Apple처럼).
 
 > **PD-1 완료. Apple을 직접 열어 잰 값과 우리 확정값이다.**

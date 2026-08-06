@@ -29,7 +29,7 @@ export const TODO_PRODUCT_MODEL = `제품 3D 모델 ${TODO_MARK}`;
 // 제품군이 4종에서 3종으로, 다시 2종으로 줄었다(REBOOT_PLAN 3.1). 원래 문장
 // "각 장치가 거리, 자세, 타이밍, 대결을 맡는다"가 네 개 전제라 처음부터 안 맞았고
 // 지금은 더 안 맞는다. 새 문장을 지어내지 않고 자리표시로 둔다
-export const PRODUCTS_INDEX_LINE_TODO = `제품군 한 줄 ${TODO_MARK}`;
+export const PRODUCTS_INDEX_LINE_TODO = `제품 한 줄 ${TODO_MARK}`;
 // 이미지와 영상이 아직 없는 자리. **빈 박스나 다크 사각형을 두지 않는다**(REBOOT_PLAN 2.1).
 // 자리표시 문구만 dim으로 둔다. 에셋이 들어오면 이 상수를 참조하는 자리가 이미지로 바뀐다
 export const MEDIA_PENDING = '이미지 첨부 예정';
@@ -121,7 +121,7 @@ export const LANDING = {
 // ---------------------------------------------------------------------------
 export const PRODUCTS = {
   index: {
-    eyebrow: { en: 'PRODUCTS', ko: '제품군' },
+    eyebrow: { en: 'PRODUCTS', ko: '' },
     title: '검을 이루는 두 개의 장치',
     line: PRODUCTS_INDEX_LINE_TODO,
   },
@@ -160,7 +160,7 @@ export const PRODUCTS = {
 // PRODUCT_DETAIL.features와 같은 사실을 말하되 여기서는 문장으로 편다.
 // ---------------------------------------------------------------------------
 export const PRODUCT_DEEPDIVE = {
-  eyebrow: { en: 'PRODUCTS', ko: '제품군' },
+  eyebrow: { en: 'PRODUCTS', ko: '' },
   title: '검을 이루는 두 개의 장치',
   line: '마스크와 컨트롤러, 훈련을 완성하는 두 장치',
   // 두 딥다이브 사이에 눕는 짧은 전환. 미디어 없이 한 문장만 둔다
@@ -212,10 +212,17 @@ export const PRODUCT_DEEPDIVE = {
 // ---------------------------------------------------------------------------
 export const PRODUCT_NAV = {
   label: '제품 정보',
+  /**
+   * **5탭이다.** Apple의 Tech Specs 한 자리를 마스크와 컨트롤러 둘로 쪼갰다.
+   * 제품이 둘뿐이라 각각 자기 탭을 가지는 편이 스펙을 깊게 펴기 좋다.
+   * 다섯 다 한 페이지 안의 섹션이고 탭은 그 자리로 보내는 앵커다.
+   */
   tabs: [
-    { key: 'overview', label: 'OVERVIEW', ko: '개요' },
-    { key: 'specs', label: 'TECH SPECS', ko: '사양' },
-    { key: 'experience', label: 'EXPERIENCE', ko: '경험' },
+    { key: 'overview', label: 'OVERVIEW', ko: '오버뷰' },
+    { key: 'mask', label: 'MASK', ko: '마스크' },
+    { key: 'controller', label: 'CONTROLLER', ko: '컨트롤러' },
+    { key: 'vision', label: 'VISION', ko: '비전화면' },
+    { key: 'experience', label: 'EXPERIENCE', ko: '경험하기' },
   ],
   demo: '체험 예약',
   buy: '구매',
@@ -226,9 +233,30 @@ export const PRODUCT_NAV = {
 
 // 각 탭 섹션의 자리표시. PD-2~5가 이 자리를 실제 내용으로 바꾼다
 export const PRODUCT_SECTION_PENDING = {
-  overview: '개요 구성 준비 중',
-  specs: '사양 구성 준비 중',
-  experience: '경험 구성 준비 중',
+  overview: '내용 준비 중',
+  mask: '내용 준비 중',
+  controller: '내용 준비 중',
+  vision: '내용 준비 중',
+  experience: '내용 준비 중',
+};
+
+/**
+ * 제품 사이트 히어로. **중앙 정렬이다**(Apple 오버뷰 히어로 문법).
+ * 제품명이 가운데 서고 그 아래 한 줄이 붙는다. 미디어는 첨부 예정 슬롯이다.
+ */
+export const PRODUCT_SITE = {
+  hero: {
+    wordmark: BRAND,
+    line: '보는 장치와 쥐는 장치가 만나 한 자루의 검이 된다',
+  },
+  sections: {
+    overview: { title: '두 장치가 하나로 움직인다', line: '마스크가 보고 컨트롤러가 쥔다. 둘이 같은 시계를 본다.' },
+    mask: { title: '보는 것이 곧 겨루는 것', line: '검끝과 거리를 시야 안에서 읽는다.' },
+    controller: { title: '손안의 검', line: '쥔 손의 각도와 속도가 그대로 검의 움직임이다.' },
+    vision: { title: '시야가 판정을 말한다', line: '거리와 타이밍과 명중이 화면 위에서 읽힌다.' },
+    experience: { title: '지금 거리 안으로 들어선다', line: '노트북과 폰 하나로 결투를 시작한다.' },
+  },
+  specLabel: '사양',
 };
 
 // ---------------------------------------------------------------------------
@@ -300,7 +328,7 @@ export const PRODUCT_DETAIL = {
     // WebGL을 못 얻었을 때. 뷰어가 죽어도 페이지는 살아 있다는 것을 알린다
     unavailable: '3D 뷰어를 표시할 수 없다',
   },
-  back: '제품군으로',
+  back: '제품으로',
   cta: '체험하기',
 };
 

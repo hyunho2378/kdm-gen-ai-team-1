@@ -1,65 +1,82 @@
-// 제품 딥다이브. **Apple Vision Pro 문법으로 두 제품을 한 편의 스크롤로 판다(BV2-4).**
+// 제품 사이트. **하나의 페이지에 5탭 섹션이 세로로 이어진다.**
 //
-// ── Apple Vision Pro 실측 (1440x900, 전체 스크롤) ────────────────────────────
-// 문서 높이 32,734px = 36화면. 섹션 12개의 길이 분포가 이랬다.
+// ── 구조 (PRODUCT_PAGE_APPLE_MAPPING, Apple 오버뷰 문법) ─────────────────────
+// Apple 실측: 로컬 내비가 sticky로 상단에 붙고 그 아래로 섹션이 계속 이어진다.
+// 우리는 Tech Specs 한 자리를 **마스크와 컨트롤러 둘로 쪼갰다.** 제품이 둘뿐이라
+// 각각 자기 탭을 가지는 편이 스펙을 깊게 펴기 좋다.
 //
-//   1800px  2.0화면  미디어  1  고정 .   hero
-//    900px  1.0화면  미디어  0  고정 .   foundation      ← 짧은 브리지
-//   2129px  2.4화면  미디어 16  고정 O   design          ← 긴 딥다이브
-//  13055px 14.5화면  미디어 46  고정 O   experience
-//   7780px  8.6화면  미디어 16  고정 O   technology
+//   OVERVIEW    두 장치가 하나로 움직인다
+//   MASK        마스크 스펙
+//   CONTROLLER  컨트롤러 스펙
+//   VISION      비전화면
+//   EXPERIENCE  경험하기. Book a demo가 arena로 나가는 자리
 //
-//   긴 것(1.5화면 이상) 7개, 짧은 것 5개. 미디어 보유 75퍼센트.
-//   **고정 미디어(position: sticky, top 52px, 1425x848)는 긴 딥다이브에만 있다.**
-//   짧은 섹션에는 없다. 그 대비가 리듬을 만든다.
+// **탭은 라우트가 아니라 앵커다.** 다섯이 한 페이지에 흐르고 서브내비가 현재 섹션을
+// 밑줄로 표시한다. 아래로 쭉 스크롤하면 내용이 끊기지 않고 이어진다.
 //
-// ── 타이포를 그대로 베끼지 않는 이유 ─────────────────────────────────────────
-// Apple의 헤드라인 계열은 80/56/48/32/28/24로 여섯 단계다("3단계뿐"이 아니다).
-// 빈도를 지배하는 것은 12px 312회, 17px 94회, 21px 58회로 **전부 작은 지원 텍스트**다.
-// 우리 스케일은 BV2-1에서 이미 이 레퍼런스들로부터 뽑았으므로 px를 다시 들여오지 않고
-// **자리의 역할만 옮긴다.** 이 페이지가 쓰는 것은 셋뿐이다.
+// **히어로는 중앙 정렬이다**(Apple 오버뷰 히어로). 제품명이 가운데 서고 한 줄이 붙는다.
 //
-//   display  제품명 한 줄        (Apple 80/56 자리)
-//   heading  비트 제목           (Apple 24/700 자리)
-//   body     비트 본문 한 문장    (Apple 17 자리)
+// **예전 딥다이브(BV2-4)를 이 구조가 대신한다.** 그때는 두 제품을 긴 스크롤 둘로 나눠
+// 팠는데, 5탭이 되면서 마스크와 컨트롤러가 각자 탭을 가져 같은 역할을 더 곧게 한다.
 //
-// ── Flip 짝 보존 ────────────────────────────────────────────────────────────
-// 카드 인덱스를 걷어냈지만 **`data-flip-id`는 고정 미디어가 이어받는다.** 상세의 대표 비주얼과
-// 같은 id라 라우트를 건너뛰는 shared element 전환이 그대로 산다(B8a).
+// 미디어는 전부 첨부 예정 슬롯이다. 각 섹션의 실제 내용은 PD-2 이후가 채운다.
 
-import { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import { colors, spacing, typography } from '../tokens.js';
-import { PRODUCTS, PRODUCT_DEEPDIVE } from '../copy.js';
-import { captureFlip, pendingFlipId, playFlip } from '../lib/flip.js';
+import { MEDIA_PENDING, PRODUCT_DETAIL, PRODUCT_NAV, PRODUCT_SECTION_PENDING, PRODUCT_SITE } from '../copy.js';
 import { gsap, ScrollTrigger, isReduced } from '../lib/motion.js';
+import ArenaCta from '../components/ArenaCta.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
+import ProductNav from '../components/ProductNav.jsx';
 import ProductViewer from '../components/ProductViewer.jsx';
 
-const { products: DEEP, bridge, outro, detailCta } = PRODUCT_DEEPDIVE;
+const TABS = PRODUCT_NAV.tabs;
+const { hero, sections } = PRODUCT_SITE;
+// 스펙과 3D를 가진 탭은 둘뿐이다. 나머지는 미디어 슬롯이 선다
+const SPEC_OF = { mask: 'mask', controller: 'controller' };
 
 export default function Products() {
-  const visualRefs = useRef({});
   const rootRef = useRef(null);
-
-  // 상세에서 돌아왔을 때의 역방향 전환. 상세 대표 비주얼이 그 제품의 고정 미디어 자리로 접힌다
-  useEffect(() => {
-    const id = pendingFlipId();
-    const slug = id ? id.replace('product-', '') : null;
-    playFlip(slug ? visualRefs.current[slug] : null);
-  }, []);
+  const sectionRefs = useRef({});
+  const [active, setActive] = useState(TABS[0].key);
 
   /**
-   * 비트 순차 등장. **고정 미디어 옆을 지나며 하나씩 드러난다.**
-   * transform과 opacity만 건드린다(DESIGN 7절). 모션을 줄여 달라고 했으면 전부 제자리에 세운다.
+   * 현재 섹션 추적. **서브내비 바로 아래 선을 지난 마지막 섹션이 현재다.**
    *
-   * `once: true`라 되돌아 올라가도 다시 사라지지 않는다. 스크롤을 되감을 때 글자가
-   * 깜빡이며 없어지는 것이 이 문법에서 가장 거슬리는 실패 모드다.
+   * 처음에는 교차하는 것 중 "가장 위"를 골랐는데, 그러면 이미 지나간 섹션이 늘 더 위에 있어
+   * 앵커로 뛰어들었을 때 현재 탭이 첫 섹션에 붙박였다(실측: `/products#mask`로 들어가면
+   * 화면은 mask인데 탭은 OVERVIEW였다).
+   *
+   * 그래서 관찰자에 기대지 않고 **관찰자가 깨울 때마다 전 섹션의 위치를 직접 읽어**
+   * 기준선을 지난 마지막 것을 고른다. 판정이 한 곳에 모여 스크롤과 점프가 같은 답을 낸다.
    */
   useEffect(() => {
+    const nodes = TABS.map((t) => sectionRefs.current[t.key]).filter(Boolean);
+    if (nodes.length === 0) return undefined;
+    const pick = () => {
+      // 서브내비 아래 한 뼘. 이 선을 지난 마지막 섹션이 현재다
+      const line = 160;
+      let current = nodes[0].id;
+      for (const n of nodes) {
+        if (n.getBoundingClientRect().top <= line) current = n.id;
+      }
+      setActive(current);
+    };
+    const io = new IntersectionObserver(pick, { rootMargin: '-124px 0px -40% 0px', threshold: [0, 1] });
+    for (const n of nodes) io.observe(n);
+    // 앵커로 뛰어든 직후처럼 관찰자가 안 깨는 경우를 위해 스크롤도 함께 듣는다
+    window.addEventListener('scroll', pick, { passive: true });
+    pick();
+    return () => {
+      io.disconnect();
+      window.removeEventListener('scroll', pick);
+    };
+  }, []);
+
+  /** 섹션 안 덩어리가 스크롤에 따라 하나씩 드러난다. transform과 opacity만 건드린다. */
+  useEffect(() => {
     const root = rootRef.current;
-    if (!root) return undefined;
-    if (isReduced()) return undefined;
+    if (!root || isReduced()) return undefined;
     const ctx = gsap.context(() => {
       for (const el of root.querySelectorAll('[data-beat]')) {
         gsap.from(el, {
@@ -67,7 +84,9 @@ export default function Products() {
           y: 24,
           duration: 0.6,
           ease: 'power3.out',
-          scrollTrigger: { trigger: el, start: 'top 82%', once: true },
+          // once라 되감아도 다시 사라지지 않는다. 되돌아갈 때 글자가 깜빡이며
+          // 없어지는 것이 이 문법에서 가장 거슬리는 실패 모드다
+          scrollTrigger: { trigger: el, start: 'top 84%', once: true },
         });
       }
       ScrollTrigger.refresh();
@@ -75,14 +94,104 @@ export default function Products() {
     return () => ctx.revert();
   }, []);
 
+  /**
+   * 주소에 앵커를 달고 들어온 경우(`/products#mask`) 그 섹션으로 보낸다.
+   * `/product/mask` 같은 옛 링크가 여기로 넘어오므로 이 경로가 그 링크를 살린다.
+   * **레이아웃이 선 뒤에 움직인다.** 3D 캔버스가 자리를 잡기 전에 스크롤하면 목표가 어긋난다.
+   */
+  useEffect(() => {
+    const key = window.location.hash.replace('#', '');
+    if (!key || !TABS.some((t) => t.key === key)) return undefined;
+    const id = window.setTimeout(() => {
+      sectionRefs.current[key]?.scrollIntoView({ block: 'start' });
+      setActive(key);
+    }, 120);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  /** 탭을 누르면 그 섹션으로. scroll-margin-top이 서브내비 아래 자리를 확보한다. */
+  function jump(key) {
+    const el = sectionRefs.current[key];
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActive(key);
+  }
+
+  const bind = (key) => (el) => {
+    sectionRefs.current[key] = el;
+  };
+
   return (
-    <main ref={rootRef}>
-      {/* ── 진입. 짧다. 미디어 없이 무엇을 볼지만 세운다 ────────────────────── */}
-      <section className="vx-shell vx-page">
-        <Eyebrow en={PRODUCT_DEEPDIVE.eyebrow.en} ko={PRODUCT_DEEPDIVE.eyebrow.ko} />
-        <h1
+    <>
+      <ProductNav productName={hero.wordmark} active={active} onJump={jump} />
+
+      <main ref={rootRef}>
+        {/* ── 히어로. **중앙 정렬이다.** 제품명이 가운데 서고 한 줄이 붙는다 ── */}
+        <section
+          className="vx-shell"
           style={{
-            margin: '8px 0 0',
+            minHeight: '64dvh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            gap: spacing.unit * 2,
+            paddingBlock: 'var(--section-gap)',
+          }}
+        >
+          <h1
+            data-beat
+            style={{
+              margin: 0,
+              fontFamily: typography.family,
+              fontSize: typography.display.size,
+              fontWeight: typography.display.weight,
+              letterSpacing: typography.display.tracking,
+              lineHeight: typography.display.leading,
+              color: colors.text.primary,
+            }}
+          >
+            {hero.wordmark}
+          </h1>
+          <p
+            data-beat
+            style={{
+              margin: 0,
+              fontFamily: typography.family,
+              fontSize: typography.heading.size,
+              lineHeight: typography.heading.leading,
+              color: colors.text.secondary,
+              maxWidth: 'var(--measure)',
+              wordBreak: 'keep-all',
+            }}
+          >
+            {hero.line}
+          </p>
+        </section>
+
+        {/* ── 5탭 섹션이 세로로 이어진다 ─────────────────────────────────────── */}
+        {TABS.map((t) => (
+          <Section key={t.key} tab={t} bind={bind(t.key)} specSlug={SPEC_OF[t.key]} demo={t.key === 'experience'} />
+        ))}
+      </main>
+    </>
+  );
+}
+
+/**
+ * 탭 하나에 대응하는 섹션. 골격과 자리표시뿐이고 PD-2 이후가 채운다.
+ * 스펙을 가진 탭(마스크, 컨트롤러)만 확정된 사양 행과 3D를 세운다.
+ */
+function Section({ tab, bind, specSlug, demo }) {
+  const copy = sections[tab.key];
+  return (
+    <section id={tab.key} ref={bind} className="vx-shell vx-pd-section" aria-label={tab.ko}>
+      <div data-beat style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit }}>
+        <Eyebrow en={tab.label} ko={tab.ko} />
+        <h2
+          style={{
+            margin: 0,
             fontFamily: typography.family,
             fontSize: typography.title.size,
             fontWeight: typography.title.weight,
@@ -92,11 +201,11 @@ export default function Products() {
             wordBreak: 'keep-all',
           }}
         >
-          {PRODUCT_DEEPDIVE.title}
-        </h1>
+          {copy.title}
+        </h2>
         <p
           style={{
-            margin: '12px 0 0',
+            margin: 0,
             fontFamily: typography.family,
             fontSize: typography.body.size,
             lineHeight: typography.body.leading,
@@ -105,212 +214,69 @@ export default function Products() {
             wordBreak: 'keep-all',
           }}
         >
-          {PRODUCT_DEEPDIVE.line}
+          {copy.line}
         </p>
-      </section>
+      </div>
 
-      {PRODUCTS.cards.map((card, i) => (
-        <div key={card.slug}>
-          <DeepDive
-            card={card}
-            deep={DEEP[card.slug]}
-            onLeave={() => captureFlip(visualRefs.current[card.slug])}
-            bindVisual={(el) => {
-              visualRefs.current[card.slug] = el;
-            }}
-          />
-          {/* 두 딥다이브 **사이에만** 브리지가 온다. 마지막 뒤에는 마감이 온다 */}
-          {i === 0 ? <Bridge /> : null}
-        </div>
-      ))}
+      {/* 미디어 자리. **빈 박스가 아니다.** 카드와 같은 표면이고 이미지가 오면 cover로 덮는다.
+          제품 탭 둘은 3D 뷰어가 실제 미디어 노릇을 한다 */}
+      <div data-beat style={{ marginTop: spacing.unit * 3 }}>
+        {specSlug ? (
+          <div className="vx-pd-media">
+            <ProductViewer slug={specSlug} />
+          </div>
+        ) : (
+          <div className="vx-card vx-pd-media" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={pendingStyle}>{MEDIA_PENDING}</span>
+          </div>
+        )}
+      </div>
 
-      {/* ── 마감. 짧다. 상세로 보내는 자리 ───────────────────────────────────── */}
-      <section className="vx-shell" style={{ paddingBlock: 'var(--section-gap)' }}>
-        <Eyebrow en={outro.eyebrow.en} ko={outro.eyebrow.ko} />
-        <p
-          style={{
-            margin: '8px 0 20px',
-            fontFamily: typography.family,
-            fontSize: typography.heading.size,
-            fontWeight: typography.heading.weight,
-            letterSpacing: typography.heading.tracking,
-            color: colors.text.primary,
-            wordBreak: 'keep-all',
-          }}
-        >
-          {outro.line}
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: spacing.unit * 1.5 }}>
-          {PRODUCTS.cards.map((c) => (
-            <Link
-              key={c.slug}
-              to={`/product/${c.slug}`}
-              className="vx-card"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: spacing.unit * 1.5,
-                minHeight: 44,
-                padding: '0 18px',
-                textDecoration: 'none',
-                fontFamily: typography.family,
-                fontSize: typography.body.size,
-                color: colors.text.primary,
-              }}
-              onClick={() => captureFlip(visualRefs.current[c.slug])}
-            >
-              {c.name}
-              <span style={{ fontSize: typography.hud.size, letterSpacing: typography.hud.tracking, color: colors.text.primary }}>
-                {detailCta}
-              </span>
-            </Link>
-          ))}
+      {specSlug ? <Specs slug={specSlug} /> : null}
+
+      {demo ? (
+        <div data-beat style={{ marginTop: spacing.unit * 3 }}>
+          <ArenaCta label={PRODUCT_DETAIL.cta} />
         </div>
-      </section>
-    </main>
+      ) : null}
+
+      <span data-beat style={{ ...pendingStyle, display: 'block', marginTop: spacing.unit * 3 }}>
+        {PRODUCT_SECTION_PENDING[tab.key]}
+      </span>
+    </section>
   );
 }
 
-/**
- * 긴 딥다이브 한 편. **왼쪽 미디어가 고정되고 오른쪽 비트가 지나간다.**
- * Apple의 sticky 패널이 top 52px에 붙는 것과 같은 자리이고, 우리는 헤더 높이를 쓴다.
- *
- * 좁은 화면에서는 한 열로 쌓이고 고정이 풀린다. 세로가 모자란 화면에서 미디어를 붙들면
- * 비트를 읽을 자리가 안 남는다. 배치는 `.vx-dive`(index.css)가 쥔다.
- */
-function DeepDive({ card, deep, onLeave, bindVisual }) {
+/** 사양 표. 값이 미정인 행도 이름은 확정이라 행을 세워 둔다. */
+function Specs({ slug }) {
+  const rows = PRODUCT_DETAIL.spec[slug];
+  if (!rows || rows.length === 0) return <span style={pendingStyle}>{PRODUCT_DETAIL.specTodo}</span>;
   return (
-    <section className="vx-shell vx-dive" aria-label={card.name}>
-      {/* 고정 미디어. **바깥은 행 전체를 차지하는 격자 칸이고 안쪽이 붙는다.**
-          한 겹을 안 두면 격자 칸 높이가 콘텐츠 높이와 같아져 sticky가 붙을 여지 자체가 없다
-          (실측으로 잡았다. top이 92까지 갔다가 그대로 밀려 올라갔다).
-          3D 뷰어는 화면 밖에서 스스로 루프를 세운다 */}
-      <div className="vx-dive-media">
-        <div
-          className="vx-dive-media-inner"
-          ref={bindVisual}
-          data-flip-id={`product-${card.slug}`}
-        >
-          <ProductViewer slug={card.slug} />
-        </div>
-      </div>
-
-      <div className="vx-dive-body">
-        <div data-beat>
-          <Eyebrow en={deep.eyebrow.en} ko={deep.eyebrow.ko} />
-          {/* 제품명 자리. 이 페이지에서 display를 쓰는 유일한 곳이다 */}
-          <h2
-            style={{
-              margin: '10px 0 0',
-              fontFamily: typography.family,
-              fontSize: typography.display.size,
-              fontWeight: typography.display.weight,
-              letterSpacing: typography.display.tracking,
-              lineHeight: typography.display.leading,
-              color: colors.text.primary,
-              wordBreak: 'keep-all',
-            }}
-          >
-            {deep.headline}
-          </h2>
-          <p
-            style={{
-              margin: '16px 0 0',
-              fontFamily: typography.family,
-              fontSize: typography.body.size,
-              lineHeight: typography.body.leading,
-              color: colors.text.secondary,
-              maxWidth: 'var(--measure)',
-              wordBreak: 'keep-all',
-            }}
-          >
-            {deep.lead}
-          </p>
-        </div>
-
-        {deep.beats.map((b) => (
-          <div key={b.title} data-beat>
-            <h3
-              style={{
-                margin: 0,
-                fontFamily: typography.family,
-                fontSize: typography.heading.size,
-                fontWeight: typography.heading.weight,
-                letterSpacing: typography.heading.tracking,
-                color: colors.text.primary,
-              }}
-            >
-              {b.title}
-            </h3>
-            <p
-              style={{
-                margin: '8px 0 0',
-                fontFamily: typography.family,
-                fontSize: typography.body.size,
-                lineHeight: typography.body.leading,
-                color: colors.text.secondary,
-                maxWidth: 'var(--measure)',
-                wordBreak: 'keep-all',
-              }}
-            >
-              {b.body}
-            </p>
+    <div data-beat style={{ marginTop: spacing.unit * 3 }}>
+      <span style={{ ...pendingStyle, display: 'block', marginBottom: spacing.unit }}>{PRODUCT_SITE.specLabel}</span>
+      <dl style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: spacing.unit }}>
+        {rows.map((r) => (
+          <div key={r.name} style={{ display: 'flex', gap: spacing.unit * 3 }}>
+            <dt style={{ ...rowStyle, color: colors.text.dim, flex: 'none', minWidth: 120 }}>{r.name}</dt>
+            <dd style={{ ...rowStyle, margin: 0 }}>{r.value}</dd>
           </div>
         ))}
-
-        <div data-beat>
-          <Link
-            to={`/product/${card.slug}`}
-            className="vx-card"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: spacing.unit * 1.5,
-              minHeight: 44,
-              padding: '0 18px',
-              textDecoration: 'none',
-              fontFamily: typography.family,
-              fontSize: typography.body.size,
-              color: colors.text.primary,
-            }}
-            onClick={onLeave}
-          >
-            {card.name}
-            <span style={{ fontSize: typography.hud.size, letterSpacing: typography.hud.tracking, color: colors.text.primary }}>
-              {detailCta}
-            </span>
-          </Link>
-        </div>
-      </div>
-    </section>
+      </dl>
+    </div>
   );
 }
 
-/**
- * 짧은 브리지. **미디어가 없다.** 그 부재가 앞뒤 딥다이브를 갈라 준다
- * (Apple도 짧은 섹션에는 고정 미디어를 안 둔다. 실측에서 확인했다).
- */
-function Bridge() {
-  return (
-    <section className="vx-shell" style={{ paddingBlock: 'calc(var(--section-gap) * 1.2)' }}>
-      <div data-beat>
-        <Eyebrow en={bridge.eyebrow.en} ko={bridge.eyebrow.ko} />
-        <p
-          style={{
-            margin: '10px 0 0',
-            fontFamily: typography.family,
-            fontSize: typography.title.size,
-            fontWeight: typography.title.weight,
-            letterSpacing: typography.title.tracking,
-            lineHeight: typography.title.leading,
-            color: colors.text.primary,
-            maxWidth: 'var(--measure)',
-            wordBreak: 'keep-all',
-          }}
-        >
-          {bridge.line}
-        </p>
-      </div>
-    </section>
-  );
-}
+const rowStyle = {
+  margin: 0,
+  fontFamily: typography.family,
+  fontSize: typography.body.size,
+  lineHeight: typography.body.leading,
+  color: colors.text.secondary,
+  wordBreak: 'keep-all',
+};
+
+const pendingStyle = {
+  fontFamily: typography.family,
+  fontSize: typography.caption.size,
+  color: colors.text.dim,
+};
