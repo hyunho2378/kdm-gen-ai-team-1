@@ -261,6 +261,26 @@ html { scrollbar-gutter: stable; }
   transform: translateY(0);
 }
 
+/* ── 히어로 비주얼 슬롯 (BRAND_SITE_V2_PLAN 2절, BV2-2) ────────────────────
+   **전폭이다.** shell 거터를 뚫고 화면 끝까지 간다. Satisfy의 히어로 비주얼이 1440 전폭이고
+   그 폭이 문법의 절반이다. 안쪽 카피만 `.vx-shell`로 격자에 되돌린다.
+
+   **빈 박스가 아니라 표면이다.** 카드와 같은 `--card-bg`(잉크 3.5퍼센트)라 페이지 위에 한 단계
+   눌린 판으로 읽힌다. 선을 긋지 않는다(R1 선 금지). 이미지가 오면 이 자리를 그대로 덮는다. */
+.vx-hero-slot {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  background: var(--card-bg);
+}
+/* 스크롤바가 있으면 100vw가 스크롤바까지 세어 가로 스크롤이 생긴다.
+   `scrollbar-gutter: stable`이 자리를 늘 비워 두므로 그 폭만큼 뺀다 */
+@supports (width: 100dvw) {
+  .vx-hero-slot {
+    width: 100dvw;
+    margin-inline: calc(50% - 50dvw);
+  }
+}
+
 /* ── 커스텀 커서 (REBOOT_PLAN 2.4) ────────────────────────────────────────
    **기본 커서는 커스텀이 실제로 떠 있을 때만 감춘다.** 터치 기기와 모션 감소에서는
    컴포넌트가 렌더 자체를 안 하고 이 속성도 안 붙어서 기본 커서가 그대로 산다.

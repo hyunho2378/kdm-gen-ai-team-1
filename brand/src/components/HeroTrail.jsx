@@ -10,8 +10,15 @@
 // 그래서 커서 좌표를 그대로 밀지 않고 속도 상한을 건 추종점을 민다.
 // 상한 9단위/초는 어느 프레임레이트에서도 가드 아래다(60fps 0.15 대 0.35, 20fps 0.45 대 0.6).
 //
-// 색은 DESIGN 10절대로 평시 스틸이다. red.light는 CTA와 명중 맥락 전용이고
-// 상대 블루는 브랜드 화면에 오지 않는다.
+// ── 라이트 배경 대응 (BV2-2) ────────────────────────────────────────────────
+// **가산 합성이 문제였다.** trail.js의 재질은 `AdditiveBlending`인데, 가산은 배경을
+// 밝게만 만든다. 어두운 무대에서는 그것이 발광이지만 밝은 무대에서는 더할 여지가 없어서
+// 리본이 통째로 사라진다. **색만 잉크로 바꿔도 안 보인다**(가산은 어두운 색을 더해도 0이다).
+// 실측: 스틸 코어 #D8E2F0가 #C1C1C1 위에서 1.38:1, #F6F6F6 위에서 1.21:1이었다.
+//
+// 그래서 **합성 방식을 브랜드 쪽에서 일반 합성으로 바꾸고 색을 잉크로 내린다.**
+// arena 파일은 그대로 둔다(읽기만 한다는 계약 유지). trail.js가 돌려주는 mesh의 재질을
+// 여기서 덮어쓰는 것이라 arena의 다크 무대는 영향을 안 받는다.
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
@@ -82,12 +89,17 @@ export default function HeroTrail() {
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
     camera.position.set(0, 0, 2);
 
-    // 코어는 크롬 중간 톤, 잔광은 그림자 톤. trail.js가 둘을 섞어 가장자리를 죽인다
+    // 코어는 잉크, 잔광은 옅은 잉크. trail.js가 둘을 섞어 가장자리를 죽인다
     const ribbon = createTrailRibbon({
-      core: colors.steel.mid,
-      glow: colors.steel.shadow,
+      core: colors.text.primary,
+      glow: colors.text.dim,
       width: RIBBON_WIDTH,
     });
+    // **가산에서 일반 합성으로 바꾼다.** 이걸 안 바꾸면 어떤 색을 줘도 밝은 배경에서 안 보인다.
+    // toneMapped는 가산 발광을 위한 설정이라 같이 되돌린다
+    ribbon.mesh.material.blending = THREE.NormalBlending;
+    ribbon.mesh.material.toneMapped = true;
+    ribbon.mesh.material.needsUpdate = true;
     scene.add(ribbon.mesh);
 
     const target = new THREE.Vector3();

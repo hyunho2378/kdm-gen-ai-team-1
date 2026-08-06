@@ -37,8 +37,30 @@ export default function Landing() {
 }
 
 /**
- * 히어로. 검끝 궤적이 주인공이라 배경을 비운다.
- * 궤적 캔버스는 inset 0으로 깔리고 콘텐츠는 그 위 층에서 선다.
+ * 히어로. **Satisfy 문법으로 다시 짰다(BV2-2).**
+ *
+ * ── Satisfy 히어로 실측 (1440x900을 직접 열어 computed style로 잼) ────────────
+ *
+ *   비주얼    video/img 1440x617, object-fit cover, 첫 화면의 69퍼센트
+ *             y 32에서 시작해 649에서 끝난다. **100vh를 안 채운다**
+ *   카피      비주얼 안쪽 y 285, 즉 비주얼의 46퍼센트 지점
+ *             헤드라인 60px/900 → 서브 14px/400(+66px) → 알약 CTA 14px/900(+35px)
+ *             **총 150px. 그게 전부다**
+ *   여백      비주얼이 끝나고 다음 섹션이 시작되기까지가 비어 있다
+ *
+ * 즉 **비주얼이 화면 대부분을 먹고, 카피는 그 위에 작은 덩어리로 앉고,
+ * 비주얼이 화면을 다 안 채워서 아래 여백이 산다.** 셋이 같이 있어야 성립한다.
+ *
+ * ── 우리 적용 ────────────────────────────────────────────────────────────────
+ * 예전에는 콘텐츠가 좌상단에 쌓이고 **아래 절반이 통째로 비어 있었다**(실측: 45퍼센트만 씀).
+ * 이제 비주얼 슬롯이 헤더 아래부터 뷰포트의 68퍼센트를 먹고, 카피가 그 안 46퍼센트 지점에
+ * 앉고, 슬롯 아래 띠가 여백이자 스크롤 단서가 된다.
+ *
+ * **슬롯은 빈 박스가 아니다.** 카드와 같은 표면(--card-bg)이라 판으로 읽히고, 카피가 그 위에
+ * 얹혀 있어 자리의 용도가 보인다. 이미지가 오면 이 슬롯을 그대로 채우면 된다(풀블리드 cover).
+ *
+ * **슬롯은 전폭이다.** shell 거터를 뚫고 화면 끝까지 간다(Satisfy가 1440 전폭이다).
+ * 카피만 shell 격자에 맞춰 좌측 거터에서 시작한다.
  */
 function HeroSection() {
   const contentRef = useRef(null);
@@ -70,73 +92,119 @@ function HeroSection() {
   return (
     <section
       id={SECTION.HERO}
-      className="vx-shell vx-section"
+      ref={contentRef}
       style={{
         position: 'relative',
-        overflow: 'hidden',
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
-        // **워드마크를 화면 정중앙이 아니라 상단 기준으로 올린다.** 중앙 정렬은 헤더 아래로
-        // 위 여백이 크게 비었다. 히어로만 100dvh를 유지(궤적이 화면을 채운다)하되 콘텐츠는
-        // 위쪽(섹션 상단 여백 아래)에서 시작해 위 빈 공간을 줄인다.
-        justifyContent: 'flex-start',
+        // 헤더가 상주하므로 그 아래에서 시작한다. Satisfy의 비주얼도 공지바 아래 y 32에서 열린다
+        paddingTop: 'var(--header-h)',
       }}
     >
-      {/* 배경은 순흑이다. 깔던 레드 글로우를 걷어냈다. 빛나는 것은 궤적뿐이다 */}
-      <HeroTrail />
+      {/* ── 비주얼 슬롯 ────────────────────────────────────────────────────────
+          **전폭이다.** shell 거터를 뚫고 화면 끝까지 간다(Satisfy 비주얼이 1440 전폭).
+          높이는 뷰포트의 68퍼센트로, Satisfy의 69퍼센트와 같은 자리다.
+          **화면을 다 채우지 않는 것이 요점이다.** 아래에 남는 띠가 여백이고 스크롤 단서다.
 
-      {/* 콘텐츠 층. 궤적 위에 선다 */}
+          이미지가 오면 이 div의 배경 자리에 그대로 들어간다(object-fit cover 풀블리드). */}
       <div
-        ref={contentRef}
+        className="vx-hero-slot"
         style={{
           position: 'relative',
-          zIndex: 1,
+          flex: '0 0 auto',
+          height: 'min(68dvh, 720px)',
+          overflow: 'hidden',
           display: 'flex',
-          flexDirection: 'column',
-          gap: spacing.unit * 3,
+          alignItems: 'center',
         }}
       >
-        <div data-enter="eyebrow">
-          <Eyebrow en={hero.eyebrow.en} ko={hero.eyebrow.ko} />
-        </div>
+        {/* 검끝 궤적. 슬롯 안에서만 돈다. 라이트에서 보이게 잉크와 일반 합성으로 바꿨다 */}
+        <HeroTrail />
 
-        {/* 워드마크는 메탈릭이다(VORTEX_DESIGN_SYSTEM 3.1, 3.7).
-            크롬을 셰이더로 올리고 실패하면 steelText로 내려앉는 판단은 HeroWordmark가 쥔다.
-            **브랜드 그라디언트를 글자에 넣지 않는다.** 마지막 스톱이 #101010이라 X가 배경에 묻힌다(실측). */}
-        <HeroWordmark text={hero.wordmark} />
-
-        {/* **검끝 실선을 걷어냈다.** 브랜드 그라디언트(흰-레드-딥레드-블랙) 2px 선이었는데
-            장식 선 금지와 레드 그라데이션 금지에 동시에 걸린다. 워드마크와 본문 사이의
-            구분은 여백이 진다(REBOOT_PLAN 2.1) */}
-        <p
-          data-enter="sub"
+        {/* **이미지 자리 표기.** 카피가 좌측을 쓰므로 우하단에 눕혀 겹치지 않는다.
+            빈 박스로 두지 않고 자리의 용도를 적어 두는 것이 이 표기의 전부다 */}
+        <span
+          data-enter="tail"
           style={{
-            margin: 0,
+            position: 'absolute',
+            right: 'var(--page-gutter)',
+            bottom: spacing.unit * 2,
             fontFamily: typography.family,
-            fontSize: typography.heading.size,
-            lineHeight: typography.heading.leading,
-            color: colors.text.secondary,
-            maxWidth: 'var(--measure)',
-            wordBreak: 'keep-all',
+            fontSize: typography.caption.size,
+            letterSpacing: typography.hud.tracking,
+            color: colors.text.dim,
           }}
         >
-          {hero.sub}
-        </p>
+          {MEDIA_PENDING}
+        </span>
 
+        {/* 카피. **슬롯 안 46퍼센트 지점에 앉는다**(Satisfy 실측 위치).
+            가로는 shell 격자를 그대로 따라 좌측 거터에서 시작한다 */}
+        <div
+          className="vx-shell"
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            // Satisfy 카피 덩어리는 150px 안에 셋을 담는다. 우리도 촘촘히 붙인다
+            gap: spacing.unit,
+          }}
+        >
+          <div data-enter="eyebrow">
+            <Eyebrow en={hero.eyebrow.en} ko={hero.eyebrow.ko} />
+          </div>
+
+          {/* **평면 잉크다.** 크롬 셰이더는 라이트 배경에서 대비 1.16:1이라 걷었다
+              (근거는 HeroWordmark 주석의 실측표) */}
+          <HeroWordmark text={hero.wordmark} />
+
+          <p
+            data-enter="sub"
+            style={{
+              margin: 0,
+              marginTop: spacing.unit,
+              fontFamily: typography.family,
+              fontSize: typography.heading.size,
+              lineHeight: typography.heading.leading,
+              color: colors.text.secondary,
+              maxWidth: 'var(--measure)',
+              wordBreak: 'keep-all',
+            }}
+          >
+            {hero.sub}
+          </p>
+        </div>
+      </div>
+
+      {/* ── 슬롯 아래 띠 ───────────────────────────────────────────────────────
+          **여기가 살아 있는 여백이다.** Satisfy도 비주얼이 끝나고 다음 섹션까지 비운다.
+          비워만 두면 죽은 자리라 팀 표기와 스크롤 단서만 바닥에 눕힌다. */}
+      <div
+        className="vx-shell"
+        style={{
+          flex: '1 1 auto',
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: spacing.unit * 2,
+          flexWrap: 'wrap',
+          paddingBottom: spacing.unit * 4,
+        }}
+      >
         <p data-enter="tail" style={{ margin: 0, fontFamily: typography.family, fontSize: typography.caption.size, color: colors.text.dim }}>
           {hero.team}
         </p>
 
-        {/* 스크롤 힌트. 첫 화면이 꽉 차 있어 아래가 있다는 것을 말로 알린다 */}
         <p
           data-enter="tail"
           style={{
             margin: 0,
             fontFamily: typography.family,
-            fontSize: typography.caption.size,
+            fontSize: typography.hud.size,
             letterSpacing: typography.hud.tracking,
-            fontWeight: 600,
+            fontWeight: typography.hud.weight,
             color: colors.red.light,
           }}
         >
