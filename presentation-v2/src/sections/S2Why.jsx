@@ -10,7 +10,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, whiteA } from '../tokens.js';
+import { colors, typography, motion, grid, inkA, bgA } from '../tokens.js';
 import { WHY } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { Eyebrow, Badge, StepDots } from '../components/Bits.jsx';
@@ -117,7 +117,7 @@ export default function S2Why({ registerHandler, registerEnter }) {
   }, [registerHandler, registerEnter]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
       {/* AS-IS: 풀블리드에서 좌측 패널로. 그레이스케일은 AS-IS의 성격이라 계속 유지한다. */}
       <div
         ref={asisRef}
@@ -141,7 +141,7 @@ export default function S2Why({ registerHandler, registerEnter }) {
         <AssetImage src="/images/why/tobe.png" fit="cover" />
       </div>
 
-      {/* 두 패널 사이 세로 경계. 위아래로 사라지는 그라디언트 라인. */}
+      {/* 두 패널 사이 세로 경계. 위아래로 사라지는 잉크 라인. */}
       <div
         ref={dividerRef}
         aria-hidden="true"
@@ -154,20 +154,31 @@ export default function S2Why({ registerHandler, registerEnter }) {
           zIndex: 3,
           opacity: 0,
           background:
-            `linear-gradient(180deg, transparent 0%, ${whiteA(0.42)} 26%, ${colors.red} 50%, ${whiteA(0.42)} 74%, transparent 100%)`,
+            `linear-gradient(180deg, transparent 0%, ${inkA(0.32)} 26%, ${colors.ink} 50%, ${inkA(0.32)} 74%, transparent 100%)`,
           pointerEvents: 'none',
         }}
       />
 
-      {/* 상단 좌측: 라벨과 헤드라인 2줄 */}
+      {/* 라이트 스크림 두 밴드. 상단(헤드라인)과 하단(배지)에만 bg를 얹어 잉크 텍스트 가독을 보장한다.
+          사진 중앙은 비워 인물이 살아 있게 둔다. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
+          background:
+            `linear-gradient(180deg, ${bgA(0.9)} 0%, ${bgA(0.45)} 20%, transparent 40%),` +
+            `linear-gradient(0deg, ${bgA(0.9)} 0%, ${bgA(0.4)} 16%, transparent 36%)`,
+        }}
+      />
+
+      {/* 상단 좌측: 라벨과 헤드라인 2줄. 아이브로우는 전역 그리드 좌상단. */}
       <div
         style={{
           position: 'absolute',
-          left: 'clamp(20px, 5vw, 72px)',
-          top: 'clamp(48px, 9vh, 110px)',
+          left: grid.marginX,
+          top: grid.marginTop,
           zIndex: 6,
           pointerEvents: 'none',
-          textShadow: '0 2px 30px rgba(0,0,0,0.85)',
         }}
       >
         <Eyebrow en={WHY.label.en} ko={WHY.label.ko} />
@@ -239,5 +250,4 @@ const badgeBoxStyle = {
   padding: '0 20px',
   textAlign: 'center',
   pointerEvents: 'none',
-  textShadow: '0 2px 30px rgba(0,0,0,0.85)',
 };

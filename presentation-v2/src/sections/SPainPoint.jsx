@@ -18,7 +18,7 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, whiteA } from '../tokens.js';
+import { colors, typography, motion, grid, inkA, bgA } from '../tokens.js';
 import { PAINPOINT, PAINPOINT_COLUMNS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { Eyebrow } from '../components/Bits.jsx';
@@ -64,29 +64,29 @@ export default function SPainPoint({ active }) {
   }, [active]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
-      {/* 배경 사진 + 딤. 원본은 black 0.63을 덮는다. */}
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
+      {/* 배경 사진 + 라이트 딤. 라이트 반전: 블랙 오버레이 → bg. 사진이 오면 라이트로 눌러 카드 대비를 살린다. */}
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <AssetImage src={PAINPOINT.bg} fit="cover" />
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'rgba(16,16,16,0.63)',
+            background: bgA(0.5),
           }}
         />
       </div>
 
-      {/* 좌측 라벨 둘. 원본 x 57.6 → 3.0%, y 256.1 / 708.2 → 23.7% / 65.6% */}
+      {/* 좌측 라벨 둘. 좌마진은 전역 그리드, top은 각 카드 행에 맞춘다(두 밴드 라벨). */}
       <div
         ref={(el) => { labelRefs.current[0] = el; }}
-        style={{ position: 'absolute', left: 'clamp(16px, 3vw, 72px)', top: '23.7%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}
+        style={{ position: 'absolute', left: grid.marginX, top: '23.7%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}
       >
         <Eyebrow en={PAINPOINT.painLabel} />
       </div>
       <div
         ref={(el) => { labelRefs.current[1] = el; }}
-        style={{ position: 'absolute', left: 'clamp(16px, 3vw, 72px)', top: '65.6%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}
+        style={{ position: 'absolute', left: grid.marginX, top: '65.6%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}
       >
         <Eyebrow en={PAINPOINT.insightLabel} />
       </div>
@@ -119,10 +119,9 @@ export default function SPainPoint({ active }) {
               gridColumn: i + 1,
               opacity: 0,
               borderRadius: 25,
-              // 채움은 거의 없다(원본 black 0.01). 테두리가 카드를 만든다.
-              background: whiteA(0.012),
+              // 라이트 반전: 아주 옅은 잉크 틴트 + 잉크 테두리가 카드를 만든다.
+              background: colors.surface.glass,
               border: `1px solid ${colors.line.default}`,
-              boxShadow: `inset 0 1px 0 ${whiteA(0.08)}`,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -193,7 +192,7 @@ export default function SPainPoint({ active }) {
                 bottom: 7,
                 width: 1,
                 transform: 'translateX(-50%)',
-                backgroundImage: `repeating-linear-gradient(to bottom, ${whiteA(0.5)} 0 5px, transparent 5px 11px)`,
+                backgroundImage: `repeating-linear-gradient(to bottom, ${inkA(0.45)} 0 5px, transparent 5px 11px)`,
               }}
             />
             {/* 화살촉 */}
@@ -205,8 +204,8 @@ export default function SPainPoint({ active }) {
                 width: 8,
                 height: 8,
                 transform: 'translateX(-50%) rotate(45deg)',
-                borderRight: `1px solid ${whiteA(0.6)}`,
-                borderBottom: `1px solid ${whiteA(0.6)}`,
+                borderRight: `1px solid ${inkA(0.55)}`,
+                borderBottom: `1px solid ${inkA(0.55)}`,
               }}
             />
           </div>
@@ -225,7 +224,8 @@ export default function SPainPoint({ active }) {
               width: '94.5%',
               justifySelf: 'center',
               borderRadius: 25,
-              background: 'rgba(230, 13, 21, 0.35)',
+              // 라이트 반전: 레드 강조 카드를 솔리드 잉크로. 아웃라인 페인 카드와 위계가 갈린다.
+              background: colors.ink,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -245,7 +245,7 @@ export default function SPainPoint({ active }) {
                   fontWeight: 500,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.6,
-                  color: colors.text.primary,
+                  color: colors.text.onFill,
                 }}
               >
                 {line}

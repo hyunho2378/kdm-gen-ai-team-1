@@ -1,4 +1,4 @@
-// S1 표지 커서 궤적. 가늘고 선명한 레드 라인 하나.
+// S1 표지 커서 궤적. 가늘고 선명한 잉크 라인 하나(라이트 반전 전에는 레드였다).
 //
 // --- 출처 ---
 // 코드 출발점은 추론이 아니라 실제 소스다. 두 곳을 읽고 가져왔다.
@@ -170,14 +170,16 @@ export default function VortexLine({ active }) {
       vertex,
       fragment,
       uniforms: {
-        uColor: { value: new Color(colors.red) },
-        uCore: { value: new Color(colors.white) },
+        // 라이트 반전: 레드 발광 대신 잉크 단색 라인. 코어도 잉크(라이트 위에서는 하이라이트가 필요 없다).
+        uColor: { value: new Color(colors.ink) },
+        uCore: { value: new Color(colors.ink) },
         uThickness: { value: THICKNESS },
       },
     });
 
-    // 가산 블렌딩. 블랙 위에서 발광한다. depth는 안 쓴다(라인 하나뿐).
-    polyline.program.setBlendFunc(gl.SRC_ALPHA, gl.ONE);
+    // 프리멀티플라이드 알파의 일반 합성. 라이트 배경 위에 어두운 라인이 그대로 얹힌다.
+    // (프래그먼트가 col*a로 이미 알파를 곱하므로 소스 계수는 ONE이다.)
+    polyline.program.setBlendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     polyline.program.depthTest = false;
     polyline.program.depthWrite = false;
 

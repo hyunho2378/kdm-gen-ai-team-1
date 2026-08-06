@@ -62,6 +62,11 @@ export default function App() {
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // 새로고침은 항상 첫 섹션에서 시작한다. 브라우저 스크롤 복원을 끄고 맨 위로 보낸다.
+    // (섹션 인덱스는 메모리 state뿐이라 이미 0으로 리셋되지만, 스크롤 위치는 브라우저가 복원할 수 있다.)
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+
     // Lenis는 scrollTo 애니메이션 전용. smoothWheel을 꺼 자유 휠 스크롤을 잡지 않는다(입력은 Observer가 잡음).
     const lenis = new Lenis({ smoothWheel: false, smoothTouch: false });
     lenisRef.current = lenis;
@@ -148,7 +153,7 @@ export default function App() {
               position: 'relative',
               height: '100dvh',
               overflow: 'hidden',
-              background: colors.black,
+              background: colors.bg,
             }}
           >
             {/* **인덱스가 아니라 id로 고른다.** 섹션을 끼워 넣어도 짝이 어긋나지 않는다. */}
@@ -230,31 +235,6 @@ export default function App() {
           </section>
         ))}
       </main>
-
-      {/* 진행 표시. 우하단, 얇게. */}
-      <div
-        aria-live="polite"
-        style={{
-          position: 'fixed',
-          right: 'clamp(16px, 3vw, 40px)',
-          bottom: 'max(16px, env(safe-area-inset-bottom))',
-          zIndex: 100,
-          fontVariantNumeric: 'tabular-nums',
-          fontSize: '0.8125rem',
-          letterSpacing: '0.14em',
-          color: colors.text.dim,
-          pointerEvents: 'none',
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: 6,
-        }}
-      >
-        <span style={{ color: colors.text.primary, fontWeight: 600 }}>
-          {String(current + 1).padStart(2, '0')}
-        </span>
-        <span style={{ opacity: 0.5 }}>/ {String(SECTIONS.length).padStart(2, '0')}</span>
-      </div>
-
     </>
   );
 }

@@ -22,7 +22,7 @@
 // 위 계산식 위에 이 섹션의 안무를 새로 짰다.
 
 import { useEffect, useRef, useState } from 'react';
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, grid } from '../tokens.js';
 import { DUELIST, DUELIST_STYLES } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { Eyebrow, Badge, StepDots } from '../components/Bits.jsx';
@@ -103,32 +103,16 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
   const dur = growing ? 600 : 900; // 커지는 전환 0.6s, 복귀는 더 느리게
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
-      {/* 저알파 레드 radial. 원본 ellipse 중심 cx 1165.5 cy 718 → 60.7% / 66.5% */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          left: '60.7%',
-          top: '66.5%',
-          width: '104vw',
-          height: '135vh',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(ellipse at 50% 50%, rgba(230,13,21,0.16) 0%, rgba(230,13,21,0.07) 37%, rgba(230,13,21,0.02) 62%, transparent 100%)`,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* 상단 좌측 헤더. 포커스 상태에서는 헤드라인과 서브를 물려 카드에 자리를 내준다. */}
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
+      {/* 상단 좌측 헤더. 아이브로우는 전역 그리드 좌상단. 포커스 상태에서는 헤드라인/서브를 물린다. */}
       <div
         style={{
           position: 'absolute',
-          left: 'clamp(20px, 5.33vw, 130px)',
-          top: 'clamp(44px, 18vh, 200px)',
+          left: grid.marginX,
+          top: grid.marginTop,
           width: 'min(52vw, 900px)',
           zIndex: 6,
           pointerEvents: 'none',
-          textShadow: '0 2px 26px rgba(16,16,16,0.9)',
         }}
       >
         <Eyebrow en={DUELIST.label.en} ko={DUELIST.label.ko} />
@@ -208,13 +192,13 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
             {/* 인물. 원본처럼 바닥 정렬 contain이라 폭은 각자 자연 비율대로 앉는다. */}
             <div style={{ position: 'absolute', inset: '0 0 20% 0' }}>
               <AssetImage src={s.img} fit="contain" position="center bottom" />
-              {/* 비활성 카드를 눌러 어둡게. dim을 검은 막의 알파로 쓴다. */}
+              {/* 비활성 카드를 물린다. 라이트 반전: 검은 막 → bg 막으로 옅게 밀어낸다. */}
               <div
                 aria-hidden="true"
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: colors.black,
+                  background: colors.bg,
                   opacity: dim,
                   transition: `opacity ${dur}ms ease`,
                   pointerEvents: 'none',
@@ -235,7 +219,6 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
                 alignItems: 'center',
                 gap: 'clamp(5px, 0.9vh, 11px)',
                 textAlign: 'center',
-                textShadow: '0 2px 20px rgba(16,16,16,0.95)',
               }}
             >
               <span
@@ -270,7 +253,6 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
           opacity: focused ? 1 : 0,
           transition: `opacity ${dur}ms ease, transform ${dur}ms ${EASE}`,
           pointerEvents: 'none',
-          textShadow: '0 2px 26px rgba(16,16,16,0.95)',
         }}
       >
         {focused ? (
@@ -306,7 +288,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
               style={{
                 marginTop: 'clamp(12px, 2.2vh, 26px)',
                 paddingLeft: 'clamp(10px, 1vw, 16px)',
-                borderLeft: `2px solid ${colors.red}`,
+                borderLeft: `2px solid ${colors.ink}`,
                 fontFamily: typography.family,
                 fontSize: 'clamp(0.78rem, 1.25vw, 1.36rem)',
                 fontWeight: 500,
@@ -323,7 +305,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
                 marginTop: 'clamp(14px, 2.6vh, 30px)',
                 aspectRatio: '16 / 9',
                 borderRadius: 14,
-                background: `linear-gradient(155deg, ${colors.raised} 0%, ${colors.deep} 62%, ${colors.black} 100%)`,
+                background: `linear-gradient(155deg, ${colors.raised} 0%, ${colors.bg} 100%)`,
                 boxShadow: `inset 0 0 0 1px ${colors.line.faint}`,
                 display: 'flex',
                 alignItems: 'center',

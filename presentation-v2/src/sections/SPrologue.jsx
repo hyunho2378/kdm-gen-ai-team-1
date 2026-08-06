@@ -14,7 +14,7 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, whiteA } from '../tokens.js';
+import { colors, typography, motion, grid, inkA } from '../tokens.js';
 import { PROLOGUE } from '../copy.js';
 import { Eyebrow } from '../components/Bits.jsx';
 
@@ -47,29 +47,14 @@ export default function SPrologue({ active }) {
   }, [active]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
-      {/* 아주 옅은 레드 radial 하나. 이미지가 없는 화면이라 바닥이 완전히 비지 않게만. */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '53%',
-          width: 'min(140vh, 120vw)',
-          height: 'min(140vh, 120vw)',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle at 50% 50%, rgba(230,13,21,0.09) 0%, rgba(230,13,21,0.03) 38%, transparent 70%)`,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* 좌상단 라벨. 원본 x 60 → 3.13%, y 229.9 → 21.3% */}
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
+      {/* 좌상단 라벨. 전역 그리드에 맞춰 아이브로우를 좌상단 고정(전 슬라이드 같은 자리). */}
       <div
         ref={labelRef}
         style={{
           position: 'absolute',
-          left: 'clamp(20px, 3.13vw, 76px)',
-          top: 'clamp(44px, 21.3vh, 236px)',
+          left: grid.marginX,
+          top: grid.marginTop,
           zIndex: 3,
           opacity: 0,
           pointerEvents: 'none',
@@ -114,7 +99,7 @@ export default function SPrologue({ active }) {
                 key={si}
                 style={{
                   fontWeight: sg.b ? 700 : 400,
-                  color: sg.b ? colors.text.primary : whiteA(0.7),
+                  color: sg.b ? colors.text.primary : inkA(0.55),
                 }}
               >
                 {sg.t}

@@ -15,7 +15,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ArrowRight } from 'lucide-react';
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, grid, inkA } from '../tokens.js';
 import { DEMO } from '../copy.js';
 import { Eyebrow } from '../components/Bits.jsx';
 
@@ -65,41 +65,34 @@ export default function S7Demo({ active }) {
   };
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
-      {/* 버튼 뒤 저알파 레드 글로우. 우하단만 아주 옅게. */}
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
+      {/* 아이브로우는 전역 그리드 좌상단 고정(전 슬라이드 같은 자리). */}
       <div
-        aria-hidden="true"
+        ref={labelRef}
         style={{
           position: 'absolute',
-          left: '90.8%',
-          top: '81.6%',
-          width: 'min(90vh, 70vw)',
-          height: 'min(90vh, 70vw)',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle at 50% 50%, rgba(230,13,21,0.12) 0%, rgba(230,13,21,0.04) 38%, transparent 70%)`,
+          left: grid.marginX,
+          top: grid.marginTop,
+          zIndex: 3,
+          opacity: 0,
           pointerEvents: 'none',
         }}
-      />
+      >
+        <Eyebrow en={DEMO.label} />
+      </div>
 
-      {/* 좌측 라벨과 대형 헤드라인. 원본 x 110 → 5.73vw */}
+      {/* 대형 헤드라인. 원본 x 110 → grid 좌마진에 정렬. */}
       <div
         style={{
           position: 'absolute',
-          left: 'clamp(20px, 5.73vw, 140px)',
+          left: grid.marginX,
           top: '36%',
-          right: 'clamp(20px, 5.73vw, 140px)',
+          right: grid.marginX,
           zIndex: 3,
           pointerEvents: 'none',
         }}
       >
-        <div
-          ref={labelRef}
-          style={{ opacity: 0 }}
-        >
-          <Eyebrow en={DEMO.label} />
-        </div>
-
-        <div style={{ marginTop: 'clamp(14px, 2.6vh, 34px)' }}>
+        <div>
           {DEMO.headline.map((line, i) => (
             <div
               key={line}
@@ -146,17 +139,18 @@ export default function S7Demo({ active }) {
           borderRadius: '50%',
           border: 'none',
           padding: 0,
-          background: colors.red,
+          // 라이트 반전: 레드 CTA를 잉크 원으로. 밝은 배경 위 잉크 원 + 밝은 화살표.
+          background: colors.ink,
           color: colors.text.onFill,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
           opacity: 0,
-          // 글로우는 정적 box-shadow. 호버에서 한 단계 세진다.
+          // 그림자는 정적. 호버에서 한 단계 세진다.
           boxShadow: hover
-            ? `0 0 0 1px rgba(230,13,21,0.5), 0 0 54px rgba(230,13,21,0.55)`
-            : `0 0 0 1px rgba(230,13,21,0.3), 0 0 34px ${colors.redGlow}`,
+            ? `0 10px 34px ${inkA(0.32)}`
+            : `0 6px 22px ${inkA(0.2)}`,
           transition: `box-shadow 320ms ${motion.easeOut}`,
           willChange: 'transform, opacity',
         }}

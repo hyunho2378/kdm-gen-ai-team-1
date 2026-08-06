@@ -20,26 +20,26 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, inkA, bgA } from '../tokens.js';
 import { CONCEPT, CONCEPT_NAME } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { Eyebrow } from '../components/Bits.jsx';
 
-// 사진 자체의 페더링. 좌측을 55%부터 흐리고(지시), 상하 가장자리도 함께 녹인다.
+// 사진 자체의 페더링. 좌측을 55%부터 흐리고(지시), 상하 가장자리도 함께 녹인다(알파 마스크라 색은 무관).
 // 두 층을 intersect로 곱해 네 방향이 한 번에 정리된다.
 const PHOTO_MASK =
   'linear-gradient(to left, #000 55%, transparent 100%), ' +
   'linear-gradient(to bottom, transparent 0%, #000 10%, #000 90%, transparent 100%)';
 
-// 사진 위 좌→우 블랙 오버레이. 원본 그라디언트 스톱을 1920 기준 퍼센트로 환산했다.
-//   x 651.674 → 33.94%(알파 1) / x 1004.8 → 52.33%(알파 0.8226) / x 1782 → 92.81%(알파 0.1)
+// 사진 위 좌→우 라이트 오버레이. 좌측 텍스트 가독을 이 층이 책임진다(라이트 반전: 블랙 → bg).
+//   x 651.674 → 33.94%(불투명) / x 1004.8 → 52.33%(0.82) / x 1782 → 92.81%(0.1)
 const PHOTO_SCRIM =
-  'linear-gradient(to right,' +
-  ' #101010 0%,' +
-  ' #101010 33.94%,' +
-  ' rgba(16,16,16,0.823) 52.33%,' +
-  ' rgba(16,16,16,0.1) 92.81%,' +
-  ' rgba(16,16,16,0.08) 100%)';
+  `linear-gradient(to right,` +
+  ` ${colors.bg} 0%,` +
+  ` ${colors.bg} 33.94%,` +
+  ` ${bgA(0.82)} 52.33%,` +
+  ` ${bgA(0.1)} 92.81%,` +
+  ` ${bgA(0.08)} 100%)`;
 
 export default function S3Concept({ active }) {
   const photoRef = useRef(null);
@@ -70,7 +70,7 @@ export default function S3Concept({ active }) {
   }, [active]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
       {/* 사진. 원본처럼 우측과 하단으로 흘려보낸다(x 556.8 → 29%, y 77 → 7.1%). */}
       <div
         ref={photoRef}
@@ -104,22 +104,6 @@ export default function S3Concept({ active }) {
         }}
       />
 
-      {/* 사진 뒤 저알파 레드 글로우. 레드 남용 금지라 알파를 낮게 유지한다. */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          right: '2%',
-          bottom: '-10%',
-          width: 'min(70vw, 900px)',
-          height: 'min(70vh, 900px)',
-          zIndex: 3,
-          mixBlendMode: 'screen',
-          background: `radial-gradient(circle at 50% 50%, rgba(230,13,21,0.12) 0%, rgba(230,13,21,0.04) 40%, transparent 70%)`,
-          pointerEvents: 'none',
-        }}
-      />
-
       {/* 좌측 콘텐츠. 원본 좌측 여백 x 102.4 → 5.33vw.
           중앙 정렬은 flex가 잡는다. 안쪽 div의 transform은 GSAP 전용이다
           (인라인 transform과 겹치면 GSAP이 px로 분해해 덮어쓴다). */}
@@ -141,13 +125,12 @@ export default function S3Concept({ active }) {
             width: 'min(62vw, 1050px)',
             opacity: 0,
             willChange: 'transform, opacity',
-            textShadow: '0 2px 26px rgba(16,16,16,0.9)',
           }}
         >
           {/* 1. CONCEPT */}
           <Eyebrow en={CONCEPT.label} />
 
-          {/* 2. VORTEX 워드마크(메탈릭). 원본은 얇은 획이라 weight를 낮게 잡는다. */}
+          {/* 2. VORTEX 워드마크. 라이트 반전: 메탈릭/드롭섀도우를 걷고 잉크로 평평하게(질감 0). */}
           <div
             style={{
               marginTop: 'clamp(10px, 1.8vh, 22px)',
@@ -157,13 +140,7 @@ export default function S3Concept({ active }) {
               fontWeight: 300,
               letterSpacing: '0.005em',
               lineHeight: 1,
-              backgroundImage: colors.silver.gradient,
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              color: 'transparent',
-              WebkitTextFillColor: 'transparent',
-              filter:
-                'drop-shadow(0 -1px 0.5px rgba(255,255,255,0.34)) drop-shadow(0 2px 1px rgba(16,16,16,0.9)) drop-shadow(0 10px 24px rgba(16,16,16,0.55))',
+              color: colors.ink,
             }}
           >
             {CONCEPT_NAME}
@@ -192,16 +169,15 @@ export default function S3Concept({ active }) {
               marginTop: 'clamp(14px, 2.6vh, 32px)',
               width: 'min(25.97vw, 640px)',
               height: 2,
-              background: `linear-gradient(to right, ${colors.red} 0%, rgba(230,13,21,0.1) 100%)`,
+              // 라이트 반전: 레드 검끝 구분선을 잉크로. 오른쪽으로 사라진다.
+              background: `linear-gradient(to right, ${colors.ink} 0%, ${inkA(0.1)} 100%)`,
               // 오른쪽 끝으로 갈수록 두께가 0에 수렴한다. 검끝처럼 뾰족해진다.
               clipPath: 'polygon(0 0, 100% 45%, 100% 55%, 0 100%)',
             }}
           />
 
-          {/* 5. 반투명 레드 글래스 박스. 원본은 rx = h/2 인 완전한 필이다.
-              **보더 그라디언트에 두 겹 background-clip 트릭을 쓰면 안 된다.** 채움이 반투명이라
-              아래 깔린 솔리드 레드가 박스 전체로 비친다(실측: 좌측이 208,13,20으로 원본 54,11,18보다 뜨거웠다).
-              링은 별도 레이어에 마스크로 그린다. */}
+          {/* 5. 필 글래스 박스. 원본은 rx = h/2 인 완전한 필이다. 라이트 반전: 레드 채움을 걷고
+              아주 옅은 잉크 글래스 + 잉크 링으로 바꾼다(레드 전역 금지). 링은 별도 레이어에 마스크로 그린다. */}
           <div
             style={{
               position: 'relative',
@@ -209,14 +185,12 @@ export default function S3Concept({ active }) {
               width: 'min(54.15vw, 1080px)',
               padding: 'clamp(16px, 3.2vh, 34px) clamp(24px, 3.6vw, 62px)',
               borderRadius: 999,
-              // 원본: fill 그라디언트(알파 1 → 0.2)에 fill-opacity 0.3 → 유효 0.30 → 0.06
-              background: 'linear-gradient(to right, rgba(230,13,21,0.30) 0%, rgba(230,13,21,0.06) 100%)',
+              background: `linear-gradient(to right, ${inkA(0.05)} 0%, ${inkA(0.015)} 100%)`,
               backdropFilter: 'blur(16px) saturate(1.2)',
               WebkitBackdropFilter: 'blur(16px) saturate(1.2)',
-              boxShadow: '0 0 44px rgba(230,13,21,0.10)',
             }}
           >
-            {/* 링 전용 레이어. 원본 stroke 1.5px, 알파 1 → 0.1. 마스크로 테두리만 남긴다. */}
+            {/* 링 전용 레이어. 원본 stroke 1.5px, 잉크 알파 1 → 0.1. 마스크로 테두리만 남긴다. */}
             <span
               aria-hidden="true"
               style={{
@@ -224,7 +198,7 @@ export default function S3Concept({ active }) {
                 inset: 0,
                 borderRadius: 999,
                 padding: 1.5,
-                background: `linear-gradient(to right, ${colors.red} 0%, rgba(230,13,21,0.1) 100%)`,
+                background: `linear-gradient(to right, ${inkA(0.5)} 0%, ${inkA(0.08)} 100%)`,
                 WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
                 WebkitMaskComposite: 'xor',
                 mask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',

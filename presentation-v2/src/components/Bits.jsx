@@ -4,14 +4,14 @@
 // StepDots: 서브 진행 표시. 활성만 red.
 // GlassRim: 유리 림 보더.
 
-import { colors, typography, motion, whiteA } from '../tokens.js';
+import { colors, typography, motion, inkA } from '../tokens.js';
 
-// 유리 림 라이트. 위쪽이 밝고 아래로 어두워지는 그라디언트를 mask로 뚫어 링만 남긴다.
+// 유리 림 라이트. 위쪽이 진하고 아래로 옅어지는 그라디언트를 mask로 뚫어 링만 남긴다.
 // **border-image나 두 겹 background-clip 트릭이 아니다.** 링이 반투명이라
 // 그 트릭을 쓰면 아래 레이어가 원 전체로 비친다(컨셉 섹션에서 실측으로 확인한 함정).
-// 채움은 호출부가 정한다. TARGET은 투명, 디자인 키워드는 뒤가 사진이라 blur를 살짝 건다.
+// 라이트 반전: 흰 림은 안 보이므로 잉크 파생으로 바꿔 옅은 다크 링으로 읽히게 한다.
 export const GLASS_RING = {
-  background: `linear-gradient(160deg, ${whiteA(0.5)}, ${whiteA(0.06)} 55%, ${whiteA(0.18)})`,
+  background: `linear-gradient(160deg, ${inkA(0.28)}, ${inkA(0.06)} 55%, ${inkA(0.14)})`,
   WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
   WebkitMaskComposite: 'xor',
   mask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
@@ -39,15 +39,17 @@ export function GlassRim({ width = 1.2 }) {
  * 700인 것은 취향이 아니라 대비 요건이다. red 아이브로우가 4.02:1이라 21px가 대형(굵기 700)으로
  * 인정돼야 기준 3.0으로 통과한다. 굵기를 낮추거나 크기를 줄이면 그 순간 미달로 돌아간다.
  *
- * 색은 pres-v2 기존을 유지한다. 영문 tone(기본 red), 국문 primary. 둘 다 같은 크기와 굵기다.
+ * **라이트 반전: 전역은 잉크 단색이다.** 영문 tone 기본이 red에서 ink로 바뀌었다(브랜드 레드 전역 금지).
+ * 네이비 등 슬라이드 고유 액센트가 필요하면 호출부가 tone으로 넘긴다(컬러 시스템만 해당).
  *
  * @param {string} en 영문 라벨(필수)
  * @param {string} [ko] 국문 라벨. 없으면 단일 라벨
- * @param {string} [tone] 영문 라벨 색. 기본 red
+ * @param {string} [tone] 영문 라벨 색. 기본 ink
  */
-export function Eyebrow({ en, ko, tone = colors.red }) {
+export function Eyebrow({ en, ko, tone = colors.text.primary }) {
   const base = {
-    fontFamily: typography.family,
+    // 아이브로우는 Pretendard(본문 SUIT와 분리). tokens.eyebrow.family가 단일 원천.
+    fontFamily: typography.eyebrow.family,
     fontSize: typography.eyebrow.size,
     fontWeight: typography.eyebrow.weight,
     letterSpacing: typography.eyebrow.tracking,
@@ -74,8 +76,9 @@ export function Badge({ text, filled }) {
         fontWeight: 700,
         letterSpacing: '0.2em',
         color: filled ? colors.text.onFill : colors.text.secondary,
-        background: filled ? colors.red : colors.surface.pill,
-        boxShadow: filled ? `0 0 22px ${colors.redGlow}` : `inset 0 0 0 1px ${colors.line.strong}`,
+        // 라이트 반전: 전역 액센트는 잉크 단색. filled면 잉크 채움 + 밝은 글자, 아니면 잉크 아웃라인.
+        background: filled ? colors.ink : colors.surface.pill,
+        boxShadow: filled ? 'none' : `inset 0 0 0 1px ${colors.line.strong}`,
       }}
     >
       {text}
@@ -106,8 +109,9 @@ export function StepDots({ count, active }) {
             width: i === active ? 22 : 8,
             height: 3,
             borderRadius: 999,
-            background: i === active ? colors.red : colors.line.strong,
-            boxShadow: i === active ? `0 0 10px ${colors.redGlow}` : 'none',
+            // 라이트 반전: 활성만 잉크, 비활성은 옅은 잉크 선.
+            background: i === active ? colors.ink : colors.line.strong,
+            boxShadow: 'none',
             transition: `width 300ms ${motion.easeOut}, background-color 300ms ease`,
           }}
         />

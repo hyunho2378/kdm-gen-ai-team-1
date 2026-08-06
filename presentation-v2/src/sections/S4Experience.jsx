@@ -18,7 +18,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { Footprints, PersonStanding, Swords, Brain } from 'lucide-react';
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, grid, inkA } from '../tokens.js';
 import { EXPERIENCE, INTERACTIONS } from '../copy.js';
 import { Eyebrow } from '../components/Bits.jsx';
 
@@ -69,11 +69,11 @@ export default function S4Experience({ active }) {
         position: 'absolute',
         inset: 0,
         overflow: 'hidden',
-        background: colors.black,
+        background: colors.bg,
         display: 'flex',
         flexDirection: 'column',
-        // 원본 좌우 여백 5.31%, 라벨이 세로 20.4%에 앉는다
-        padding: 'clamp(28px, 19vh, 210px) clamp(16px, 5.31vw, 130px) clamp(24px, 6vh, 64px)',
+        // 전역 그리드 마진(아이브로우 좌상단). 페이지마다 다른 마진을 두지 않는다.
+        padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
       {/* 상단 좌측: 라벨과 헤드라인 */}
@@ -138,12 +138,13 @@ export default function S4Experience({ active }) {
                   width: 'clamp(48px, 4.6vw, 96px)',
                   height: 'clamp(48px, 4.6vw, 96px)',
                   borderRadius: '50%',
-                  background: colors.red,
+                  // 라이트 반전: 레드 아이콘 원을 잉크로. 안의 아이콘은 밝은색(onFill).
+                  background: colors.ink,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  boxShadow: `0 0 26px ${colors.redGlow}`,
+                  boxShadow: `0 6px 18px ${inkA(0.18)}`,
                 }}
               >
                 {Icon ? (

@@ -17,6 +17,9 @@ import {
   colors,
   typography,
   motion,
+  grid,
+  whiteA,
+  inkA,
   brandGradient,
   brandGradientStops,
   hexToRgbText,
@@ -27,7 +30,7 @@ import { Eyebrow } from '../components/Bits.jsx';
 const CARD_RADIUS = 20;
 
 // 밝은 면 위에 얹히는 흰 글자용 그림자. 그라디언트 카드에만 쓴다.
-const ON_LIGHT_SHADOW = '0 1px 3px rgba(16,16,16,0.55), 0 0 14px rgba(16,16,16,0.7)';
+const ON_LIGHT_SHADOW = `0 1px 3px ${inkA(0.55)}, 0 0 14px ${inkA(0.7)}`;
 
 const SWATCH_TITLE = {
   fontFamily: typography.family,
@@ -86,9 +89,10 @@ export default function S6ColorSystem({ active }) {
     };
   }, [active]);
 
-  // red 채움 위는 흰 글자, 블랙 카드 위는 파생 흰 글자.
-  const onRed = { strong: colors.text.onFill, dim: 'rgba(253,253,253,0.82)' };
-  const onDark = { strong: colors.text.primary, dim: colors.text.dim };
+  // **견본 카드는 다크/레드/그라디언트 면이라 라벨은 라이트 테마와 무관하게 흰 글자다.**
+  // (라이트 반전 후 text.primary는 잉크라 다크 견본 위에서 안 보인다. 그래서 white 파생으로 고정.)
+  const onRed = { strong: colors.text.onFill, dim: whiteA(0.82) };
+  const onDark = { strong: colors.white, dim: whiteA(0.55) };
 
   return (
     <div
@@ -96,10 +100,11 @@ export default function S6ColorSystem({ active }) {
         position: 'absolute',
         inset: 0,
         overflow: 'hidden',
-        background: colors.black,
+        background: colors.bg,
         display: 'flex',
         flexDirection: 'column',
-        padding: 'clamp(28px, 7.2vh, 78px) clamp(16px, 3.13vw, 76px) clamp(20px, 5.5vh, 60px)',
+        // 전역 그리드 원천. 이 슬라이드의 실측 마진이 grid 토큰이 됐다(다른 슬라이드가 이 값을 공유한다).
+        padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
       {/* 상단: 좌측 라벨 2줄 + 우측 헤드라인과 서브 */}
@@ -113,7 +118,8 @@ export default function S6ColorSystem({ active }) {
         }}
       >
         <div style={{ flex: '0 0 auto' }}>
-          <Eyebrow en={COLOR_SYSTEM.label.en} ko={COLOR_SYSTEM.label.ko} />
+          {/* 네이비는 이 슬라이드에서만 허용된 액센트다(전역 금지). 아이브로우 영문 라벨에 얹는다. */}
+          <Eyebrow en={COLOR_SYSTEM.label.en} ko={COLOR_SYSTEM.label.ko} tone={colors.navy} />
         </div>
 
         <div style={{ flex: '1 1 auto', minWidth: 0 }}>
@@ -223,7 +229,7 @@ export default function S6ColorSystem({ active }) {
             <div style={{ display: 'flex', gap: 'clamp(10px, 2vw, 42px)', flexWrap: 'wrap' }}>
               {brandGradientStops.map((stop, i) => (
                 <div key={stop}>
-                  <div style={{ ...KEY_LABEL, color: 'rgba(253,253,253,0.82)', textShadow: ON_LIGHT_SHADOW }}>
+                  <div style={{ ...KEY_LABEL, color: whiteA(0.82), textShadow: ON_LIGHT_SHADOW }}>
                     {COLOR_SYSTEM.stopLabels[i]}
                   </div>
                   <div style={{ ...KEY_LABEL, color: colors.text.onFill, textShadow: ON_LIGHT_SHADOW }}>

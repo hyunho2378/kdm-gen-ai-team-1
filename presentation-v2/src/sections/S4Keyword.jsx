@@ -20,7 +20,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, grid, inkA, bgA } from '../tokens.js';
 import { KEYWORD, KEYWORDS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { Eyebrow, GlassRim, StepDots } from '../components/Bits.jsx';
@@ -132,10 +132,11 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
         position: 'absolute',
         inset: 0,
         overflow: 'hidden',
-        background: colors.black,
+        background: colors.bg,
         display: 'flex',
         flexDirection: 'column',
-        padding: 'clamp(28px, 7.2vh, 78px) clamp(16px, 3.13vw, 76px) clamp(24px, 5vh, 56px)',
+        // 전역 그리드 마진(아이브로우 좌상단). 컬러 시스템과 같은 값을 공유한다.
+        padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
       {/* 상단: 좌측 라벨 2줄 + 우측 헤드라인과 본문 */}
@@ -224,8 +225,8 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
                 inset: '2% -3% 2% -3%',
                 borderRadius: 24,
                 opacity: 0,
-                // 어두운 그림자는 부양감 정도로만. 세게 주면 판으로 읽힌다.
-                boxShadow: `0 18px 46px rgba(16,16,16,0.5), 0 0 46px rgba(230,13,21,0.3)`,
+                // 라이트 반전: 레드 글로우를 걷고 잉크 그림자로만 부양감을 낸다.
+                boxShadow: `0 18px 46px ${inkA(0.22)}`,
                 pointerEvents: 'none',
               }}
             />
@@ -238,17 +239,17 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
                 minHeight: 0,
                 borderRadius: 20,
                 overflow: 'hidden',
-                background: colors.deep,
+                background: colors.raised,
               }}
             >
               <AssetImage src={k.img} fit="cover" />
-              {/* 사진 위 딤. 원형 라벨 글자가 읽히게. */}
+              {/* 사진 위 아주 옅은 딤. 사진을 살리되 라벨 대비를 약간 돕는다(라이트 반전: 다크 → 미세). */}
               <div
                 aria-hidden="true"
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'linear-gradient(180deg, rgba(16,16,16,0.28) 0%, rgba(16,16,16,0.42) 100%)',
+                  background: `linear-gradient(180deg, ${inkA(0.06)} 0%, ${inkA(0.14)} 100%)`,
                 }}
               />
               <div
@@ -268,18 +269,16 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
                     width: '41%',
                     aspectRatio: '1 / 1',
                     borderRadius: '50%',
-                    // **채움 없음.** 뒤 사진이 그대로 비친다.
-                    background: 'transparent',
-                    // TARGET과 달리 여기는 뒤가 사진이라 blur가 실제로 보인다. 아주 약하게만.
-                    backdropFilter: 'blur(3px)',
-                    WebkitBackdropFilter: 'blur(3px)',
+                    // 라이트 반전: 잉크 라벨이 사진 위에서 읽히게 옅은 라이트 디스크로 받친다.
+                    background: bgA(0.55),
+                    backdropFilter: 'blur(6px)',
+                    WebkitBackdropFilter: 'blur(6px)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: 2,
                     textAlign: 'center',
-                    textShadow: '0 2px 18px rgba(16,16,16,0.9)',
                   }}
                 >
                   {/* TARGET과 같은 유리 림 문법. */}

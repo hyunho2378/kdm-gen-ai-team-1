@@ -1,23 +1,43 @@
-// presentation-v2 팔레트. 브랜드 원안: 블랙 + 실버 + 레드. **네이비 금지.**
-// 전 섹션(S1~)이 이 팔레트를 공유한다. 값 수정은 여기서만.
-// shared/tokens.js와는 별개다(앱 간 색 통일은 별개 작업). 이 파일만 고친다.
+// presentation-v2 팔레트 v2. **다크 → 라이트 반전.** 배경 #F6F6F6 + 잉크 #101010이 전역 기준이다.
+// 전 섹션(S1~)이 이 팔레트를 공유한다. 값 수정은 여기서만. shared/tokens.js와는 별개다.
 //
-// **생블랙(#000000)과 생화이트(#FFFFFF)를 쓰지 않는다.** 배경은 black, 전경은 white가 기준이고
-// 흰 계열 텍스트는 전부 white에서 파생시킨다. 예외는 메탈릭 그라디언트의 하이라이트 스톱 하나뿐이다.
+// **브랜드 레드/블랙과 미드나잇 네이비는 컬러 시스템 슬라이드 안에서만 쓴다(견본 내용).**
+// 다른 슬라이드에 액센트로 칠하지 않는다. 전역은 잉크 단색이다.
+//
+// **생블랙(#000000)과 생화이트(#FFFFFF)를 텍스트 색으로 쓰지 않는다.** 전경은 ink(#101010),
+// 밝은 파생은 white(#FDFDFD)에서 나온다. 예외는 메탈릭 그라디언트의 하이라이트 스톱 하나뿐이다.
 
-// 전경 흰색의 채널. 흰 계열 값은 전부 여기서 파생한다. rgba 하드코딩을 막는 유일한 통로다.
+// 전경 잉크의 채널. 흑 계열 텍스트/선 값은 전부 여기서 파생한다. 하드코딩을 막는 유일한 통로다.
+const INK_RGB = '16, 16, 16';
+// 배경 채널. 사진 위 라이트 스크림 등 배경색을 알파로 깔 때 쓴다.
+const BG_RGB = '246, 246, 246';
+// 밝은 파생 채널. red 채움 위 흰 글자, 실버 하이라이트 등 라이트 위에서 드물게 쓴다.
 const WHITE_RGB = '253, 253, 253';
 
+/** ink에서 알파만 바꿔 파생시킨다. 예: inkA(0.5) */
+export const inkA = (a) => `rgba(${INK_RGB}, ${a})`;
+/** bg에서 알파만 바꿔 파생시킨다. 사진 위 라이트 스크림 전용. 예: bgA(0.8) */
+export const bgA = (a) => `rgba(${BG_RGB}, ${a})`;
 /** white에서 알파만 바꿔 파생시킨다. 예: whiteA(0.5) */
 export const whiteA = (a) => `rgba(${WHITE_RGB}, ${a})`;
 
 export const colors = {
-  black: '#101010', // 배경 기준. 생블랙 아님
-  deep: '#0A0A0A', // 더 깊은 톤(그라디언트 하단, 비네트). 이것도 생블랙 아님
-  raised: '#181818', // 살짝 뜬 표면
-  white: '#FDFDFD', // 전경 기준. 생화이트 아님
+  // ── 전역 기준 두 색 ────────────────────────────────────────────────
+  bg: '#F6F6F6', // 페이지 배경 기준(전 슬라이드). 생화이트 아님
+  raised: '#FFFFFF', // 라이트 위 살짝 뜬 카드 면(카드/플레이스홀더)
+  ink: '#101010', // 전경 기준(텍스트, 선 파생 원천). 생블랙 아님
 
-  // 실버 화이트 메탈릭. 워드마크, 검, HUD의 재질 표현 전용.
+  // ── 컬러 시스템 견본 전용(다른 슬라이드 금지) ────────────────────────
+  black: '#101010', // 잉크 리터럴. 컬러 시스템 Primary 견본과 그라디언트 스톱에서 값으로 쓴다
+  deep: '#0A0A0A',
+  navy: '#263E5F', // **미드나잇 네이비. 컬러 시스템 슬라이드 전용.**
+  red: '#E60D15', // **브랜딩 레드. 컬러 시스템 견본 전용.** 전역 액센트로 쓰지 않는다
+  redDeep: '#80070C', // 브랜드 그라디언트의 어두운 레드 스톱
+  redGlow: 'rgba(230, 13, 21, 0.45)',
+
+  white: '#FDFDFD', // red 채움 위 글자, 실버 하이라이트 파생. 생화이트 아님
+
+  // 실버 화이트 메탈릭. 워드마크/검/HUD 재질 표현 전용. 라이트 위에서는 잘 안 보이므로 아껴 쓴다.
   // hi의 #FFFFFF는 **그라디언트 하이라이트 스톱 예외**다. 텍스트 색으로 직접 쓰지 않는다.
   silver: {
     hi: '#FFFFFF',
@@ -26,33 +46,28 @@ export const colors = {
     gradient: 'linear-gradient(175deg, #FFFFFF 0%, #D8E2F0 45%, #6E7B92 78%, #D8E2F0 100%)',
   },
 
-  // 포인트 레드. 명중, 강조, CTA, 라벨 포인트, TO-BE에만 아껴서. 화면 전체를 레드로 칠하지 않는다.
-  red: '#E60D15',
-  redDeep: '#80070C', // 브랜드 그라디언트의 어두운 레드 스톱
-  redGlow: 'rgba(230, 13, 21, 0.45)',
-
-  // 흰 계열 텍스트. 전부 white에서 파생한다.
+  // 흑 계열 텍스트. 전부 ink에서 파생한다.
   text: {
-    primary: '#FDFDFD',
-    secondary: whiteA(0.78),
-    dim: whiteA(0.5),
-    faint: whiteA(0.32),
-    onFill: '#FDFDFD', // red 채움 위 텍스트
+    primary: '#101010',
+    secondary: inkA(0.72),
+    dim: inkA(0.5),
+    faint: inkA(0.34),
+    onFill: '#FDFDFD', // red 채움 위 텍스트(컬러 시스템 견본에서만)
   },
 
-  // 보더와 구분선과 표면. 같은 white에서 파생한다.
+  // 보더와 구분선과 표면. 같은 ink에서 파생한다.
   line: {
-    default: whiteA(0.14),
-    strong: whiteA(0.3),
-    faint: whiteA(0.06),
-    hairline: whiteA(0.04),
+    default: inkA(0.14),
+    strong: inkA(0.28),
+    faint: inkA(0.08),
+    hairline: inkA(0.05),
   },
   surface: {
-    glass: whiteA(0.035),
-    pill: whiteA(0.06),
+    glass: inkA(0.03),
+    pill: inkA(0.05),
   },
 
-  // 궤적: 내 검 실버-시안, 상대 레드(arena 소유 색 규칙 유지).
+  // 궤적: 내 검 실버-시안, 상대 레드(arena 소유 색 규칙 유지). 데모 섹션 캔버스 전용.
   trail: {
     self: '#A9DFFF',
     selfGlow: 'rgba(169, 223, 255, 0.4)',
@@ -75,18 +90,40 @@ export const hexToRgbText = (hex) => {
   return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
 };
 
+// ── 전역 그리드 (컬러 시스템 슬라이드 실측 기준) ──────────────────────────
+// 컬러 시스템 슬라이드의 실제 마진을 재서 뽑았다(1920x1080에서 좌우 60px, 상단 78px, 하단 59px).
+// **전 슬라이드가 이 그리드를 공통으로 쓴다.** 페이지마다 다른 마진을 두지 않는다.
+// 아이브로우는 항상 좌상단(marginX, marginTop)에 앉고 헤드라인은 그 오른쪽 또는 아래 일관된 자리에 온다.
+export const grid = {
+  marginX: 'clamp(16px, 3.13vw, 76px)', // 좌우 마진(1920에서 60px)
+  marginTop: 'clamp(28px, 7.2vh, 78px)', // 상단, 아이브로우 top(1080에서 78px)
+  marginBottom: 'clamp(20px, 5.5vh, 60px)', // 하단(1080에서 59px)
+};
+
+// ── 폰트 ─────────────────────────────────────────────────────────────
+// 본문 설명은 SUIT, 아이브로우는 Pretendard. 두 웹폰트는 index.html에서 로드한다.
+// fallback으로 시스템 한글 스택을 끝에 둔다(웹폰트 미로드 시에도 읽힌다).
+const BODY_STACK =
+  "'SUIT Variable', SUIT, 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+const EYEBROW_STACK =
+  "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+
+// **본문 body와 아이브로우 eyebrow를 분리한다.** 확정: body = SUIT, eyebrow = Pretendard.
+// display(제목)는 아직 미정이라 Pretendard 계열을 유지한다. 참조처는 S1/S3 컨셉명뿐.
+export const fontFamily = {
+  body: BODY_STACK,
+  eyebrow: EYEBROW_STACK,
+  display: EYEBROW_STACK,
+};
+
 export const typography = {
-  // 본문 계열. 확정(Pretendard).
-  family: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif",
-  // 디스플레이(제목) 계열. **폰트 미정이라 본문과 분리해 둔다.**
-  // S1 워드마크와 S3 컨셉명이 이 키만 참조하므로 이 한 줄을 바꾸면 제목 폰트가 전부 교체된다.
-  displayFamily: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif",
-  // 아이브로우 v2 (DESIGN 4절, BRAND_REBOOT_PLAN 2.2). **brand와 정합**시킨 값이다.
-  // 불릿 원을 없앤 자리를 크기가 대신 진다. **21px 고정(1.3125rem)이고 반응형 clamp를 쓰지 않는다.**
-  // 사유는 대비다. 레드 아이브로우(#E60D15)는 bg.black 위 4.02:1이라 본문 기준 4.5에 못 미친다.
-  // WCAG 대형 기준(18.66px 이상 + 굵기 700)에 들어가야 3.0으로 통과하는데, 반응형으로 줄면
-  // 작은 폭에서 18.66px 아래로 떨어져 미달로 돌아간다. brand shared/tokens.js와 같은 근거로 고정한다.
-  eyebrow: { size: '1.3125rem', weight: 700, tracking: '0.06em', leading: 1.25 },
+  // 본문 계열(SUIT). 기존 typography.family 참조가 그대로 본문 폰트를 가리키게 유지한다.
+  family: fontFamily.body,
+  // 디스플레이(제목) 계열. 미정이라 아이브로우와 같은 Pretendard 계열.
+  displayFamily: fontFamily.display,
+  fontFamily,
+  // 아이브로우 v2. 크기/굵기는 유지한다(21px 700). 색은 이제 잉크 단색이라 대비 요건이 아니라 스타일 선택이다.
+  eyebrow: { size: '1.3125rem', weight: 700, tracking: '0.06em', leading: 1.25, family: fontFamily.eyebrow },
 };
 
 export const motion = {

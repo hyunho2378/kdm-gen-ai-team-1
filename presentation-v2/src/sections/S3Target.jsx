@@ -10,7 +10,7 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, whiteA } from '../tokens.js';
+import { colors, typography, motion, grid, inkA } from '../tokens.js';
 import { TARGET, TARGET_ITEMS } from '../copy.js';
 import { Eyebrow, GlassRim } from '../components/Bits.jsx';
 
@@ -42,30 +42,15 @@ export default function S3Target({ active }) {
   }, [active]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
-      {/* 저알파 레드 radial 하나. 원 3개를 아래에서 받친다. */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '62%',
-          width: 'min(150vh, 130vw)',
-          height: 'min(150vh, 130vw)',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle at 50% 50%, rgba(230,13,21,0.11) 0%, rgba(230,13,21,0.035) 38%, transparent 70%)`,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* 상단 좌측: 라벨과 헤드라인. 원본 x 102.4 → 5.33vw */}
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
+      {/* 상단 좌측: 라벨과 헤드라인. 전역 그리드에 정렬(아이브로우 좌상단 고정). */}
       <div
         ref={headRef}
         style={{
           position: 'absolute',
-          left: 'clamp(20px, 5.33vw, 130px)',
-          top: 'clamp(48px, 19vh, 210px)',
-          right: 'clamp(20px, 5.33vw, 130px)',
+          left: grid.marginX,
+          top: grid.marginTop,
+          right: grid.marginX,
           zIndex: 4,
           pointerEvents: 'none',
         }}
@@ -114,11 +99,11 @@ export default function S3Target({ active }) {
               flex: '0 1 clamp(140px, 24.1vw, 620px)',
               aspectRatio: '1 / 1',
               borderRadius: '50%',
-              // **채움 없음.** 배경 #101010이 그대로 비친다. backdrop-filter도 쓰지 않는다
+              // **채움 없음.** 배경 bg가 그대로 비친다. backdrop-filter도 쓰지 않는다
               // (뒤가 단색이라 효과가 없고 비용만 든다).
               background: 'transparent',
-              // 아주 약한 내부 글로우 한 겹만.
-              boxShadow: `inset 0 0 60px ${whiteA(0.03)}`,
+              // 아주 약한 내부 음영 한 겹만(라이트 반전: 흰 글로우 → 잉크).
+              boxShadow: `inset 0 0 60px ${inkA(0.03)}`,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -139,7 +124,7 @@ export default function S3Target({ active }) {
                 fontWeight: 600,
                 letterSpacing: '0.02em',
                 lineHeight: 1,
-                color: colors.red,
+                color: colors.ink,
               }}
             >
               {it.no}

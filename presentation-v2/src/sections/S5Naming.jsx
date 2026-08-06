@@ -10,16 +10,10 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion } from '../tokens.js';
+import { colors, typography, motion, grid, bgA } from '../tokens.js';
 import { NAMING, TITLE } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { Eyebrow } from '../components/Bits.jsx';
-
-// S1 표지와 같은 메탈릭 실버 그라디언트. 워드마크의 재질을 한 곳으로 맞춘다.
-const METAL =
-  'linear-gradient(180deg, #FFFFFF 0%, #EAF1F9 20%, #C3CDDA 44%, #8A96A8 63%, #6E7B92 80%, #AAB6C6 100%)';
-const METAL_FILTER =
-  'drop-shadow(0 -1px 0.5px rgba(255,255,255,0.38)) drop-shadow(0 2px 1px rgba(16,16,16,0.9)) drop-shadow(0 10px 24px rgba(16,16,16,0.55))';
 
 export default function S5Naming({ active }) {
   const headRef = useRef(null);
@@ -53,30 +47,15 @@ export default function S5Naming({ active }) {
   }, [active]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.black }}>
-      {/* 워드마크 뒤 저알파 레드 글로우 */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '37%',
-          width: 'min(120vh, 96vw)',
-          height: 'min(120vh, 96vw)',
-          transform: 'translate(-50%, -50%)',
-          background: `radial-gradient(circle at 50% 50%, rgba(230,13,21,0.12) 0%, rgba(230,13,21,0.04) 36%, transparent 68%)`,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* 상단: 좌측 라벨 2줄 + 우측 헤드라인과 서브 */}
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
+      {/* 상단: 좌측 라벨 2줄 + 우측 헤드라인과 서브. 전역 그리드 마진에 정렬(아이브로우 좌상단). */}
       <div
         ref={headRef}
         style={{
           position: 'absolute',
-          left: 'clamp(16px, 3.13vw, 76px)',
-          right: 'clamp(16px, 3.13vw, 76px)',
-          top: 'clamp(28px, 7.2vh, 78px)',
+          left: grid.marginX,
+          right: grid.marginX,
+          top: grid.marginTop,
           zIndex: 4,
           display: 'flex',
           alignItems: 'flex-start',
@@ -142,12 +121,8 @@ export default function S5Naming({ active }) {
             fontWeight: 300,
             letterSpacing: '0.01em',
             lineHeight: 1,
-            backgroundImage: METAL,
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-            WebkitTextFillColor: 'transparent',
-            filter: METAL_FILTER,
+            // 라이트 반전: 메탈릭/드롭섀도우를 걷고 잉크로 평평하게(질감 0).
+            color: colors.ink,
           }}
         >
           {TITLE}
@@ -170,15 +145,15 @@ export default function S5Naming({ active }) {
         }}
       >
         {NAMING.shots.map((src) => (
-          <div key={src} style={{ position: 'relative', overflow: 'hidden', background: colors.deep }}>
+          <div key={src} style={{ position: 'relative', overflow: 'hidden', background: colors.raised }}>
             <AssetImage src={src} fit="cover" />
-            {/* 위쪽 블랙 영역과 사진 사이 경계를 죽인다. 상단만 얕게 페이드. */}
+            {/* 위쪽 라이트 영역과 사진 사이 경계를 죽인다. 상단만 얕게 bg로 페이드. */}
             <div
               aria-hidden="true"
               style={{
                 position: 'absolute',
                 inset: 0,
-                background: `linear-gradient(180deg, ${colors.black} 0%, rgba(16,16,16,0.55) 5%, transparent 16%)`,
+                background: `linear-gradient(180deg, ${colors.bg} 0%, ${bgA(0.55)} 5%, transparent 16%)`,
                 pointerEvents: 'none',
               }}
             />
