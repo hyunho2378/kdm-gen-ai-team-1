@@ -12,7 +12,10 @@ import * as THREE from 'three';
 import { colors, motion } from '../../../tokens.js';
 
 const MAX = motion.budget.trailMaxSegments;
-const LIFE_MS = 520;
+// 시연 안정화(DEMO_STABILIZE): 잔상을 줄이려 수명을 한 단계 낮췄다(520 → 420).
+// 60fps에서 프레임당 한 점을 밀므로 보이는 길이는 이 수명이 정한다(MAX 240은 여유분이라 안 묶인다).
+// 급회전(패리 스냅)에서 길게 번지던 꼬리가 짧아진다. 밋밋하면 520 쪽으로 한 단계 되돌린다.
+const LIFE_MS = 420;
 // 명중 순간 흰 코어로 굳히는 최근 구간 길이.
 // 흰 코어는 가산 블렌딩에서 포화되고 그 위에 블룸이 얹혀 실제 폭보다 훨씬 굵게 보인다.
 // 18구간에 폭 1.9배로 두었더니 상대 앞에 흰 판자가 섰다(실측). 코어는 좁고 짧아야 코어로 읽힌다.
@@ -30,7 +33,8 @@ const TELEPORT_MIN_M = 0.35;
 // 해제 조건이 없으면 흰 코어가 화면에 영구히 박힌다(V4c 실측).
 const HIT_HOLD_MS = motion.duration.judge;
 
-export function createTrailRibbon({ core, glow, width = 0.045 }) {
+// 시연 안정화(DEMO_STABILIZE): 리본 폭을 한 단계 줄였다(0.045 → 0.040). 얇을수록 잔상이 덜 번진다.
+export function createTrailRibbon({ core, glow, width = 0.04 }) {
   const coreColor = new THREE.Color(core);
   const glowColor = new THREE.Color(glow);
   const hitColor = new THREE.Color(colors.trail.hit);
@@ -149,7 +153,9 @@ export function createTrailRibbon({ core, glow, width = 0.045 }) {
         const recency = count > 1 ? k / (count - 1) : 1; // 최근일수록 1
         // 나이와 최신도로 폭이 감쇠한다. 명중 구간은 굵게 고정한다.
         const w = p.hit ? width * HIT_WIDTH_SCALE : width * (0.18 + 0.82 * recency * life);
-        const a = p.hit ? 1 : (0.35 + 0.65 * life) * recency;
+        // 시연 안정화(DEMO_STABILIZE): 잔광 알파를 한 단계 낮췄다(0.35+0.65 → 0.30+0.58).
+        // 꼬리가 덜 빛나 번짐이 준다. 명중 흰 코어는 그대로(1). 밋밋하면 한 단계 되돌린다.
+        const a = p.hit ? 1 : (0.3 + 0.58 * life) * recency;
 
         const o = k * 6;
         positions[o] = p.pos.x + side.x * w;
