@@ -90,14 +90,17 @@
 ## 로고 페이지 (모티프 / 가이드, 디자인 키워드 뒤)
 
 참조 `frames/ref/Slide 84`(모티프), `Slide 85`(가이드). SVG를 렌더하지 않고 구조/문구만 재현. 상단 표기 없음.
-섹션 순서: `keyword → logo-motif → logo-guide → naming`. 둘 다 라이트 배경 + PV2 타이포 + 공용 2단 헤더.
+섹션 순서: `keyword → logo-motif → logo-guide → color`. (프롤로그·브랜드 네이밍 슬라이드는 삭제 — 아래 기타 참조.)
 
-- **로고 에셋 규칙(라이트 배경):** 잉크 버전(`logo_black.svg`, `black_wm.svg` = #111A27)은 라이트 카드에,
-  **흰 버전(`logo.svg`, `logo_main.svg`)은 다크 패널에만.** 다크 패널은 `scrimA`(#111A27) 그라디언트.
-- **로고 모티프:** 헤드라인 '소용돌이 속에서 교차하는 펜싱 칼날' + 본문(VORTEX 소용돌이 의미). 좌 다크 패널에
-  흰 심볼 크게(모티프 주인공), 우 라이트 패널에 라인 구성(`lgoo_line.svg`, 그리드 가이드).
-- **로고 가이드:** 3분할 — 조합형(좌, 큰 다크 카드 + 흰 lockup) / 로고타입(우상, 라이트 + 잉크 워드마크) /
-  심볼(우하, 라이트 + 잉크 심볼). 각 라벨 영문 + 국문. `gridTemplateAreas`로 조합형이 좌측 2행 span.
+- **로고 모티프(개정):** `moti.png`(펜싱 대결 사진) **풀블리드 배경 + 상단 흰 밴드(텍스트 영역, `colors.bg`)**.
+  밴드에 아이브로우(좌) + 본문 두 줄(우, 줄 배열=br, '소용돌이 속에서 교차하는 펜싱 칼날' 볼드). 밴드 아래
+  **사진 정중앙에 흰 심볼**(`logo.svg`, 흰 채움이라 다크 사진 위 그대로 뜬다). 이전 좌·우 2패널 구성은 폐기.
+- **로고 가이드(개정, 벤토 4셀):** `gridTemplateAreas '"comb type type" "comb symbol grid"'`.
+  좌 큰 셀 조합형(**브랜드 네이비 그라디언트** #101925→#3C5E8B, 2행 span, 흰 `logo_main.svg`),
+  우상 로고타입(**실버** #FDFDFD→#C4C4C4, 잉크 `black_wm.svg`), 우하좌 심볼(실버, 잉크 `logo_black.svg`),
+  우하우 그리드 버전(실버, `lgoo_line.svg` 그리드 오버레이 — 라벨 'Grid'는 참조에 없어 최소로 지어 넣음).
+  **라벨 영문만(국문 삭제), 헤드라인 문장 삭제.** 네이비/실버는 tokens `brandNavyGradient`/`brandSilverGradient`
+  파생이라 이 슬라이드에서 실제로 렌더된다(이전 `scrimA` 네이비 → 브랜드 네이비로 교체, 그라디언트 미반영 해소).
 
 ## 솔루션(why) / 문제점(painpoint) 슬라이드 — 네이비 배경 + 하위 스텝
 
@@ -146,6 +149,13 @@
 
 ## 기타
 
+- **프롤로그·브랜드 네이밍 슬라이드 삭제.** `SECTION_LABELS`에서 제거, 컴포넌트(SPrologue/S5Naming)와
+  copy(PROLOGUE/NAMING) 정리. **방향키 셸은 전부 id 기반**이라 삭제로 순서/위임이 안 깨진다
+  (실측: 14섹션 `cover→painpoint→…→demo`, 순서 유지, 오버플로 0, 콘솔 에러 0).
+- **디자인 키워드 흰 카드 실측 재확인:** 카드 서브트리에 흰/라이트 배경 요소 0(슬라이드 자체 `#F6F6F6`만).
+  카드는 사진 + 하단 스크림 + 흰 텍스트뿐. 예전 흰 판은 현행 코드에 없다(구 배포 잔상이었다).
+- **헤드라인↔본문 간격 일관화(정제).** SlideHeader 서브 `marginTop`을 `clamp(10px,1.6vh,20px)`로
+  (이전 6~12px은 붙었다). 본문 행간은 `typography.body.leading`(1.65) 단일 원천 유지.
 - 우하단 `01/14` 카운터 제거. 새로고침은 항상 첫 섹션(`history.scrollRestoration='manual'` + `scrollTo(0,0)`).
 - 불릿 없음(원래도 리스트 불릿 0. 구분은 여백/타이포/판으로).
 - **미보수:** 루트 `build:all`은 구 `presentation`을 빌드한다(presentation-v2 미포함). 발표 경로가 v2로

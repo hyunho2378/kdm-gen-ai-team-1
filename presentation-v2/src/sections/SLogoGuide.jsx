@@ -1,29 +1,28 @@
-// 로고 가이드 (참조 `frames/ref/Slide 16_9 - 85.svg`). SVG를 렌더하지 않고 구조만 재현.
-//   좌상단 아이브로우 + 헤드라인(공용 2단 헤더). 아래 3분할:
-//   조합형(좌, 큰 다크 네이비 카드 + 흰 로고 lockup) / 로고타입(우상, 라이트 카드 + 잉크 워드마크)
-//   / 심볼(우하, 라이트 카드 + 잉크 심볼). 흰 로고는 다크 카드에만.
-//   상단 표기(팀/행사/제품명)는 넣지 않는다.
+// 로고 가이드 (참조 `frames/ref/Slide 16_9 - 85.svg` 벤토 그리드). SVG를 렌더하지 않고 구조만 재현.
+//   좌상단 아이브로우(헤드라인 문장 없음). 아래 벤토 4셀:
+//     좌 큰 셀 조합형(네이비 그라디언트 #101925→#3C5E8B, 2행 span, 흰 조합형 로고)
+//     우상 로고타입(실버 #FDFDFD→#C4C4C4, 잉크 워드마크)
+//     우하좌 심볼(실버, 잉크 심볼) / 우하우 그리드 버전(실버, 그리드 오버레이 lgoo_line)
+//   라벨은 영문만(좌상단). 상단 표기(팀/행사/제품명)는 넣지 않는다.
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, grid, inkA, whiteA, scrimA } from '../tokens.js';
+import { colors, typography, motion, grid, brandNavyGradient, brandSilverGradient } from '../tokens.js';
 import { LOGO_GUIDE } from '../copy.js';
-import { SlideHeader } from '../components/Bits.jsx';
+import { Eyebrow } from '../components/Bits.jsx';
 
-// 다크 조합형 카드 배경. #111A27 네이비에 아주 옅은 그라디언트로 깊이만.
-const DARK_CARD = `linear-gradient(155deg, ${scrimA(0.92)} 0%, ${scrimA(1)} 100%)`;
-
-function GuideCard({ item, area }) {
-  const onDark = item.dark;
+function GuideCard({ item }) {
+  const onNavy = item.tone === 'navy';
   return (
     <div
       style={{
-        gridArea: area,
+        gridArea: item.area,
         position: 'relative',
         borderRadius: 20,
         overflow: 'hidden',
-        background: onDark ? DARK_CARD : colors.raised,
-        boxShadow: onDark ? 'none' : `inset 0 0 0 1px ${colors.line.faint}`,
+        // 네이비/실버 견본이 내용이라 이 슬라이드에서만 두 그라디언트가 보인다.
+        background: onNavy ? brandNavyGradient : brandSilverGradient,
+        boxShadow: onNavy ? 'none' : `inset 0 0 0 1px ${colors.line.faint}`,
         display: 'flex',
         flexDirection: 'column',
         padding: 'clamp(16px, 1.8vw, 32px)',
@@ -31,29 +30,18 @@ function GuideCard({ item, area }) {
         minHeight: 0,
       }}
     >
-      {/* 라벨: 영문 + 국문. 다크 카드는 흰색, 라이트 카드는 잉크. */}
-      <div style={{ flexShrink: 0 }}>
-        <div
-          style={{
-            fontFamily: typography.family,
-            fontSize: typography.body.size,
-            fontWeight: 700,
-            letterSpacing: '-0.01em',
-            color: onDark ? colors.white : colors.text.primary,
-          }}
-        >
-          {item.en}
-        </div>
-        <div
-          style={{
-            fontFamily: typography.family,
-            fontSize: typography.caption.size,
-            fontWeight: 400,
-            color: onDark ? whiteA(0.66) : colors.text.dim,
-          }}
-        >
-          {item.ko}
-        </div>
+      {/* 라벨: 영문만, 좌상단. 네이비 카드는 흰색, 실버 카드는 잉크. */}
+      <div
+        style={{
+          flexShrink: 0,
+          fontFamily: typography.family,
+          fontSize: typography.body.size,
+          fontWeight: 700,
+          letterSpacing: '-0.01em',
+          color: onNavy ? colors.white : colors.text.primary,
+        }}
+      >
+        {item.en}
       </div>
 
       {/* 로고 자리. 카드 안 남은 공간 중앙에 contain으로. */}
@@ -103,11 +91,12 @@ export default function SLogoGuide({ active }) {
         padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
+      {/* 아이브로우만(헤드라인 문장 없음). 좌상단 전역 그리드. */}
       <div ref={headRef} style={{ flexShrink: 0 }}>
-        <SlideHeader eyebrow={{ en: LOGO_GUIDE.label.en, ko: LOGO_GUIDE.label.ko }} headline={LOGO_GUIDE.headline} />
+        <Eyebrow en={LOGO_GUIDE.label.en} ko={LOGO_GUIDE.label.ko} />
       </div>
 
-      {/* 3분할: 조합형 좌(두 행 span) / 로고타입 우상 / 심볼 우하. */}
+      {/* 벤토 4셀: 조합형(좌, 2행 span) / 로고타입(우상, 2열) / 심볼(우하좌) / 그리드(우하우). */}
       <div
         ref={gridRef}
         style={{
@@ -115,15 +104,15 @@ export default function SLogoGuide({ active }) {
           minHeight: 0,
           marginTop: 'clamp(16px, 3vh, 34px)',
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: '1.5fr 1fr 1fr',
           gridTemplateRows: '1fr 1fr',
-          gridTemplateAreas: '"comb type" "comb symbol"',
+          gridTemplateAreas: '"comb type type" "comb symbol grid"',
           gap: 'clamp(10px, 1.6vw, 32px)',
         }}
       >
-        <GuideCard item={LOGO_GUIDE.items[0]} area="comb" />
-        <GuideCard item={LOGO_GUIDE.items[1]} area="type" />
-        <GuideCard item={LOGO_GUIDE.items[2]} area="symbol" />
+        {LOGO_GUIDE.items.map((item) => (
+          <GuideCard key={item.key} item={item} />
+        ))}
       </div>
     </div>
   );

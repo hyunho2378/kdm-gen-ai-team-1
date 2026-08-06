@@ -1,116 +1,117 @@
 // 로고 모티프 (참조 `frames/ref/Slide 16_9 - 84.svg`). SVG를 렌더하지 않고 구조/문구만 재현.
-//   좌상단 아이브로우 + 헤드라인 + 본문(공용 2단 헤더). 아래 큰 시각 영역:
-//   좌 다크 네이비 패널에 흰 로고 심볼을 크게(모티프 주인공), 우 라이트 패널에 라인 구성(lgoo_line).
-//   상단 표기(팀/행사/제품명)는 넣지 않는다. 흰 로고는 다크 패널에만.
+//   **moti.png 풀블리드 배경 + 상단 흰 밴드(텍스트 영역) + 사진 정중앙 흰 로고 심볼.**
+//   흰 밴드: 아이브로우(좌) + 본문 두 줄(우). 밴드 아래 사진 영역 정중앙에 흰 심볼(logo.svg).
+//   상단 표기(팀/행사/제품명)는 넣지 않는다.
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, motion, grid, scrimA } from '../tokens.js';
+import { colors, typography, motion, grid } from '../tokens.js';
 import { LOGO_MOTIF } from '../copy.js';
-import { SlideHeader } from '../components/Bits.jsx';
+import AssetImage from '../components/AssetImage.jsx';
+import { Eyebrow } from '../components/Bits.jsx';
 
-const DARK_PANEL = `linear-gradient(155deg, ${scrimA(0.92)} 0%, ${scrimA(1)} 100%)`;
+// 상단 흰 밴드 높이. 텍스트 영역. 아래는 사진.
+const BAND_H = 'clamp(150px, 30vh, 300px)';
 
 export default function SLogoMotif({ active }) {
-  const headRef = useRef(null);
-  const panelsRef = useRef(null);
+  const bandRef = useRef(null);
+  const logoRef = useRef(null);
 
   useEffect(() => {
     if (!active) return undefined;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const head = headRef.current;
-    const panels = panelsRef.current ? [...panelsRef.current.children] : [];
-    if (!head) return undefined;
+    const band = bandRef.current;
+    const logo = logoRef.current;
+    if (!band || !logo) return undefined;
     if (reduced) {
-      gsap.set([head, ...panels], { opacity: 1, y: 0 });
+      gsap.set([band, logo], { opacity: 1, y: 0, scale: 1 });
       return undefined;
     }
-    gsap.set(head, { opacity: 0, y: 18 });
-    gsap.set(panels, { opacity: 0, y: 36 });
+    gsap.set(band, { opacity: 0, y: 18 });
+    gsap.set(logo, { opacity: 0, scale: 0.9 });
     const tl = gsap.timeline({ delay: 0.35 });
-    tl.to(head, { opacity: 1, y: 0, duration: 0.8, ease: motion.gsapOut });
-    tl.to(panels, { opacity: 1, y: 0, duration: 0.95, ease: motion.gsapOut, stagger: 0.14 }, 0.18);
+    tl.to(band, { opacity: 1, y: 0, duration: 0.8, ease: motion.gsapOut });
+    tl.to(logo, { opacity: 1, scale: 1, duration: 1.0, ease: motion.gsapOut }, 0.2);
     return () => tl.kill();
   }, [active]);
 
+  // 본문 두 줄. 줄 배열이 곧 br. b:true 조각만 볼드(SUIT wght 축).
+  const statement = LOGO_MOTIF.body.map((segs, li) => (
+    <span key={li} style={{ display: 'block' }}>
+      {segs.map((sg, si) => (
+        <span key={si} style={{ fontWeight: sg.b ? 700 : 400 }}>{sg.t}</span>
+      ))}
+    </span>
+  ));
+
   return (
-    <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        overflow: 'hidden',
-        background: colors.bg,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
-      }}
-    >
-      <div ref={headRef} style={{ flexShrink: 0 }}>
-        <SlideHeader
-          eyebrow={{ en: LOGO_MOTIF.label.en, ko: LOGO_MOTIF.label.ko }}
-          headline={LOGO_MOTIF.headline}
-          sub={LOGO_MOTIF.body}
-        />
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
+      {/* 풀블리드 배경 사진. */}
+      <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <AssetImage src={LOGO_MOTIF.bg} fit="cover" />
       </div>
 
-      {/* 시각 영역. 좌 다크 패널(흰 심볼, 모티프 주인공) + 우 라이트 패널(라인 구성). */}
+      {/* 상단 흰 밴드: 아이브로우 좌 + 본문 우(2단 헤더 정신). */}
       <div
-        ref={panelsRef}
+        ref={bandRef}
         style={{
-          flex: '1 1 auto',
-          minHeight: 0,
-          marginTop: 'clamp(16px, 3vh, 34px)',
-          display: 'grid',
-          gridTemplateColumns: '1.15fr 0.85fr',
-          gap: 'clamp(10px, 1.6vw, 32px)',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: BAND_H,
+          zIndex: 2,
+          background: colors.bg,
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 'clamp(16px, 4vw, 96px)',
+          padding: `${grid.marginTop} ${grid.marginX} 0`,
+          willChange: 'transform, opacity',
         }}
       >
-        {/* 좌: 다크 패널 + 흰 로고 심볼 크게 */}
+        <div style={{ flex: '0 0 auto' }}>
+          <Eyebrow en={LOGO_MOTIF.label.en} ko={LOGO_MOTIF.label.ko} />
+        </div>
         <div
           style={{
-            position: 'relative',
-            borderRadius: 20,
-            overflow: 'hidden',
-            background: DARK_PANEL,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 'clamp(24px, 4vw, 80px)',
+            flex: '1 1 auto',
             minWidth: 0,
-            minHeight: 0,
+            fontFamily: typography.family,
+            fontSize: typography.headline.size,
+            letterSpacing: typography.headline.tracking,
+            lineHeight: 1.6,
+            color: colors.text.primary,
+            wordBreak: 'keep-all',
           }}
         >
-          <img
-            src="/images/assets/logo.svg"
-            alt={LOGO_MOTIF.label.en}
-            draggable="false"
-            style={{ width: 'min(78%, 520px)', maxHeight: '72%', objectFit: 'contain', userSelect: 'none' }}
-          />
+          {statement}
         </div>
+      </div>
 
-        {/* 우: 라이트 패널 + 라인 구성(모티프 기하) */}
-        <div
-          style={{
-            position: 'relative',
-            borderRadius: 20,
-            overflow: 'hidden',
-            background: colors.raised,
-            boxShadow: `inset 0 0 0 1px ${colors.line.faint}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 'clamp(20px, 3vw, 56px)',
-            minWidth: 0,
-            minHeight: 0,
-          }}
-        >
-          <img
-            src="/images/assets/lgoo_line.svg"
-            alt="로고 구성"
-            draggable="false"
-            style={{ maxWidth: '86%', maxHeight: '80%', objectFit: 'contain', userSelect: 'none' }}
-          />
-        </div>
+      {/* 흰 로고 심볼: 밴드 아래 사진 영역 정중앙. logo.svg는 흰 채움이라 다크 사진 위에 그대로 뜬다. */}
+      <div
+        ref={logoRef}
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: BAND_H,
+          bottom: 0,
+          zIndex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 'clamp(24px, 4vw, 80px)',
+          pointerEvents: 'none',
+          willChange: 'transform, opacity',
+        }}
+      >
+        <img
+          src={LOGO_MOTIF.symbol}
+          alt={LOGO_MOTIF.label.en}
+          draggable="false"
+          style={{ width: 'min(38%, 440px)', maxHeight: '58%', objectFit: 'contain', userSelect: 'none' }}
+        />
       </div>
     </div>
   );

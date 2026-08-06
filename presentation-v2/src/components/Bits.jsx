@@ -112,7 +112,8 @@ export function SlideHeader({ eyebrow, headline, sub, headlineColor, onDark = fa
           <p
             key={i}
             style={{
-              margin: 'clamp(6px, 1vh, 12px) 0 0',
+              // 헤드라인↔본문(과 본문 줄 사이) 일관 간격. 너무 붙지도 벌어지지도 않게.
+              margin: 'clamp(10px, 1.6vh, 20px) 0 0',
               fontFamily: typography.family,
               fontSize: typography.body.size,
               fontWeight: typography.body.weight,

@@ -145,23 +145,29 @@ export const KEYWORDS = [
   },
 ];
 
-// 로고 모티프 (참조 Slide 84). SVG 문구를 우리 문장으로 다듬었다(소용돌이가 중심으로 수렴하는 의미).
+// 로고 모티프 (참조 Slide 84). moti.png 풀블리드 배경 + 상단 흰 밴드(텍스트) + 사진 중앙 흰 심볼.
 export const LOGO_MOTIF = {
   label: { en: 'Logo Motif', ko: '로고 모티프' },
-  headline: '소용돌이 속에서 교차하는 펜싱 칼날',
-  body:
-    "'VORTEX'의 의미인 소용돌이와 경기의 몰입감을 시각적으로 표현하기 위해, 검날이 중심으로 수렴하는 궤적을 모티프로 로고를 디자인했다.",
+  // 본문 두 줄. 줄 배열이 곧 br. b:true 조각만 볼드.
+  body: [
+    [{ t: "'VORTEX'의 의미인 소용돌이와 경기의 몰입감을 시각적으로 표현하기 위해," }],
+    [{ t: '소용돌이 속에서 교차하는 펜싱 칼날', b: true }, { t: '을 모티프로 로고를 디자인하였다.' }],
+  ],
+  symbol: '/images/assets/logo.svg', // 흰 심볼(다크 사진 위)
+  bg: '/images/moti/moti.png',
 };
 
-// 로고 가이드 (참조 Slide 85). 3분할. 각 항목 라벨은 영문 + 국문.
-// 조합형은 다크 패널이라 흰 로고(logo_main), 나머지는 라이트 카드라 잉크 에셋(#111A27).
+// 로고 가이드 (참조 Slide 85 벤토 그리드). 헤드라인 문장 없음. 라벨은 영문만.
+// 좌 조합형(네이비 그라디언트, 2행 span, 흰 로고) / 우상 로고타입(실버, 잉크 워드마크)
+// / 우하좌 심볼(실버, 잉크 심볼) / 우하우 그리드 버전(실버, 그리드 오버레이 lgoo_line).
+// 그리드 셀 라벨 'Grid'는 참조에 없어 최소로 지어 넣었다(다른 셋은 참조 확정).
 export const LOGO_GUIDE = {
   label: { en: 'Logo Guide', ko: '로고 가이드' },
-  headline: '조합형을 기본으로, 로고타입과 심볼을 나누어 쓴다',
   items: [
-    { key: 'combination', en: 'Combination Mark', ko: '조합형', asset: '/images/assets/logo_main.svg', dark: true },
-    { key: 'logotype', en: 'Logotype', ko: '로고타입', asset: '/images/assets/black_wm.svg', dark: false },
-    { key: 'symbol', en: 'Logo Symbol', ko: '심볼', asset: '/images/assets/logo_black.svg', dark: false },
+    { key: 'combination', en: 'Combination Mark', asset: '/images/assets/logo_main.svg', tone: 'navy', area: 'comb' },
+    { key: 'logotype', en: 'Logotype', asset: '/images/assets/black_wm.svg', tone: 'silver', area: 'type' },
+    { key: 'symbol', en: 'Logo Symbol', asset: '/images/assets/logo_black.svg', tone: 'silver', area: 'symbol' },
+    { key: 'grid', en: 'Grid', asset: '/images/assets/lgoo_line.svg', tone: 'silver', area: 'grid' },
   ],
 };
 
