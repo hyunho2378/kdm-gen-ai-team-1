@@ -56,6 +56,9 @@ export default function App() {
   const [roomCode, setRoomCode] = useState('');
   // 폰이 고른 유파 라벨. 로비가 "OO 유파 선택됨"으로 반영한다(경기 밖 표시, 판정 무관)
   const [selectedSchool, setSelectedSchool] = useState(null);
+  // 폰이 지금 훑고 있는 유파(protocol SCHOOL). **확정이 아니다.**
+  // 로비와 경기 종료 화면의 하이라이트 전용이고 engine에 닿지 않는다
+  const [focusedSchool, setFocusedSchool] = useState(null);
   // 첫 판 온보딩(코치마크 + 카운트다운). 활성 동안 게임 시계를 세운다(timeScale 0, 판정 무관).
   const [onboardingActive, setOnboardingActive] = useState(false);
   const onboardingShownRef = useRef(false);
@@ -161,7 +164,11 @@ export default function App() {
       onSelect: (school) => {
         engine.setSchool(school);
         setSelectedSchool(SCHOOL_LABEL[school] ?? school);
+        // 확정됐으니 미리보기는 거둔다
+        setFocusedSchool(null);
       },
+      // 폰이 유파를 훑는 중이다. **engine을 안 부른다.** 화면 하이라이트만 바꾼다
+      onFocus: (school) => setFocusedSchool(school),
     });
     return () => {
       detach();
@@ -322,6 +329,8 @@ export default function App() {
             winner={snapshot.winner}
             score={snapshot.score}
             schoolName={snapshot.school.name}
+            focusedSchool={focusedSchool}
+            showSchools={linkStatus === LINK.PAIRED}
             onRematch={() => {
               rendererRef.current?.clear();
               partsRef.current = {};

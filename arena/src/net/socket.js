@@ -50,7 +50,7 @@ export function createLink() {
   let code = '';
   let status = LINK.IDLE;
   let timer = 0;
-  const cb = { status: null, action: null, motion: null, calib: null, peerLeft: null, select: null };
+  const cb = { status: null, action: null, motion: null, calib: null, peerLeft: null, select: null, focus: null };
 
   function setStatus(next) {
     if (status === next) return;
@@ -121,6 +121,8 @@ export function createLink() {
       socket.on(MSG.MOTION, (p) => cb.motion?.(p));
       socket.on(MSG.CALIB, (p) => cb.calib?.(p));
       socket.on(MSG.SELECT, (p) => cb.select?.(p?.school));
+      // 훑는 중인 유파. 확정이 아니라 로비 하이라이트 전용이다
+      socket.on(MSG.FOCUS, (p) => cb.focus?.(p?.school ?? null));
       return true;
     },
 
@@ -171,7 +173,7 @@ export function createLink() {
  * 보내므로 여기서 poseChannel.setCalibration을 또 부르면 두 번 보정되어 검이 엉뚱한 데를 본다.
  * MSG.CALIB의 q는 통지와 기록용이고 보정에 쓰지 않는다.
  */
-export function attachSocket(link, queue, poseChannel, { onCalibrated, onAction, onSelect } = {}) {
+export function attachSocket(link, queue, poseChannel, { onCalibrated, onAction, onSelect, onFocus } = {}) {
   link.on('action', (msg) => {
     const ev = fromWireAction(msg);
     if (!ev) return;
@@ -181,6 +183,9 @@ export function attachSocket(link, queue, poseChannel, { onCalibrated, onAction,
 
   // 유파 선택. 경기 밖 로비 신호라 판정 큐를 거치지 않는다(결정성 무관, ARENA_INPUT과 별개).
   link.on('select', (school) => onSelect?.(school));
+
+  // 훑는 중인 유파. **setSchool을 부르지 않는다.** 확정은 select의 몫이고 여기는 표시뿐이다.
+  link.on('focus', (school) => onFocus?.(school));
 
   link.on('motion', (msg) => {
     if (Array.isArray(msg?.q)) poseChannel.setQuaternion(msg.q);
@@ -201,5 +206,6 @@ export function attachSocket(link, queue, poseChannel, { onCalibrated, onAction,
     link.on('calib', null);
     link.on('peerLeft', null);
     link.on('select', null);
+    link.on('focus', null);
   };
 }

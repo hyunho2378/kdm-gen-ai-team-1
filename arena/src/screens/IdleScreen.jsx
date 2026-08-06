@@ -8,69 +8,12 @@
 // 치면 그 유파로 키보드 경기가 곧장 시작한다. **폰으로 연결하면 유파는 폰의 SELECT가 정한다**
 // (소켓 select가 engine.setSchool을 부른다). 그래서 이 카드는 폰 없는 경로 전용이다.
 
-import { colors, radius, spacing, typography, zIndex } from '../tokens.js';
-import { SCHOOL } from '../../../shared/protocol.js';
+import { colors, spacing, typography, zIndex } from '../tokens.js';
 import { BRAND } from '../copy.js';
 import ChromeText from '../components/ui/ChromeText.jsx';
 import { ButtonPrimary, ButtonGhost } from '../components/ui/Button.jsx';
-
-// VORTEX 유파 3.11 카피와 표기 일치. 4번은 세 스타일을 갈아타는 통합 모드.
-const SCHOOL_OPTIONS = [
-  { key: SCHOOL.SABRE, n: '1', name: '이탈리아 세이버', trait: '공격형' },
-  { key: SCHOOL.EPEE, n: '2', name: '프랑스 에페', trait: '카운터형' },
-  { key: SCHOOL.HUNGARIAN, n: '3', name: '헝가리안', trait: '심리전형' },
-  { key: SCHOOL.MIXED, n: '4', name: '통합 MIXED', trait: '세 스타일 조합' },
-];
-
-function SchoolCard({ opt, selected, onSelect }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(opt.key)}
-      aria-pressed={selected}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        gap: 4,
-        minWidth: 128,
-        minHeight: 44,
-        padding: '10px 14px',
-        borderRadius: radius.md,
-        border: `1px solid ${selected ? colors.red.light : colors.line.default}`,
-        background: colors.bg.raised,
-        boxShadow: selected ? `0 0 16px ${colors.red.glow}` : 'none',
-        cursor: 'pointer',
-        fontFamily: typography.family,
-        textAlign: 'left',
-      }}
-    >
-      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span
-          style={{
-            fontSize: typography.caption.size,
-            fontWeight: 700,
-            color: selected ? colors.red.light : colors.text.dim,
-            border: `1px solid ${selected ? colors.red.light : colors.line.strong}`,
-            borderRadius: radius.xs,
-            width: 18,
-            height: 18,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            lineHeight: 1,
-          }}
-        >
-          {opt.n}
-        </span>
-        <span style={{ fontSize: typography.caption.size, color: colors.text.secondary, wordBreak: 'keep-all' }}>
-          {opt.name}
-        </span>
-      </span>
-      <span style={{ fontSize: typography.caption.size, color: colors.text.dim }}>{opt.trait}</span>
-    </button>
-  );
-}
+// 카드와 목록은 MatchEndScreen과 공유한다. 두 화면이 같은 유파를 가리켜야 한다
+import { SCHOOL_OPTIONS, SchoolCard } from '../components/ui/SchoolCards.jsx';
 
 export default function IdleScreen({ onPair, onStart, onKeyboard, onSelectSchool, selectedSchool }) {
   return (

@@ -8,6 +8,14 @@ export const MSG = {
   // SELECT: 폰이 고른 유파를 arena로. { school: SCHOOL 값 }. arena는 A3의 진입점으로 유파를 세운다.
   // RESULT: 경기 종료 시 arena가 폰으로 보내는 결과 요약(B4). 판정 변경이 아니라 표시용 데이터다.
   SELECT: 'select', RESULT: 'result',
+  // FOCUS: 폰이 지금 훑고 있는 유파. { school: SCHOOL 값 또는 null }.
+  //
+  // **SELECT와 엄격히 다르다.** SELECT는 확정이라 engine.setSchool을 부르고, FOCUS는
+  // 아직 고르지 않은 상태의 미리보기라 로비 화면 하이라이트 외에는 아무것도 건드리지 않는다.
+  // 훑는 동안 setSchool이 불리면 확정 없이 상대가 바뀌므로 채널을 나눈 것이 요점이다.
+  //
+  // **판정과 무관하다.** 값은 이산도 연속도 아닌 표시용 문자열 하나이고 경기 시작 전에만 오간다.
+  FOCUS: 'focus',
 };
 export const ACTION = { THRUST: 'thrust', GUARD: 'guard', ADVANCE: 'advance', RETREAT: 'retreat' };
 export const HAPTIC = { HIT: 'hit', PARRY: 'parry', LOSE: 'lose' };

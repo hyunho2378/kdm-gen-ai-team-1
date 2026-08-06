@@ -6,7 +6,7 @@
 //
 // 카피는 VORTEX 3.11 원문 그대로(copy.js SELECT). 사진은 라이선스 미확인이라 그라디언트 플레이스홀더.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { colors, ig, radius, typography } from '../tokens.js';
 import { SELECT } from '../copy.js';
 import { TopBarBack } from './ui.jsx';
@@ -93,8 +93,14 @@ function DuelistCard({ card, expanded, onToggle, onConfirm }) {
   );
 }
 
-export default function SelectScreen({ onConfirm, onBack }) {
+export default function SelectScreen({ onConfirm, onFocus, onBack }) {
   const [expanded, setExpanded] = useState(0);
+
+  // 펼친 카드가 곧 훑는 중인 유파다. **확정이 아니라 미리보기라서 arena는 불만 켠다.**
+  // 접으면 null이 가고 하이라이트가 꺼진다. 첫 렌더의 0번도 같이 보낸다
+  useEffect(() => {
+    onFocus?.(SELECT.cards[expanded]?.school ?? null);
+  }, [expanded, onFocus]);
 
   return (
     <>

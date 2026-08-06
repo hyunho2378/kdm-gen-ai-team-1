@@ -144,6 +144,9 @@ export default function App() {
     phoneStatsRef.current = { thrusts: 0, powerSum: 0, powerMax: 0, guards: 0, tremorSum: 0, tremorCount: 0, lastQ: null };
   }, []);
   const [tapMode, setTapMode] = useState(false);
+  // 센서 권한을 받아 파이프라인이 돌고 있나. 다시 대전에서 PERMISSION을 건너뛸 조건이다.
+  // 렌더에 안 쓰이고 핸들러만 읽으므로 ref다(state로 두면 onSelect가 매번 새로 만들어진다)
+  const sensorReadyRef = useRef(false);
   const [guarding, setGuarding] = useState(false);
   const [lastAction, setLastAction] = useState(null);
   // 플래시는 { pattern, id } 객체로 낸다. **null로 되돌려 재발화시키지 않는다.**
@@ -248,6 +251,7 @@ export default function App() {
     p.then((res) => {
       if (res === PERM.GRANTED) {
         pipeline.start();
+        sensorReadyRef.current = true;
         pipeline.beginCalibration();
         setPhase(PHASE.CALIBRATION);
         return;
@@ -330,15 +334,29 @@ export default function App() {
     setConnecting(false);
   }, [link]);
 
-  // SELECT에서 유파 확정 → arena로 선택 전송(A3 진입점에 꽂힌다) → 권한 단계로.
+  // SELECT에서 유파 확정 → arena로 선택 전송(A3 진입점에 꽂힌다).
+  //
+  // **둘째 판부터는 PERMISSION을 건너뛴다.** 센서 권한은 세션당 한 번 받으면 끝인데
+  // 매 판 같은 설명 화면을 다시 탭하게 하면 다시 대전이 느려진다. 이미 센서가 돌고 있으면
+  // 곧장 캘리브레이션(3, 2, 1 세로 홀드)으로 간다. 그 화면이 곧 카운트다운이다.
+  // 권한을 못 받은 기기와 탭 모드는 기존 경로 그대로 PERMISSION을 거친다.
   const onSelect = useCallback(
     (school) => {
       link.sendSelect(school);
+      if (sensorReadyRef.current) {
+        pipeline.beginCalibration();
+        setPhase(PHASE.CALIBRATION);
+        return;
+      }
       if (!motionSupported()) setDenied(true);
       setPhase(PHASE.PERMISSION);
     },
-    [link]
+    [link, pipeline]
   );
+
+  // 훑는 중인 유파를 arena로. **판정과 무관한 표시용이라 확정(sendSelect)과 채널이 다르다.**
+  // 정체성이 고정돼야 SelectScreen의 효과가 매 렌더마다 재발화하지 않는다
+  const onFocus = useCallback((school) => link.sendFocus(school), [link]);
 
   const back = useCallback(() => {
     setPhase((p) => BACK_OF[p] ?? p);
@@ -384,7 +402,7 @@ export default function App() {
           />
         ) : null}
 
-        {phase === PHASE.SELECT ? <SelectScreen onConfirm={onSelect} onBack={back} /> : null}
+        {phase === PHASE.SELECT ? <SelectScreen onConfirm={onSelect} onFocus={onFocus} onBack={back} /> : null}
 
         {phase === PHASE.PERMISSION ? (
           <PermissionScreen

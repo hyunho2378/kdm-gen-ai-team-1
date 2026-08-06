@@ -157,6 +157,16 @@ export function createLink() {
       socket.emit(MSG.SELECT, { school });
     },
 
+    /**
+     * 훑는 중인 유파. arena 로비가 그 카드에 불만 켠다.
+     * **확정이 아니다.** arena는 이걸로 setSchool을 부르지 않는다(그건 sendSelect의 몫).
+     * 카드를 접으면 null이 가고 하이라이트가 꺼진다.
+     */
+    sendFocus(school) {
+      if (!live()) return;
+      socket.emit(MSG.FOCUS, { school: school ?? null });
+    },
+
     /** 캘리브레이션 완료 통지. arena가 이걸 받고 EN_GARDE로 넘어간다. */
     sendCalib(q) {
       if (!live()) return;

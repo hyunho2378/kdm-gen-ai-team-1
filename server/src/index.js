@@ -29,8 +29,9 @@ const CORS_ORIGINS = (process.env.CORS_ORIGINS ?? '')
   .filter(Boolean);
 const ORIGINS = CORS_ORIGINS.length > 0 ? CORS_ORIGINS : DEFAULT_ORIGINS;
 
-// SELECT(폰 유파 선택)와 RESULT(경기 결과)도 그대로 상대에게 중계한다. 서버는 내용을 해석하지 않는다.
-const RELAY_TYPES = [MSG.CALIB, MSG.MOTION, MSG.ACTION, MSG.HAPTIC, MSG.STATE, MSG.SELECT, MSG.RESULT];
+// SELECT(폰 유파 선택), FOCUS(훑는 중인 유파), RESULT(경기 결과)도 그대로 상대에게 중계한다.
+// 서버는 내용을 해석하지 않는다.
+const RELAY_TYPES = [MSG.CALIB, MSG.MOTION, MSG.ACTION, MSG.HAPTIC, MSG.STATE, MSG.SELECT, MSG.FOCUS, MSG.RESULT];
 // 유휴 방 TTL이 10분이므로 스윕은 그보다 촘촘해야 실제 회수 지연이 짧다
 const SWEEP_INTERVAL_MS = 1000 * 60;
 
