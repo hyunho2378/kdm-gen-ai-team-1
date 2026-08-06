@@ -1079,6 +1079,17 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **brand R1 전역 표피 리셋 작업중.** BRAND_REBOOT_PLAN 2절 전역 결정을 brand 전 페이지에 적용한다
+  - 범위는 표피 규율뿐이다. **레이아웃 대개편(R3, R4)은 이 세션이 아니다.**
+    presentation-v2 무접촉(P1 별도 트랙)
+  - 1. 마진 시스템 통일(CSS 변수 하나), 제품 인덱스 첫 화면 완결
+  - 2. 아이브로우 v2(불릿 제거, +8px, weight 600 유지, 개별 구현 통합)
+  - 3. 장식 선/라인 전량 제거(기능 border는 유지)
+  - 4. 레드 그라데이션 배경 전량 제거(레드는 빛나는 요소로만)
+  - 5. 커스텀 커서(react-creative-cursor MIT 실설치 판정, 부적합 시 자체 구현)
+  - **착수 전 조사에서 나온 것.** 거터는 이미 `spacing.gutter` 하나를 쓰고 있고
+    진짜 불일치는 `maxWidth`다(Page/Section/WorldScene/Landing은 maxWide 1680,
+    ProductDetail/NotFound는 maxContent 1280). 아이브로우 개별 구현이 3곳 남아 있다
 - **가드 재설계 완료(확인 대기).** 트랙 선점 해제. 커밋 `1b8ebc5` `ffc35c5`
   - **확정 조작.** 이게 최종이다
     ```
