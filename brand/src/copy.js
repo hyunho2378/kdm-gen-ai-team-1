@@ -154,12 +154,55 @@ export const PRODUCT_DETAIL = {
     { key: 'features', label: DETAIL_LABELS.features, ko: '특징' },
   ],
   tabsLabel: '제품 정보',
-  // **탭 정보 패널의 내용. 지금은 셋 다 비어 있다.**
-  // 확정된 스펙표와 특징 목록이 없어서 지어내지 않고 빈 배열로 둔다.
-  // 비면 화면에 위 TODO 자리표시가 뜬다. 확정되면 여기에 항목만 채우고 컴포넌트는 손대지 않는다.
-  // spec 항목은 { name, value }, features 항목은 문자열이다
-  spec: { 'xr-glass': [], controller: [], 'demo-app': [] },
-  features: { 'xr-glass': [], controller: [], 'demo-app': [] },
+  // 탭 정보 패널의 내용. spec 항목은 { name, value }, features 항목은 문자열이다.
+  // 비면 화면에 위 TODO 자리표시가 뜬다(참조부는 그 분기를 그대로 둔다).
+  //
+  // **값이 `TODO_MARK`인 넷은 실제 하드웨어 사양이라 지어낼 수 없는 자리다.**
+  // 시야각, 디스플레이, 무게, 배터리. 항목 이름은 확정이고 값만 미확정이라 행은 세워 둔다.
+  // 리터럴로 네 번 적지 않는다. 확정될 때 고칠 자리가 넷으로 흩어진다
+  spec: {
+    'xr-glass': [
+      { name: '추적 방식', value: '마커리스 검끝 추적' },
+      { name: '시야각', value: TODO_MARK },
+      { name: '디스플레이', value: TODO_MARK },
+      { name: '무게', value: TODO_MARK },
+      { name: '연결', value: '무선' },
+    ],
+    controller: [
+      { name: '입력 방식', value: '모션 센서' },
+      { name: '감지 축', value: '가속도와 자이로' },
+      { name: '햅틱', value: '진동 피드백' },
+      { name: '배터리', value: TODO_MARK },
+      { name: '연결', value: '무선' },
+    ],
+    'demo-app': [
+      { name: '실행 환경', value: '웹 브라우저' },
+      { name: '설치', value: '불필요' },
+      { name: '지원 기기', value: '노트북과 폰' },
+      { name: '페어링', value: '방 코드' },
+      { name: '연결', value: '실시간 중계' },
+    ],
+  },
+  features: {
+    'xr-glass': [
+      '검끝과 거리를 실시간으로 추적하는 시야',
+      '명중 순간을 시야에 겹쳐 표시',
+      '최적 타이밍에 시야가 팽창하는 시간 감각',
+      '상대 유파를 시야에 식별 표시',
+    ],
+    controller: [
+      '폰이 검이 되는 모션 컨트롤러',
+      '찌르기 속도와 방향을 검의 움직임으로 변환',
+      '명중 순간 손잡이 진동으로 타격 반동 재현',
+      '전진과 후퇴를 거리로 환산',
+    ],
+    'demo-app': [
+      '설치 없이 겨루는 브라우저 데모',
+      '노트북과 폰을 방 코드로 연결',
+      '접속과 캘리브레이션과 결투의 세 단계',
+      '유파 3종과 즉시 대전',
+    ],
+  },
   specTodo: TODO_PRODUCT_SPEC,
   featuresTodo: TODO_PRODUCT_FEATURES,
   viewer: {

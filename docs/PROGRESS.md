@@ -1079,8 +1079,16 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **brand 제품 상세 스펙과 특징 문구 반입 작업중.** `brand/src/copy.js`의 `PRODUCT_DETAIL`만 잡는다.
-  참조부는 B8b에서 이미 서 있어 컴포넌트는 손대지 않는다
+- **brand 제품 상세 스펙과 특징 문구 반입 완료(확인 대기).** 트랙 선점 해제
+  - **`brand/src/copy.js` 한 파일만 바뀌었다.** 참조부(`Overview`, `Features`)는 B8b에서
+    빈 배열이면 자리표시, 아니면 목록이 뜨게 이미 갈라져 있어 컴포넌트를 손대지 않았다.
+    배선 확인은 코드가 아니라 화면으로 했다
+  - 3종 x 스펙 5행 + 특징 4개. OVERVIEW에 스펙표, FEATURES에 특징 목록이 실제로 뜬다(실측)
+  - **`확정 예정` 값 넷은 `TODO_MARK` 상수를 쓴다.** 리터럴을 네 번 적으면 확정될 때
+    고칠 자리가 넷으로 흩어진다. 미해결에 실측 필요 항목으로 남겼다
+  - 검증: 3종 OVERVIEW 스펙 5행과 FEATURES 특징 4개 실측, `확정 예정` 자리 표시 확인,
+    320 / 768 / 1440에서 가로 overflow 0이고 패널 자체 overflow도 0,
+    금지 문자 0, 컴포넌트에 하드코딩 문자열 0, 4앱 빌드, 콘솔 에러 0
 - **brand B8b 제품 상세 오버워치식 레이아웃과 플레이스홀더 360 뷰어 완료(확인 대기).** 트랙 선점 해제
   - 4구역. 왼쪽 세로 탭(OVERVIEW 스펙, FEATURES 특징), 중앙 360 뷰어, 뷰어 아래 정보 패널, 하단 CTA.
     **탭은 뷰어를 바꾸지 않는다.** 제품이 하나라 뷰어는 상시 유지된다(탭 전환 후 같은 canvas, 개수 1 실측)
@@ -1609,12 +1617,13 @@
     **일부러 import하지 않았다.** 모델이 정해지는 세션에서 그때 건다
   - 모델이 들어오면 톤을 다시 잡아야 한다. 지금 크롬은 반사 환경 하나(DESIGN 3절 스톱 그라디언트)와
     방향광 둘로만 서 있어서 실제 제품 지오메트리에서 같은 값이 맞을 이유가 없다
-- **제품 상세의 스펙표와 특징 목록 문구가 미확정이다. 지어내지 않았다.**
-  - `brand/src/copy.js`의 `PRODUCT_DETAIL.spec`과 `.features`가 3종 모두 빈 배열이고
-    화면에는 `제품 스펙 확정 예정`, `제품 특징 확정 예정`이 뜬다. 이 둘과 기존 셋
-    (`TODO_XR_GLASS_DETAIL`, `TODO_EXPERIENCE_NOTICE`, `PRODUCTS_INDEX_LINE_TODO`)까지 **자리표시가 다섯이다**
-  - 확정되면 배열에 항목만 채운다. `spec`은 `{ name, value }`, `features`는 문자열이고
-    **컴포넌트는 손대지 않아도 된다**(빈 배열이면 자리표시, 아니면 목록이 뜨게 이미 갈라져 있다)
+- **제품 스펙 실측값 4곳 확정 필요(XR 시야각 디스플레이 무게, 컨트롤러 배터리).**
+  - 스펙표와 특징 목록은 반입 완료다. 남은 것은 **실제 하드웨어를 재야 나오는 값 넷**이고
+    항목 이름은 확정이라 행은 세워 두고 값 자리에만 `확정 예정`이 뜬다
+  - 자리는 `brand/src/copy.js`의 `PRODUCT_DETAIL.spec` 안 `value: TODO_MARK` 넷이다.
+    **리터럴로 적지 않고 상수를 쓴다.** 확정되면 그 자리만 실측값으로 바꾼다
+  - 화면에 남은 다른 자리표시. `TODO_XR_GLASS_DETAIL`(xr-glass OVERVIEW 설명 문단),
+    `TODO_EXPERIENCE_NOTICE`, `PRODUCTS_INDEX_LINE_TODO`, `TODO_PRODUCT_MODEL`(뷰어)
 - **헤더 nav가 320에서 안 접힌다. arena press와 같은 인라인 함정이다(이번 세션에서 발견, 안 고침).**
   - `index.css`의 `@media (max-width: 767px) { .vx-nav { display: none } }`가 있는데
     `Header.jsx`의 `<nav className="vx-nav" style={{ display: 'flex' }}>`가 인라인으로 이겨서 계속 뜬다.
