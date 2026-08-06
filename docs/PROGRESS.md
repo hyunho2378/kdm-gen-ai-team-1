@@ -1079,8 +1079,34 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **brand 모바일 햄버거 작업중.** `Header.jsx`와 `index.css`의 헤더 규칙, `copy.js`의 `HEADER`만 잡는다.
-  인라인 `display`를 클래스로 옮겨 320 안 접힘 버그를 먼저 없앤다. 다른 페이지는 손대지 않는다
+- **brand 모바일 햄버거와 헤더 반응형 수정 완료(확인 대기).** 트랙 선점 해제
+  - **원인부터 없앴다.** `<nav style={{display:'flex'}}>`가 `.vx-nav`의 미디어쿼리를 이겨
+    320에서 메뉴가 안 접혔다. 인라인 `display`를 전부 걷고 배치를 `index.css`로 옮겼다.
+    실측: 320 / 390 / 767에서 `nav` `cta-bar` 계산 display가 `none`, 바에 남는 것은 워드마크와 햄버거 둘뿐.
+    768 / 1440 / 3840은 기존 다섯 항목 그대로다
+  - **같은 함정을 다시 심을 뻔했다.** CTA에 `className="vx-cta vx-cta-bar"`를 달면서
+    `display: inline-flex`를 인라인에 남겨 두면 md 미만에서 바 CTA가 안 접힌다.
+    **한 요소의 `display`는 정확히 한 클래스에만 둔다**는 규칙으로 정리해
+    `.vx-cta-bar`와 `.vx-cta-sheet`로 갈랐다. PITFALLS에 세 번째 사례로 적었다
+  - **시트는 오버레이가 아니라 헤더 드롭다운이다.** DESIGN 8절대로 오버레이 90에 두면
+    헤더 50을 덮어 햄버거 재클릭이 막힌다. `<header>`가 만든 쌓임 맥락 안에서
+    스크림 0, 시트 1, 바 2로 두어 바가 항상 위에 남는다. 시트는 `top: 100%`라 **바 높이를 상수로 안 적는다**
+  - **바는 DOM에서 먼저 두고 z로 올린다.** 칠하는 차례는 z가 정하므로 탭 순서를
+    워드마크, 햄버거, 시트 항목 순으로 사람이 누른 차례에 맞출 수 있다.
+    실측 고리: PRODUCTS, DUELISTS, EXPERIENCE, 체험하기, VORTEX, 메뉴 닫기로 순환하고 **헤더 밖으로 안 샌다**
+  - **md 이상으로 넓히면 닫는다.** 시트는 CSS가 `display: none`으로 지우는데 상태가 열린 채 남으면
+    `<main>`의 `inert`가 안 풀려 본문이 통째로 죽는다. 실측: 1024로 넓히면 navOpen false, inert false
+  - **CTA는 시트로 넣었다.** 바에 남기는 안도 실측했다. 320에서 여유가 47px라 넘치지는 않지만
+    `space-between` 세 항목이라 빨간 알약이 바 한가운데에 떠서 헤더 액션으로 안 읽힌다(스크린샷).
+    오른쪽으로 붙이려면 묶음 요소가 하나 더 필요하고, 시트에서는 폭을 꽉 채워 주액션으로 선다
+  - **애니메이션을 CSS transition에 두어 전역 reduced-motion 규칙이 그대로 먹는다.**
+    실측 추적(페이지 안에서 클릭과 표본을 붙여 돌림): 평시 opacity 0 -> 0.22 -> 0.78 -> 0.97 -> 1.00에
+    translateY -12 -> -9 -> -3 -> 0으로 200ms ease-drawer 램프, reduce에서는 duration 1e-05s로 다음 프레임에 안착
+  - 검증: 햄버거 터치 타깃 44x44, 시트 항목 44px, `aria-expanded` true/false 토글,
+    `aria-label`이 메뉴 열기와 메뉴 닫기로 갈림, 열면 첫 항목 포커스, ESC와 바깥 탭과 재클릭과
+    항목 탭(라우트 이동) 네 경로 모두에서 닫히고 **전부 햄버거로 포커스 복귀**,
+    열린 동안 `<main>`이 `inert`와 `aria-hidden`, 랜딩 최상단에서 열면 바에 판이 깔림,
+    320 / 768 / 1440 / 3840 overflow 0, 4앱 빌드, 콘솔 에러 0
 - **brand 제품 상세 스펙과 특징 문구 반입 완료(확인 대기).** 트랙 선점 해제
   - **`brand/src/copy.js` 한 파일만 바뀌었다.** 참조부(`Overview`, `Features`)는 B8b에서
     빈 배열이면 자리표시, 아니면 목록이 뜨게 이미 갈라져 있어 컴포넌트를 손대지 않았다.
@@ -1626,14 +1652,6 @@
     **리터럴로 적지 않고 상수를 쓴다.** 확정되면 그 자리만 실측값으로 바꾼다
   - 화면에 남은 다른 자리표시. `TODO_XR_GLASS_DETAIL`(xr-glass OVERVIEW 설명 문단),
     `TODO_EXPERIENCE_NOTICE`, `PRODUCTS_INDEX_LINE_TODO`, `TODO_PRODUCT_MODEL`(뷰어)
-- **헤더 nav가 320에서 안 접힌다. arena press와 같은 인라인 함정이다(이번 세션에서 발견, 안 고침).**
-  - `index.css`의 `@media (max-width: 767px) { .vx-nav { display: none } }`가 있는데
-    `Header.jsx`의 `<nav className="vx-nav" style={{ display: 'flex' }}>`가 인라인으로 이겨서 계속 뜬다.
-    실측: 320에서 계산 `display`가 `flex`, 헤더 텍스트에 PRODUCTS DUELISTS EXPERIENCE 체험하기가 전부 남는다
-  - **이번 변경이 만든 것이 아니다.** B3에서 헤더를 세울 때부터 그랬고 랜딩에서도 같다.
-    가로 overflow는 0이라 화면이 깨지지는 않는다
-  - 고치는 곳은 헤더 한 곳이고 이번 세션 범위(상세 내부)가 아니라 손대지 않았다.
-    **햄버거 메뉴 세션에서 같이 잡는다.** 인라인 `display`를 클래스로 옮기는 것이 정공법이다
 - **`red.press`가 어느 앱에서도 화면에 뜨지 않는다. 토큰 값이 아니라 적용 경로의 문제다.**
   - **arena 원인 규명 완료.** `index.css`에 `.ganhap-btn-primary:active { background: var(--red-press); }`가
     있고 `--red-press`도 `#66060A`로 정상 주입된다. 그런데 `Button.jsx`가 `style` 속성으로
@@ -1679,10 +1697,6 @@
   - 히어로 서브도 갈렸다. 3.11 계열 문서는 "몰입형 펜싱 XR"이고 brand는 "몰입형 펜싱 훈련"이다
   - **presentation-v2는 3.11 원문을 그대로 쓴다.** 두 사이트가 같은 유파를 다른 문장으로 말한다.
     확정본이 brand 쪽이면 VORTEX_DESIGN_SYSTEM 3.11과 presentation-v2 copy를 맞춰야 한다. **판단 대기**
-- **brand 모바일(md 768 미만) 헤더 메뉴가 접혀 있고 햄버거가 없다.**
-  - 지금은 `index.css`의 미디어쿼리가 `.vx-nav`를 숨기고 워드마크와 체험하기 CTA만 남긴다.
-    좁은 화면에서 PRODUCTS, DUELISTS, EXPERIENCE로 가는 길이 랜딩 관문 카드뿐이다
-  - **햄버거와 시트는 B8 이후다.** 그때 페이지 전환 연출(GSAP Flip)과 같이 붙인다
 - **유파 셀렉션의 "겨루기"가 대전 진입에 미연결이다(B7).**
   - 버튼은 활성 카드에만 서고 **비활성 모양에 사유 문구("대전 진입 준비 중")를 옆에 단다.**
     동작 없는 버튼을 활성처럼 보이게 두지 않았다(ArenaCta와 같은 규율)

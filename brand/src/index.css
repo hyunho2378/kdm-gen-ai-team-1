@@ -51,11 +51,75 @@ html, body { background: #101010; color: #FDFDFD; }
   }
 }
 
-/* 헤더 메뉴. md(768) 미만에서는 접는다. 햄버거는 B8 이후다 */
+/* 헤더 반응형. **`display`를 컴포넌트 인라인 style로 걸지 않는다.**
+   인라인은 아래 media query를 이겨서 규칙이 통째로 죽는다. 320에서 nav가 안 접히던 원인이
+   정확히 그것이었다(arena press, brand CTA에 이은 세 번째 사례. PITFALLS 참조).
+   배치는 여기가 쥐고 컴포넌트는 클래스 이름만 준다. */
+
+/* 데스크톱 묶음. md 이상에서만 선다 */
+.vx-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+/* CTA 배치. 바용과 시트용을 따로 둔다. 한 요소의 display가 정확히 한 클래스에만 있어야
+   md 미만에서 바 CTA만 접히고 시트 CTA는 산다 */
+.vx-cta-bar,
+.vx-cta-sheet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 모바일 묶음. md 이상에서는 `display: none`이라 **탭 순서와 접근성 트리에서도 빠진다.**
+   숨기지 않고 두면 넓은 화면에서 같은 링크가 두 벌로 읽힌다 */
+.vx-burger,
+.vx-scrim,
+.vx-sheet {
+  display: none;
+}
+
 @media (max-width: 767px) {
-  .vx-nav {
+  .vx-nav,
+  .vx-cta-bar {
     display: none;
   }
+  .vx-burger {
+    display: inline-flex;
+  }
+  .vx-scrim {
+    display: block;
+  }
+  .vx-sheet {
+    display: flex;
+  }
+}
+
+/* 시트와 스크림의 열고 닫힘. **transform과 opacity만 건드린다**(DESIGN 7절).
+   닫힘 상태의 `visibility: hidden`이 포커스와 접근성 트리에서 시트를 빼므로
+   닫힌 메뉴로 탭이 새지 않는다. 나가는 동안 보이게 visibility만 지속시간만큼 늦춘다.
+   **애니메이션을 CSS에 두면 아래 전역 reduced-motion 규칙이 그대로 먹는다.** */
+.vx-scrim,
+.vx-sheet {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur-sheet) var(--ease-drawer),
+    transform var(--dur-sheet) var(--ease-drawer),
+    visibility 0s linear var(--dur-sheet);
+}
+.vx-sheet {
+  transform: translateY(-12px);
+}
+[data-nav-open='true'] .vx-scrim,
+[data-nav-open='true'] .vx-sheet {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--dur-sheet) var(--ease-drawer),
+    transform var(--dur-sheet) var(--ease-drawer),
+    visibility 0s linear 0s;
+}
+[data-nav-open='true'] .vx-sheet {
+  transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {

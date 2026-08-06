@@ -7,7 +7,7 @@
 // `:active`의 press 색이 통째로 죽는다(arena에서 실제로 죽어 있던 함정이다).
 // 그래서 CTA 배경은 클래스가 쥔다.
 
-import { colors, glow, motion } from './tokens.js';
+import { colors, glow, motion, withAlpha } from './tokens.js';
 
 export function applyThemeVars(root = document.documentElement) {
   const vars = {
@@ -20,6 +20,13 @@ export function applyThemeVars(root = document.documentElement) {
     '--glow-red': glow.red,
     '--ease-out': motion.easeOut,
     '--dur-press': `${motion.duration.press}ms`,
+    // 모바일 메뉴 시트. 시트와 드로어는 DESIGN 7절이 ease-drawer를 지정한다.
+    // 지속은 dropdown(200ms)을 쓴다. 헤더에서 내려오는 메뉴이고 DOM UI라 300ms 미만이어야 한다
+    '--ease-drawer': motion.easeDrawer,
+    '--dur-sheet': `${motion.duration.dropdown}ms`,
+    // 시트 판과 스크림. 배경은 bg.base 계열이고 뒤가 비치되 글자가 읽히는 알파다
+    '--sheet-bg': withAlpha(colors.bg.base, 0.96),
+    '--scrim-bg': colors.bg.overlay,
   };
   for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
 }
