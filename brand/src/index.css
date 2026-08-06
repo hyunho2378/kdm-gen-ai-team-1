@@ -103,91 +103,91 @@ html { scrollbar-gutter: stable; }
   transform: scale(0.97);
 }
 
-/* ── 히어로 비주얼 슬롯 (BV2-2. 복구 세션에서 되살렸다) ───────────────────
-   **전폭이다.** shell 거터를 뚫고 화면 끝까지 간다. Satisfy의 히어로 비주얼이 1440 전폭이고
-   그 폭이 문법의 절반이다. 안쪽 카피만 `.vx-shell`로 격자에 되돌린다.
+/* ── Apple 섹션 문법 (실측 재현) ──────────────────────────────────────────
+   Apple Vision Pro 12섹션을 직접 열어 잰 값이다.
 
-   **빈 박스가 아니라 표면이다.** 카드와 같은 `--card-bg`(잉크 3.5퍼센트)라 페이지 위에 한 단계
-   눌린 판으로 읽힌다. 선을 긋지 않는다(R1 선 금지). 이미지가 오면 이 자리를 그대로 덮는다. */
-.vx-hero-slot {
+     미디어      대부분 1425x704. 화면 폭을 꽉 채우는 가로 와이드가 각 섹션의 주인공
+     텍스트      소제목 24px + 짧은 문장. 미디어 위나 옆에 절제되게
+     스테이트먼트 전환 지점에 56px 큰 문장 하나짜리 섹션
+     딥다이브     핵심 구간 7000~10000px. 그 동안 미디어가 고정되고 텍스트가 순차로 바뀐다
+     브리지       짧은 섹션(756px)이 딥다이브 사이를 끊는다
+     영상        한 섹션은 영상 풀블리드
+
+   **카드 나열을 두지 않는다.** 미디어가 주인공이고 글은 그 옆에 짧게 붙는다. */
+
+/* 전폭 탈출. shell 거터를 뚫고 화면 끝까지 간다.
+   스크롤바가 있으면 100vw가 그 폭까지 세어 가로 스크롤이 생긴다.
+   `scrollbar-gutter: stable`이 자리를 늘 비워 두므로 dvw로 뺀다 */
+.vx-bleed {
   width: 100vw;
   margin-inline: calc(50% - 50vw);
-  background: var(--card-bg);
 }
-/* 스크롤바가 있으면 100vw가 스크롤바까지 세어 가로 스크롤이 생긴다.
-   `scrollbar-gutter: stable`이 자리를 늘 비워 두므로 그 폭만큼 뺀다 */
 @supports (width: 100dvw) {
-  .vx-hero-slot {
+  .vx-bleed {
     width: 100dvw;
     margin-inline: calc(50% - 50dvw);
   }
 }
 
-/* ── 제품 딥다이브 (BV2-4. 복구 세션에서 되살렸다) ────────────────────────
-   **고정 미디어 옆을 비트가 지나간다.** Apple Vision Pro의 sticky 패널이 top 52px에 붙는
-   구조를 그대로 옮겼다(실측: 그쪽 sticky-element는 1425x848).
+/* 와이드 미디어. **Apple 1425x704를 비율로 옮겼다(2.024:1).**
+   폭을 다 쓰되 704px에서 멈춘다. 3840에서 비율대로 두면 1896px가 되어 화면을 두 번 넘긴다.
+   **빈 박스가 아니라 표면이다.** 카드와 같은 `--card-bg`라 한 단계 눌린 판으로 읽힌다 */
+.vx-wide {
+  position: relative;
+  height: clamp(220px, calc(100dvw / 2.024), 704px);
+  background: var(--card-bg);
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 3D가 서는 자리는 판을 깔지 않는다. 캔버스가 투명해 페이지 배경이 그대로 비쳐야 한다 */
+.vx-wide-bare {
+  background: none;
+}
 
-   좁은 화면에서는 한 열로 쌓이고 **고정을 푼다.** 세로가 모자란 화면에서 미디어를 붙들면
-   비트를 읽을 자리가 안 남는다. 그때는 미디어가 먼저 한 번 나오고 글이 그 아래로 흐른다. */
-.vx-dive {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
-}
-/* 격자 칸. 좁은 화면에서는 이 자체가 미디어 높이를 정한다 */
-.vx-dive-media {
-  position: relative;
-  width: 100%;
-}
-.vx-dive-media-inner {
-  position: relative;
-  width: 100%;
-  /* 좁은 화면에서도 제품이 읽히는 높이. 고정이 아니라 화면을 다 먹지 않는다 */
-  height: 46vh;
-  min-height: 260px;
-}
-.vx-dive-body {
+/* ── 딥다이브 무대 ────────────────────────────────────────────────────────
+   **미디어가 고정되고 텍스트가 바뀐다.** 바깥이 스크롤 길이를 만들고 안쪽이 붙는다.
+
+   **sticky다. GSAP pin이 아니다.** pin은 fixed를 만들고, transform이 걸린 조상(R3 워프)
+   안에서 fixed는 뷰포트 기준을 잃는다(PITFALLS). sticky는 그 함정을 안 밟는다.
+
+   **글이 3D 위에 얹히지 않는다.** 뷰어는 상시 autoRotate라 밝은 크롬 면이 글자 뒤를
+   지나가면 대비가 그 순간에만 무너진다. 미디어가 위, 글이 아래로 자리를 갈라 배치 자체가
+   보증이 된다(겹칠 수 없다). */
+.vx-stage-inner {
+  position: sticky;
+  top: var(--pnav-h, 52px);
+  height: calc(100dvh - var(--pnav-h, 52px));
   display: flex;
   flex-direction: column;
-  gap: clamp(3rem, 1.5rem + 6vh, 7rem);
+  justify-content: center;
+  gap: clamp(20px, 3vh, 40px);
 }
-
-@media (min-width: 900px) {
-  .vx-dive {
-    grid-template-columns: minmax(0, 47fr) minmax(0, 53fr);
-    gap: 56px;
-    /* **칸을 행 높이만큼 늘린다.** start로 두면 미디어 칸이 제 콘텐츠 높이에서 멈춰
-       안쪽 sticky가 붙을 구간이 없다(실측: top 92에서 곧바로 밀려 올라갔다) */
-    align-items: stretch;
-  }
-  .vx-dive-media-inner {
-    position: sticky;
-    /* **전역 헤더가 없어져 서브내비 높이만 비운다.** 예전에는 `헤더 68 + 24`였다.
-       값은 ProductNav가 실측해 내보내는 것을 그대로 쓴다 */
-    top: calc(var(--pnav-h, 52px) + 24px);
-    height: min(68vh, 640px);
-  }
-  /* **이 최소 높이가 곧 딥다이브의 길이다.** Apple의 긴 섹션이 2.4화면 이상인 것을
-     여기서 만든다. 비트를 그 안에 고르게 흩어 미디어가 붙어 있는 동안 하나씩 지나간다 */
-  .vx-dive-body {
-    min-height: 210vh;
-    justify-content: space-between;
-    padding-top: 8vh;
-    padding-bottom: 8vh;
-  }
+/* 무대 안 미디어는 이미 전폭이라 탈출이 필요 없다. 세로가 모자라면 먼저 줄어든다 */
+.vx-stage-inner .vx-wide {
+  height: clamp(180px, calc(100dvw / 2.024), 62dvh);
+  flex: 0 1 auto;
 }
-
-/* ── 오버뷰 안내 카드 호버 (랜딩 관문에서 복구) ───────────────────────────
-   **선을 쓰지 않는다.** 제목이 조금 나아가는 것 하나뿐이다.
-   호버와 focus-visible을 같이 건다. 키보드로 훑는 사람도 같은 신호를 받아야 한다. */
-.vx-guide-title {
-  display: inline-block; /* transform이 먹으려면 인라인이 아니어야 한다 */
-  transition: transform var(--dur-hover) var(--ease-out);
+/* 글이 겹쳐 서는 자리. 가장 긴 단계가 높이를 정한다 */
+.vx-stage-text {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: clamp(132px, 20dvh, 190px);
 }
-.vx-guide:hover .vx-guide-title,
-.vx-guide:focus-visible .vx-guide-title {
-  transform: translateX(8px);
+.vx-stage-step {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out);
+}
+.vx-stage-step[data-on='true'] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
 }
 
 /* ── 제품 서브내비 (PRODUCT_PAGE_APPLE_MAPPING) ───────────────────────────
@@ -275,14 +275,6 @@ html { scrollbar-gutter: stable; }
   padding-block: var(--section-gap);
 }
 
-/* 제품 섹션 미디어. 이미지가 오면 이 자리를 cover로 덮는다 */
-.vx-pd-media {
-  position: relative;
-  width: 100%;
-  height: 46vh;
-  min-height: 260px;
-}
-
 /* ── 커스텀 커서 (REBOOT_PLAN 2.4) ────────────────────────────────────────
    **기본 커서는 커스텀이 실제로 떠 있을 때만 감춘다.** 터치 기기와 모션 감소에서는
    컴포넌트가 렌더 자체를 안 하고 이 속성도 안 붙어서 기본 커서가 그대로 산다.
@@ -330,10 +322,9 @@ html { scrollbar-gutter: stable; }
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-  /* 모션을 줄여 달라고 했으면 **이동 자체를 없앤다.** 위 규칙은 지속시간만 줄여서
-     제목이 순간이동하듯 튄다 */
-  .vx-guide:hover .vx-guide-title,
-  .vx-guide:focus-visible .vx-guide-title {
+  /* 모션을 줄여 달라고 했으면 **단계 전환에서 이동을 없앤다.** 위 규칙은 지속시간만
+     줄여서 글이 순간이동하듯 튄다. 나타나고 사라지는 것 자체는 남아야 순차가 성립한다 */
+  .vx-stage-step {
     transform: none;
   }
 }
