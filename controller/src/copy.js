@@ -20,6 +20,37 @@ export const HOME = {
   loginSheetClose: '닫기',
 };
 
+// 메인 화면(앱 셸). 하단 3탭은 영어 라벨이고 화면 안 문구는 국문이다.
+// **탭 라벨만 영어인 것은 제품 라벨 표기 규약이다**(brand의 PRODUCTS/DUELISTS와 같은 결).
+// 순서는 RECORDS / CONTROLLER / OPPONENT이고 기본 탭은 가운데 CONTROLLER다.
+export const MAIN = {
+  tabs: [
+    { key: 'RECORDS', label: 'RECORDS', title: '내 기록' },
+    { key: 'CONTROLLER', label: 'CONTROLLER', title: '컨트롤러' },
+    { key: 'OPPONENT', label: 'OPPONENT', title: '연습 모델' },
+  ],
+  connect: '연결',
+  connected: '연결됨',
+  start: '대전 시작',
+  // CONTROLLER 탭. 폰이 곧 컨트롤러라는 것이 이 앱의 제품 서사다
+  productName: 'VORTEX BLADE',
+  productLine: '손에 든 폰이 곧 검이다',
+  productBody: '자이로와 가속도로 검끝의 자세와 찌르기를 읽는다. 세로로 세워 쥔 자세가 앙가르드이고, 그 기준을 대전 직전에 매번 다시 잡는다.',
+  productSpecs: [
+    { label: '자세 갱신', value: '30Hz' },
+    { label: '기준 자세', value: '세로 홀드 3초' },
+    { label: '이산 입력', value: '찌르기 · 가드 · 전진 · 후퇴' },
+  ],
+  // 기록 탭. **서버 저장은 아직 없다.** 그 사실을 화면에 정직히 적는다(N1 상태 가시성)
+  recordsEmpty: '아직 치른 경기가 없다.',
+  recordsEmptyHint: '대전을 마치면 여기에 쌓인다.',
+  recordsNote: '이번 세션에서 치른 경기다. 서버 기록은 아직 붙지 않아 앱을 닫으면 사라진다.',
+  recordsWin: '승',
+  recordsLose: '패',
+  // 연습 모델 탭. 선택은 대전 직전 화면에서 하고 여기서는 정보만 본다
+  opponentNote: '대전을 시작하면 이 중에서 고른다.',
+};
+
 // AI 대전자 유파. **카피는 VORTEX 3.11 원문 그대로**(presentation-v2 DUELIST_STYLES와 문자 일치, 인용문 포함).
 // school은 shared/protocol.js SCHOOL 값. fact는 FENCING_RULES 근거 한 줄(표시 전용).
 // 사진은 라이선스 미확인이라 반입하지 않는다. 부재 시 그라디언트 플레이스홀더로 내려앉는다(미해결 기록).

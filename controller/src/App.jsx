@@ -1,5 +1,6 @@
-// controller 루트 = VORTEX 폰 앱. 화면 상태 머신 SPLASH → HOME → CONNECT → SELECT →
-// PERMISSION → CALIBRATION → PLAY → RESULT. 강릉페이 시스템 이식(ScreenContainer 프레임 + HIG).
+// controller 루트 = VORTEX 폰 앱. 화면 상태 머신 SPLASH → HOME(게스트/로그인 게이트) →
+// MAIN(앱 셸, 3탭) → CONNECT → SELECT → PERMISSION → CALIBRATION → PLAY → RESULT.
+// 강릉페이 시스템 이식(ScreenContainer 프레임 + HIG).
 //
 // **센서(C2)와 소켓(C3) 로직은 무변경이다.** 아래 pipeline/link 배선과 핸들러는 그대로 옮겨 왔고,
 // 화면 계층(phase 순서, HOME/SELECT/RESULT 신설, ScreenContainer 래핑)만 확장했다.
@@ -23,6 +24,7 @@ import DebugPanel, { debugEnabled } from './components/DebugPanel.jsx';
 import ScreenContainer from './layout/ScreenContainer.jsx';
 import CoachMarkOverlay from './components/common/CoachMarkOverlay.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
+import MainScreen from './components/MainScreen.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
 import SelectScreen from './components/SelectScreen.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
@@ -42,6 +44,7 @@ import {
 const PHASE = {
   SPLASH: 'SPLASH',
   HOME: 'HOME',
+  MAIN: 'MAIN',
   CONNECT: 'CONNECT',
   SELECT: 'SELECT',
   PERMISSION: 'PERMISSION',
@@ -51,12 +54,14 @@ const PHASE = {
 };
 
 // 뒤로가기(N3 사용자 제어) 대상. PLAY는 경기 중이라 뒤로가기가 없다.
+// **CONNECT와 RESULT는 게이트가 아니라 MAIN으로 돌아간다.** 게이트는 세션당 한 번 지나는
+// 문이라 되돌아가면 게스트 선택을 다시 하게 된다.
 const BACK_OF = {
-  [PHASE.CONNECT]: PHASE.HOME,
-  [PHASE.SELECT]: PHASE.CONNECT,
+  [PHASE.CONNECT]: PHASE.MAIN,
+  [PHASE.SELECT]: PHASE.MAIN,
   [PHASE.PERMISSION]: PHASE.SELECT,
   [PHASE.CALIBRATION]: PHASE.PERMISSION,
-  [PHASE.RESULT]: PHASE.HOME,
+  [PHASE.RESULT]: PHASE.MAIN,
 };
 
 /** 손떨림 등급. 표본당 회전각(라디안) 평균이 작을수록 안정. **근사 지표라 임계는 대략값(실기 튜닝 여지).** */
@@ -129,6 +134,12 @@ export default function App() {
   // 경기 중 폰 센서 통계(메모리만, localStorage 금지). 손떨림 근사 + 찌르기 파워 + 가드 수.
   const phoneStatsRef = useRef({ thrusts: 0, powerSum: 0, powerMax: 0, guards: 0, tremorSum: 0, tremorCount: 0, lastQ: null });
   const [matchResult, setMatchResult] = useState(null);
+  // MAIN 활성 탭. 기본은 가운데 CONTROLLER다
+  const [tab, setTab] = useState('CONTROLLER');
+  // 치른 경기 누적. **메모리뿐이다.** 서버 기록이 아직 없어서 앱을 닫으면 사라지고,
+  // 그 사실을 RECORDS 탭이 화면에 적는다(localStorage는 금지라 대안이 아니다)
+  const [records, setRecords] = useState([]);
+  const recordId = useRef(0);
   const resetPhoneStats = useCallback(() => {
     phoneStatsRef.current = { thrusts: 0, powerSum: 0, powerMax: 0, guards: 0, tremorSum: 0, tremorCount: 0, lastQ: null };
   }, []);
@@ -203,7 +214,11 @@ export default function App() {
     // **경기 중 상태 색을 여기서 전부 끈다.** 마지막 명중 플래시가 경기 끝과 겹치면
     // 그대로 결과 화면까지 따라온다. 결과는 중립 색이어야 한다.
     link.on('result', (r) => {
-      setMatchResult(buildMatchResult(r, phoneStatsRef.current));
+      const built = buildMatchResult(r, phoneStatsRef.current);
+      setMatchResult(built);
+      // 누적은 append다. 최근 판이 위로 온다
+      recordId.current += 1;
+      setRecords((list) => [{ ...built, id: recordId.current }, ...list]);
       setFlash(null);
       setGuarding(false);
       setLastAction(null);
@@ -274,19 +289,33 @@ export default function App() {
     [link]
   );
 
-  // HOME에서 게스트 시작 → CONNECT. ?room= 자동 주입이면 코드 입력을 건너뛰고 바로 접속한다.
+  // 게이트에서 게스트 시작 → MAIN. **여기서 코드 입력으로 보내지 않는다.**
+  // 첫 얼굴이 페어링 폼이 되면 앱이 무엇인지 말할 기회가 없다. 연결은 MAIN의 액션 뒤에 있다.
+  //
+  // ?room= 자동 주입이면 조용히 뒤에서 붙인다. 접속 화면을 띄우지 않으므로 connecting은
+  // 세우지 않고, 붙으면 MAIN 상단이 "연결됨"으로 바뀌는 것으로만 알린다.
   const onGuest = useCallback(() => {
-    setPhase(PHASE.CONNECT);
-    if (roomFromUrl.length === 4) onConnect(roomFromUrl);
-  }, [roomFromUrl, onConnect]);
+    setPhase(PHASE.MAIN);
+    if (roomFromUrl.length === 4) link.connect(roomFromUrl);
+  }, [roomFromUrl, link]);
 
-  // paired 수신 → SELECT. CONNECT에 있을 때만 넘긴다(경기 중 재연결이 화면을 튀게 하지 않도록).
+  // MAIN의 주 액션. 이미 붙어 있으면 유파 선택으로 직행하고, 아니면 코드 입력을 먼저 거친다.
+  const onStart = useCallback(() => {
+    setPhase(linkStatus === LINK.PAIRED ? PHASE.SELECT : PHASE.CONNECT);
+  }, [linkStatus]);
+
+  const toConnect = useCallback(() => setPhase(PHASE.CONNECT), []);
+  const toMain = useCallback(() => setPhase(PHASE.MAIN), []);
+
+  // paired 수신 → SELECT. **사용자가 그 화면에서 접속을 건 경우에만 넘긴다.**
+  // CONNECT에 있다는 것만으로 넘기면, ?room=으로 이미 붙은 상태에서 상단 연결 액션을 눌러
+  // 코드 화면을 연 순간 곧바로 튕겨 나간다. connecting이 그 구분이다.
   useEffect(() => {
-    if (linkStatus === LINK.PAIRED && phase === PHASE.CONNECT) {
+    if (linkStatus === LINK.PAIRED && phase === PHASE.CONNECT && connecting) {
       setConnecting(false);
       setPhase(PHASE.SELECT);
     }
-  }, [linkStatus, phase]);
+  }, [linkStatus, phase, connecting]);
 
   // PLAY 첫 진입에 코치마크 2종을 한 번만 띄운다(둘째 판부터 생략).
   useEffect(() => {
@@ -327,6 +356,17 @@ export default function App() {
         {phase === PHASE.SPLASH ? <SplashScreen onDone={splashDone} /> : null}
 
         {phase === PHASE.HOME ? <HomeScreen onGuest={onGuest} /> : null}
+
+        {phase === PHASE.MAIN ? (
+          <MainScreen
+            tab={tab}
+            onTab={setTab}
+            records={records}
+            paired={linkStatus === LINK.PAIRED}
+            onConnect={toConnect}
+            onStart={onStart}
+          />
+        ) : null}
 
         {phase === PHASE.CONNECT ? (
           <ConnectScreen
@@ -375,7 +415,7 @@ export default function App() {
         ) : null}
 
         {phase === PHASE.RESULT ? (
-          <ResultScreen result={matchResult} onAgain={() => setPhase(PHASE.SELECT)} onHome={() => setPhase(PHASE.HOME)} />
+          <ResultScreen result={matchResult} onAgain={() => setPhase(PHASE.SELECT)} onHome={toMain} />
         ) : null}
 
         {/* PLAY 첫 진입 코치마크(강릉페이 S7). 제스처 안내라 중앙 툴팁. 둘째 판부터 생략 */}
