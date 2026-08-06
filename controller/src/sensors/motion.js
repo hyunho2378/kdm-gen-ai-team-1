@@ -22,7 +22,11 @@ export const DEFAULTS = {
   horizRatio: 1.25,    // 수평이 수직보다 이만큼 커야 찌르기다. 걷기를 여기서 자른다
   minHoldMs: 40,       // 단일 스파이크 무시. 이만큼은 임계 위에 머물러야 한다
   cooldownMs: 350,     // arena judge.js의 THRUST_COOLDOWN_MS와 같은 값
-  guardTiltDeg: 35,    // 기준 자세 대비 이만큼 기울면 폰을 세운 것으로 본다
+  // **가드는 기준 자세 안쪽이다.** 기준이 "폰 세로, 단자 아래"라 세워 둔 상태가 곧 가드다.
+  // 전에는 부등호가 반대여서(기준에서 35도 이상 기울면 가드) 눕힐수록 가드가 켜졌다.
+  // 눕히는 것은 찌르기 방향이라 두 동작이 같은 구간에서 싸웠다.
+  guardZoneDeg: 20,     // 기준 자세에서 이 안이면 폰이 서 있는 것으로 본다
+  guardReleaseDeg: 30,  // 풀리는 각. 문턱이 하나면 경계에서 on/off가 떨며 판정에 이벤트가 쏟아진다
   guardStillMs: 150,   // 그 자세로 이만큼 정지해야 가드다
   guardStillAcc: 3.0,  // 정지 판정 가속 상한
 };
@@ -114,13 +118,16 @@ export function createMotion(opts = {}) {
     cb.thrust?.(normalizePower(p, cfg.thrust), p);
   }
 
-  /** 가드. 기준 자세 대비 폰이 서고 그 자세로 잠깐 멈추면 켜진다. */
+  /**
+   * 가드. **기준 자세(폰 세로)를 유지하고 잠깐 멈추면 켜진다.**
+   * 앞으로 눕히면(찌르기 방향) 풀린다. 켜지는 각과 풀리는 각을 벌려 경계 떨림을 막는다.
+   */
   function detectGuard(now, total) {
     if (!baseSet) return;
     const cosTilt = Math.min(1, Math.max(-1, dot(gravity, baseGravity)));
     const tilt = (Math.acos(cosTilt) * 180) / Math.PI;
     const still = total <= cfg.guardStillAcc;
-    if (tilt >= cfg.guardTiltDeg && still) {
+    if (tilt <= cfg.guardZoneDeg && still) {
       if (!stillSince) stillSince = now;
       if (!guarding && now - stillSince >= cfg.guardStillMs) {
         guarding = true;
@@ -129,7 +136,7 @@ export function createMotion(opts = {}) {
       return;
     }
     stillSince = 0;
-    if (guarding && tilt < cfg.guardTiltDeg) {
+    if (guarding && tilt > cfg.guardReleaseDeg) {
       guarding = false;
       cb.guard?.(false);
     }

@@ -163,7 +163,7 @@ export function PermissionScreen({ needsPrompt, onRequest, denied, onTapMode, on
       ) : (
         <ButtonPrimary onClick={onRequest}>센서 허용</ButtonPrimary>
       )}
-      <Body tone={colors.text.dim}>세로로 들고 손잡이를 쥐듯 잡는다.</Body>
+      <Body tone={colors.text.dim}>세로로 들고 충전 단자가 아래로 가게 손잡이 쥐듯 잡는다.</Body>
     </Screen>
     </>
   );
@@ -172,6 +172,10 @@ export function PermissionScreen({ needsPrompt, onRequest, denied, onTapMode, on
 /**
  * CALIBRATION. 검처럼 쥐고 정지 3초.
  * 진행 링은 검끝 곡선 문법을 따라 stroke-dashoffset으로 그린다(COMPONENTS TrailDivider 계열).
+ *
+ * **여기서 잡는 자세가 arena 검의 앙가르드가 된다.** 그래서 그립을 문구로 못 박는다.
+ * 폰 세로 + 단자 아래 + 화면이 몸 쪽이면 기기 좌표계가 카메라 좌표계와 그대로 맞아떨어져
+ * ThreeRenderer의 GRIP_TO_BLADE 보정 하나로 검이 옳게 선다. 다른 자세로 잡으면 그 전제가 깨진다.
  */
 export function CalibrationScreen({ onDone, onBack }) {
   const [t, setT] = useState(0);
@@ -194,7 +198,7 @@ export function CalibrationScreen({ onDone, onBack }) {
     <>
       {onBack ? <TopBarBack title="캘리브레이션" onBack={onBack} /> : null}
     <Screen>
-      <Title>검처럼 쥐고 멈춘다</Title>
+      <Title>폰을 세로로 세워 쥐고 정지</Title>
       <svg width={R * 2 + 20} height={R * 2 + 20} aria-hidden="true">
         <g transform={`translate(${R + 10} ${R + 10}) rotate(-90)`}>
           <circle r={R} fill="none" stroke={colors.line.default} strokeWidth="3" />
@@ -210,7 +214,7 @@ export function CalibrationScreen({ onDone, onBack }) {
         </g>
       </svg>
       <Body>{Math.ceil((1 - t) * (CALIB_MS / 1000))}초</Body>
-      <Body tone={colors.text.dim}>이 자세가 기준이 된다. 흔들지 않는다.</Body>
+      <Body tone={colors.text.dim}>충전 단자가 아래, 화면이 나를 본다. 이 자세가 검의 기본 자세가 된다.</Body>
     </Screen>
     </>
   );
@@ -290,7 +294,7 @@ export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd
           <>
             <Title>{guarding ? '가드' : '찌른다'}</Title>
             <Body tone={colors.text.dim}>
-              {support === 'gravityOnly' ? '간이 센서 모드로 동작 중이다.' : '앞으로 뻗으면 찌르기. 폰을 세우면 가드.'}
+              {support === 'gravityOnly' ? '간이 센서 모드로 동작 중이다.' : '세워 두면 가드. 앞으로 눕혀 지르면 찌르기.'}
             </Body>
           </>
         )}
