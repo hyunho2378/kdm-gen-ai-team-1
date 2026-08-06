@@ -7,7 +7,7 @@
 // `:active`의 press 색이 통째로 죽는다(arena에서 실제로 죽어 있던 함정이다).
 // 그래서 CTA 배경은 클래스가 쥔다.
 
-import { colors, glow, motion, spacing, withAlpha, zIndex } from './tokens.js';
+import { colors, displayFamily, glow, motion, spacing, withAlpha, zIndex } from './tokens.js';
 
 /**
  * 헤더가 상주하는 높이. 하위 페이지 상단 여백이 이 값을 더해야 제목이 안 가린다.
@@ -31,7 +31,11 @@ export function applyThemeVars(root = document.documentElement) {
 
     // 커서는 토스트보다도 위다. 화면의 어떤 것도 커서를 가리면 안 된다
     '--z-cursor': String(zIndex.toast + 10),
+    // 프리로더는 로드 중 화면 전체를 덮으므로 커서보다도 위다
+    '--z-preloader': String(zIndex.toast + 20),
     '--text-primary': colors.text.primary,
+    '--bg-base': colors.bg.base,
+    '--font-display': displayFamily,
 
     '--red-light': colors.red.light,
     '--red-fill': colors.red.fill,

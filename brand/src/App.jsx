@@ -8,7 +8,7 @@
 // 뜨고 그 안에서 다시 안내를 내야 한다. 명시 라우트로 두면 `/product/branding` 같은 폐기 경로가
 // 전역 NotFound로 그냥 떨어진다. 라우트 목록은 copy.js의 제품 카드가 곧 원천이다.
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   BrowserRouter,
   NavigationType,
@@ -22,6 +22,7 @@ import { ScrollTrigger } from './lib/motion.js';
 import { PRODUCTS } from './copy.js';
 import { applyThemeVars } from './theme.js';
 import Cursor from './components/Cursor.jsx';
+import Preloader, { splashPlayed } from './components/Preloader.jsx';
 import Header from './components/Header.jsx';
 import Landing from './pages/Landing.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
@@ -42,16 +43,24 @@ import NotFound from './pages/NotFound.jsx';
  * 그때는 lerp가 1이 되어 입력에 1:1로 붙는다.
  */
 function useSmoothScroll() {
+  const lenisRef = useRef(null);
   useEffect(() => {
     const lenis = new Lenis({ autoRaf: true });
+    lenisRef.current = lenis;
+    // **프리로더가 뜨는 최초 로드에만 세워 둔다.** 스플래시 중에 스크롤이 먹으면
+    // 인계 순간 히어로 워드마크가 제자리에 없어서 착지가 어긋난다.
+    // 모듈 플래그를 여기서 직접 읽어 의존성을 만들지 않는다(재생성 방지)
+    if (!splashPlayed()) lenis.stop();
     // **Lenis가 스크롤 위치를 쥐므로 ScrollTrigger에 진행을 알려 줘야 한다.**
     // 안 묶으면 pin 구간이 스크롤 중간 프레임을 놓쳐 계단처럼 끊긴다
     lenis.on('scroll', ScrollTrigger.update);
     return () => {
       lenis.off('scroll', ScrollTrigger.update);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
+  return lenisRef;
 }
 
 /**
@@ -72,14 +81,17 @@ function ScrollToTop() {
 }
 
 export default function App() {
-  useSmoothScroll();
+  const lenisRef = useSmoothScroll();
   // CSS 변수 주입. hover와 :active와 focus-visible이 이 값을 읽는다
   useEffect(() => applyThemeVars(), []);
 
   return (
     <BrowserRouter>
       <ScrollToTop />
-      {/* 커서는 라우트 밖에 둔다. 페이지가 갈려도 하나만 산다 */}
+      {/* 프리로더와 커서는 라우트 밖에 둔다. 페이지가 갈려도 하나만 산다 */}
+      <Preloader
+        onDone={() => lenisRef.current?.start()}
+      />
       <Cursor />
       <Header />
       <Routes>

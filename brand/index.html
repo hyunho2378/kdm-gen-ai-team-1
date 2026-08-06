@@ -8,6 +8,12 @@
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
     <title>VORTEX Brand</title>
+    <!-- **첫 페인트부터 검게 둔다.** 스타일시트가 붙기 전 한 프레임이 흰색으로 번쩍인다
+         (실측 스크린샷에서 잡았다). 프리로더가 검은 판이라 그 앞이 흰 화면이면 특히 눈에 띈다.
+         값은 DESIGN 2절 bg.base와 같고, index.css의 부트스트랩 예외와 같은 지위다. -->
+    <style>
+      html, body { margin: 0; background: #101010; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
