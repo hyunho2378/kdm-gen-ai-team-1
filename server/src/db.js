@@ -66,9 +66,12 @@ export async function initDb() {
     return false;
   }
   try {
-    // Neon과 Render Postgres는 TLS를 요구하고 체인이 시스템 저장소에 없을 수 있다.
-    // 로컬 평문 접속은 sslmode=disable을 URL에 넣어 끈다
-    const ssl = /sslmode=disable/.test(url) ? false : { rejectUnauthorized: false };
+    // **인증서를 실제로 검증한다.** Neon 실물로 확인했다(엄격 검증 통과).
+    // rejectUnauthorized를 끄면 중간자에게 문이 열리는데, 그것을 감수할 이유가 없었다.
+    // 로컬 평문 접속만 sslmode=disable을 URL에 넣어 끈다.
+    // 자체 서명 인증서를 쓰는 호스트로 옮기면 여기서 붙지 못하고, 그때는 조용히
+    // 실패하지 않고 아래 catch가 사유를 로그에 남긴 뒤 기록만 꺼진다
+    const ssl = /sslmode=disable/.test(url) ? false : true;
     pool = new pg.Pool({ connectionString: url, ssl, max: 4 });
     for (const stmt of SCHEMA) await pool.query(stmt);
     ready = true;
