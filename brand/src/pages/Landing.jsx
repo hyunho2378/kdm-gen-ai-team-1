@@ -1,7 +1,8 @@
 // 랜딩. **관문이다.** 여기서 다 보여주지 않고 유인만 한다(B3 재편).
 //
-// 히어로(검끝 궤적)와 월드빌딩은 그대로 두고, 제품군과 유파와 체험은 관문 카드 셋으로 줄였다.
-// 각 섹션의 본문은 자기 페이지로 옮겨 갔다(`pages/Products.jsx`, `pages/Duelists.jsx`, `pages/Experience.jsx`).
+// 히어로(검끝 궤적) 다음에 관문(제품군/유파/체험)이 바로 이어진다. **월드빌딩 섹션은 걷어냈다(R5).**
+// 이미지 없는 빈 큰 박스라 스크롤 흐름만 끊었고, 세계관 서사는 About으로 옮겨 갈 자리다.
+// 각 관문의 본문은 자기 페이지로 옮겨 갔다(`pages/Products.jsx`, `pages/Duelists.jsx`, `pages/Experience.jsx`).
 //
 // **일반 스크롤이다.** presentation-v2의 방향키 셸을 가져오지 않는다.
 // 스무스 스크롤은 App의 Lenis가 전역으로 건다.
@@ -15,9 +16,8 @@ import Section from '../components/Section.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import HeroTrail from '../components/HeroTrail.jsx';
 import HeroWordmark from '../components/HeroWordmark.jsx';
-import WorldScene from '../components/WorldScene.jsx';
 
-const { hero, world, gates } = LANDING;
+const { hero, gates } = LANDING;
 
 // **히어로 배경 레드 radial을 걷어냈다(REBOOT_PLAN 2.1).**
 // 알파를 아무리 낮춰도 넓은 면을 먹는 레드는 배경을 물들이고, 그러면 사건의 색이 배경색이 된다.
@@ -27,7 +27,6 @@ export default function Landing() {
   return (
     <main>
       <HeroSection />
-      <WorldSection />
       <GatewaySection />
     </main>
   );
@@ -139,11 +138,6 @@ function HeroSection() {
       </div>
     </section>
   );
-}
-
-/** 월드빌딩. B5에서 sticky 시네마틱으로 올렸다. 연출은 WorldScene이 소유한다. */
-function WorldSection() {
-  return <WorldScene id={SECTION.WORLD} eyebrow={world.eyebrow} title={world.title} body={world.body} />;
 }
 
 /**

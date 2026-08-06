@@ -34,10 +34,9 @@ export const PRODUCTS_INDEX_LINE_TODO = `제품군 한 줄 ${TODO_MARK}`;
 // 자리표시 문구만 dim으로 둔다. 에셋이 들어오면 이 상수를 참조하는 자리가 이미지로 바뀐다
 export const MEDIA_PENDING = '이미지 첨부 예정';
 
-// 섹션 식별자. 랜딩 앵커가 쓴다.
+// 섹션 식별자. 랜딩 앵커가 쓴다. **월드빌딩 섹션은 제거했다(R5).**
 export const SECTION = {
   HERO: 'hero',
-  WORLD: 'world',
   GATES: 'gates',
 };
 
@@ -70,11 +69,7 @@ export const LANDING = {
     scrollHint: '아래로 진입',
     team: '2026 KDM+ AI Workshop',
   },
-  world: {
-    eyebrow: { en: 'WORLDBUILDING', ko: '월드빌딩' },
-    title: '일상의 공간이 도장이 된다',
-    body: '검과 검 사이, 찌르기가 성립하는 찰나의 거리를 몸이 먼저 읽는다. VORTEX는 그 순간의 감각을 훈련으로 옮긴다.',
-  },
+  // **월드빌딩 섹션은 제거했다(R5).** 문구는 PROGRESS에 보존해 About 등 재사용에 대비했다.
   // 관문 셋. 랜딩에서 다 보여주지 않고 유인만 한다
   gates: [
     {
