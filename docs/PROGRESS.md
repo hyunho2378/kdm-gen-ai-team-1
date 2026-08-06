@@ -2177,6 +2177,28 @@
     - **남은 사람 단계: Vercel 프리뷰 배포 실 URL 육안 검증, Lighthouse LCP/CLS/INP 실측 전후 비교(헤드리스 pane 불안정으로 자동 측정 불가), 실브라우저에서 P3 스크럽·P6 Flip 모핑 육안 확인.** 배포는 외부 공개 액션이라 권한 확인 후 사람이 수행
   - **presentation 탈PPT 개편 P0~P7 전체 완료.** 실물 펜싱 프레임 도착 시 `presentation/public/frames/hero/` 폴더 덮어쓰기 + manifest.count만 바꾸면 반영(코드 수정 0)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
+- **brand R6 하단 CTA와 뉴스레터 리빌과 푸터 완료(확인 대기). 트랙 선점 해제.** 랜딩 하단만 손댔다.
+  새 라이브러리 없이 GSAP ScrollTrigger와 Lenis만. 커밋 하나(세 블록이 한 흐름이라).
+  - **구현.** `copy.js`에 `LANDING.outro`(cta/newsletter/footer)와 `SECTION.CTA/NEWSLETTER` 신설.
+    `components/Newsletter.jsx` 신설(폼 + scrub 리빌). `Landing.jsx`에 `CtaSection`(→/experience 레드 채움)과
+    `Footer`(소형 크롬 워드마크 + HEADER.nav 재사용 메뉴 + 크레딧 + 팀 + 저작권)를 인라인으로 두고
+    관문 다음에 CtaSection → Newsletter → Footer 순으로 렌더.
+  - **리빌은 ScrollTrigger scrub 하나.** transform(y 48→0)과 opacity(0→1)만. **fixed pin 없음**(월드빌딩 pin
+    함정 회피). pin이 없어 워프 skew가 걸려도 리빌 진행은 scrollY로만 계산돼 어긋나지 않는다.
+    reduced motion에서는 트리거를 아예 안 걸어 블록이 정적으로 선다. willChange는 리빌 요소에만.
+  - **뉴스레터 전송 백엔드 미연결.** 입력과 버튼은 세우되 제출은 자리표시 동작이다. onSubmit이
+    preventDefault 후 콘솔 로그 한 줄과 "구독 기능 준비 중" 안내(role=status, aria-live=polite)만 띄운다.
+    실제 구독 API가 생기면 Newsletter.jsx의 onSubmit만 바꾼다. label↔input 연결, type=email required,
+    키보드 제출, focus-visible red 2px(전역). **입력 필드 border는 기능이라 R1 선 제거 예외(최소).**
+  - **실측(1440).** 섹션 순서 hero→gates→cta→newsletter + footer. 리빌 요소 화면 밖 초기 상태
+    opacity 0 / translateY 48px(scrub from-state 적용 확인). CTA href /experience. 폼 제출 크래시 없음,
+    제출 뒤 "구독 기능 준비 중" 렌더. 푸터에 워드마크·메뉴(ABOUT/PRODUCTS/DUELISTS/EXPERIENCE)·
+    크레딧·팀·저작권 전부. outro 영역 장식 선 0(입력 필드와 CTA 버튼 채움만), 레드 배경 그라디언트 0
+    (크롬 워드마크의 text-clip 그라디언트만, 허용). 커스텀 커서 하단에서도 data-cursor-on.
+    320/768/1440/3840 가로 오버플로 ≤ 0. build:all 4앱 통과.
+  - **미검증(환경 한계).** 프리뷰 페인이 rAF를 강하게 스로틀해 리빌 애니메이션의 실시간 필름은 못 잡았다.
+    from-state가 라이브임은 확인했고(스크럽이 요소를 쥔 증거) gsap.from 의미상 progress 1에서 자연 상태(보임)로
+    수렴한다. **실기(사람 단계)에서 스크롤 리빌 육안 확인 권장.**
 - **brand 헤더 About 순서 이동 완료(확인 대기). 트랙 선점 해제.** 헤더 메뉴에서 ABOUT을 맨 앞으로
   (ABOUT, PRODUCTS, DUELISTS, EXPERIENCE). **copy.js `HEADER.nav` 배열 하나만 재정렬했다.**
   데스크톱 바와 모바일 시트가 이 배열을 같은 순서로 렌더하고, 탭 순서(DOM 순서)와 현재 표시

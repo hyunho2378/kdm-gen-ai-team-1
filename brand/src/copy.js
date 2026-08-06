@@ -38,6 +38,8 @@ export const MEDIA_PENDING = '이미지 첨부 예정';
 export const SECTION = {
   HERO: 'hero',
   GATES: 'gates',
+  CTA: 'cta',
+  NEWSLETTER: 'newsletter',
 };
 
 // ---------------------------------------------------------------------------
@@ -102,6 +104,31 @@ export const LANDING = {
       link: '체험하기',
     },
   ],
+  // 랜딩 하단 세 블록(R6). CTA 초대 → 뉴스레터 리빌 → 푸터.
+  outro: {
+    cta: {
+      title: '함께 겨루자',
+      // /experience로 나가는 레드 채움 링크. 채움과 press는 .vx-cta 클래스가 쥔다
+      button: '체험하기',
+      to: '/experience',
+    },
+    newsletter: {
+      title: '결투 소식을 받는다',
+      label: '이메일',
+      placeholder: '이메일',
+      button: '구독',
+      note: '새 유파와 업데이트 소식을 보낸다',
+      // **전송 백엔드가 없다.** 제출은 자리표시 동작이라 이 안내만 띄운다(PROGRESS 기록)
+      pending: '구독 기능 준비 중',
+    },
+    footer: {
+      wordmark: BRAND,
+      // 메뉴는 HEADER.nav를 그대로 재사용한다(About, Products, Duelists, Experience). 컴포넌트에서 참조
+      credit: '2026 KDM+ Generative AI Workshop 강원 지부',
+      team: '김다영 주현호 윤소희',
+      copyright: '© 2026 VORTEX',
+    },
+  },
 };
 
 // ---------------------------------------------------------------------------

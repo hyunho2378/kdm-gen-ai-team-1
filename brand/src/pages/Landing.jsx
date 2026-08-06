@@ -9,15 +9,16 @@
 
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { colors, spacing, typography } from '../tokens.js';
-import { LANDING, MEDIA_PENDING, SECTION } from '../copy.js';
+import { colors, displayFamily, radius, spacing, steelText, typography } from '../tokens.js';
+import { HEADER, LANDING, MEDIA_PENDING, SECTION } from '../copy.js';
 import { gsap, isReduced } from '../lib/motion.js';
 import Section from '../components/Section.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import HeroTrail from '../components/HeroTrail.jsx';
 import HeroWordmark from '../components/HeroWordmark.jsx';
+import Newsletter from '../components/Newsletter.jsx';
 
-const { hero, gates } = LANDING;
+const { hero, gates, outro } = LANDING;
 
 // **히어로 배경 레드 radial을 걷어냈다(REBOOT_PLAN 2.1).**
 // 알파를 아무리 낮춰도 넓은 면을 먹는 레드는 배경을 물들이고, 그러면 사건의 색이 배경색이 된다.
@@ -28,6 +29,9 @@ export default function Landing() {
     <main>
       <HeroSection />
       <GatewaySection />
+      <CtaSection />
+      <Newsletter id={SECTION.NEWSLETTER} />
+      <Footer />
     </main>
   );
 }
@@ -235,3 +239,140 @@ function GatewaySection() {
     </Section>
   );
 }
+
+/**
+ * CTA 섹션. 결투로의 초대다. 큰 문구 하나와 레드 채움 버튼(/experience로).
+ * **무배경, 선 없음.** 채움과 press는 `.vx-cta` 클래스가 쥔다(배경 인라인 금지, PITFALLS).
+ */
+function CtaSection() {
+  const { cta } = outro;
+  return (
+    <section
+      id={SECTION.CTA}
+      className="vx-shell vx-section"
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: spacing.unit * 4,
+      }}
+    >
+      <h2
+        style={{
+          margin: 0,
+          fontFamily: displayFamily,
+          fontSize: typography.display.size,
+          fontWeight: typography.display.weight,
+          letterSpacing: typography.display.tracking,
+          lineHeight: typography.display.leading,
+          color: colors.text.primary,
+          maxWidth: spacing.maxContent,
+          wordBreak: 'keep-all',
+        }}
+      >
+        {cta.title}
+      </h2>
+      <Link to={cta.to} className="vx-cta" style={ctaLinkStyle}>
+        {cta.button}
+      </Link>
+    </section>
+  );
+}
+
+// 배경 없이 글자만 큰 climax. **background는 `.vx-cta`가 쥔다.** 여기서 걸면 :active press가 죽는다
+const ctaLinkStyle = {
+  display: 'inline-flex',
+  alignSelf: 'flex-start',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 44,
+  padding: '14px 32px',
+  borderRadius: radius.pill,
+  fontFamily: typography.family,
+  fontSize: typography.body.size,
+  fontWeight: 600,
+  lineHeight: 1,
+  textDecoration: 'none',
+};
+
+/**
+ * 푸터. 맨 아래. 워드마크(소형 크롬), 메뉴(HEADER.nav 재사용), 크레딧과 팀, 저작권.
+ * **무배경, 선 없음.** 층은 여백이 낸다(REBOOT_PLAN 2.1).
+ */
+function Footer() {
+  const { footer } = outro;
+  return (
+    <footer
+      className="vx-shell"
+      style={{
+        paddingBlock: spacing.unit * 6,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.unit * 3,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          gap: spacing.unit * 2,
+        }}
+      >
+        {/* 소형 워드마크. 로고라 크롬 재질 허용(DESIGN 3절) */}
+        <Link to="/" aria-label={footer.wordmark} style={{ textDecoration: 'none' }}>
+          <span
+            style={{
+              fontFamily: displayFamily,
+              fontSize: typography.heading.size,
+              fontWeight: typography.display.weight,
+              letterSpacing: typography.display.tracking,
+              lineHeight: 1,
+              ...steelText,
+            }}
+          >
+            {footer.wordmark}
+          </span>
+        </Link>
+
+        {/* 메뉴는 헤더와 같은 배열을 쓴다. 순서가 헤더와 어긋나지 않는다 */}
+        <nav aria-label="푸터 메뉴" style={{ display: 'flex', flexWrap: 'wrap', gap: spacing.unit * 2 }}>
+          {HEADER.nav.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              style={{
+                minHeight: 44,
+                display: 'inline-flex',
+                alignItems: 'center',
+                fontFamily: typography.family,
+                fontSize: typography.caption.size,
+                letterSpacing: typography.hud.tracking,
+                color: colors.text.dim,
+                textDecoration: 'none',
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <span style={footerMetaStyle}>{footer.credit}</span>
+        <span style={footerMetaStyle}>{footer.team}</span>
+      </div>
+
+      <span style={footerMetaStyle}>{footer.copyright}</span>
+    </footer>
+  );
+}
+
+const footerMetaStyle = {
+  fontFamily: typography.family,
+  fontSize: typography.caption.size,
+  color: colors.text.dim,
+  wordBreak: 'keep-all',
+};
