@@ -1125,6 +1125,14 @@
     | 서명 | **13/13, 결정성 통과, 1097/c820d0f2 유지** |
     | clean 빌드 | 4앱 + server `npm ci` 기동까지 전부 통과 |
 
+  - **Neon 실물 확인(커밋 `d5b4772`).** 사용자가 `DATABASE_URL`을 넣어 준 뒤 같은 검증을
+    Neon으로 다시 돌렸다. 부팅 시 스키마 적용, 한 판 append, **서버 재시작 후 유지**,
+    두 번째 판 **누적**, 다른 쿠키 조회 **0행**. 전부 통과.
+    **그 김에 TLS를 조였다.** `rejectUnauthorized`를 끄고 있었는데 Neon은 엄격 검증이
+    그대로 통과해서, 중간자에게 문을 열어 둘 이유가 없었다.
+    **`.env`는 `server/.env`에 둔다.** 로더가 그 자리를 읽는다(`.env.example` 옆).
+    `server/src/.env`에 두면 안 읽히고 기록이 조용히 안 쌓인다.
+
   - **배포에 필요한 것 셋.** Render server에 `DATABASE_URL`(Neon 등), `NODE_ENV=production`,
     그리고 기존 `CORS_ORIGINS`. **`NODE_ENV`를 빼면 신원 쿠키가 안 붙는다** — 폰(Vercel)과
     서버(Render)가 다른 도메인이라 SameSite=None과 Secure가 둘 다 필요하다.
@@ -2302,6 +2310,9 @@
     - **남은 사람 단계: Vercel 프리뷰 배포 실 URL 육안 검증, Lighthouse LCP/CLS/INP 실측 전후 비교(헤드리스 pane 불안정으로 자동 측정 불가), 실브라우저에서 P3 스크럽·P6 Flip 모핑 육안 확인.** 배포는 외부 공개 액션이라 권한 확인 후 사람이 수행
   - **presentation 탈PPT 개편 P0~P7 전체 완료.** 실물 펜싱 프레임 도착 시 `presentation/public/frames/hero/` 폴더 덮어쓰기 + manifest.count만 바꾸면 반영(코드 수정 0)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
+- **brand 레이아웃 강화 세로정렬과 제품 가독 작업중. 트랙 선점.** 레이아웃만(색/카피 무변경).
+  섹션을 세로 중앙에서 상단 정렬로(빈 상단 3분의 1 제거), 제품 인덱스 제목 압축과 카드 판독,
+  관문 위계 확대. --page-top 축소, Section 100dvh/center 제거, .vx-card 판 신설.
 - **GUARD_TWIST(길 B) 가드를 비틀기로 완료(실기 확인 대기).** 커밋 셋으로 나눠 각 직후 push했다.
   가드 제스처를 옆으로 기울이기(roll, 길 A)에서 사용자가 실제로 하는 "잡은 채 화면이 몸을 보게 비틀기"
   (전완 회외, 장축 둘레 회전)로 옮겼다. diff는 입력/렌더/미리보기 7파일뿐, 판정 파일 무변경.
