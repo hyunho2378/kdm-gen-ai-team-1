@@ -23,7 +23,7 @@ import { flipSettleMs } from '../lib/flip.js';
 
 // 모델 자리. 값이 들어오면 여기서 GLTFLoader 분기가 시작된다.
 // **지금은 셋 다 없다.** 없는 동안은 플레이스홀더가 뜬다
-const MODEL_URL = { 'xr-glass': null, controller: null };
+const MODEL_URL = { mask: null, controller: null };
 
 const DPR_CAP = 2;
 // OrbitControls 단위. 기본 2.0은 제품이 팽이처럼 돌아 형태가 안 읽힌다.

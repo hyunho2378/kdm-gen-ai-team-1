@@ -18,7 +18,7 @@ export const APP_NAME = 'VORTEX Brand';
 // ---------------------------------------------------------------------------
 const TODO_MARK = '확정 예정';
 
-export const TODO_XR_GLASS_DETAIL = `XR 글라스 상세 ${TODO_MARK}`;
+export const TODO_MASK_DETAIL = `마스크 상세 ${TODO_MARK}`;
 export const TODO_EXPERIENCE_NOTICE = `데모 주의 사항 ${TODO_MARK}`;
 // 상세 탭 정보 패널. **스펙표와 특징 목록은 아직 확정된 것이 하나도 없다.**
 // 지어내지 않는다. 아래 PRODUCT_DETAIL.spec과 .features가 비어 있는 동안 이 문장이 대신 뜬다
@@ -84,7 +84,7 @@ export const LANDING = {
       // 제품군이 2종으로 줄었다(REBOOT_PLAN 3.1). 인터랙티브 데모 앱은 제품이 아니라
       // 체험이라 /experience로 옮겼다. 여기 한 줄도 남은 둘의 이름으로 다시 쓴다
       title: '검을 이루는 두 개의 장치',
-      line: 'XR 글라스와 모의 검 컨트롤러, 훈련을 완성하는 제품군',
+      line: '마스크와 컨트롤러, 훈련을 완성하는 두 장치',
       link: '제품 보기',
     },
     {
@@ -144,20 +144,75 @@ export const PRODUCTS = {
   // /experience가 소개를 맡는다. 라우트도 함께 사라져 /product/demo-app은 NotFound로 떨어진다
   cards: [
     {
-      slug: 'xr-glass',
-      name: 'XR 글라스',
+      slug: 'mask',
+      name: '마스크',
       line: '검끝과 거리를 실시간으로 추적하는 시야',
-      detail: TODO_XR_GLASS_DETAIL,
+      detail: TODO_MASK_DETAIL,
       demoCta: true,
     },
     {
       slug: 'controller',
-      name: '모의 검 컨트롤러',
+      name: '컨트롤러',
       line: '폰이 검이 되는 모션 컨트롤러',
       detail: '폰 센서로 찌르기와 거리를 읽어 검의 움직임으로 옮긴다',
       demoCta: false,
     },
   ],
+};
+
+// ---------------------------------------------------------------------------
+// 제품 딥다이브(BV2-4). /products가 두 제품을 한 편의 스크롤로 판다.
+//
+// **Apple Vision Pro 문법을 구조로만 가져왔다. 문장은 우리 것이다.**
+// 실측한 것은 자리의 역할과 길이다.
+//
+//   긴 딥다이브 섹션   2.4~14.5화면, 고정 미디어 + 텍스트 순차 등장
+//   짧은 브리지 섹션   1화면 내외, 고정 미디어 없음, 전환만
+//   미디어 보유율      섹션의 75퍼센트
+//   자리별 길이        큰 헤드라인은 한 문장, 그 아래 본문은 한두 줄
+//
+// beats는 고정 미디어 옆을 지나며 하나씩 드러나는 덩어리다. 제목은 짧게, 본문은 한 문장.
+// PRODUCT_DETAIL.features와 같은 사실을 말하되 여기서는 문장으로 편다.
+// ---------------------------------------------------------------------------
+export const PRODUCT_DEEPDIVE = {
+  eyebrow: { en: 'PRODUCTS', ko: '제품군' },
+  title: '검을 이루는 두 개의 장치',
+  line: '마스크와 컨트롤러, 훈련을 완성하는 두 장치',
+  // 두 딥다이브 사이에 눕는 짧은 전환. 미디어 없이 한 문장만 둔다
+  bridge: {
+    eyebrow: { en: 'AND', ko: '그리고' },
+    line: '보는 장치와 쥐는 장치가 만나야 한 자루의 검이 된다',
+  },
+  // 마감. 상세로 보내는 자리다
+  outro: {
+    eyebrow: { en: 'SPECS', ko: '사양' },
+    line: '각 제품의 사양과 특징을 따로 본다',
+  },
+  detailCta: '상세 보기',
+  products: {
+    mask: {
+      eyebrow: { en: 'MASK', ko: '마스크' },
+      headline: '보는 것이 곧 겨루는 것',
+      lead: '검끝과 거리를 시야 안에서 읽는다. 눈이 먼저 알고 몸이 뒤따른다.',
+      beats: [
+        { title: '검끝 추적', body: '마커 없이 검끝의 위치와 속도를 읽어 시야에 겹친다.' },
+        { title: '명중 표시', body: '닿은 순간을 시야 안에서 알려 판정을 눈으로 확인한다.' },
+        { title: '시간 팽창', body: '최적 타이밍에 시야가 늘어나 결정의 순간이 길어진다.' },
+        { title: '유파 식별', body: '마주 선 상대의 유파를 시야에 세워 대응을 미리 고른다.' },
+      ],
+    },
+    controller: {
+      eyebrow: { en: 'CONTROLLER', ko: '컨트롤러' },
+      headline: '손안의 검',
+      lead: '폰이 검이 된다. 쥔 손의 각도와 속도가 그대로 검의 움직임이다.',
+      beats: [
+        { title: '모션 입력', body: '가속도와 자이로 두 축으로 쥔 자세와 찌르기를 읽는다.' },
+        { title: '속도 변환', body: '찌르기의 속도와 방향을 검끝의 궤적으로 옮긴다.' },
+        { title: '타격 반동', body: '명중 순간 손잡이가 떨려 닿았다는 것을 손이 안다.' },
+        { title: '거리 환산', body: '전진과 후퇴를 간합으로 바꿔 발이 거리를 만든다.' },
+      ],
+    },
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -173,7 +228,7 @@ const DETAIL_LABELS = {
 
 export const PRODUCT_DETAIL = {
   hero: {
-    'xr-glass': '보는 것이 곧 겨루는 것',
+    mask: '보는 것이 곧 겨루는 것',
     controller: '손안의 검',
   },
   labels: DETAIL_LABELS,
@@ -191,7 +246,7 @@ export const PRODUCT_DETAIL = {
   // 시야각, 디스플레이, 무게, 배터리. 항목 이름은 확정이고 값만 미확정이라 행은 세워 둔다.
   // 리터럴로 네 번 적지 않는다. 확정될 때 고칠 자리가 넷으로 흩어진다
   spec: {
-    'xr-glass': [
+    mask: [
       { name: '추적 방식', value: '마커리스 검끝 추적' },
       { name: '시야각', value: TODO_MARK },
       { name: '디스플레이', value: TODO_MARK },
@@ -207,7 +262,7 @@ export const PRODUCT_DETAIL = {
     ],
   },
   features: {
-    'xr-glass': [
+    mask: [
       '검끝과 거리를 실시간으로 추적하는 시야',
       '명중 순간을 시야에 겹쳐 표시',
       '최적 타이밍에 시야가 팽창하는 시간 감각',

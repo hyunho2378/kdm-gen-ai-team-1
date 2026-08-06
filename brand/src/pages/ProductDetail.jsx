@@ -189,7 +189,7 @@ export default function ProductDetail({ slug }) {
           </div>
 
           {/* 하단 CTA. 데모가 있는 제품만 arena로 나간다.
-              모의 검 컨트롤러는 단독 체험이 없어 CTA 없이 되돌아가는 길만 둔다 */}
+              컨트롤러는 단독 체험이 없어 CTA 없이 되돌아가는 길만 둔다 */}
           <section style={blockStyle}>
             {product.demoCta ? (
               <>

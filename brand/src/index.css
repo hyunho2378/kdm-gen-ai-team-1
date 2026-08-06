@@ -281,6 +281,61 @@ html { scrollbar-gutter: stable; }
   }
 }
 
+/* ── 제품 딥다이브 (BRAND_SITE_V2_PLAN 2절, BV2-4) ────────────────────────
+   **고정 미디어 옆을 비트가 지나간다.** Apple Vision Pro의 sticky 패널이 top 52px에 붙는
+   구조를 그대로 옮겼고 우리는 헤더 높이를 쓴다(실측: 그쪽 sticky-element는 1425x848).
+
+   좁은 화면에서는 한 열로 쌓이고 **고정을 푼다.** 세로가 모자란 화면에서 미디어를 붙들면
+   비트를 읽을 자리가 안 남는다. 그때는 미디어가 먼저 한 번 나오고 글이 그 아래로 흐른다. */
+.vx-dive {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  padding-block: var(--section-gap);
+  align-items: start;
+}
+/* 격자 칸. 좁은 화면에서는 이 자체가 미디어 높이를 정한다 */
+.vx-dive-media {
+  position: relative;
+  width: 100%;
+}
+.vx-dive-media-inner {
+  position: relative;
+  width: 100%;
+  /* 좁은 화면에서도 제품이 읽히는 높이. 고정이 아니라 화면을 다 먹지 않는다 */
+  height: 46vh;
+  min-height: 260px;
+}
+.vx-dive-body {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3rem, 1.5rem + 6vh, 7rem);
+}
+
+@media (min-width: 900px) {
+  .vx-dive {
+    grid-template-columns: minmax(0, 47fr) minmax(0, 53fr);
+    gap: 56px;
+    /* **칸을 행 높이만큼 늘린다.** start로 두면 미디어 칸이 제 콘텐츠 높이에서 멈춰
+       안쪽 sticky가 붙을 구간이 없다(실측: top 92에서 곧바로 밀려 올라갔다) */
+    align-items: stretch;
+  }
+  .vx-dive-media-inner {
+    position: sticky;
+    /* 헤더가 상주하므로 그 아래에 붙는다. Apple은 52px, 우리 헤더는 68px다 */
+    top: calc(var(--header-h) + 24px);
+    height: min(68vh, 640px);
+  }
+  /* **이 최소 높이가 곧 딥다이브의 길이다.** Apple의 긴 섹션이 2.4화면 이상인 것을
+     여기서 만든다. 비트를 그 안에 고르게 흩어 미디어가 붙어 있는 동안 하나씩 지나간다 */
+  .vx-dive-body {
+    min-height: 210vh;
+    justify-content: space-between;
+    padding-top: 8vh;
+    padding-bottom: 8vh;
+  }
+}
+
 /* ── 커스텀 커서 (REBOOT_PLAN 2.4) ────────────────────────────────────────
    **기본 커서는 커스텀이 실제로 떠 있을 때만 감춘다.** 터치 기기와 모션 감소에서는
    컴포넌트가 렌더 자체를 안 하고 이 속성도 안 붙어서 기본 커서가 그대로 산다.
