@@ -2177,8 +2177,29 @@
     - **남은 사람 단계: Vercel 프리뷰 배포 실 URL 육안 검증, Lighthouse LCP/CLS/INP 실측 전후 비교(헤드리스 pane 불안정으로 자동 측정 불가), 실브라우저에서 P3 스크럽·P6 Flip 모핑 육안 확인.** 배포는 외부 공개 액션이라 권한 확인 후 사람이 수행
   - **presentation 탈PPT 개편 P0~P7 전체 완료.** 실물 펜싱 프레임 도착 시 `presentation/public/frames/hero/` 폴더 덮어쓰기 + manifest.count만 바꾸면 반영(코드 수정 0)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
-- **brand R5 월드빌딩 제거와 About 신설 작업중. 트랙 선점.** 랜딩 월드빌딩 섹션(빈 큰 박스라 스크롤만 끊음)을
-  pin째 제거하고, REBOOT_PLAN 3.2대로 /about을 신설한다(헤더에 ABOUT 추가). 파트 A(제거) 빌드 통과 후 파트 B(신설).
+- **brand R5 월드빌딩 제거와 About 신설 완료(확인 대기). 트랙 선점 해제.** 커밋 둘로 나눴다.
+  - **파트 A: 월드빌딩 섹션과 pin 제거.** `WorldScene.jsx`(ScrollTrigger sticky pin 소유)를 git rm으로 삭제하고
+    Landing에서 `WorldSection`과 import, `world` 구조분해를 걷어냈다. copy.js에서 `LANDING.world`와
+    `SECTION.WORLD`를 제거했다. ScrollWarp 주석의 삭제된 WorldScene 참조와 "이제 없는 pin" 서술을 정정했다.
+    - **실측(1440x720): pin-spacer 0, ScrollTrigger 인스턴스 0**(전역 노출 안 됨이지만 pin-spacer로 확인).
+      문서 높이 1440 = 뷰포트 720의 정확히 2배라 히어로+관문 둘뿐이고 죽은 스크롤 공간 0.
+      히어로 bottom 720 = 관문 top 720으로 flush, 워프 래퍼가 둘 다 감싼다. 320에서도 docH=2×vh.
+    - **워프 정상.** 워프는 `window.scrollY` 프레임 차분만 읽고 pin에 의존하지 않아 제거 영향 없다.
+      래퍼 안에 남는 fixed가 이제 없다(pin이 유일했다).
+  - **파트 B: About 페이지 신설과 헤더 메뉴.** `/about` 라우트(App), 헤더 nav에 ABOUT 추가(copy),
+    `ABOUT` 카피 네임스페이스, `pages/About.jsx`(무배경/무선 3섹션). 골격은 `.vx-shell .vx-page` 재사용.
+    - **실측: /about이 헤더 링크와 직접 URL 양쪽으로 열린다.** 헤더 ABOUT에 aria-current="page" + 레드 점 + weight 700.
+      아이브로우 영문 computed weight 700(대비 요건). 커스텀 커서 data-cursor-on=true, ring+dot 2개 동작.
+      3섹션(네이밍 h1 "왜 VORTEX인가" / 원칙 h2 "우리가 지키는 것" + 명사형 셋 / 팀 h2 "만든 사람들" +
+      dim "팀 이미지 첨부 예정") 전부 무배경·무선. 진입 애니메이션 없음이라 reduced motion 자동 만족.
+    - **overflow 0: /about과 / 둘 다 320/768/1440/3840 전부 가로 오버플로 ≤ 0**(scrollbar-gutter 예약분 -15 포함).
+      3840은 page-max 1680px 중앙 정렬.
+  - 검증: **build:all 4앱(presentation/brand/arena/controller) 전부 성공.** 판정 파일과 arena/controller 무변경.
+  - **남은 사람 단계: 푸시 후 Vercel 프로덕션 프리뷰 초록불과 /about 실 URL 육안 확인**(배포는 외부 공개 액션).
+  - **보존: 제거한 LANDING.world 문구(재사용 대비).**
+    - eyebrow: { en: 'WORLDBUILDING', ko: '월드빌딩' }
+    - title: '일상의 공간이 도장이 된다'
+    - body: '검과 검 사이, 찌르기가 성립하는 찰나의 거리를 몸이 먼저 읽는다. VORTEX는 그 순간의 감각을 훈련으로 옮긴다.'
 
 ## 결정 기록
 

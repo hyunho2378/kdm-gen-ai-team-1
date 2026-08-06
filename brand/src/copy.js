@@ -49,6 +49,7 @@ export const HEADER = {
     { to: '/products', label: 'PRODUCTS' },
     { to: '/duelists', label: 'DUELISTS' },
     { to: '/experience', label: 'EXPERIENCE' },
+    { to: '/about', label: 'ABOUT' },
   ],
   cta: '체험하기',
   // md 미만 햄버거. **아이콘 단독 버튼이라 aria-label이 필수다**(DESIGN 11절).
@@ -262,6 +263,32 @@ export const EXPERIENCE = {
   notice: TODO_EXPERIENCE_NOTICE,
   // 주소가 없을 때 화면에 낼 말. 조용히 죽지 않고 사람이 고칠 곳을 알린다
   unavailable: '데모 주소가 아직 설정되지 않았다',
+};
+
+// ---------------------------------------------------------------------------
+// about. 브랜드 소개(REBOOT_PLAN 3.2). 네이밍 의미, 원칙, 팀 세 섹션.
+// 발표의 네이밍과 컬러 서사를 사이트 문법으로 옮긴다. lusion 어바웃은 참고하지 않는다.
+// ---------------------------------------------------------------------------
+export const ABOUT = {
+  naming: {
+    eyebrow: { en: 'ABOUT', ko: '소개' },
+    title: '왜 VORTEX인가',
+    body: '소용돌이는 중심으로 빨아들인다. 검과 검 사이의 거리와 타이밍이 한 점으로 수렴하는 순간, 결투가 성립한다. VORTEX는 그 수렴의 감각을 훈련으로 만든다.',
+  },
+  principles: {
+    title: '우리가 지키는 것',
+    items: [
+      '몸으로 익히는 거리감',
+      '판정은 결정적으로, 연출은 몰입적으로',
+      '장비가 아니라 감각을 남긴다',
+    ],
+  },
+  team: {
+    title: '만든 사람들',
+    body: '2026 KDM+ Generative AI Workshop 강원 지부. 김다영, 주현호, 윤소희.',
+    // 이미지 자리. **빈 박스를 두지 않는다**(REBOOT_PLAN 2.1). dim 문구만 둔다
+    imagePending: '팀 이미지 첨부 예정',
+  },
 };
 
 // ---------------------------------------------------------------------------

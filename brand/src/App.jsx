@@ -30,6 +30,7 @@ import ProductDetail from './pages/ProductDetail.jsx';
 import Products from './pages/Products.jsx';
 import Duelists from './pages/Duelists.jsx';
 import Experience from './pages/Experience.jsx';
+import About from './pages/About.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 /**
@@ -108,6 +109,7 @@ export default function App() {
           ))}
           <Route path="/duelists" element={<Duelists />} />
           <Route path="/experience" element={<Experience />} />
+          <Route path="/about" element={<About />} />
           {/* **랜딩으로 튕기지 않는다.** 주소가 틀렸다는 사실이 화면에 남아야 사람이 오타를 찾는다 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
