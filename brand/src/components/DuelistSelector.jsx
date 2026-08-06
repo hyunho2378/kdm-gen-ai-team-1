@@ -16,7 +16,7 @@
 // 이 페이지는 이미지와 DOM과 CSS로 충분하다. **three.js 컨텍스트를 만들지 않는다.**
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { colors, glow, motion, radius, spacing, typography } from '../tokens.js';
+import { colors, glow, motion, radius, spacing, typography, weight } from '../tokens.js';
 import { DUELISTS } from '../copy.js';
 
 // 규약 경로. 파일을 이 자리에 놓으면 코드 수정 없이 뜬다.
@@ -170,7 +170,7 @@ export default function DuelistSelector({ reduced }) {
               zIndex: z,
               display: 'flex',
               flexDirection: 'column',
-              gap: 10,
+              gap: spacing.unit * 1.5,
               minHeight: 44,
               padding: spacing.unit * 3,
               borderRadius: radius.lg,
@@ -258,7 +258,7 @@ export default function DuelistSelector({ reduced }) {
             <blockquote
               style={{
                 margin: 0,
-                paddingLeft: 12,
+                paddingLeft: spacing.unit * 1.5,
                 // **인용 왼쪽 선을 걷어냈다(REBOOT_PLAN 2.1).** 들여쓰기와 기울임이 인용을 낸다
                 fontFamily: typography.family,
                 fontSize: typography.caption.size,
@@ -273,7 +273,7 @@ export default function DuelistSelector({ reduced }) {
             {/* 활성 카드에만 선다. **동작이 없으므로 비활성 모양이고 사유를 옆에 적는다.**
                 눌러도 아무 일이 없는 버튼이 제일 나쁜 실패다(ArenaCta와 같은 규율) */}
             {isActive ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.unit * 1.5, flexWrap: 'wrap', marginTop: 'auto' }}>
                 <span aria-disabled="true" style={enterStyle}>
                   {DUELISTS.selection.enter}
                 </span>
@@ -301,7 +301,7 @@ const enterStyle = {
   color: colors.text.dim,
   fontFamily: typography.family,
   fontSize: typography.body.size,
-  fontWeight: 600,
+  fontWeight: weight.semibold,
   lineHeight: 1,
   cursor: 'not-allowed',
 };

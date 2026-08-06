@@ -14,7 +14,7 @@
 // **톤 인자를 받는다.** 관문 카드처럼 카드 안에서 쓰이는 자리는 레드가 과해서
 // 예전에 개별 구현으로 갈라져 나갔다. 색만 갈아 끼우게 열어 두면 구현이 다시 안 갈라진다.
 
-import { colors, typography } from '../tokens.js';
+import { colors, spacing, typography } from '../tokens.js';
 
 /** 라벨 색 갈래. 기본은 레드이고 카드 안처럼 조용해야 하는 자리는 plain을 쓴다. */
 export const EYEBROW_TONE = {
@@ -37,7 +37,7 @@ const base = {
 
 export default function Eyebrow({ en, ko, tone = EYEBROW_TONE.RED }) {
   return (
-    <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <span style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 0.5 }}>
       <span style={{ ...base, color: EN_COLOR[tone] ?? EN_COLOR[EYEBROW_TONE.RED] }}>{en}</span>
       {ko ? <span style={{ ...base, color: colors.text.dim }}>{ko}</span> : null}
     </span>

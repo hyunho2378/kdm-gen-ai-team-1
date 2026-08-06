@@ -10,7 +10,7 @@
 // 안내 한 줄과 콘솔 로그만 남긴다. label과 input을 연결하고 키보드 제출과 focus-visible을 지킨다.
 
 import { useEffect, useRef, useState } from 'react';
-import { colors, radius, spacing, typography } from '../tokens.js';
+import { colors, radius, spacing, typography, weight } from '../tokens.js';
 import { LANDING } from '../copy.js';
 import { gsap, isReduced, ScrollTrigger } from '../lib/motion.js';
 
@@ -158,7 +158,7 @@ const submitStyle = {
   border: 'none',
   fontFamily: typography.family,
   fontSize: typography.body.size,
-  fontWeight: 600,
+  fontWeight: weight.semibold,
   lineHeight: 1,
   cursor: 'pointer',
   whiteSpace: 'nowrap',

@@ -15,7 +15,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { colors, radius, spacing, typography } from '../tokens.js';
+import { colors, radius, spacing, typography, weight } from '../tokens.js';
 import { PRODUCTS, PRODUCT_DETAIL } from '../copy.js';
 import { captureFlip, playFlip } from '../lib/flip.js';
 import ArenaCta from '../components/ArenaCta.jsx';
@@ -144,7 +144,7 @@ export default function ProductDetail({ slug }) {
                   <span
                     style={{
                       fontSize: typography.caption.size,
-                      fontWeight: on ? 700 : 600,
+                      fontWeight: on ? weight.bold : weight.semibold,
                       letterSpacing: typography.hud.tracking,
                       color: on ? colors.text.primary : colors.text.dim,
                     }}
@@ -217,9 +217,9 @@ function Overview({ product }) {
       {rows.length === 0 ? (
         <span style={todoStyle}>{PRODUCT_DETAIL.specTodo}</span>
       ) : (
-        <dl style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <dl style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: spacing.unit }}>
           {rows.map((r) => (
-            <div key={r.name} style={{ display: 'flex', gap: 24 }}>
+            <div key={r.name} style={{ display: 'flex', gap: spacing.unit * 3 }}>
               <dt style={{ ...bodyStyle, color: colors.text.dim, flex: 'none', minWidth: 96 }}>{r.name}</dt>
               <dd style={{ ...bodyStyle, margin: 0 }}>{r.value}</dd>
             </div>
@@ -235,7 +235,7 @@ function Features({ slug }) {
   const items = PRODUCT_DETAIL.features[slug];
   if (items.length === 0) return <span style={todoStyle}>{PRODUCT_DETAIL.featuresTodo}</span>;
   return (
-    <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <ul style={{ margin: 0, paddingLeft: spacing.unit * 3, display: 'flex', flexDirection: 'column', gap: spacing.unit }}>
       {items.map((it) => (
         <li key={it} style={bodyStyle}>{it}</li>
       ))}
@@ -249,7 +249,7 @@ function SectionLabel({ children }) {
       style={{
         fontFamily: typography.family,
         fontSize: typography.caption.size,
-        fontWeight: 600,
+        fontWeight: weight.semibold,
         letterSpacing: typography.hud.tracking,
         color: colors.text.dim,
       }}
@@ -287,7 +287,7 @@ const tabStyle = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  gap: 2,
+  gap: spacing.unit * 0.5,
   // 터치 타깃 44px
   minHeight: 44,
   padding: '10px 12px',

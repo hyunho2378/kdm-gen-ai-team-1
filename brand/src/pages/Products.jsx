@@ -149,7 +149,7 @@ export default function Products() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 10,
+                gap: spacing.unit * 1.5,
                 minHeight: 44,
                 padding: '0 18px',
                 textDecoration: 'none',
@@ -265,7 +265,7 @@ function DeepDive({ card, deep, onLeave, bindVisual }) {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 10,
+              gap: spacing.unit * 1.5,
               minHeight: 44,
               padding: '0 18px',
               textDecoration: 'none',

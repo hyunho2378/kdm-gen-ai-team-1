@@ -4,7 +4,7 @@
 // 값이 없으면 콘솔 경고 한 줄을 남기고 화면은 그대로 산다. 버튼은 비활성으로 두고
 // 옆에 사유를 적는다. 눌러도 아무 일이 없는 버튼이 제일 나쁜 실패다.
 
-import { colors, radius, typography } from '../tokens.js';
+import { colors, radius, spacing, typography, weight } from '../tokens.js';
 import { EXPERIENCE } from '../copy.js';
 
 export function arenaUrl() {
@@ -19,7 +19,7 @@ export default function ArenaCta({ label = EXPERIENCE.cta }) {
     // 렌더마다 한 줄씩 쌓이지 않게 최초 1회만 경고한다
     warnOnce();
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.unit * 1.5, flexWrap: 'wrap' }}>
         <span style={disabledStyle} aria-disabled="true">
           {label}
         </span>
@@ -62,7 +62,7 @@ const shared = {
   borderRadius: radius.pill,
   fontFamily: typography.family,
   fontSize: typography.body.size,
-  fontWeight: 600,
+  fontWeight: weight.semibold,
   lineHeight: 1,
   textDecoration: 'none',
 };

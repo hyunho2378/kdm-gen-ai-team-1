@@ -9,7 +9,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { colors, displayFamily, radius, spacing, steelText, typography } from '../tokens.js';
+import { colors, displayFamily, radius, spacing, steelText, typography, weight } from '../tokens.js';
 import { HEADER, LANDING, MEDIA_PENDING, SECTION } from '../copy.js';
 import { gsap, isReduced } from '../lib/motion.js';
 import Section from '../components/Section.jsx';
@@ -302,7 +302,7 @@ function GatewaySection() {
                   fontFamily: typography.family,
                   fontSize: typography.caption.size,
                   letterSpacing: typography.hud.tracking,
-                  fontWeight: 600,
+                  fontWeight: weight.semibold,
                   color: colors.text.primary,
                 }}
               >
@@ -367,7 +367,7 @@ const ctaLinkStyle = {
   borderRadius: radius.pill,
   fontFamily: typography.family,
   fontSize: typography.body.size,
-  fontWeight: 600,
+  fontWeight: weight.semibold,
   lineHeight: 1,
   textDecoration: 'none',
 };
@@ -436,7 +436,7 @@ function Footer() {
         </nav>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 0.5 }}>
         <span style={footerMetaStyle}>{footer.credit}</span>
         <span style={footerMetaStyle}>{footer.team}</span>
       </div>

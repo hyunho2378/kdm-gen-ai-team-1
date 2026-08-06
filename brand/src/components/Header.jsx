@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { colors, displayFamily, radius, spacing, steelText, typography, withAlpha, zIndex } from '../tokens.js';
+import { colors, displayFamily, radius, spacing, steelText, typography, weight, withAlpha, zIndex } from '../tokens.js';
 import { HEADER } from '../copy.js';
 
 // 이 높이를 넘어가면 헤더가 판을 깐다. 히어로 첫 화면에서는 투명하게 둔다
@@ -206,7 +206,7 @@ function NavItem({ item, active, block }) {
         padding: block ? '10px 4px' : '0 4px',
         fontFamily: typography.family,
         fontSize: block ? typography.body.size : typography.hud.size,
-        fontWeight: active ? 700 : 500,
+        fontWeight: active ? weight.bold : weight.medium,
         letterSpacing: typography.hud.tracking,
         color: active ? colors.text.primary : colors.text.dim,
         textDecoration: 'none',
@@ -256,7 +256,7 @@ const ctaStyle = {
   borderRadius: radius.pill,
   fontFamily: typography.family,
   fontSize: typography.caption.size,
-  fontWeight: 600,
+  fontWeight: weight.semibold,
   lineHeight: 1,
   textDecoration: 'none',
   whiteSpace: 'nowrap',

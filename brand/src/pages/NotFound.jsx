@@ -4,7 +4,7 @@
 // 사람이 오타를 못 찾는다. 사유를 내고 돌아갈 길을 준다(PATTERNS 우아한 저하).
 
 import { Link } from 'react-router-dom';
-import { colors, radius, spacing, typography } from '../tokens.js';
+import { colors, radius, spacing, typography, weight } from '../tokens.js';
 import { NOT_FOUND } from '../copy.js';
 
 export default function NotFound() {
@@ -25,7 +25,7 @@ export default function NotFound() {
           fontFamily: typography.family,
           fontSize: typography.caption.size,
           letterSpacing: typography.hud.tracking,
-          fontWeight: 600,
+          fontWeight: weight.semibold,
           color: colors.red.light,
         }}
       >

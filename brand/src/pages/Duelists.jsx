@@ -7,7 +7,7 @@
 // 알려진 미해결이고 통일은 presentation 담당 별도 세션이다. 여기서 그 문서를 건드리지 않는다.
 
 import { useEffect, useState } from 'react';
-import { colors, typography } from '../tokens.js';
+import { colors, typography, weight } from '../tokens.js';
 import { DUELISTS } from '../copy.js';
 import { isReduced } from '../lib/motion.js';
 import Page from '../components/Page.jsx';
@@ -24,7 +24,7 @@ export default function Duelists() {
         style={{
           fontFamily: typography.family,
           fontSize: typography.caption.size,
-          fontWeight: 600,
+          fontWeight: weight.semibold,
           letterSpacing: typography.hud.tracking,
           color: colors.text.dim,
         }}

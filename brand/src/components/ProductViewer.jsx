@@ -17,7 +17,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { colors, typography } from '../tokens.js';
+import { colors, spacing, typography } from '../tokens.js';
 import { PRODUCT_DETAIL } from '../copy.js';
 import { flipSettleMs } from '../lib/flip.js';
 
@@ -275,7 +275,7 @@ export default function ProductViewer({ slug }) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          padding: 12,
+          padding: spacing.unit * 1.5,
           pointerEvents: 'none',
         }}
       >

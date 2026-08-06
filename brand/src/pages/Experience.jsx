@@ -2,7 +2,7 @@
 //
 // 문구는 B4 확정 라이팅이다. 주의 사항 한 줄만 아직 미확정이라 자리표시가 뜬다.
 
-import { colors, spacing, typography } from '../tokens.js';
+import { colors, spacing, typography, weight } from '../tokens.js';
 import { EXPERIENCE } from '../copy.js';
 import Page from '../components/Page.jsx';
 import ArenaCta from '../components/ArenaCta.jsx';
@@ -30,7 +30,7 @@ export default function Experience() {
             style={{
               display: 'flex',
               alignItems: 'baseline',
-              gap: 12,
+              gap: spacing.unit * 1.5,
               paddingBlock: spacing.unit,
             }}
           >
@@ -39,7 +39,7 @@ export default function Experience() {
                 flex: 'none',
                 fontFamily: typography.family,
                 fontSize: typography.eyebrow.size,
-                fontWeight: 700,
+                fontWeight: weight.bold,
                 lineHeight: 1,
                 color: colors.red.light,
               }}
