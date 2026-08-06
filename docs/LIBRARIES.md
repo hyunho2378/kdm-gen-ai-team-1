@@ -11,7 +11,7 @@
 | 저장소 | 실확인한 라이선스 | 판정 | 용도 후보 | 확인 일자 |
 |---|---|---|---|---|
 | gnss-creative-lab/webgl-particle-simulation | MIT (LICENSE, Copyright 2026 GNSS) | 채택 가능 | vortex 배경 파티클 | 2026-08-06 |
-| Saganaki22/MetalFlow | MIT (LICENSE, Copyright 2025 drbaph) | 채택 가능 | 크롬 타이포 재질 | 2026-08-06 |
+| Saganaki22/MetalFlow | LICENSE는 MIT(Copyright 2025 drbaph)이나 **상류가 PolyForm Shield 1.0.0** | **사용 불가(2026-08-06 정정)** | 크롬 타이포 재질. 아래 정정 기록 | 2026-08-06 |
 | wass08/r3f-ultimate-character-configurator | **없음** (루트에 라이선스류 파일 0, package.json license 필드도 없음) | **사용 불가** | 셀렉션 UI. R3F라 어차피 기각 기본값 | 2026-08-06 |
 | Cuberto/bglines | **없음** (루트에 라이선스류 파일 0, package.json license 필드도 없음) | **사용 불가** | 배경 라인 | 2026-08-06 |
 | niccolofanton/image-trail-shader | MIT (LICENSE, Copyright 2026 Niccolo Fanton) | 채택 가능 | 이미지 트레일 | 2026-08-06 |
@@ -42,7 +42,44 @@ R3F 전용 저장소는 vanilla three에 그대로 못 얹는다(판정표 arena
 | deepkolos/three-js-trail | MIT (LICENSE, Copyright 2023 DeepKolos) | 채택 가능 | 없음(three ^0.160 직접 의존) | **검끝 궤적 대안.** 지금은 arena 리본을 재사용 중이라 우선순위 낮음 | 2026-08-06 |
 | svartmc/trails | MIT (LICENSE, Copyright 2020 svartmc) | 채택 가능 | 없음(플레인 JS) | 궤적 대안 2순위 | 2026-08-06 |
 | richardevcom/threejs-z-fold-gift-card | MIT (LICENSE, Copyright 2025 richardevcom) | 채택 가능 | 없음(three ^0.181 직접 의존) | 접히는 카드 전환. 제품 상세 morph 후보 | 2026-08-06 |
-| Saganaki22/MetalFlow | MIT (LICENSE, Copyright 2025 drbaph) | 채택 가능(1차 판정 재확인) | 없음(플레인 JS) | 크롬 타이포 재질 | 2026-08-06 |
+| Saganaki22/MetalFlow | LICENSE는 MIT(Copyright 2025 drbaph)이나 **상류가 PolyForm Shield 1.0.0** | **사용 불가(2026-08-06 정정)** | 없음(플레인 JS) | 크롬 타이포 재질. 아래 정정 기록 | 2026-08-06 |
+| PavelDoGreat/WebGL-Fluid-Simulation | MIT (LICENSE, Copyright 2017 Pavel Dobryakov). **상류 추적 완료, 아래 기록** | 채택 가능(상류 추적 후 유지) | 없음(three 비의존 순수 WebGL) | vortex 유체 배경. 히어로 뒤 | 2026-08-06 |
+
+## 포크는 상류까지 확인한다 (2026-08-06 신설. MetalFlow 오판에서 나온 규칙)
+
+**LICENSE 파일 하나만 보는 게이트는 포크 앞에서 뚫린다.** 하류가 MIT를 적어도 상류가 제한
+라이선스면 그 MIT는 자기 기여분까지만 덮는다. 상류 코드를 재라이선스할 권한이 없기 때문이다.
+
+**절차.** LICENSE를 확인한 뒤 `README`와 소스에서 `ported`, `fork of`, `based on`, `derived`,
+`adapted`, `References`를 grep한다. 상류가 나오면 **상류 라이선스까지 게이트에 건다.**
+
+**판단 기준.** 저자가 스스로 파생을 선언했으면(`ported fork of`) 상류 라이선스가 그대로 따라온다.
+`References`처럼 선행 문헌 인용이면 의무가 옮겨오지 않는다. **다만 인용 목록이 같은 언어의
+같은 도메인 저장소이고 제한 라이선스면 잔여 위험으로 기록한다.**
+
+**제한 라이선스 저장소는 확인 후 열지 않는다.** 열고 나서 비슷한 코드를 쓰는 것이 게이트가
+막으려는 경로다. 라이선스 조회와 저장소 메타데이터(언어, 생성일)까지만 본다.
+
+### MetalFlow 오판 정정 (1차와 2차 게이트 둘 다 틀렸다)
+
+- 1차와 2차 모두 `MIT / 채택 가능`으로 통과시켰다. **LICENSE 파일만 보고 포크 상류를 안 봤다.**
+- README 6행이 `A ported fork of paper-design/liquid-logo`다. 상류를 걸었더니
+  **PolyForm Shield License 1.0.0**(SPDX `NOASSERTION`)이고 비경쟁 조건이 붙은 소스공개 라이선스다.
+- **판정 사용 불가.** 저자의 MIT는 본인 기여분까지만 덮는다. 가져오려던 프래그먼트 셰이더가 상류 부분이다.
+- 라이선스가 열린 대안은 있다. **`@paper-design/shaders` 0.0.78, Apache-2.0**(LICENSE 전문과 NOTICE 동봉,
+  `dist/shaders/liquid-metal.js` 실재). 도입하면 Apache-2.0 고지와 NOTICE 의무를 진다.
+- `paper-design/liquid-logo`는 **열람 금지 목록에 넣는다.**
+
+### WebGL-Fluid-Simulation 상류 추적 (같은 절차, 결과는 통과)
+
+- LICENSE는 MIT(Copyright 2017 Pavel Dobryakov). **파생 진술은 없다**(`ported`, `fork of`, `based on` 전량 grep, 히트 0).
+- README `## References` 셋을 전부 걸었다. NVIDIA GPU Gems Ch.38(**출판 문헌**),
+  `mharrys/fluids-2d`(**GPL-2.0 이상**, JavaScript, 2015), `haxiomic/GPU-Fluid-Experiments`(**GPL-3.0**, **Haxe**, 2013).
+- **통과.** 저자가 파생을 선언하지 않았고, 목록 첫 줄이 알고리즘 문헌이며, GPL-3.0 쪽은
+  Haxe라 플레인 JS 구현이 복사본일 수 없다. 선행 문헌 인용은 라이선스 의무를 옮기지 않는다.
+- **잔여 위험 기록.** `fluids-2d`는 같은 JavaScript WebGL 유체이고 GPL이다. 실제 코드 유입 여부는
+  그 저장소를 열어야 알 수 있는데 **위 규칙대로 열지 않았다.** 저자의 MIT 선언과 파생 진술 부재를 근거로 통과시켰다.
+- 에셋 `LDR_LLL1_0.png`(디더링 텍스처)는 **별도 고지가 없어 미확인으로 보고 반입하지 않았다.** 코드로 만든 노이즈로 대체한다.
 
 **nytimes/three-story-controls 불일치 기록(ogl, segue, ahrs와 같은 규율).**
 
@@ -67,6 +104,16 @@ R3F 전용 저장소는 vanilla three에 그대로 못 얹는다(판정표 arena
 **codrops 계정이라고 통과시키지 않는다.** 같은 계정 안에서도 `GridLayoutAnimation`은 LICENSE 파일이 있고 `FullscreenLayoutPageTransitions`는 없다. 저장소 단위로 확인한다.
 
 **2차 게이트에서 추가된 금지 대상은 없다.** 7개 전부 라이선스 파일이 실재했다.
+
+**3차 추가분(2026-08-06, 상류 추적에서 나왔다).** 아래 셋도 같은 지위로 열지 않는다.
+라이선스가 없어서가 아니라 **허용 집합(MIT, Apache-2.0, ISC, Zlib, CC0) 밖이라서** 막는다.
+
+- paper-design/liquid-logo — PolyForm Shield 1.0.0. MetalFlow의 상류
+- mharrys/fluids-2d — GPL-2.0 이상. WebGL-Fluid README의 References
+- haxiomic/GPU-Fluid-Experiments — GPL-3.0. 같은 References
+
+**제한 라이선스는 무라이선스보다 덜 위험한 것이 아니다.** 특히 copyleft는 열람 후 유사 구현이
+파생물 논란을 만든다. 라이선스 조회와 메타데이터까지만 보고 코드는 안 본다.
 
 ## 채택 가능이 곧 도입은 아니다
 

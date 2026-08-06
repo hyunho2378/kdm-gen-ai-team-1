@@ -1079,7 +1079,30 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **brand 크롬 워드마크 셰이더 작업중.** 히어로 워드마크만 잡는다. 리본과 다른 섹션은 손대지 않는다
+- **brand A 히어로 vortex 유체 배경 작업중.** 히어로 배경만 잡는다.
+  워드마크는 steelText 그대로 두고 리본과 다른 섹션은 손대지 않는다
+- **brand 크롬 워드마크 셰이더 시도 후 미채택. 라이선스 게이트 실패다.** 트랙 선점 해제
+  - **코드 변경 0.** 히어로 워드마크는 `steelText` CSS 클립 그대로다
+  - 클론은 성공했다(`Saganaki22/MetalFlow`). 파일 18개, 셰이더 전문은 `main.js` 1~8행 vertex와
+    10~201행 fragment. **에셋 의존 0**(환경맵도 HDR도 없고 텍스처는 우리가 구울 마스크 하나),
+    three는 r128이라 0.185로 올리려면 `CanvasTexture`와 `outputColorSpace` 두 곳만 손보면 됐다.
+    즉 **기술적으로는 막힌 데가 없었다**
+  - **막은 것은 README 6행이다.** "A ported fork of paper-design/liquid-logo".
+    상류 `paper-design/liquid-logo`를 게이트에 걸었더니 **PolyForm Shield License 1.0.0**이고
+    GitHub SPDX는 `NOASSERTION`이다. 비경쟁 조건이 붙은 소스공개 라이선스라
+    MIT/Apache/ISC/Zlib/CC0 어디에도 안 든다
+  - **drbaph의 MIT는 본인 기여분까지만 덮는다.** 상류가 PolyForm Shield인 코드를
+    하류 포크가 MIT로 재라이선스할 수 없다. 우리가 가져오려던 프래그먼트 191줄이 정확히 그 부분이다
+  - **판정 근거는 저자 본인의 진술이고 liquid-logo 저장소는 열지 않았다.** 게이트 절차인
+    라이선스 조회만 했다. MetalFlow의 유니폼 이름(`u_patternScale`, `u_refraction`, `u_edge`)이
+    아래 Apache 배포본의 이름(`u_repetition`, `u_softness`, `u_shiftRed`)과 전혀 달라
+    구버전 liquid-logo 계열을 물려받았다는 정황과도 맞는다
+  - **라이선스가 열린 대안은 있다. 채택하지 않았다.** `@paper-design/shaders` 0.0.78이
+    **Apache-2.0**이고 LICENSE 전문과 NOTICE가 동봉돼 있으며 `dist/shaders/liquid-metal.js`에
+    같은 계열 셰이더가 실재한다(임시 폴더 실설치로 확인, 리포에 안 남겼다).
+    다만 GLSL ES 3.00이고 자체 sizing varying 체계에 얹혀 있어 vertex와 `shader-utils`까지
+    같이 와야 하고 Apache-2.0 고지 의무가 붙는다. **다른 라이브러리를 새로 들이는 결정이라 임의로 안 갈아탔다**
+  - **CREDITS 무변경**(미채택). LIBRARIES 판정표는 아래 오판을 정정했다
 - **brand 모바일 햄버거와 헤더 반응형 수정 완료(확인 대기).** 트랙 선점 해제
   - **원인부터 없앴다.** `<nav style={{display:'flex'}}>`가 `.vx-nav`의 미디어쿼리를 이겨
     320에서 메뉴가 안 접혔다. 인라인 `display`를 전부 걷고 배치를 `index.css`로 옮겼다.
