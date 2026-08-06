@@ -65,7 +65,10 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
       // 문제 카드: 스텝0 중앙(y 0) → 스텝1 위로(-20vh). yPercent -50은 base.
       gsap.to(problemsRef.current, { y: open ? '-20vh' : '0vh', duration: d, ease: motion.gsapInOut, overwrite: 'auto' });
       gsap.to(arrowsRef.current, { opacity: open ? 1 : 0, duration: d * 0.8, ease: motion.gsapOut, overwrite: 'auto' });
-      gsap.to(insightsRef.current, { opacity: open ? 1 : 0, y: open ? '0vh' : '3vh', duration: d, ease: motion.gsapOut, overwrite: 'auto' });
+      // 인사이트 글래스 카드는 **처음부터 블러(글래스)를 꽉 채워 등장**한다. 오파시티를 즉시 전환(페이드 없음)해
+      // 블러가 옅게 차오르지 않게 하고, 등장은 y 슬라이드로만 낸다.
+      gsap.set(insightsRef.current, { opacity: open ? 1 : 0 });
+      gsap.to(insightsRef.current, { y: open ? '0vh' : '8vh', duration: d, ease: motion.gsapOut, overwrite: 'auto' });
     };
 
     const handleStep = (dir) => {
@@ -107,15 +110,15 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
         <Eyebrow en={PAINPOINT.label.en} ko={PAINPOINT.label.ko} tone={colors.white} onDark />
       </div>
 
-      {/* 문제 3카드(스텝0 중앙 → 스텝1 위로). */}
-      <div ref={problemsRef} style={{ ...ROW, top: '50%', zIndex: 4 }}>
+      {/* 문제 3카드(스텝0 중앙 → 스텝1 위로). 전체를 약간 아래로(위 정렬 보정). */}
+      <div ref={problemsRef} style={{ ...ROW, top: '54%', zIndex: 4 }}>
         {PAINPOINT_COLUMNS.map((c) => (
           <GlassCard key={c.key} title={c.title} lines={c.pain} tone={colors.white} />
         ))}
       </div>
 
       {/* 폴리곤 화살표(열마다 하나, 스텝1 등장). */}
-      <div ref={arrowsRef} style={{ ...ROW, top: '49%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}>
+      <div ref={arrowsRef} style={{ ...ROW, top: '53%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}>
         {PAINPOINT_COLUMNS.map((c) => (
           <div key={c.key} style={{ display: 'flex', justifyContent: 'center' }}>
             <span
@@ -133,7 +136,7 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
       </div>
 
       {/* 인사이트 3카드(스텝1 등장). */}
-      <div ref={insightsRef} style={{ ...ROW, top: '69%', zIndex: 4, opacity: 0 }}>
+      <div ref={insightsRef} style={{ ...ROW, top: '73%', zIndex: 4, opacity: 0 }}>
         {PAINPOINT_COLUMNS.map((c) => (
           <GlassCard key={c.key} lines={c.insight} tone={colors.white} />
         ))}

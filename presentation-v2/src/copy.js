@@ -50,10 +50,10 @@ export const PAINPOINT_COLUMNS = [
   },
 ];
 
-// S2 문제
+// S2 솔루션(AS-IS/TO-BE). 아이브로우가 '문제 WHY'에서 '솔루션 Solution'으로 바뀌었다.
 export const WHY = {
-  label: { en: 'WHY', ko: '문제' },
-  headline: ['펜싱은 시작하기 전에 포기하는 운동', '거리와 타이밍은 말로 전달되지 않는 감각'],
+  label: { en: 'Solution', ko: '솔루션' },
+  headline: ['공간의 제약을 넘어,', '일상의 공간이 현장이 되는 순간'],
   asis: {
     badge: 'AS-IS',
     caption: ['도복과 마스크와 전용 피스트가 있어야 첫 합', '초심자가 겨루기까지 수개월의 기초 반복'],
@@ -104,18 +104,24 @@ export const TARGET_ITEMS = [
 export const KEYWORD = {
   label: { en: 'Design Keyword', ko: '디자인 키워드' },
   headline: '빠르게 움직이고, 정확하게 판단하며, 끝까지 몰입한다',
-  // 헤드라인 아래 큰 줄(lead) + 본문(body). 본문은 b:true 조각만 볼드.
+  // 헤드라인 아래 큰 줄(lead) + 본문(body). 본문은 줄 배열(각 줄이 조각 배열, b:true만 볼드).
+  // "~펜싱 경험이다." 다음에 줄바꿈(br) 후 "VORTEX는 ~ 설계한다."가 온다.
   lead: '새로운 훈련을 시작하고, 스스로 성장하며, 현실을 넘어 몰입한다.',
   body: [
-    { t: 'XR은 단순히 훈련을 디지털화하는 기술이 아니라, ' },
-    { t: '사용자의 움직임을 이해하고 성장 과정을 함께 만들어가는 새로운 펜싱 경험', b: true },
-    { t: '이다. VORTEX는 ' },
-    { t: 'Transformative', b: true },
-    { t: ', ' },
-    { t: 'Guide', b: true },
-    { t: ', ' },
-    { t: 'Immersion', b: true },
-    { t: '을 중심으로 기술과 사용자가 자연스럽게 연결되는 트레이닝 경험을 설계한다.' },
+    [
+      { t: 'XR은 단순히 훈련을 디지털화하는 기술이 아니라, ' },
+      { t: '사용자의 움직임을 이해하고 성장 과정을 함께 만들어가는 새로운 펜싱 경험', b: true },
+      { t: '이다.' },
+    ],
+    [
+      { t: 'VORTEX는 ' },
+      { t: 'Transformative', b: true },
+      { t: ', ' },
+      { t: 'Guide', b: true },
+      { t: ', ' },
+      { t: 'Immersion', b: true },
+      { t: '을 중심으로 기술과 사용자가 자연스럽게 연결되는 트레이닝 경험을 설계한다.' },
+    ],
   ],
 };
 
@@ -210,6 +216,13 @@ export const EXPERIENCE = {
   // 원본 PDF 문구는 '포르테를 이루는 네 가지 핵심 XR 인터렉션'이다.
   // 포르테(PORTÉE)는 구 제품명이라 확정명 VORTEX로 바꾸고 '인터렉션' 오타도 바로잡았다.
   headline: 'VORTEX를 이루는 네 가지 핵심 XR 인터랙션',
+  // 헤드라인 아래 설명 본문. b:true 조각만 볼드(두 구간).
+  body: [
+    { t: 'XR 기술을 활용해 사용자의 움직임과 경기 상황을 실시간으로 분석', b: true },
+    { t: '하고, 필요한 정보를 직관적으로 제공한다. ' },
+    { t: '트래킹부터 자세 교정, 검 끝 인식, 리포스트 판독', b: true },
+    { t: '까지 펜싱 훈련의 전 과정을 하나의 인터랙션으로 연결한다.' },
+  ],
 };
 
 export const INTERACTIONS = [

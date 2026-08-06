@@ -10,7 +10,7 @@ import gsap from 'gsap';
 import { colors, typography, motion, grid, whiteA, scrimA, brandNavyGradient } from '../tokens.js';
 import { WHY } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SlideHeader, StepDots } from '../components/Bits.jsx';
+import { SlideHeader } from '../components/Bits.jsx';
 
 const STEPS = 1; // 스텝 0(AS-IS 중앙)과 1(AS-IS 좌 + TO-BE 우)
 
@@ -27,7 +27,8 @@ function WhiteBadge({ text, filled }) {
         borderRadius: 999,
         fontFamily: typography.family,
         fontSize: 'clamp(0.66rem, 1vw, 0.8rem)',
-        fontWeight: 700,
+        // TO-BE(filled)는 미디엄(600), AS-IS는 700. 캡션은 레귤러(아래).
+        fontWeight: filled ? 600 : 700,
         letterSpacing: '0.2em',
         color: filled ? '#101925' : colors.white,
         background: filled ? colors.white : 'transparent',
@@ -46,7 +47,7 @@ function Panel({ left, badge, caption, img, filled, gray, panelRef }) {
       style={{
         position: 'absolute',
         left,
-        top: '50%',
+        top: '46%',
         width: '40vw',
         height: 'min(56vh, 500px)',
         borderRadius: 20,
@@ -170,8 +171,6 @@ export default function S2Why({ registerHandler, registerEnter }) {
         filled
         panelRef={tobeRef}
       />
-
-      <StepDots count={STEPS + 1} active={step} onDark />
     </div>
   );
 }

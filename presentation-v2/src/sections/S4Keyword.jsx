@@ -13,7 +13,7 @@ import gsap from 'gsap';
 import { colors, typography, motion, grid, inkA, whiteA, scrimA } from '../tokens.js';
 import { KEYWORD, KEYWORDS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SlideHeader, StepDots } from '../components/Bits.jsx';
+import { SlideHeader } from '../components/Bits.jsx';
 
 const STEPS = KEYWORDS.length; // 3
 const START = -1; // 기본: 전부 블러(포커스 없음)
@@ -31,6 +31,7 @@ const SCRIM =
 export default function S4Keyword({ active, registerHandler, registerEnter }) {
   const headRef = useRef(null);
   const cardsRef = useRef([]);
+  const photoRefs = useRef([]);
   const glowRefs = useRef([]);
   const [focus, setFocus] = useState(START);
   const focusRef = useRef(START);
@@ -45,10 +46,20 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
         const on = i === next; // next=-1이면 어떤 카드도 on이 아니다(전부 블러)
         gsap.to(el, {
           scale: reduced ? 1 : on ? FOCUS_SCALE : REST_SCALE,
+          zIndex: on ? 2 : 1,
+          duration: d,
+          ease: motion.gsapOut,
+          overwrite: 'auto',
+        });
+      });
+      // 블러/밝기는 **사진 레이어에만** 건다. overflow:hidden 클립 부모가 블러 번짐을
+      // 카드 안으로 가둬 라이트 배경에 흰 바닥(halo)이 새지 않는다.
+      photoRefs.current.filter(Boolean).forEach((el, i) => {
+        const on = i === next;
+        gsap.to(el, {
           filter: reduced
             ? `brightness(${on ? 1 : 0.6})`
             : `blur(${on ? 0 : REST_BLUR}px) brightness(${on ? 1 : REST_BRIGHT})`,
-          zIndex: on ? 2 : 1,
           duration: d,
           ease: motion.gsapOut,
           overwrite: 'auto',
@@ -139,11 +150,13 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
             >
               {KEYWORD.lead}
             </span>,
-            <span key="body">
-              {KEYWORD.body.map((seg, i) => (
-                <span key={i} style={{ fontWeight: seg.b ? 700 : 400 }}>{seg.t}</span>
-              ))}
-            </span>,
+            ...KEYWORD.body.map((line, li) => (
+              <span key={`body-${li}`}>
+                {line.map((seg, i) => (
+                  <span key={i} style={{ fontWeight: seg.b ? 700 : 400 }}>{seg.t}</span>
+                ))}
+              </span>
+            )),
           ]}
         />
       </div>
@@ -194,6 +207,13 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
 
             {/* 카드 = 이미지 + 하단 네이비 스크림 + 흰 텍스트. **뒤 흰 판 없음**(이미지 카드만). */}
             <div style={{ position: 'absolute', inset: 0, borderRadius: 20, overflow: 'hidden' }}>
+              {/* 블러/밝기 대상 사진 레이어. 클립 부모(overflow:hidden) 안이라 블러 번짐이 카드 밖으로 안 샌다. */}
+              <div
+                ref={(el) => {
+                  photoRefs.current[i] = el;
+                }}
+                style={{ position: 'absolute', inset: 0, willChange: 'filter' }}
+              >
               <AssetImage src={k.img} fit="cover" />
               <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: SCRIM }} />
 
@@ -251,14 +271,12 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
                   ))}
                 </div>
               </div>
+              </div>
             </div>
           </div>
         ))}
       </div>
       </div>
-
-      {/* 서브 진행 표시. 기본(-1)이면 활성 없음, 확장하면 해당 카드. */}
-      <StepDots count={STEPS} active={focus} />
     </div>
   );
 }

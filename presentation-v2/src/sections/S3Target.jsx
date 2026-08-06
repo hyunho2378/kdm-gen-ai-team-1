@@ -55,7 +55,10 @@ export default function S3Target({ active }) {
           pointerEvents: 'none',
         }}
       >
-        <SlideHeader eyebrow={{ en: TARGET.label.en, ko: TARGET.label.ko }} headline={TARGET.headline} />
+        <SlideHeader
+          eyebrow={{ en: TARGET.label.en, ko: TARGET.label.ko }}
+          headline={<span style={{ fontWeight: 800 }}>{TARGET.headline}</span>}
+        />
       </div>
 
       {/* 원 3개. 원본 지름 462.7 / 1920 = 24.1vw, 중심 y 655.8 / 1080 = 60.7vh */}
@@ -107,12 +110,12 @@ export default function S3Target({ active }) {
             <span
               style={{
                 fontFamily: typography.family,
-                // 원 안 번호. 크기는 헤드라인과 같게 통일하고 숫자용 자간/행간만 유지.
+                // 원 안 번호. 헤드라인 크기 + 볼드 + 네이비 프라이머리.
                 fontSize: typography.headline.size,
-                fontWeight: typography.headline.weight,
+                fontWeight: 800,
                 letterSpacing: '0.02em',
                 lineHeight: 1,
-                color: colors.ink,
+                color: colors.navy,
               }}
             >
               {it.no}
@@ -123,16 +126,16 @@ export default function S3Target({ active }) {
                   key={li}
                   style={{
                     fontFamily: typography.family,
-                    fontSize: typography.body.size,
-                    fontWeight: typography.body.weight,
+                    // 본문보다 4pt 키운다(1440에서 15→19px).
+                    fontSize: 'clamp(0.97rem, 1.32vw, 1.41rem)',
                     letterSpacing: typography.body.tracking,
                     lineHeight: typography.body.leading,
                     color: colors.text.primary,
                   }}
                 >
-                  {/* 강조 조각만 굵게. 위치는 copy.js가 쥔다. */}
+                  {/* 강조 조각만 굵게. 기존 타이포에서 한 단계씩 볼드 올림(400→500, 700→800). */}
                   {segs.map((sg, si) => (
-                    <span key={si} style={{ fontWeight: sg.b ? 700 : 400 }}>
+                    <span key={si} style={{ fontWeight: sg.b ? 800 : 500 }}>
                       {sg.t}
                     </span>
                   ))}
