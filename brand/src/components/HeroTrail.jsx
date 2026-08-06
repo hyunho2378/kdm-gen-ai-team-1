@@ -225,11 +225,17 @@ export default function HeroTrail() {
     };
   }, []);
 
-  // 텍스트 아래, 클릭을 막지 않는 층
+  // 텍스트 아래, 클릭을 막지 않는 층.
+  //
+  // **`data-warp="none"`은 스크롤 워프에서 빠지겠다는 표시다.** 이 층은 fixed가 아니라
+  // 히어로 섹션 안의 absolute라(실측) 워프 래퍼 밖으로 낼 수가 없다. 대신 ScrollWarp가
+  // 같은 각을 빼 준다. skewY는 각이 더해지므로 두 행렬의 곱이 정확히 항등이 되고
+  // 검끝 궤적만 안 기운 채로 남는다
   return (
     <div
       ref={hostRef}
       aria-hidden="true"
+      data-warp="none"
       style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}
     />
   );

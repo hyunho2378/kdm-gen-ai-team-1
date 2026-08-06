@@ -294,9 +294,48 @@ html { scrollbar-gutter: stable both-edges; }
   will-change: transform, opacity;
 }
 
+/* ── 스크롤 워프 (REBOOT_PLAN 1.2) ────────────────────────────────────────
+   기울기는 ScrollWarp가 인라인으로 쓰고 지운다. 여기에 transform이나 will-change를
+   적으면 정지 상태에서도 합성 레이어가 남아 글자가 흐린 채로 굳는다.
+   **이 래퍼 안에 position fixed를 두지 않는다.** 기울어 있는 동안 그 fixed는
+   뷰포트가 아니라 이 래퍼를 기준으로 잡힌다(실측: pin된 섹션이 top 0에서 -1836으로 날아갔다). */
+.vx-warp {
+  /* 기울어도 좌우로 번지지 않는다. skewY는 세로로만 어긋나므로 가로 폭은 그대로다 */
+  width: 100%;
+}
+
+/* ── 관문 카드 호버 (REBOOT_PLAN 4절) ────────────────────────────────────
+   **선을 쓰지 않는다.** 제목이 조금 나아가고 이미지 자리가 밝아지는 둘뿐이다.
+   커서 확대는 R1 커서가 `a`를 이미 대상으로 보고 있어 여기서 따로 걸 것이 없다.
+
+   호버와 focus-visible을 같이 건다. 키보드로 훑는 사람도 같은 신호를 받아야 한다. */
+.vx-gate-title {
+  display: inline-block; /* transform이 먹으려면 인라인이 아니어야 한다 */
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+.vx-gate-visual {
+  /* 평시는 dim, 호버에 또렷해진다. 색을 갈아끼우지 않고 밝기만 올린다 */
+  opacity: 0.55;
+  transition: opacity var(--dur-hover) var(--ease-out);
+}
+.vx-gate:hover .vx-gate-title,
+.vx-gate:focus-visible .vx-gate-title {
+  transform: translateX(8px);
+}
+.vx-gate:hover .vx-gate-visual,
+.vx-gate:focus-visible .vx-gate-visual {
+  opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+  /* 모션을 줄여 달라고 했으면 **호버는 밝기만 남긴다.** 위 규칙은 지속시간만 줄여서
+     제목이 순간이동하듯 튄다. 이동 자체를 없애야 한다 */
+  .vx-gate:hover .vx-gate-title,
+  .vx-gate:focus-visible .vx-gate-title {
+    transform: none;
   }
 }

@@ -23,6 +23,7 @@ import { PRODUCTS } from './copy.js';
 import { applyThemeVars } from './theme.js';
 import Cursor from './components/Cursor.jsx';
 import Preloader, { splashPlayed } from './components/Preloader.jsx';
+import ScrollWarp from './components/ScrollWarp.jsx';
 import Header from './components/Header.jsx';
 import Landing from './pages/Landing.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
@@ -94,17 +95,23 @@ export default function App() {
       />
       <Cursor />
       <Header />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/products" element={<Products />} />
-        {PRODUCTS.cards.map((p) => (
-          <Route key={p.slug} path={`/product/${p.slug}`} element={<ProductDetail slug={p.slug} />} />
-        ))}
-        <Route path="/duelists" element={<Duelists />} />
-        <Route path="/experience" element={<Experience />} />
-        {/* **랜딩으로 튕기지 않는다.** 주소가 틀렸다는 사실이 화면에 남아야 사람이 오타를 찾는다 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      {/* 스크롤 워프는 **스크롤되는 콘텐츠에만** 건다. 위의 프리로더와 커서와 헤더는
+          전부 position fixed이고, transform이 걸린 조상 안에서는 fixed가 뷰포트 기준을 잃는다.
+          그래서 셋을 이 래퍼의 형제로 남긴다(실측: main에 skew를 걸자 pin된 섹션이
+          뷰포트 top 0에서 -1836으로 날아갔다) */}
+      <ScrollWarp>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/products" element={<Products />} />
+          {PRODUCTS.cards.map((p) => (
+            <Route key={p.slug} path={`/product/${p.slug}`} element={<ProductDetail slug={p.slug} />} />
+          ))}
+          <Route path="/duelists" element={<Duelists />} />
+          <Route path="/experience" element={<Experience />} />
+          {/* **랜딩으로 튕기지 않는다.** 주소가 틀렸다는 사실이 화면에 남아야 사람이 오타를 찾는다 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </ScrollWarp>
     </BrowserRouter>
   );
 }

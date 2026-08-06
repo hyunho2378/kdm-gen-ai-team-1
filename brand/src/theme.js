@@ -46,6 +46,8 @@ export function applyThemeVars(root = document.documentElement) {
     '--glow-red': glow.red,
     '--ease-out': motion.easeOut,
     '--dur-press': `${motion.duration.press}ms`,
+    // 호버 반응. DOM UI라 300ms 미만이어야 하고(DESIGN 7절) 커서를 스쳐도 거슬리지 않는 길이가 tooltip이다
+    '--dur-hover': `${motion.duration.tooltip}ms`,
     // 모바일 메뉴 시트. 시트와 드로어는 DESIGN 7절이 ease-drawer를 지정한다.
     // 지속은 dropdown(200ms)을 쓴다. 헤더에서 내려오는 메뉴이고 DOM UI라 300ms 미만이어야 한다
     '--ease-drawer': motion.easeDrawer,

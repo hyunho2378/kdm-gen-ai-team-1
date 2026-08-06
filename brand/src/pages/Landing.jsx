@@ -9,7 +9,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { colors, spacing, typography } from '../tokens.js';
-import { LANDING, SECTION } from '../copy.js';
+import { LANDING, MEDIA_PENDING, SECTION } from '../copy.js';
 import { gsap, isReduced } from '../lib/motion.js';
 import Section from '../components/Section.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
@@ -166,9 +166,11 @@ function GatewaySection() {
         {gates.map((g) => (
           <li key={g.key}>
             {/* **카드 보더와 판을 걷어냈다.** 구분은 여백과 타이포 스케일이 진다(REBOOT_PLAN 2.1).
-                링크 영역은 그대로라 터치 타깃과 포커스는 줄지 않는다 */}
+                링크 영역은 그대로라 터치 타깃과 포커스는 줄지 않는다.
+                `.vx-gate`는 호버 반응의 뿌리다. 반응 자체는 index.css가 쥔다 */}
             <Link
               to={g.to}
+              className="vx-gate"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -179,9 +181,25 @@ function GatewaySection() {
                 textDecoration: 'none',
               }}
             >
+              {/* 대표 비주얼 자리. 제품 인덱스와 같은 문법이다(박스 없이 문구만, REBOOT_PLAN 2.1).
+                  배치는 `.vx-card-visual`이, 호버 밝기는 `.vx-gate-visual`이 쥔다.
+                  좁은 화면에서는 `.vx-card-visual`이 이 자리를 접는다 */}
+              <span className="vx-card-visual vx-gate-visual">
+                <span
+                  style={{
+                    fontFamily: typography.family,
+                    fontSize: typography.caption.size,
+                    color: colors.text.dim,
+                  }}
+                >
+                  {MEDIA_PENDING}
+                </span>
+              </span>
+
               {/* 개별 구현이던 자리다. 컴포넌트로 통합해 크기와 굵기가 전 페이지와 같아진다 */}
               <Eyebrow en={g.eyebrow} />
               <span
+                className="vx-gate-title"
                 style={{
                   fontFamily: typography.family,
                   fontSize: typography.heading.size,

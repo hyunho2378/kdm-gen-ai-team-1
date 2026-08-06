@@ -32,6 +32,12 @@ export default function WorldScene({ id, eyebrow, title, body }) {
           start: 'top top',
           end: `+=${window.innerHeight * PIN_SCREENS}`,
           pin: true,
+          // **pin을 transform으로 잡는다.** 기본값은 fixed인데(설치본 ScrollTrigger가
+          // 뷰포트 스크롤러면 fixed를 고른다), 스크롤 워프가 조상에 skew를 걸면
+          // 그 fixed가 뷰포트 기준을 잃는다. 실측으로 pin 한복판에서 이 섹션이
+          // 뷰포트 top 0에서 **-1836으로 날아갔다.** transform 방식은 조상이 기울어도
+          // 자기 자리를 그대로 지킨다
+          pinType: 'transform',
           // 스크롤에 1:1로 붙되 1초만큼 뒤따라 감속한다. 계단이 아니라 흐름으로 읽힌다
           scrub: 1,
           invalidateOnRefresh: true,
