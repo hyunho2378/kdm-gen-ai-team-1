@@ -1,10 +1,15 @@
-// 제품 상세 3종 공통 골격(BRAND_SITE_GUIDE 2.3). 오버워치 무기 상세 문법이다.
+// 제품 상세 2종 공통 골격. **Kew 오크 문법이다**(REBOOT_PLAN 3.3).
 //
-// 4구역. 왼쪽 세로 탭, 중앙 360 뷰어, 뷰어 아래 정보 패널, 하단 CTA.
-// **탭은 뷰어를 바꾸지 않는다.** 오버워치에서 스킨 리스트가 무기를 갈아 끼우는 자리를
-// 여기서는 정보 탭이 대신하고, 제품은 하나뿐이라 뷰어는 상시 유지된다.
+// 박스형 4구역을 해체했다. 3D는 판 없이 페이지 배경 위에 직접 뜨고,
+// 좌측 상단에 페이지 위계(제품명, 탭), 우측에 정보 텍스트가 배경 없이 얹힌다.
 //
-// 셋이 같은 컴포넌트를 쓴다. 갈리는 것은 히어로 제목과 CTA 유무뿐이다.
+// **탭은 뷰어를 바꾸지 않는다.** 제품은 하나뿐이라 뷰어는 상시 유지되고 오른쪽 글자만 갈린다.
+//
+// ── 대비를 배치로 지킨다 ────────────────────────────────────────────────────
+// 3D는 상시 autoRotate라 밝은 크롬 면이 글자 뒤를 지나가면 그 순간 대비가 무너진다.
+// **그림자나 딤 판으로 때우지 않는다.** 격자 열은 서로 겹칠 수 없으므로 3D를 왼쪽 열에,
+// 정보를 오른쪽 열에 두는 것 자체가 보증이 된다(실측 교집합 0). 좁은 폭에서 한 열로
+// 쌓일 때도 3D가 먼저 서고 정보가 그 아래라 글자가 3D 위에 얹히지 않는다.
 //
 // **없는 slug는 여기 오지 않는다.** App이 있는 제품만 라우트로 열고 나머지는 전역 NotFound가 받는다.
 
@@ -61,7 +66,8 @@ export default function ProductDetail({ slug }) {
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.unit * 3,
+        // 3D가 주인공이라 블록 사이 여백을 한 칸 줄여 세로를 3D에 넘긴다
+        gap: spacing.unit * 2,
       }}
     >
       {/* 라벨이 "제품군으로"라서 실제로 제품군 인덱스로 간다. 이력이 아니라 자리로 돌아간다.
@@ -70,67 +76,71 @@ export default function ProductDetail({ slug }) {
         {PRODUCT_DETAIL.back}
       </Link>
 
-      {/* 개별 구현이던 자리다. 컴포넌트로 통합해 크기와 굵기가 전 페이지와 같아진다 */}
-      <Eyebrow en={product.name} />
+      {/* ── 좌측 상단 페이지 위계. **격자 위에 둔다.**
+             왼쪽 열 안에 두면 이 블록이 세로를 먹어 3D에 240px밖에 안 남는다(실측).
+             밖으로 빼면 남는 세로가 통째로 3D 몫이 되어 제품이 주인공으로 선다 ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 1.5, minWidth: 0 }}>
+        {/* 개별 구현이던 자리다. 컴포넌트로 통합해 크기와 굵기가 전 페이지와 같아진다 */}
+        <Eyebrow en={product.name} />
 
-      <h1
-        style={{
-          margin: 0,
-          fontFamily: typography.family,
-          fontSize: typography.title.size,
-          fontWeight: typography.title.weight,
-          letterSpacing: typography.title.tracking,
-          lineHeight: typography.title.leading,
-          color: colors.text.primary,
-          wordBreak: 'keep-all',
-        }}
-      >
-        {PRODUCT_DETAIL.hero[product.slug]}
-      </h1>
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: typography.family,
+              fontSize: typography.title.size,
+              fontWeight: typography.title.weight,
+              letterSpacing: typography.title.tracking,
+              lineHeight: typography.title.leading,
+              color: colors.text.primary,
+              wordBreak: 'keep-all',
+            }}
+          >
+            {PRODUCT_DETAIL.hero[product.slug]}
+          </h1>
 
-      <p
-        style={{
-          margin: 0,
-          fontFamily: typography.family,
-          fontSize: typography.heading.size,
-          lineHeight: typography.heading.leading,
-          color: colors.text.secondary,
-          maxWidth: 640,
-          wordBreak: 'keep-all',
-        }}
-      >
-        {product.line}
-      </p>
+          {/* 한 줄 소개. **위계에 속하므로 왼쪽에 둔다.** 오른쪽 정보 열에 두면
+              FEATURES 첫 항목과 같은 문장이라 바로 위아래로 붙어 중복으로 읽힌다(실측 화면) */}
+          <p
+            style={{
+              margin: 0,
+              fontFamily: typography.family,
+              fontSize: typography.heading.size,
+              lineHeight: typography.heading.leading,
+              color: colors.text.secondary,
+              maxWidth: 560,
+              wordBreak: 'keep-all',
+            }}
+          >
+            {product.line}
+          </p>
 
-      {/* 좁은 폭에서는 한 열로 접혀 탭, 뷰어, 패널 순으로 선다(index.css) */}
-      <div className="vx-detail">
-        {/* 구역 1. 왼쪽 탭 */}
-        <div
-          className="vx-tablist"
-          role="tablist"
-          aria-label={PRODUCT_DETAIL.tabsLabel}
-          aria-orientation="vertical"
-        >
-          {TABS.map((t) => {
-            const on = t.key === tab;
-            return (
-              <button
-                key={t.key}
-                ref={(el) => { tabRefs.current[t.key] = el; }}
-                type="button"
-                role="tab"
-                id={`tab-${t.key}`}
-                aria-selected={on}
-                aria-controls={`panel-${t.key}`}
-                // 로빙 탭인덱스. 탭키는 목록 전체를 한 번만 지난다
-                tabIndex={on ? 0 : -1}
-                onClick={() => setTab(t.key)}
-                onKeyDown={onTabKeyDown}
-                style={tabStyle}
-              >
-                {/* **레드 점을 걷어냈다.** 아이브로우 불릿과 같은 문법이라 함께 빠진다.
-                    선택 상태는 굵기(700 대 600)와 글자색 둘이 낸다. 색 단독 구분이 아니다(DESIGN 13절) */}
-                <span style={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left' }}>
+          {/* 탭. **가로로 눕는다.** 제목 아래 한 줄이 되어 좌측 상단 위계의 끝을 맺는다.
+              배치는 `.vx-kew-tabs`가 쥔다(인라인으로 걸면 CSS가 통째로 진다) */}
+          <div
+            className="vx-kew-tabs"
+            role="tablist"
+            aria-label={PRODUCT_DETAIL.tabsLabel}
+            aria-orientation="horizontal"
+          >
+            {TABS.map((t) => {
+              const on = t.key === tab;
+              return (
+                <button
+                  key={t.key}
+                  ref={(el) => { tabRefs.current[t.key] = el; }}
+                  type="button"
+                  role="tab"
+                  id={`tab-${t.key}`}
+                  aria-selected={on}
+                  aria-controls={`panel-${t.key}`}
+                  // 로빙 탭인덱스. 탭키는 목록 전체를 한 번만 지난다
+                  tabIndex={on ? 0 : -1}
+                  onClick={() => setTab(t.key)}
+                  onKeyDown={onTabKeyDown}
+                  style={tabStyle}
+                >
+                  {/* 선택 상태는 굵기(700 대 600)와 글자색 둘이 낸다.
+                      색 단독 구분이 아니다(DESIGN 13절) */}
                   <span
                     style={{
                       fontSize: typography.caption.size,
@@ -144,66 +154,56 @@ export default function ProductDetail({ slug }) {
                   <span style={{ fontSize: typography.caption.size, color: colors.text.dim }}>
                     {t.ko}
                   </span>
-                </span>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+        </div>
+      </div>
+
+      {/* 좁은 폭에서는 한 열로 접혀 3D, 정보 순으로 선다(index.css) */}
+      <div className="vx-kew">
+        {/* ── 왼쪽 열. 3D 무대. **판도 보더도 라운드도 없다.**
+               캔버스가 투명해 페이지 배경 위에 직접 뜬다.
+               카드 썸네일과 같은 `data-flip-id`를 달아 전환의 짝을 잇는다.
+               탭이 바뀌어도 이 자리는 그대로라 뷰어가 다시 서지 않는다 ── */}
+        <div
+          ref={visualRef}
+          data-flip-id={`product-${product.slug}`}
+          className="vx-kew-stage"
+        >
+          <ProductViewer slug={product.slug} />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 2, minWidth: 0 }}>
-          {/* 구역 2. 360 뷰어. **카드 썸네일과 같은 `data-flip-id`를 단다.** 이것이 전환의 짝이다.
-              탭이 바뀌어도 이 자리는 그대로다 */}
-          <div
-            ref={visualRef}
-            data-flip-id={`product-${product.slug}`}
-            style={{
-              position: 'relative',
-              aspectRatio: '16 / 9',
-              // 좁은 폭에서 16대9는 너무 납작해 제품이 안 보인다. 바닥을 깐다
-              minHeight: 240,
-              overflow: 'hidden',
-              borderRadius: radius.lg,
-              // 테두리를 걷어냈다. 판 자체는 3D가 사는 자리라 남는다.
-              // 배경 없이 페이지 위에 직접 띄우는 것은 R4 상세 리레이아웃의 몫이다
-              background: colors.bg.raised,
-            }}
-          >
-            <ProductViewer slug={product.slug} />
-          </div>
-
-          {/* 구역 3. 탭 정보 패널. 뷰어 아래에 붙어 뷰어를 밀어내지 않는다 */}
+        {/* ── 오른쪽 열. 배경 없는 글자만. 뒤로 3D가 오지 않는다.
+               열 번호는 `.vx-kew-info`가 못박는다(Flip 중 무대가 흐름에서 빠져도 자리를 지킨다) ── */}
+        <div className="vx-kew-info" style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 2, minWidth: 0 }}>
+          {/* 탭 정보 패널. 판과 테두리 없이 글자만 남고 구분은 여백이 진다 */}
           <div
             role="tabpanel"
             id={`panel-${tab}`}
             aria-labelledby={`tab-${tab}`}
             tabIndex={0}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: spacing.unit * 1.5,
-              // 판과 테두리를 걷어냈다. 정보 패널은 글자만 남고 구분은 여백이 진다
-              paddingBlock: spacing.unit,
-            }}
+            style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 1.5 }}
           >
             {tab === 'overview' ? <Overview product={product} /> : <Features slug={product.slug} />}
           </div>
+
+          {/* 하단 CTA. 데모가 있는 제품만 arena로 나간다.
+              모의 검 컨트롤러는 단독 체험이 없어 CTA 없이 되돌아가는 길만 둔다 */}
+          <section style={blockStyle}>
+            {product.demoCta ? (
+              <>
+                <SectionLabel>{PRODUCT_DETAIL.labels.experience}</SectionLabel>
+                <ArenaCta label={PRODUCT_DETAIL.cta} />
+              </>
+            ) : (
+              <Link to="/products" style={backStyle} onClick={() => captureFlip(visualRef.current)}>
+                {PRODUCT_DETAIL.back}
+              </Link>
+            )}
+          </section>
         </div>
       </div>
-
-      {/* 구역 4. 하단 CTA. 데모가 있는 제품만 arena로 나간다.
-          모의 검 컨트롤러는 단독 체험이 없어 CTA 없이 되돌아가는 길만 둔다 */}
-      <section style={blockStyle}>
-        {product.demoCta ? (
-          <>
-            <SectionLabel>{PRODUCT_DETAIL.labels.experience}</SectionLabel>
-            <ArenaCta label={PRODUCT_DETAIL.cta} />
-          </>
-        ) : (
-          <Link to="/products" style={backStyle} onClick={() => captureFlip(visualRef.current)}>
-            {PRODUCT_DETAIL.back}
-          </Link>
-        )}
-      </section>
     </main>
   );
 }
@@ -280,12 +280,14 @@ const todoStyle = {
   color: colors.text.dim,
 };
 
-// **탭 테두리를 걷어냈다(REBOOT_PLAN 2.1).** 선택 상태는 레드 점과 굵기와 글자색 셋이 함께 낸다.
-// 색 단독 구분 금지(DESIGN 13절)는 굵기 700 대 600이 이미 만족시킨다
+// **탭 테두리를 걷어냈다(REBOOT_PLAN 2.1).** 선택 상태는 굵기와 글자색 둘이 함께 낸다.
+// 색 단독 구분 금지(DESIGN 13절)는 굵기 700 대 600이 이미 만족시킨다.
+// 영문 위 국문 아래 스택이라 가로로 누워도 두 줄이 유지된다
 const tabStyle = {
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'flex-start',
-  gap: 8,
+  gap: 2,
   // 터치 타깃 44px
   minHeight: 44,
   padding: '10px 12px',
