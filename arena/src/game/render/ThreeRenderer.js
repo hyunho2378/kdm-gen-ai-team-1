@@ -211,6 +211,8 @@ export function createThreeRenderer() {
   const tmpTip = new THREE.Vector3();
   const tmpDir = new THREE.Vector3();
   const tmpQuat = new THREE.Quaternion();
+  // 프리셋(가드 홀드 블렌드 포함) 방향을 폰 슬러프 전에 붙잡아 둔다. 가드 패리 스냅이 이걸로 되돌린다
+  const tmpPresetQuat = new THREE.Quaternion();
   // 검신이 뻗는 로컬 축. scene.js의 지오메트리 배치와 일치해야 한다.
   const BLADE_AXIS = new THREE.Vector3(0, 0, -1);
 
@@ -296,6 +298,8 @@ export function createThreeRenderer() {
     // 그룹이 카메라의 자식이라 로컬 공간이 곧 카메라 공간이므로 방향을 직접 계산한다.
     tmpDir.copy(tmpTip).sub(tmpGrip).normalize();
     sword.group.quaternion.setFromUnitVectors(BLADE_AXIS, tmpDir);
+    // 프리셋(가드 홀드 블렌드 포함) 방향. 아래서 폰이 방향을 덮은 뒤 가드 스냅이 이 방향으로 되돌린다
+    tmpPresetQuat.copy(sword.group.quaternion);
 
     // 소스 전환 블렌드. 붙는 순간과 끊기는 순간에 검이 홱 돌지 않게 한다
     const target = phone ? 1 : 0;
@@ -318,6 +322,16 @@ export function createThreeRenderer() {
       // GRIP_TO_BLADE로 폰 세로축을 칼날에 붙인 뒤에 얹는다. 이 곱이 빠지면 90도 뒤틀린다
       tmpQuat.set(x, y, z, wq).multiply(GRIP_TO_BLADE);
       sword.group.quaternion.slerp(tmpQuat, poseBlend);
+    }
+
+    // **가드 패리 스냅 (GUARD_TWIST part 4).** 비틀림은 swing에서 구조적으로 잘려 있어
+    // 폰 회전이 검을 눕히지 않는다. guard 홀드분(guardBlend)만큼 프리셋 대각 패리 방향으로 되돌려
+    // 칼날을 화면을 가로지르는 방어선으로 세운다. 위치는 이미 위에서 guardBlend가 올려 두었다.
+    // **찌르기 중에는 걸지 않는다(thrust > guard, R1).** 그때 tmpPresetQuat은 찌르기 방향이고
+    // 조준은 폰이 쥐어야 하므로 이 되돌림이 개입하면 겨냥이 어긋난다. 렌더 전용이라 판정과 무관하고
+    // GRIP_TO_BLADE +90 보정은 프리셋 방향에 이미 반영돼 있다. 키보드 경로는 poseBlend=0이라 항등이다.
+    if (guardBlend > 0.001 && lunge <= 0) {
+      sword.group.quaternion.slerp(tmpPresetQuat, guardBlend);
     }
   }
 
