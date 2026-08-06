@@ -17,15 +17,21 @@ IA.md와 1:1. 라우트 추가와 삭제는 IA.md 수정 후에만. 인증 없�
 
 ## brand
 
+**사이트가 페이지 하나다(헤더 통합 세션).**
+
 ```jsx
 <Routes>
-  <Route path="/" element={<Home />} />
-  <Route path="/products/:key" element={<ProductDetail />} />
-  <Route path="*" element={<Navigate to="/" replace />} />
+  <Route path="/" element={<Products />} />
+  <Route path="/products" element={<Navigate to="/" replace />} />
+  <Route path="/product/mask" element={<Navigate to="/#mask" replace />} />
+  <Route path="/product/controller" element={<Navigate to="/#controller" replace />} />
+  <Route path="*" element={<NotFound />} />
 </Routes>
 ```
 
-:key는 xr-glass, saber-controller, branding, demo-app 4종. 미상 key는 ProductDetail 내부에서 / 로 폴백. 데이터는 src/content/products.js 단일 원천.
+제품 다섯 자리(overview, mask, controller, vision, experience)는 라우트가 아니라 **한 페이지 안의 앵커 섹션**이다. 상단 내비가 그 자리로 보내고 현재 섹션을 밑줄로 표시한다.
+
+리다이렉트 셋은 밖에 나갔던 주소를 살리는 것뿐이다. `/about`, `/duelists`, `/experience`, 옛 제품 slug는 페이지째 사라져서 리다이렉트를 두지 않는다. **홈으로 튕기지 않고 NotFound가 뜬다.** 조용히 홈으로 보내면 주소가 틀렸다는 사실이 화면에 안 남는다.
 
 ## arena
 

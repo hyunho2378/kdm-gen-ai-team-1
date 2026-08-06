@@ -26,19 +26,6 @@ const LOGO_MASK = {
   maskSize: 'contain',
 };
 
-const CORNER = {
-  position: 'absolute',
-  top: 'clamp(20px, 3.4vh, 44px)',
-  zIndex: 3,
-  fontFamily: typography.family,
-  fontSize: typography.caption.size,
-  fontWeight: 500,
-  letterSpacing: '0.16em',
-  lineHeight: 1.6,
-  color: colors.text.dim,
-  pointerEvents: 'none',
-};
-
 export default function S1Cover() {
   const markRef = useRef(null);
 
@@ -64,17 +51,7 @@ export default function S1Cover() {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* 포스터 좌상단: 팀과 이름. 가운데점 대신 얇은 세로선으로 두 필드를 가른다. */}
-      <div style={{ ...CORNER, left: 'clamp(20px, 3.4vw, 56px)', display: 'flex', gap: 10 }}>
-        <span style={{ color: colors.text.secondary }}>{COVER.team}</span>
-        <span aria-hidden="true" style={{ width: 1, background: colors.line.strong }} />
-        <span>{COVER.members}</span>
-      </div>
-
-      {/* 포스터 우상단: 행사명 */}
-      <div style={{ ...CORNER, right: 'clamp(20px, 3.4vw, 56px)', textAlign: 'right' }}>
-        {COVER.event}
-      </div>
+      {/* **상단 표기(팀/행사)는 전 슬라이드 제거 규칙에 따라 표지에서도 걷었다.** 로고 + 서브카피만 남긴다. */}
 
       {/* 정중앙: 시그니처 로고 + 서브카피.
           **로고를 정확히 화면 중앙에 둔다.** 서브카피는 out-of-flow(absolute)라 로고 위치를 밀지 않고

@@ -4,7 +4,7 @@
 // StepDots: 서브 진행 표시. 활성만 red.
 // GlassRim: 유리 림 보더.
 
-import { colors, typography, motion, inkA } from '../tokens.js';
+import { colors, typography, motion, inkA, whiteA } from '../tokens.js';
 
 // 유리 림 라이트. 위쪽이 진하고 아래로 옅어지는 그라디언트를 mask로 뚫어 링만 남긴다.
 // **border-image나 두 겹 background-clip 트릭이 아니다.** 링이 반투명이라
@@ -46,7 +46,7 @@ export function GlassRim({ width = 1.2 }) {
  * @param {string} [ko] 국문 라벨. 없으면 단일 라벨
  * @param {string} [tone] 영문 라벨 색. 기본 ink
  */
-export function Eyebrow({ en, ko, tone = colors.text.primary }) {
+export function Eyebrow({ en, ko, tone = colors.text.primary, onDark = false }) {
   const base = {
     // 아이브로우는 Pretendard(본문 SUIT와 분리). tokens.eyebrow.family가 단일 원천.
     fontFamily: typography.eyebrow.family,
@@ -56,10 +56,12 @@ export function Eyebrow({ en, ko, tone = colors.text.primary }) {
     lineHeight: typography.eyebrow.leading,
     whiteSpace: 'nowrap',
   };
+  // 다크(네이비) 배경 슬라이드에서는 국문도 흰색으로(기본은 잉크).
+  const koColor = onDark ? colors.white : colors.text.primary;
   return (
     <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <span style={{ ...base, color: tone }}>{en}</span>
-      {ko ? <span style={{ ...base, color: colors.text.primary }}>{ko}</span> : null}
+      {ko ? <span style={{ ...base, color: koColor }}>{ko}</span> : null}
     </span>
   );
 }
@@ -72,10 +74,14 @@ export function Eyebrow({ en, ko, tone = colors.text.primary }) {
  * @param {{en:string, ko?:string, tone?:string}} eyebrow 아이브로우 라벨
  * @param {string|string[]|React.ReactNode} headline 헤드라인. 문자열/배열이면 줄 단위, 노드면 그대로
  * @param {string|string[]} [sub] 서브 문장(들)
- * @param {string} [headlineColor] 헤드라인 색(기본 잉크)
+ * @param {string} [headlineColor] 헤드라인 색(기본 잉크; onDark면 흰색)
+ * @param {boolean} [onDark] 다크(네이비) 배경 슬라이드. 아이브로우/헤드라인/서브를 흰 계열로.
  * @param {object} [rightStyle] 우측 열에 얹는 스타일(유파 포커스 페이드 등)
  */
-export function SlideHeader({ eyebrow, headline, sub, headlineColor = colors.text.primary, rightStyle }) {
+export function SlideHeader({ eyebrow, headline, sub, headlineColor, onDark = false, rightStyle }) {
+  const hColor = headlineColor || (onDark ? colors.white : colors.text.primary);
+  const subColor = onDark ? whiteA(0.82) : colors.text.secondary;
+  const ebTone = onDark ? colors.white : eyebrow.tone;
   const isText = typeof headline === 'string' || (Array.isArray(headline) && headline.every((h) => typeof h === 'string'));
   const headNode = isText
     ? (Array.isArray(headline) ? headline : [headline]).map((h, i) => (
@@ -86,7 +92,7 @@ export function SlideHeader({ eyebrow, headline, sub, headlineColor = colors.tex
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(16px, 4vw, 96px)', flexShrink: 0 }}>
       <div style={{ flex: '0 0 auto' }}>
-        <Eyebrow en={eyebrow.en} ko={eyebrow.ko} tone={eyebrow.tone} />
+        <Eyebrow en={eyebrow.en} ko={eyebrow.ko} tone={ebTone} onDark={onDark} />
       </div>
       <div style={{ flex: '1 1 auto', minWidth: 0, ...rightStyle }}>
         <h2
@@ -97,7 +103,7 @@ export function SlideHeader({ eyebrow, headline, sub, headlineColor = colors.tex
             fontWeight: typography.headline.weight,
             letterSpacing: typography.headline.tracking,
             lineHeight: 1.5,
-            color: headlineColor,
+            color: hColor,
           }}
         >
           {headNode}
@@ -111,7 +117,7 @@ export function SlideHeader({ eyebrow, headline, sub, headlineColor = colors.tex
               fontSize: typography.body.size,
               fontWeight: typography.body.weight,
               lineHeight: typography.body.leading,
-              color: colors.text.secondary,
+              color: subColor,
             }}
           >
             {line}
@@ -144,7 +150,9 @@ export function Badge({ text, filled }) {
   );
 }
 
-export function StepDots({ count, active }) {
+export function StepDots({ count, active, onDark = false }) {
+  const on = onDark ? colors.white : colors.ink;
+  const off = onDark ? whiteA(0.35) : colors.line.strong;
   return (
     <div
       aria-hidden="true"
@@ -167,8 +175,8 @@ export function StepDots({ count, active }) {
             width: i === active ? 22 : 8,
             height: 3,
             borderRadius: 999,
-            // 라이트 반전: 활성만 잉크, 비활성은 옅은 잉크 선.
-            background: i === active ? colors.ink : colors.line.strong,
+            // 활성만 강조. onDark면 흰 계열.
+            background: i === active ? on : off,
             boxShadow: 'none',
             transition: `width 300ms ${motion.easeOut}, background-color 300ms ease`,
           }}

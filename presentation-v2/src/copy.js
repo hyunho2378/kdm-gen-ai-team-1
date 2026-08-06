@@ -41,10 +41,11 @@ export const PROLOGUE = {
 // 인사이트 PAIN POINT (원본 1.svg)
 // 상단 페인 3장과 하단 인사이트 3장이 같은 열에 선다. 배열 순서가 곧 열 순서다.
 export const PAINPOINT = {
+  label: { en: 'Problem', ko: '문제점' },
   painLabel: 'PAIN POINT',
   insightLabel: 'INSIGHT',
-  // 배경 사진은 라이선스 미확인 시안이라 임베드하지 않는다. 파일이 없으면 다크 플레이스홀더로 내려앉는다.
-  bg: '/images/painpoint/bg.png',
+  // 문제점 페이지 풀블리드 배경(펜싱 대결 사진). 유리 카드가 그 위에 뜬다.
+  bg: '/images/prb/prb.png',
 };
 
 export const PAINPOINT_COLUMNS = [
@@ -123,10 +124,18 @@ export const TARGET_ITEMS = [
 export const KEYWORD = {
   label: { en: 'Design Keyword', ko: '디자인 키워드' },
   headline: '빠르게 움직이고, 정확하게 판단하며, 끝까지 몰입한다',
-  // 헤드라인 아래 본문 두 줄(레귤러). 지시대로 헤드라인 아래로 위치를 옮겨 되살렸다.
+  // 헤드라인 아래 큰 줄(lead) + 본문(body). 본문은 b:true 조각만 볼드.
+  lead: '새로운 훈련을 시작하고, 스스로 성장하며, 현실을 넘어 몰입한다.',
   body: [
-    '본 제품은 펜싱의 핵심 경험을 XR 기술로 확장하여 실시간 피드백과 직관적인 인터페이스를 통해 더욱 효과적인 트레이닝 환경을 제공한다.',
-    '이를 위해 Dynamic, Precision, Immersion의 세가지 디자인 키워드를 바탕으로 형태와 사용자 경험을 전개한다.',
+    { t: 'XR은 단순히 훈련을 디지털화하는 기술이 아니라, ' },
+    { t: '사용자의 움직임을 이해하고 성장 과정을 함께 만들어가는 새로운 펜싱 경험', b: true },
+    { t: '이다. VORTEX는 ' },
+    { t: 'Transformative', b: true },
+    { t: ', ' },
+    { t: 'Guide', b: true },
+    { t: ', ' },
+    { t: 'Immersion', b: true },
+    { t: '을 중심으로 기술과 사용자가 자연스럽게 연결되는 트레이닝 경험을 설계한다.' },
   ],
 };
 
@@ -197,14 +206,11 @@ export const DEMO = {
 // **색값은 여기에 적지 않는다.** 컴포넌트가 tokens에서 읽어 표시한다(이 페이지가 토큰의 진열장).
 export const COLOR_SYSTEM = {
   label: { en: 'Color System', ko: '컬러 시스템' },
-  headline: '강렬한 브랜드 레드는 펜싱의 에너지와 긴장감을, 절제된 블랙은 XR 인터페이스의 명확성과 몰입감을 표현한다.',
-  sub: '대비감 있는 컬러 시스템을 통해 브랜드 아이덴티티와 사용자 경험을 일관되게 전달한다.',
-  brandingRed: 'Branding Red',
-  primary: 'Primary',
-  brandGradient: 'Brand Gradient',
+  headline: '브랜딩 네이비는 깊이 있는 몰입과 기술적 신뢰를, 브랜딩 실버는 정교한 인터페이스와 직관적인 사용성을 표현한다.',
+  sub: '두 컬러는 사용자의 집중을 돕는 균형 잡힌 대비를 이루며, VORTEX만의 일관된 XR 브랜드 경험을 완성한다.',
+  brandingNavy: 'Branding Navy',
+  brandingSilver: 'Branding Silver',
   hex: 'HEX',
-  rgb: 'RGB',
-  stopLabels: ['Color1', 'Color2', 'Color3', 'Color4'],
 };
 
 // 컨셉 (원본 Slide 16_9 - 4.svg)

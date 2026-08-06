@@ -6,16 +6,33 @@ Apple Vision Pro 페이지의 구조와 레이아웃을 그대로 따르고, 콘
 
 ---
 
-## 상단 서브내비 (Apple의 Overview / Tech Specs / visionOS)
+## 0. 사이트 구조 (헤더 통합 세션에서 확정)
 
-제품 상세 상단에 고정 서브내비. 좌측 제품명(VORTEX 또는 마스크/컨트롤러), 우측에 탭과 CTA.
+**브랜드 사이트는 이 제품 페이지 하나다.** 랜딩, `/about`, `/duelists`, `/experience`, 제품 상세를 전부 걷었다. 루트(`/`)가 이 페이지이고 남은 라우트는 옛 주소를 살리는 리다이렉트 셋과 NotFound뿐이다(ROUTES.md).
+
+**헤더도 하나다.** 예전에는 전역 헤더(fixed, 68px)가 위에 상주하고 그 아래 서브내비가 붙었다. 바 둘이 위아래로 겹쳐 자리를 다퉜고, 그래서 전역 헤더를 걷어 **서브내비가 그대로 사이트의 유일한 헤더**가 되었다. Apple에서 글로벌내비가 스크롤아웃된 뒤 서브내비가 top 0을 차지하는 자리와 같다.
+
+| | 헤더 둘이던 때 | 지금 |
+|---|---|---|
+| 전역 헤더 | `fixed`, top 0, 높이 68 | 없음 |
+| 제품 내비 | `sticky`, top **68** | `sticky`, top **0** |
+| 앵커 여백 | `68 + 52 + 16` | `var(--pnav-h) + 16` |
+| 좌측 | VORTEX(전역 헤더) | VORTEX(제품 내비가 물려받음) |
+
+**앵커 여백에 숫자를 안 적는다.** 좁은 화면에서 바가 두 줄로 접혀 52가 아니라 **147**이 된다(320에서 실측). ProductNav가 자기 높이를 재서 `--pnav-h`로 내보내고 CSS와 현재 섹션 판정이 그것을 읽는다.
+
+---
+
+## 상단 내비 (Apple의 Overview / Tech Specs / visionOS)
+
+페이지 상단에 고정 내비. 좌측 워드마크(VORTEX), 우측에 탭과 CTA.
 
 - 탭: **5탭이다(개정).** OVERVIEW, MASK, CONTROLLER, VISION, EXPERIENCE.
   **Apple의 Tech Specs 한 자리를 마스크와 컨트롤러 둘로 쪼갰다.** 제품이 둘뿐이라
   각각 자기 탭을 가지는 편이 스펙을 깊게 편다. VISION은 Apple의 visionOS 자리다.
-- **다섯 다 `/products` 한 페이지 안의 앵커 섹션이다.** 라우트를 나누지 않는다.
-  `/product/mask`와 `/product/controller`는 `/products#mask`와 `#controller`로 보낸다
-  (밖에 나간 링크를 살리고 화면은 한 벌만 둔다).
+- **다섯 다 루트(`/`) 한 페이지 안의 앵커 섹션이다.** 라우트를 나누지 않는다.
+  `/products`는 `/`로, `/product/mask`와 `/product/controller`는 `/#mask`와 `/#controller`로
+  보낸다(밖에 나간 링크를 살리고 화면은 한 벌만 둔다).
 - **히어로는 중앙 정렬이다**(Apple 오버뷰 히어로). 제품명이 가운데 서고 한 줄이 붙는다.
 - CTA: Book a demo, Buy 두 버튼. **레드를 걷어 잉크 채움이다.** Book a demo는 `VITE_ARENA_URL`로 나가고 Buy는 비활성 자리표시다.
 - 스크롤 시 이 서브내비 고정(Apple처럼).
@@ -24,17 +41,18 @@ Apple Vision Pro 페이지의 구조와 레이아웃을 그대로 따르고, 콘
 >
 > | | Apple 실측(1440x900) | 우리 |
 > |---|---|---|
-> | 요소 | `nav`, **sticky, top 0**, z 9997, **높이 52px**, 전폭 | `nav`, **sticky, top 68px**(헤더 높이), z 49, **52px**, 전폭 |
+> | 요소 | `nav`, **sticky, top 0**, z 9997, **높이 52px**, 전폭 | `nav`, **sticky, top 0**, z 50, **52px**, 전폭 |
 > | 좌측 | 제품명 **21px / 600** | 제품명 **21.8px / 700**(`heading` 토큰) |
 > | 우측 탭 | Overview · Tech Specs · visionOS, **12px / 400** | OVERVIEW · TECH SPECS · EXPERIENCE, **12px**(`hud` 토큰) |
 > | 현재 탭 | **밑줄**. aria-current 없음 | **밑줄 + 굵기 700 대 500 + 잉크 대 dim**(색 단독 구분 금지) |
 > | Book a demo | 알약 아웃라인, radius 980px | 알약 아웃라인, radius 999px |
-> | Buy | 알약 채움, 파란 배경 + 흰 글자 | 알약 채움, **`#80070C` + 흰 글자**(대비 10.57) |
+> | Buy | 알약 채움, 파란 배경 + 흰 글자 | 알약 채움, **잉크 `#101010` + 흰 글자**(대비 18.71) |
 > | 테두리 | `border-bottom` 없음 | 없음. 배경만 옅게 깔아 글자가 안 뚫린다 |
 >
-> **top이 0이 아니라 헤더 높이인 이유.** Apple은 글로벌내비가 스크롤아웃되면 서브내비가
+> **top이 0인 이유(헤더 통합 세션에서 개정).** Apple은 글로벌내비가 스크롤아웃되면 서브내비가
 > 그 자리를 이어받아 top 0에 붙는다(실측: scrollY 0에서 top 62 → 400에서 -52 → 1200부터 0).
-> 우리 헤더는 늘 `fixed`로 상주하므로 그 아래가 같은 자리다.
+> PD-1에서는 우리 전역 헤더가 늘 `fixed`로 상주해서 그 아래(68px)를 같은 자리로 봤는데,
+> **그 헤더를 걷어냈으므로 이제 문자 그대로 top 0이다.**
 >
 > **고정은 sticky다. fixed가 아니다.** fixed는 transform이 걸린 조상(R3 워프)에 잡혀
 > 뷰포트가 아니라 그 조상 기준이 된다(PITFALLS). 실측으로 워프와의 공존을 확인했다.
@@ -47,7 +65,8 @@ Apple Vision Pro 페이지의 구조와 레이아웃을 그대로 따르고, 콘
 >
 > **기존 내부 탭(OVERVIEW/FEATURES)을 걷었다.** 서브내비 3탭과 개념이 겹쳐 같은 이름이
 > 두 벌로 읽혔다. 스펙은 TECH SPECS로, 특징은 OVERVIEW로 자리를 나눠 갔다.
-> `/products` 딥다이브(BV2-4)는 제품군 진입이라 그대로 둔다.
+> **BV2-4 딥다이브도 걷었다(헤더 통합 세션).** 5탭이 마스크와 컨트롤러에 각자 자리를 줘서
+> 같은 역할을 더 곧게 한다. `.vx-dive*` CSS와 `PRODUCT_DEEPDIVE` 문구가 함께 사라졌다.
 
 ---
 
@@ -103,15 +122,16 @@ Apple의 카테고리 구조를 틀로 삼아 우리 마스크/컨트롤러 스�
 
 ## 4. Book a demo 연결
 
-- 모든 페이지의 Book a demo 버튼이 우리 시연 사이트(arena 또는 /experience 데모 진입)로 연결.
+- Book a demo 버튼이 우리 시연 사이트(`VITE_ARENA_URL`)로 연결. `/experience` 페이지는 사라졌다.
 - 실제 겨루기 데모로 넘어가는 관문.
 
 ---
 
 ## 5. 두 제품 (마스크, 컨트롤러)
 
-- 마스크 탭과 컨트롤러 탭, 또는 /product/mask와 /product/controller 각각 위 구조.
-- 각 제품이 Overview, Tech Specs, Experience를 가짐. 2개뿐이라 각각 깊게.
+- **마스크 탭과 컨트롤러 탭이다.** `/product/mask`와 `/product/controller` 별도 페이지는 걷었다.
+  제품이 둘뿐이라 페이지를 나누면 같은 골격이 두 벌로 서고, 앵커 섹션이면 한 벌로 끝난다.
+- 두 탭이 각각 스펙과 3D를 가진다. 2개뿐이라 각각 깊게.
 
 ---
 

@@ -7,8 +7,10 @@
 
 - **배경 `#F6F6F6`(`colors.bg`) + 잉크 `#101010`(`colors.ink`)가 전역 기준.** 전 슬라이드 이 둘.
 - 흑 계열 텍스트/선은 `inkA(a)`로 파생(`text.*`, `line.*`, `surface.*`). 밝은 파생은 `whiteA`/`bgA`.
-- **브랜드 레드(`#E60D15`)와 블랙 견본, 미드나잇 네이비(`#263E5F`)는 컬러 시스템 슬라이드 안에서만.**
-  전역 액센트로 쓰지 않는다. 네이비는 그 슬라이드 아이브로우 tone에만 얹었다.
+- **컬러 시스템 슬라이드는 새 색 체계(브랜딩 네이비/실버) 견본을 소개한다(레드 견본 폐기).**
+  브랜딩 네이비 `#101925→#3C5E8B`(`brandNavyGradient`), 브랜딩 실버 `#FDFDFD→#C4C4C4`(`brandSilverGradient`).
+  견본이 내용이라 이 슬라이드에서만 네이비/실버가 보인다(전역 라이트 규칙과 별개). 아이브로우 tone도 네이비.
+  솔루션(why)·문제점(painpoint) 슬라이드도 이 네이비를 배경/스크림으로 쓴다(그 슬라이드 한정).
 - 전역 액센트는 잉크 단색이다. 컴포넌트(Eyebrow/StepDots/Badge)와 CTA/아이콘 원/글로우를 전부 잉크로 내렸다.
 - 첫 페인트 예외는 `index.css`의 `#F6F6F6`/`#101010`(토큰과 같은 값).
 
@@ -96,6 +98,21 @@
   흰 심볼 크게(모티프 주인공), 우 라이트 패널에 라인 구성(`lgoo_line.svg`, 그리드 가이드).
 - **로고 가이드:** 3분할 — 조합형(좌, 큰 다크 카드 + 흰 lockup) / 로고타입(우상, 라이트 + 잉크 워드마크) /
   심볼(우하, 라이트 + 잉크 심볼). 각 라벨 영문 + 국문. `gridTemplateAreas`로 조합형이 좌측 2행 span.
+
+## 솔루션(why) / 문제점(painpoint) 슬라이드 — 네이비 배경 + 하위 스텝
+
+두 슬라이드만 **브랜드 네이비 그라디언트 배경**(#101925→#3C5E8B). 흰 텍스트. 공용 컴포넌트는 `onDark`로
+흰 계열 전환(SlideHeader/Eyebrow/StepDots에 `onDark` 추가). 상단 표기 없음. 애니메이션은 transform/opacity만.
+
+- **솔루션(S2Why, 참조 Slide 90):** AS-IS/TO-BE 내용 유지, 배치만. 스텝0 AS-IS 패널 정중앙(실측 centerX=뷰포트
+  중앙), 스텝1 AS-IS 좌 이동 + TO-BE 우 등장(둘 다 마진 안 8vw/92vw). 패널은 사진 카드 + 하단 네이비 스크림 +
+  흰 배지/캡션. 대비 흰 on 네이비 6.5~17:1. (eyebrow는 기존 WHY/문제 유지 — 참조는 Solution이지만 copy는 보존.)
+- **문제점(SPainPoint, 참조 Slide 89):** 풀블리드 배경 `images/prb/prb.png` + 어두운 네이비 오버레이. **유리 카드**
+  (`whiteA(0.1)` + backdrop blur + 미세 흰 테두리/림). 스텝0 문제 3카드(Functional/Economic/Social) 중앙,
+  스텝1 문제 카드 위로 + 폴리곤 화살표(흰 삼각형) + 인사이트 3카드 아래 등장. 대비 흰 on 유리 ~10:1.
+  **painpoint를 위임 섹션으로 승격**(App `DELEGATE_IDS`에 추가, registerHandler/registerEnter).
+- **상단 표기 제거(전 슬라이드).** 참조 SVG의 2026 KDM+/XR Fencing Glass/Team 1을 어느 슬라이드에도 안 넣는다.
+  **표지의 팀/행사 모서리 표기도 이 규칙으로 제거**(로고+서브카피만). 실측: 덱 전체 top marking 0.
 
 ## 그리드 (컬러 시스템 슬라이드 실측 → 전역)
 
