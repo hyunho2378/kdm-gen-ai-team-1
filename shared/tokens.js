@@ -122,8 +122,14 @@ export const typography = {
   hud:     { size: 'clamp(0.875rem, 0.8rem + 0.3vw, 1.125rem)', weight: 600, tracking: '0.06em', leading: 1.2 },
   // 아이브로우 v2 (DESIGN 4절 개정). 예전에는 caption(0.8125rem = 13px)을 그대로 썼다.
   // **불릿 원을 없앤 대신 크기가 존재감을 진다.** 13px + 8px = 21px = 1.3125rem.
-  // rem이라 사용자 글자 크기 설정을 그대로 따른다. weight 600 세미볼드 유지.
-  eyebrow: { size: '1.3125rem', weight: 600, tracking: '0.06em', leading: 1.25 },
+  // rem이라 사용자 글자 크기 설정을 그대로 따른다.
+  //
+  // **굵기가 700인 것은 대비 때문이다.** 아이브로우 영문은 red.light인데 그 색은
+  // bg.base 위에서 4.02:1이다(DESIGN 2절 기록값). WCAG 대형 기준은 24px 이상이거나
+  // **18.66px 이상이면서 굵기 700 이상**이라, 21px라도 굵기가 600이면 대형으로 안 쳐서
+  // 본문 기준 4.5:1을 요구받고 0.48 모자란다(R4 실측). 700으로 올리면 21px가 대형에 들어
+  // 기준이 3.0이 되어 통과한다. **굵기를 낮추면 그 순간 대비가 미달로 돌아간다.**
+  eyebrow: { size: '1.3125rem', weight: 700, tracking: '0.06em', leading: 1.25 },
 };
 
 export const spacing = {
