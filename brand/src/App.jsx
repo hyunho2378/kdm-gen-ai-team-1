@@ -4,8 +4,9 @@
 // **ScrollRestoration은 쓸 수 없다**(데이터 라우터 전용이라 던진다). 스크롤은 아래 훅이 맡는다.
 // 새로고침과 직접 진입은 brand/vercel.json의 SPA rewrite가 받는다.
 //
-// 상세는 `/product/:slug` 하나로 받는다. 4종이 같은 골격이라 라우트를 넷으로 쪼갤 이유가 없고,
-// 없는 slug일 때 빈 화면 대신 안내와 뒤로 가기를 낼 수 있다(BRAND_SITE_GUIDE 6절).
+// 상세는 **있는 slug만 라우트로 연다.** `/product/:slug` 하나로 받으면 없는 제품도 상세 골격이
+// 뜨고 그 안에서 다시 안내를 내야 한다. 명시 라우트로 두면 `/product/branding` 같은 폐기 경로가
+// 전역 NotFound로 그냥 떨어진다. 라우트 목록은 copy.js의 제품 카드가 곧 원천이다.
 
 import { useEffect } from 'react';
 import {
@@ -17,6 +18,7 @@ import {
   useNavigationType,
 } from 'react-router-dom';
 import Lenis from 'lenis';
+import { PRODUCTS } from './copy.js';
 import { applyThemeVars } from './theme.js';
 import Header from './components/Header.jsx';
 import Landing from './pages/Landing.jsx';
@@ -73,7 +75,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/products" element={<Products />} />
-        <Route path="/product/:slug" element={<ProductDetail />} />
+        {PRODUCTS.cards.map((p) => (
+          <Route key={p.slug} path={`/product/${p.slug}`} element={<ProductDetail slug={p.slug} />} />
+        ))}
         <Route path="/duelists" element={<Duelists />} />
         <Route path="/experience" element={<Experience />} />
         {/* **랜딩으로 튕기지 않는다.** 주소가 틀렸다는 사실이 화면에 남아야 사람이 오타를 찾는다 */}

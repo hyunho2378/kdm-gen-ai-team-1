@@ -17,8 +17,9 @@ export default function Products() {
           margin: 0,
           padding: 0,
           display: 'grid',
-          // 320에서 1열, 넓어지면 자동으로 2열과 4열이 된다. 미디어쿼리 없이 폭만 보고 접힌다
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          // 3종이라 최소폭을 280으로 올려 유파 격자와 같은 리듬으로 맞춘다.
+          // 320에서 1열, 768에서 2열, 넓은 화면에서 3열이 한 줄에 선다. 미디어쿼리 없이 폭만 보고 접힌다
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: spacing.unit * 2,
         }}
       >

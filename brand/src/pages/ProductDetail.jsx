@@ -1,18 +1,17 @@
-// 제품 상세 4종 공통 골격(BRAND_SITE_GUIDE 2.3).
+// 제품 상세 3종 공통 골격(BRAND_SITE_GUIDE 2.3).
 // 히어로 제목만 slug별이고 섹션 라벨과 뒤로와 CTA는 공통이다.
 //
-// 4종이 같은 컴포넌트를 쓴다. 레이아웃이 갈리는 것은 갤러리가 붙는 이후 세션이고
-// 지금 넷을 따로 만들면 같은 뼈대를 네 번 고치게 된다(BRAND_SITE_GUIDE 2.3 "우선 공통 골격").
+// 셋이 같은 컴포넌트를 쓴다. 레이아웃이 갈리는 것은 갤러리가 붙는 이후 세션이고
+// 지금 셋을 따로 만들면 같은 뼈대를 세 번 고치게 된다(BRAND_SITE_GUIDE 2.3 "우선 공통 골격").
 //
-// 없는 slug는 빈 화면 대신 안내와 돌아갈 길을 낸다.
+// **없는 slug는 여기 오지 않는다.** App이 있는 제품만 라우트로 열고 나머지는 전역 NotFound가 받는다.
 
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { colors, radius, spacing, typography } from '../tokens.js';
 import { PRODUCTS, PRODUCT_DETAIL } from '../copy.js';
 import ArenaCta from '../components/ArenaCta.jsx';
 
-export default function ProductDetail() {
-  const { slug } = useParams();
+export default function ProductDetail({ slug }) {
   const product = PRODUCTS.cards.find((p) => p.slug === slug);
 
   return (
@@ -34,12 +33,6 @@ export default function ProductDetail() {
         {PRODUCT_DETAIL.back}
       </Link>
 
-      {!product ? (
-        <p style={{ margin: 0, fontFamily: typography.family, fontSize: typography.body.size, color: colors.text.dim }}>
-          {PRODUCT_DETAIL.notFound}
-        </p>
-      ) : (
-        <>
           <span
             style={{
               fontFamily: typography.family,
@@ -124,9 +117,7 @@ export default function ProductDetail() {
               <SectionLabel>{PRODUCT_DETAIL.labels.experience}</SectionLabel>
               <ArenaCta label={PRODUCT_DETAIL.cta} />
             </section>
-          ) : null}
-        </>
-      )}
+      ) : null}
     </main>
   );
 }

@@ -12,17 +12,17 @@ export const BRAND = 'VORTEX';
 export const APP_NAME = 'VORTEX Brand';
 
 // ---------------------------------------------------------------------------
-// 미확정 문구. **여기 다섯 개가 이 파일에서 유일하게 확정이 아니다.**
+// 미확정 문구. **여기 셋이 이 파일에서 유일하게 확정이 아니다.**
 // 값을 빈 문자열로 두면 자리가 접혀 레이아웃이 무너지므로 자리표시 문장을 넣는다.
 // 확정되면 이 상수의 값만 바꾼다. 참조처는 손대지 않는다.
 // ---------------------------------------------------------------------------
 const TODO_MARK = '확정 예정';
 
 export const TODO_XR_GLASS_DETAIL = `XR 글라스 상세 ${TODO_MARK}`;
-export const TODO_BRANDING_LINE = `브랜딩 한 줄 ${TODO_MARK}`;
-export const TODO_BRANDING_DETAIL = `브랜딩 상세 ${TODO_MARK}`;
-export const TODO_BRANDING_HERO = `브랜딩 히어로 제목 ${TODO_MARK}`;
 export const TODO_EXPERIENCE_NOTICE = `데모 주의 사항 ${TODO_MARK}`;
+// 제품군이 4종에서 3종으로 줄면서 "각 장치가 거리, 자세, 타이밍, 대결을 맡는다"가
+// 네 개 전제라 안 맞게 됐다. 새 문장을 지어내지 않고 자리표시로 둔다
+export const PRODUCTS_INDEX_LINE_TODO = `제품군 한 줄 ${TODO_MARK}`;
 
 // 섹션 식별자. 랜딩 앵커가 쓴다.
 export const SECTION = {
@@ -66,7 +66,7 @@ export const LANDING = {
       key: 'products',
       to: '/products',
       eyebrow: 'PRODUCTS',
-      title: '검을 이루는 네 개의 장치',
+      title: '검을 이루는 세 개의 장치',
       line: 'XR 글라스부터 데모 앱까지, 훈련을 완성하는 제품군',
       link: '제품 보기',
     },
@@ -95,8 +95,8 @@ export const LANDING = {
 export const PRODUCTS = {
   index: {
     eyebrow: { en: 'PRODUCTS', ko: '제품군' },
-    title: '검을 이루는 네 개의 장치',
-    line: '각 장치가 거리, 자세, 타이밍, 대결을 맡는다',
+    title: '검을 이루는 세 개의 장치',
+    line: PRODUCTS_INDEX_LINE_TODO,
   },
   cards: [
     {
@@ -111,13 +111,6 @@ export const PRODUCTS = {
       name: '모의 검 컨트롤러',
       line: '폰이 검이 되는 모션 컨트롤러',
       detail: '폰 센서로 찌르기와 거리를 읽어 검의 움직임으로 옮긴다',
-      demoCta: false,
-    },
-    {
-      slug: 'branding',
-      name: '브랜딩',
-      line: TODO_BRANDING_LINE,
-      detail: TODO_BRANDING_DETAIL,
       demoCta: false,
     },
     {
@@ -137,7 +130,6 @@ export const PRODUCT_DETAIL = {
   hero: {
     'xr-glass': '보는 것이 곧 겨루는 것',
     controller: '손안의 검',
-    branding: TODO_BRANDING_HERO,
     'demo-app': '설치 없이, 지금',
   },
   labels: {
@@ -148,7 +140,6 @@ export const PRODUCT_DETAIL = {
   back: '제품군으로',
   cta: '체험하기',
   visualPlaceholder: `대표 비주얼 ${TODO_MARK}`,
-  notFound: '없는 제품이다',
 };
 
 // ---------------------------------------------------------------------------
