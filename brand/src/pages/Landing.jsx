@@ -14,6 +14,7 @@ import { gsap, isReduced } from '../lib/motion.js';
 import Section from '../components/Section.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import HeroTrail from '../components/HeroTrail.jsx';
+import HeroWordmark from '../components/HeroWordmark.jsx';
 import WorldScene from '../components/WorldScene.jsx';
 
 const { hero, world, gates } = LANDING;
@@ -102,23 +103,10 @@ function HeroSection() {
           <Eyebrow en={hero.eyebrow.en} ko={hero.eyebrow.ko} />
         </div>
 
-        {/* 워드마크는 메탈릭이다(VORTEX_DESIGN_SYSTEM 3.1, 3.7). shared의 steelText를 그대로 쓴다.
+        {/* 워드마크는 메탈릭이다(VORTEX_DESIGN_SYSTEM 3.1, 3.7).
+            크롬을 셰이더로 올리고 실패하면 steelText로 내려앉는 판단은 HeroWordmark가 쥔다.
             **브랜드 그라디언트를 글자에 넣지 않는다.** 마지막 스톱이 #101010이라 X가 배경에 묻힌다(실측). */}
-        <h1
-          data-enter="wordmark"
-          style={{
-            margin: 0,
-            fontFamily: displayFamily,
-            fontSize: typography.display.size,
-            fontWeight: typography.display.weight,
-            letterSpacing: typography.display.tracking,
-            lineHeight: typography.display.leading,
-            width: 'fit-content',
-            ...steelText,
-          }}
-        >
-          {hero.wordmark}
-        </h1>
+        <HeroWordmark text={hero.wordmark} />
 
         {/* 검끝 한 줄 모티프의 자리(2.5절). 지금은 브랜드 그라디언트 실선이다 */}
         <span

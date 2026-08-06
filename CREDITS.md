@@ -26,7 +26,28 @@
 | 카메라 셰이크 (trauma 방식) | MIT, **로직 포팅** | arena 명중 연출. `three-screenshake`가 npm에 없어(404) `sajmoni/screen-shake`의 trauma 방식을 JS로 포팅 | https://github.com/sajmoni/screen-shake |
 | snoise (simplex 3D) | MIT, **GLSL 코드 이식** | presentation 배경 셰이더(StageShader). Ashima/stegu webgl-noise의 3D simplex를 프래그먼트에 그대로 이식. three.js 없이 raw WebGL 사용(P5 판정) | https://github.com/stegu/webgl-noise |
 | qrcode-generator | MIT | arena PAIRING 화면 QR(`components/QRPanel.jsx`). **인코딩만 라이브러리가 하고 그리기는 우리가 한다.** 모듈 배열만 받아 SVG 사각형으로 직접 그려 canvas도 이미지도 만들지 않는다. 2.0.4, 의존성 0. npm 메타와 `dist/qrcode.js` 헤더 양쪽에서 MIT를 확인했다(Copyright 2009 Kazuhiko Arase). 저장소에 별도 LICENSE 파일은 없고 소스 헤더가 라이선스 표기다 | https://github.com/kazuhikoarase/qrcode-generator |
+| @paper-design/shaders | **Apache-2.0** (Copyright 2026 Paper). **NOTICE 동봉 의무 있음. 아래 이행 기록 참고** | brand 히어로 워드마크 크롬. `components/HeroWordmark.jsx`가 `liquidMetalFragmentShader`와 자체 런타임 `ShaderMount`를 쓴다. 0.0.78 고정, 의존성 0 | https://github.com/paper-design/shaders |
 | ogl (Polyline) | **Unlicense**(퍼블릭 도메인). 아래 라이선스 실사 참고 | presentation-v2 S1 표지 커서 궤적. `components/VortexLine.jsx`. **공식 예제 `examples/polylines.html` 코드를 출발점으로 가져왔다**(스프링/프릭션 추적 루프, vertex 셰이더 전문, resize 처리). ogl 1.0.11 버전 고정 | https://github.com/oframe/ogl |
+
+**@paper-design/shaders Apache-2.0 의무 이행(2026-08-06).** 이 리포에서 **Apache-2.0을 배포까지 지는 첫 라이브러리다.**
+MIT와 달리 지켜야 할 것이 넷이라 배포물에 실제로 실었다. `brand/public/licenses/paper-design-shaders/`에 있고
+빌드하면 `dist/licenses/paper-design-shaders/`로 그대로 나간다(실측).
+
+- **라이선스 사본**: `LICENSE`. 설치본의 Apache 2.0 전문을 그대로 복사했다
+- **NOTICE 동봉**: `NOTICE`. Apache-2.0 4항은 원본에 NOTICE가 있으면 재배포본에 그 내용을 유지하라고 한다.
+  `Paper Shaders / Copyright 2026 Paper / Powered by Paper Shaders: https://shaders.paper.design`
+- **변경 사실 표시**: `CHANGES.txt`. 4항 b가 요구하는 고지다. 아래 두 줄이 우리가 바꾼 전부다
+- **저작권 고지 유지**: 패키지 소스를 고쳐 쓰지 않는다. `node_modules` 설치본을 그대로 import한다
+
+**바꾼 것은 셰이더 상수 두 줄이고 런타임 문자열 치환이다.** 파일을 수정하지 않는다.
+원문의 밝은 스톱 `vec3(.98, 0.98, 1.)`과 어두운 스톱 `vec3(.1, .1, .1 + ...)`이
+**유니폼이 아니라 셰이더 상수**라 밖에서 넘길 방법이 없었다. 어두운 쪽 0.1이 우리 무대 배경
+`#101010`(0.063)과 거의 붙어 글자 안의 어두운 띠가 배경에 잠겼다(DESIGN 1절 1항).
+그래서 둘을 DESIGN 2절 크롬 스톱(`steel.hi`, `steel.shadow`)으로 바꿨다.
+치환 앵커가 유일하지 않으면 셰이더를 그대로 두고 `steelText`로 내려앉는다(버전이 바뀌면 색 통제를 못 하므로).
+
+README가 권하는 "Powered by Paper Shaders" 가시 크레딧은 **의무가 아니라 권장**이다(appreciated).
+NOTICE 파일에 그 문구가 그대로 실려 배포된다.
 
 **three.js OrbitControls는 새 설치가 아니다(2026-08-06 확인).** 이미 채택한 `three` 패키지 안의 파일이라
 별도 npm 설치도 clone도 없다. 그래도 별 행으로 남기는 이유는 **애드온을 실제로 코드에 들였다는 사실**이
