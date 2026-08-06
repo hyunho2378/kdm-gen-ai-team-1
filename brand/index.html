@@ -3,6 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- 웹폰트. **SUIT가 본문이고 Pretendard는 폴백이다**(tokens의 family가 그 순서다).
+         SUIT는 presentation-v2가 이미 쓰는 것과 같은 CDN과 같은 버전이라 두 앱의 얼굴이 같다.
+         가변 축이 정상이라 굵기를 합성하지 않는다(합성 굵기는 글자를 찌그러뜨린다).
+         미로드 시 tokens의 시스템 fallback으로 내려앉는다. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css"
+    />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"

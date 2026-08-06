@@ -317,9 +317,10 @@ html { scrollbar-gutter: stable; }
   border: 1px solid transparent;
   border-radius: 999px;
 }
+/* 채움 알약. **네이비다**(Apple은 파란 채움). 흰 글자와 10.74 */
 .vx-pnav-pill-fill {
-  background: var(--fill);
-  border-color: var(--fill);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 /* 좁은 화면. 제품명 아래로 줄이 접힌다. 높이를 고정하지 않는다 */

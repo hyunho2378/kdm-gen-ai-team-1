@@ -17,21 +17,32 @@ IA.md와 1:1. 라우트 추가와 삭제는 IA.md 수정 후에만. 인증 없�
 
 ## brand
 
-**사이트가 페이지 하나다(헤더 통합 세션).**
+**다섯 탭이 각자 독립 라우트다.** Apple의 로컬 내비도 앵커가 아니라 라우트다(실측).
 
 ```jsx
 <Routes>
-  <Route path="/" element={<Products />} />
+  <Route path="/" element={<Overview />} />
+  <Route path="/mask" element={<ProductPage slug="mask" />} />
+  <Route path="/controller" element={<ProductPage slug="controller" />} />
+  <Route path="/vision" element={<Vision />} />
+  <Route path="/experience" element={<ExperiencePage />} />
+
+  <Route path="/overview" element={<Navigate to="/" replace />} />
   <Route path="/products" element={<Navigate to="/" replace />} />
-  <Route path="/product/mask" element={<Navigate to="/#mask" replace />} />
-  <Route path="/product/controller" element={<Navigate to="/#controller" replace />} />
+  <Route path="/product/mask" element={<Navigate to="/mask" replace />} />
+  <Route path="/product/controller" element={<Navigate to="/controller" replace />} />
+
   <Route path="*" element={<NotFound />} />
 </Routes>
 ```
 
-제품 다섯 자리(overview, mask, controller, vision, experience)는 라우트가 아니라 **한 페이지 안의 앵커 섹션**이다. 상단 내비가 그 자리로 보내고 현재 섹션을 밑줄로 표시한다.
+**오버뷰가 루트다.** 사이트 전체가 이 제품이라 `/products` 같은 상위 마디가 아무것도 안 가른다.
 
-리다이렉트 셋은 밖에 나갔던 주소를 살리는 것뿐이다. `/about`, `/duelists`, `/experience`, 옛 제품 slug는 페이지째 사라져서 리다이렉트를 두지 않는다. **홈으로 튕기지 않고 NotFound가 뜬다.** 조용히 홈으로 보내면 주소가 틀렸다는 사실이 화면에 안 남는다.
+경로 목록의 원천은 `copy.js`의 `PRODUCT_NAV.tabs`이고 각 항목의 `to`가 위 경로와 1:1이다. 내비는 그 배열로 링크를 세우고 현재 탭은 `useLocation().pathname`이 정한다.
+
+앵커 시절 주소(`/#mask`)는 해시라 서버에 안 간다. 브라우저가 `/`를 연 뒤 `HashRoute`가 `/mask`로 갈아탄다. **해시는 지운다.** 안 지우면 새 라우트에서도 남아 뒤로 가기가 꼬인다.
+
+`/about`, `/duelists`, 옛 제품 slug는 페이지째 사라져서 리다이렉트를 두지 않는다. **홈으로 튕기지 않고 NotFound가 뜬다.**
 
 ## arena
 

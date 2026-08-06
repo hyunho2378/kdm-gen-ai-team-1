@@ -37,8 +37,17 @@ export default function Overview() {
         <SectionHead label={{ en: TAB.label, ko: TAB.ko }} title={copy.title} line={copy.line} />
       </section>
 
+      {/* **두 번째 미디어가 moti다.** 브랜드 모티프 이미지이고 자리표시가 아니다.
+          2880x1034(2.79:1)이라 슬롯(2.024:1)보다 납작하다. cover로 덮어 위아래를 살짝
+          잘라 슬롯을 꽉 채운다. 늘리지 않으므로 비율이 찌그러지지 않는다 */}
       <section style={{ paddingBlock: 'var(--section-gap)' }}>
-        <WideMedia pending={MEDIA_PENDING} />
+        <WideMedia>
+          <img
+            src="/images/moti/moti.png"
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        </WideMedia>
         <SectionHead label={naming.eyebrow} title={naming.title} line={naming.body} />
       </section>
 
@@ -103,7 +112,8 @@ function Hero() {
             <Eyebrow en={HERO.eyebrow.en} ko={HERO.eyebrow.ko} />
           </div>
           {/* **평면 잉크다.** 크롬 셰이더는 라이트 배경에서 대비 1.16:1이라 걷었다 */}
-          <HeroWordmark text={HERO.wordmark} />
+          {/* **이 페이지의 h1이다.** 오버뷰가 사이트의 첫 화면이라 워드마크가 그 자리를 진다 */}
+          <HeroWordmark as="h1" text={HERO.wordmark} />
           <p data-enter="sub" style={{ ...leadStyle, marginTop: spacing.unit }}>
             {HERO.sub}
           </p>

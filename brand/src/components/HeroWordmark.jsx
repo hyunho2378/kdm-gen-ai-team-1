@@ -24,12 +24,13 @@ import { displayFamily, typography } from '../tokens.js';
  * 워드마크 한 줄. 색은 `steelText`가 쥔다(v2에서 평면 잉크로 재정의됐다).
  * 크기는 display 토큰이고 히어로에서만 쓴다.
  */
-export default function HeroWordmark({ text, style }) {
+export default function HeroWordmark({ text, style, as: Tag = 'span' }) {
   return (
-    <span
+    <Tag
       data-enter="wordmark"
       style={{
         display: 'block',
+        margin: 0,
         fontFamily: displayFamily,
         fontSize: typography.display.size,
         fontWeight: typography.display.weight,
@@ -41,6 +42,6 @@ export default function HeroWordmark({ text, style }) {
       }}
     >
       {text}
-    </span>
+    </Tag>
   );
 }

@@ -20,11 +20,23 @@
 export * from '../../shared/tokens.js';
 import { colors as sharedColors, withAlpha, darken } from '../../shared/tokens.js';
 
-// ── 원색 3개. HEX를 적는 유일한 자리다(AGENTS 예외 조항) ──────────────────────
+// ── 원색 4개. HEX를 적는 유일한 자리다(AGENTS 예외 조항) ──────────────────────
 const INK = '#101010';          // 메인 텍스트
 const BG_TOP = '#C1C1C1';       // 배경 그라디언트 최상단
 const BG_BOTTOM = '#F6F6F6';    // 배경 그라디언트 최하단
 const PAPER = '#FDFDFD';        // 어두운 채움 위 글자
+/**
+ * **네이비 프라이머리.** presentation-v2가 쓰는 브랜드 네이비와 같은 값이다
+ * (`presentation-v2/src/tokens.js`의 `navy`). 두 앱이 같은 브랜드 색을 봐야 한다.
+ *
+ * **대비를 재고 넣었다.** 최악은 그라디언트 최상단 #C1C1C1이다.
+ *
+ *   네이비 위 배경 최상단   5.97:1   본문 4.5 통과
+ *   네이비 채움 위 흰 글자  10.74:1
+ *
+ * 레드가 라이트에서 어느 값을 써도 미달이라 걷었던 자리(2.63:1)를 이것이 대신한다.
+ */
+const NAVY = '#263E5F';
 
 /**
  * 페이지 배경. 일자 수직 그라디언트다.
@@ -71,11 +83,22 @@ export const colors = {
     press: withAlpha(INK, 0.82),
     on: PAPER,
   },
+  /**
+   * 강조. **네이비가 프라이머리다.**
+   * 아이브로우, 현재 탭 표시, 채움 CTA, 포커스 링이 이 하나를 본다.
+   * 여기저기 흩어진 강조가 같은 색을 보게 하려고 그룹으로 묶었다.
+   */
+  accent: {
+    base: NAVY,
+    // 눌린 상태. 알파를 낮춰 물러난다(잉크 채움과 같은 규약)
+    press: withAlpha(NAVY, 0.84),
+    on: PAPER,
+  },
   text: {
     primary: INK,
     secondary: withAlpha(INK, 0.78),
     dim: withAlpha(INK, 0.66),
-    // 딥 레드 채움 위. 대비 10.57
+    // 어두운 채움 위. 잉크 채움 18.71, 네이비 채움 10.74
     onFill: PAPER,
   },
   line: {
@@ -118,8 +141,20 @@ export const weight = {
  *   body      18px → 17px (Apple 본문과 같다)
  *   hud/eyebrow                12px (Apple 내비와 같다)
  */
+/**
+ * 본문과 UI 전체가 쓰는 얼굴. **SUIT 가변폰트다.**
+ *
+ * presentation-v2가 이미 같은 CDN(`sun-typeface/SUIT@2.0.5` variable woff2)으로 본문에
+ * 쓰고 있어서 두 앱의 얼굴이 같아진다. **가변 축이 정상이라 굵기를 합성하지 않는다.**
+ * SUIT Variable은 100~900을 실제 축으로 가지므로 아래 weight 스케일(400~800)이 전부
+ * 진짜 마스터에서 나온다. 합성 굵기는 글자를 찌그러뜨린다.
+ *
+ * 로드 실패 시 Pretendard로, 그 다음 시스템 얼굴로 내려앉는다.
+ */
+const SUIT = "'SUIT Variable', SUIT, 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif";
+
 export const typography = {
-  family: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif",
+  family: SUIT,
   // 히어로 딥다이브의 한 순간에만 쓴다. 섹션 제목에 쓰지 마라
   display: { size: 'clamp(2.5rem, 1.5rem + 2vw, 4rem)', weight: 800, tracking: '-0.02em', leading: 1.04 },
   // 섹션 헤드라인. **전 페이지가 이 하나를 쓴다**
@@ -132,8 +167,8 @@ export const typography = {
   hud: { size: '0.75rem', weight: 600, tracking: '0.06em', leading: 1.2 },
   /**
    * 아이브로우 v3. **21px에서 12px로 줄였다.**
-   * 21px/700이던 것은 다크 시절 red.light가 4.02:1이라 대형 텍스트 예외로만 통과했기 때문이다.
-   * 지금 레드는 #80070C라 최악 배경에서도 5.97:1이고, 12px 본문 기준 4.5를 그냥 넘긴다.
+   * 21px/700이던 것은 다크 시절 강조색이 4.02:1이라 대형 텍스트 예외로만 통과했기 때문이다.
+   * 지금 강조는 네이비 #263E5F라 최악 배경에서도 5.97:1이고, 12px 본문 기준 4.5를 넘긴다.
    * 크기로 버틸 이유가 사라져서 레퍼런스의 작고 정밀한 라벨로 되돌린다.
    */
   eyebrow: { size: '0.75rem', weight: 700, tracking: '0.1em', leading: 1.3 },
@@ -150,6 +185,6 @@ export const glow = { blue: 'none', steel: 'none' };
  */
 export const steelText = { color: INK };
 
-// 제목(디스플레이) 폰트는 미정이다. 지금은 본문과 같은 Pretendard를 가리키고
-// 폰트가 정해지면 **이 키 한 줄만** 바꾼다. 워드마크와 대형 제목이 이 키를 참조한다.
-export const displayFamily = "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif";
+// 제목(디스플레이) 폰트. 지금은 본문과 같은 SUIT를 가리키고, 따로 정해지면
+// **이 키 한 줄만** 바꾼다. 워드마크와 대형 제목이 이 키를 참조한다.
+export const displayFamily = SUIT;

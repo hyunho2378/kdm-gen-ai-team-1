@@ -122,8 +122,8 @@ export default function ProductNav() {
                   // **색 하나로 구분하지 않는다.** 굵기와 밑줄이 함께 움직인다(DESIGN 13절).
                   // 현재 탭만 네이비이고 나머지는 dim이라 강조가 한 자리에만 선다
                   fontWeight: on ? weight.bold : weight.medium,
-                  color: on ? colors.text.primary : colors.text.dim,
-                  borderBottomColor: on ? colors.text.primary : 'transparent',
+                  color: on ? colors.accent.base : colors.text.dim,
+                  borderBottomColor: on ? colors.accent.base : 'transparent',
                 }}
               >
                 {t.label}
@@ -140,7 +140,7 @@ export default function ProductNav() {
               target="_blank"
               rel="noreferrer"
               className="vx-pnav-pill"
-              style={{ ...itemText, color: colors.text.primary, borderColor: colors.line.strong }}
+              style={{ ...itemText, color: colors.accent.base, borderColor: colors.accent.base }}
             >
               {PRODUCT_NAV.demo}
             </a>
@@ -155,7 +155,7 @@ export default function ProductNav() {
           )}
 
           {/* Buy 자리. 아직 갈 곳이 없어 비활성이다. Apple은 파란 채움이고
-              우리는 잉크 채움이다(#101010 위 흰 글자 18.71) */}
+              **우리는 네이비 채움이다**(#263E5F 위 흰 글자 10.74) */}
           <span
             className="vx-pnav-pill vx-pnav-pill-fill"
             aria-disabled="true"

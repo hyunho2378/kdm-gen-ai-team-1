@@ -62,8 +62,9 @@ export function applyThemeVars(root = document.documentElement) {
     '--page-bg': pageGradient,
     '--font-display': displayFamily,
 
-    // 강조는 잉크가 진다. 레드는 브랜드에서 걷었다
-    '--accent': colors.text.primary,
+    // **강조는 네이비가 진다.** 아이브로우와 현재 탭과 포커스 링이 이 하나를 본다
+    '--accent': colors.accent.base,
+    '--accent-press': colors.accent.press,
     '--fill': colors.fill.base,
     '--fill-press': colors.fill.press,
     '--text-on-fill': colors.fill.on,
