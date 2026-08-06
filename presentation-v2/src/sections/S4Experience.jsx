@@ -86,14 +86,13 @@ export default function S4Experience({ active }) {
         style={{
           flex: '1 1 auto',
           minHeight: 0,
-          // 원본 카드 상단이 세로 43.1%에 오도록 띄운다(헤드라인 아래 여백).
-          marginTop: 'clamp(18px, 15vh, 150px)',
+          marginTop: 'clamp(20px, 4vh, 48px)',
           display: 'grid',
           // 원본 카드 폭 20.875% / 간격 1.88%. 최소폭을 170px로 둬 모바일 폭에서 2x2로 접힌다.
           gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 170px), 1fr))',
           gap: 'clamp(10px, 1.88vw, 44px)',
-          // 원본은 카드 상단이 세로 43.1%다. 남는 공간에 중앙 정렬하면 더 내려가므로 위에 붙인다.
-          alignContent: 'start',
+          // **헤더 아래 남는 공간에 세로 중앙 정렬**(이전에는 위로 붙어 중앙보다 올라가 있었다).
+          alignContent: 'center',
         }}
       >
         {INTERACTIONS.map((it, i) => {

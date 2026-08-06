@@ -17,8 +17,9 @@ import { SlideHeader, StepDots } from '../components/Bits.jsx';
 
 const STEPS = KEYWORDS.length; // 3
 const START = -1; // 기본: 전부 블러(포커스 없음)
-const FOCUS_SCALE = 1.06;
-const REST_SCALE = 0.96;
+// 카드를 애초에 줄였고(높이 상한), 확장/기본 스케일도 낮춰 both 축소.
+const FOCUS_SCALE = 1.04;
+const REST_SCALE = 0.94;
 const REST_BLUR = 6; // px
 const REST_BRIGHT = 0.72;
 const DUR = 0.55;
@@ -118,20 +119,24 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
         padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
-      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 우). 인트로 제거로 서브 없음. */}
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 + 본문 2줄 우). 본문은 레귤러. */}
       <div ref={headRef} style={{ flexShrink: 0 }}>
-        <SlideHeader eyebrow={{ en: KEYWORD.label.en, ko: KEYWORD.label.ko }} headline={KEYWORD.headline} />
+        <SlideHeader
+          eyebrow={{ en: KEYWORD.label.en, ko: KEYWORD.label.ko }}
+          headline={KEYWORD.headline}
+          sub={KEYWORD.body}
+        />
       </div>
 
-      {/* 카드 3장. 인트로 제거로 위로 붙는다. 행은 minmax(0,1fr)로 남는 세로를 채운다(카드 내부가 absolute라 행 높이가 필요). */}
+      {/* 카드 3장. **축소 + 아래로 내려 텍스트와 간격.** 남는 세로를 채우지 않고 높이 상한을 둔 그리드를
+          flex로 세로 중앙에 둔다. 카드 내부가 absolute라 그리드에 높이가 필요하다. */}
+      <div style={{ flex: '1 1 auto', minHeight: 0, marginTop: 'clamp(20px, 3.5vh, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div
         style={{
-          flex: '1 1 auto',
-          minHeight: 0,
-          marginTop: 'clamp(16px, 3vh, 32px)',
+          width: '100%',
+          height: 'min(54vh, 480px)',
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gridTemplateRows: 'minmax(0, 1fr)',
           gap: 'clamp(10px, 2.08vw, 50px)',
         }}
       >
@@ -167,8 +172,8 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
               }}
             />
 
-            {/* 카드 = 이미지 + 하단 네이비 스크림 + 흰 텍스트. */}
-            <div style={{ position: 'absolute', inset: 0, borderRadius: 20, overflow: 'hidden', background: colors.raised }}>
+            {/* 카드 = 이미지 + 하단 네이비 스크림 + 흰 텍스트. **뒤 흰 판 없음**(이미지 카드만). */}
+            <div style={{ position: 'absolute', inset: 0, borderRadius: 20, overflow: 'hidden' }}>
               <AssetImage src={k.img} fit="cover" />
               <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: SCRIM }} />
 
@@ -229,6 +234,7 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
             </div>
           </div>
         ))}
+      </div>
       </div>
 
       {/* 서브 진행 표시. 기본(-1)이면 활성 없음, 확장하면 해당 카드. */}
