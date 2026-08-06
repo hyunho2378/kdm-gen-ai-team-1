@@ -153,6 +153,26 @@ export const KEYWORDS = [
   },
 ];
 
+// 로고 모티프 (참조 Slide 84). SVG 문구를 우리 문장으로 다듬었다(소용돌이가 중심으로 수렴하는 의미).
+export const LOGO_MOTIF = {
+  label: { en: 'Logo Motif', ko: '로고 모티프' },
+  headline: '소용돌이 속에서 교차하는 펜싱 칼날',
+  body:
+    "'VORTEX'의 의미인 소용돌이와 경기의 몰입감을 시각적으로 표현하기 위해, 검날이 중심으로 수렴하는 궤적을 모티프로 로고를 디자인했다.",
+};
+
+// 로고 가이드 (참조 Slide 85). 3분할. 각 항목 라벨은 영문 + 국문.
+// 조합형은 다크 패널이라 흰 로고(logo_main), 나머지는 라이트 카드라 잉크 에셋(#111A27).
+export const LOGO_GUIDE = {
+  label: { en: 'Logo Guide', ko: '로고 가이드' },
+  headline: '조합형을 기본으로, 로고타입과 심볼을 나누어 쓴다',
+  items: [
+    { key: 'combination', en: 'Combination Mark', ko: '조합형', asset: '/images/assets/logo_main.svg', dark: true },
+    { key: 'logotype', en: 'Logotype', ko: '로고타입', asset: '/images/assets/black_wm.svg', dark: false },
+    { key: 'symbol', en: 'Logo Symbol', ko: '심볼', asset: '/images/assets/logo_black.svg', dark: false },
+  ],
+};
+
 // 브랜드 네이밍 (원본 Slide 16_9 - 30.svg)
 export const NAMING = {
   label: { en: 'Brand Naming', ko: '브랜드 네이밍' },
@@ -287,6 +307,8 @@ export const SECTION_LABELS = [
   { id: 'why', ko: '문제', en: 'WHY' },
   { id: 'target', ko: '대상', en: 'TARGET' },
   { id: 'keyword', ko: '디자인 키워드', en: 'DESIGN KEYWORD' },
+  { id: 'logo-motif', ko: '로고 모티프', en: 'LOGO MOTIF' },
+  { id: 'logo-guide', ko: '로고 가이드', en: 'LOGO GUIDE' },
   { id: 'naming', ko: '브랜드 네이밍', en: 'BRAND NAMING' },
   { id: 'color', ko: '컬러 시스템', en: 'COLOR SYSTEM' },
   { id: 'concept', ko: '컨셉', en: 'CONCEPT' },

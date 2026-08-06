@@ -15,6 +15,8 @@ import SPainPoint from './sections/SPainPoint.jsx';
 import S2Why from './sections/S2Why.jsx';
 import S3Target from './sections/S3Target.jsx';
 import S4Keyword from './sections/S4Keyword.jsx';
+import SLogoMotif from './sections/SLogoMotif.jsx';
+import SLogoGuide from './sections/SLogoGuide.jsx';
 import S5Naming from './sections/S5Naming.jsx';
 import S6ColorSystem from './sections/S6ColorSystem.jsx';
 import S3Concept from './sections/S3Concept.jsx';
@@ -175,6 +177,10 @@ export default function App() {
                 registerHandler={reg[s.id].handler}
                 registerEnter={reg[s.id].enter}
               />
+            ) : s.id === 'logo-motif' ? (
+              <SLogoMotif active={current === i} />
+            ) : s.id === 'logo-guide' ? (
+              <SLogoGuide active={current === i} />
             ) : s.id === 'naming' ? (
               <S5Naming active={current === i} />
             ) : s.id === 'color' ? (
