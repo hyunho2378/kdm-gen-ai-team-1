@@ -336,6 +336,83 @@ html { scrollbar-gutter: stable; }
   }
 }
 
+/* ── 제품 서브내비 (PRODUCT_PAGE_APPLE_MAPPING, PD-1) ─────────────────────
+   Apple 실측: nav가 sticky top 0, 높이 52px, 전폭. 좌측 제품명, 우측 탭 3개와 CTA 2개.
+
+   **sticky이지 fixed가 아니다.** fixed는 transform이 걸린 조상(R3 워프)에 잡혀
+   뷰포트가 아니라 그 조상 기준이 된다(PITFALLS). sticky는 그 함정을 안 밟는다.
+
+   우리 헤더는 늘 fixed로 상주하므로 그 아래에 붙는다. Apple에서 글로벌내비가 사라진 뒤
+   서브내비가 top 0을 차지하는 것과 같은 자리다. */
+.vx-pnav {
+  position: sticky;
+  top: var(--header-h);
+  z-index: var(--z-pnav);
+  /* 배경이 없으면 아래 콘텐츠가 글자를 뚫고 지나간다. 페이지 배경과 같은 계열로 덮되
+     선을 긋지 않는다(R1 선 금지). 살짝 눌린 판이 경계를 대신한다 */
+  background: var(--pnav-bg);
+  backdrop-filter: blur(12px);
+}
+.vx-pnav-bar {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.vx-pnav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+/* 현재 탭은 밑줄이 표시한다(Apple과 같다). 색과 굵기가 함께 움직여 색 단독 구분이 아니다 */
+.vx-pnav-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 2px solid transparent;
+  transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+}
+/* 알약 CTA 둘. Apple은 radius 980px이라 사실상 완전한 알약이다 */
+.vx-pnav-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+.vx-pnav-pill-fill {
+  background: var(--red-fill);
+  border-color: var(--red-fill);
+}
+
+/* 좁은 화면. 제품명 아래로 줄이 접힌다. 높이를 고정하지 않는다 */
+@media (max-width: 767px) {
+  .vx-pnav-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-block: 8px;
+  }
+  .vx-pnav-right {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+}
+
+/* 앵커 섹션. **서브내비 아래로 제목이 숨지 않게** 스크롤 여백을 준다 */
+.vx-pd-section {
+  scroll-margin-top: calc(var(--header-h) + 52px + 16px);
+  padding-block: var(--section-gap);
+}
+
 /* ── 커스텀 커서 (REBOOT_PLAN 2.4) ────────────────────────────────────────
    **기본 커서는 커스텀이 실제로 떠 있을 때만 감춘다.** 터치 기기와 모션 감소에서는
    컴포넌트가 렌더 자체를 안 하고 이 속성도 안 붙어서 기본 커서가 그대로 산다.

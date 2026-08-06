@@ -57,6 +57,10 @@ export function applyThemeVars(root = document.documentElement) {
     '--card-radius': `${radius.lg}px`,
 
     // 커서는 토스트보다도 위다. 화면의 어떤 것도 커서를 가리면 안 된다
+    // 서브내비는 헤더 바로 아래 층이다. 헤더보다 낮고 콘텐츠보다 높다
+    '--z-pnav': String(zIndex.header - 1),
+    // 서브내비 판. 페이지 그라디언트 위에 얹히므로 밝은 끝을 옅게 깔아 글자가 뚫리지 않게 한다
+    '--pnav-bg': withAlpha(colors.bg.base, 0.82),
     '--z-cursor': String(zIndex.toast + 10),
     // 프리로더는 로드 중 화면 전체를 덮으므로 커서보다도 위다
     '--z-preloader': String(zIndex.toast + 20),

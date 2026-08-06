@@ -1079,8 +1079,46 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **brand PD-1 제품 서브내비 3탭 골격 작업중. 트랙 선점.** 제품 상세만 만진다
-  (/product/mask, /product/controller). 각 탭 내용은 PD-2~5. 푸시 안 함.
+- **brand PD-1 제품 서브내비 3탭 골격 완료.** 트랙 선점 해제. 푸시 안 함.
+
+  - **Apple 서브내비 실측(1440x900).** `nav`가 **sticky, top 0, z 9997, 높이 52px**, 전폭.
+    좌측 제품명 **21px/600**, 우측 탭 3개와 CTA 2개가 **전부 12px/400**.
+    현재 탭은 **밑줄**이 표시하고 `aria-current`는 안 쓴다. Book a demo는 알약 아웃라인
+    (radius 980px), Buy는 알약 채움(파란 배경 + 흰 글자). `border-bottom` 없음.
+
+  - **스크롤 거동.** scrollY 0에서 top **62**(글로벌내비 아래) → 400에서 **-52**(잠깐 밀림)
+    → 1200부터 **top 0에 고정**. 글로벌내비가 사라지면 그 자리를 이어받는다.
+    **우리 헤더는 늘 fixed로 상주하므로 서브내비는 top 68px(헤더 높이)이 같은 자리다.**
+
+  - **고정은 sticky다. fixed가 아니다.** fixed는 transform이 걸린 조상(R3 워프)에 잡혀
+    뷰포트가 아니라 그 조상 기준이 된다(PITFALLS). 실측으로 공존을 확인했다.
+
+  - **탭은 앵커 섹션이다.** 라우트를 새로 파지 않았다. `#overview` `#specs` `#experience`가
+    한 페이지에 흐르고 `IntersectionObserver`가 현재 섹션을 표시한다.
+    `scroll-margin-top`이 서브내비 아래로 제목이 숨는 것을 막는다.
+
+  - **기존 내부 탭을 걷었다.** ProductDetail이 OVERVIEW/FEATURES를 패널로 갈아 끼우고
+    있었는데 서브내비 3탭과 개념이 겹쳐 **같은 이름의 탭이 두 벌로 읽혔다.**
+    스펙은 TECH SPECS로, 특징은 OVERVIEW로 자리를 나눠 갔다.
+    `/products` 딥다이브(BV2-4)는 제품군 진입이라 그대로 둔다.
+
+  - **실측.**
+
+    | 항목 | 결과 |
+    |---|---|
+    | 서브내비 | `sticky`, top **68**, 높이 **52**(Apple과 같다), 전폭 1425 |
+    | 스크롤 중 | navTop **68 유지**, 헤더 top 0 유지, 가로 초과 **없음** |
+    | 현재 탭 추적 | OVERVIEW → TECH SPECS → EXPERIENCE로 따라간다 |
+    | 탭 클릭 | 셋 다 해당 섹션으로 이동하고 현재 탭이 갱신된다 |
+    | 두 제품 | `/product/mask`와 `/product/controller` 동일 골격 |
+    | Book a demo | **`VITE_ARENA_URL`로 나가는 실제 링크**(로컬 `.env`에 설정돼 있다) |
+    | Buy | 비활성 자리표시. 알약 채움 `#80070C` + 흰 글자 |
+    | 대비 | 7개 페이지 **240건 미달 0건**, 중간 회색 0건 |
+    | 가로 오버플로 | 320 / 768 / 1440 / 3840 전부 0 |
+    | clean 빌드 | 4앱 통과 |
+
+  - **남은 것.** 세 섹션 모두 자리표시다. PD-2(히어로와 스테이트먼트), PD-3(착용샷),
+    PD-4(스펙과 In the Box), PD-5(경험 영상)가 채운다. 미디어는 전부 첨부 예정 슬롯이다.
 
 - **presentation-v2 디자인 키워드 슬라이드 재구성 완료(확인 대기). 트랙 선점 해제.** presentation-v2 디자인 키워드만.
   참조 SVG(frames/ref/Slide 16_9 - 79) 구조/문구를 컴포넌트로 재현. 상세는 docs/PRESENTATION_V2_FOUNDATION.md.
