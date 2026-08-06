@@ -8,10 +8,12 @@
 
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Flip } from 'gsap/Flip';
 
-gsap.registerPlugin(ScrollTrigger);
+// Flip은 2025-04 GSAP 무료화에 포함된다(LIBRARIES 판정표). 설치본에서 export를 확인하고 쓴다
+gsap.registerPlugin(ScrollTrigger, Flip);
 
-export { gsap, ScrollTrigger };
+export { gsap, ScrollTrigger, Flip };
 
 /** 사용자가 모션을 줄여 달라고 했는가. 연출마다 이 하나만 본다. */
 export function isReduced() {

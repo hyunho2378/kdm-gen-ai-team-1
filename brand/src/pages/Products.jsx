@@ -1,14 +1,32 @@
-// 제품군 인덱스. 랜딩에 있던 제품군 섹션을 그대로 옮겨 온 페이지다.
+// 제품군 인덱스.
 //
-// 카드에 `data-flip-id`를 미리 달아 둔다. 지금은 즉시 이동이고 B8에서 GSAP Flip이
-// 이 속성으로 카드와 상세 히어로를 짝지어 morph 전환을 건다. 값은 slug다.
+// **`data-flip-id`는 카드의 썸네일이 단다.** 상세의 대표 비주얼과 같은 id를 공유해
+// 라우트를 건너뛰는 shared element 전환의 짝이 된다(B8a). 값은 slug다.
+// 카드 전체가 아니라 썸네일을 짝으로 잡는다. 카드에는 상세에 없는 문구가 들어 있어
+// 통째로 모핑하면 글자가 뭉개진다.
 
+import { useLayoutEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { colors, radius, spacing, typography } from '../tokens.js';
 import { PRODUCTS } from '../copy.js';
+import { captureFlip, pendingFlipId, playFlip } from '../lib/flip.js';
 import Page from '../components/Page.jsx';
 
 export default function Products() {
+  const visualRefs = useRef({});
+
+  // 상세에서 돌아왔을 때의 역방향 전환. 상세 대표 비주얼이 카드 자리로 접힌다.
+  // **스크롤을 먼저 맨 위로 보낸다.** ScrollToTop은 useEffect라 이 layout effect 뒤에 도는데,
+  // 그때 위치가 바뀌면 날아가는 도중에 목표가 움직인다
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+    // **어느 카드가 짝인지 먼저 정한다.** 카드가 셋이라 아무 데나 붙이면
+    // Flip이 id 짝을 못 찾아 전환이 통째로 죽는다(실측으로 잡았다)
+    const id = pendingFlipId();
+    const slug = id ? id.replace('product-', '') : null;
+    playFlip(slug ? visualRefs.current[slug] : null);
+  }, []);
+
   return (
     <Page eyebrow={PRODUCTS.index.eyebrow} headline={PRODUCTS.index.title} sub={PRODUCTS.index.line}>
       <ul
@@ -25,9 +43,20 @@ export default function Products() {
       >
         {PRODUCTS.cards.map((p) => (
           <li key={p.slug}>
-            <Link to={`/product/${p.slug}`} data-flip-id={`product-${p.slug}`} style={cardStyle}>
+            <Link
+              to={`/product/${p.slug}`}
+              style={cardStyle}
+              // 떠나기 직전에 썸네일 자리를 기록한다. 라우트가 바뀌면 이 요소는 사라지므로
+              // 상태를 모듈 변수에 맡긴다(lib/flip.js)
+              onClick={() => captureFlip(visualRefs.current[p.slug])}
+            >
               {/* 대표 비주얼 자리. 갤러리와 3D는 이후 세션이다 */}
-              <span style={cardVisualStyle} aria-hidden="true" />
+              <span
+                ref={(el) => { visualRefs.current[p.slug] = el; }}
+                data-flip-id={`product-${p.slug}`}
+                style={cardVisualStyle}
+                aria-hidden="true"
+              />
               <span
                 style={{
                   fontFamily: typography.family,

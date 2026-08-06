@@ -13,7 +13,7 @@
 | Vite | MIT | 전 앱 빌드 | https://github.com/vitejs/vite |
 | Tailwind CSS | MIT | 전 앱 유틸리티 | https://github.com/tailwindlabs/tailwindcss |
 | lucide-react | ISC | 전 앱 아이콘 | https://github.com/lucide-icons/lucide |
-| GSAP | GreenSock 표준 "No Charge" 라이선스 | presentation 스크롤 연출 전반(ScrollTrigger, SplitText, Flip), brand 히어로 진입 타임라인과 월드빌딩 ScrollTrigger pin(3.15.0, presentation과 같은 버전) | https://github.com/greensock/GSAP |
+| GSAP | GreenSock 표준 "No Charge" 라이선스 | presentation 스크롤 연출 전반(ScrollTrigger, SplitText, Flip), brand 히어로 진입 타임라인과 월드빌딩 ScrollTrigger pin과 제품 카드 상세 Flip 전환(3.15.0, presentation과 같은 버전) | https://github.com/greensock/GSAP |
 | Lenis | MIT | presentation 스무스 스크롤, brand 전역 스무스 스크롤(1.3.26, `autoRaf`) | https://github.com/darkroomengineering/lenis |
 | Socket.IO | MIT | arena, controller, server 실시간 릴레이 | https://github.com/socketio/socket.io |
 | Express | MIT | server HTTP와 헬스체크 | https://github.com/expressjs/express |
