@@ -132,7 +132,14 @@ export default function App() {
   const [tapMode, setTapMode] = useState(false);
   const [guarding, setGuarding] = useState(false);
   const [lastAction, setLastAction] = useState(null);
+  // 플래시는 { pattern, id } 객체로 낸다. **null로 되돌려 재발화시키지 않는다.**
+  // 그 방식이 HapticFlash의 140ms 복귀 타이머를 지워 화면이 빨간 채로 굳었다(screens.jsx 주석).
   const [flash, setFlash] = useState(null);
+  const flashId = useRef(0);
+  const fireFlash = useCallback((pattern) => {
+    flashId.current += 1;
+    setFlash({ pattern, id: flashId.current });
+  }, []);
   const [linkStatus, setLinkStatus] = useState(LINK.IDLE);
   const [linkError, setLinkError] = useState(null);
   const [log, setLog] = useState([]);
@@ -149,10 +156,7 @@ export default function App() {
     pipeline.on('action', (ev) => {
       if (ev.type === INPUT_EVENT.GUARD_ON) setGuarding(true);
       if (ev.type === INPUT_EVENT.GUARD_OFF) setGuarding(false);
-      if (ev.type === INPUT_EVENT.THRUST) {
-        setFlash(HAPTIC.HIT);
-        setTimeout(() => setFlash(null), 10);
-      }
+      if (ev.type === INPUT_EVENT.THRUST) fireFlash(HAPTIC.HIT);
       setLastAction(`${ev.type} ${ev.power.toFixed(2)}`);
       push(`${(ev.ts / 1000).toFixed(1)}s ${ev.type} power ${ev.power.toFixed(2)}`);
       // 결과 통계 축적(메모리). 찌르기 수/파워, 가드 수
@@ -182,7 +186,7 @@ export default function App() {
       pipeline.on('action', null);
       pipeline.on('pose', null);
     };
-  }, [pipeline, link, push]);
+  }, [pipeline, link, push, fireFlash]);
 
   // 연결 상태와 햅틱. 햅틱은 arena가 명중과 패리에서 쏜다
   useEffect(() => {
@@ -191,13 +195,15 @@ export default function App() {
       setLinkError(err);
       push(`연결 ${LINK_LABEL[st]}${err ? ` (${err})` : ''}`);
     });
-    link.on('haptic', (pattern) => {
-      setFlash(pattern);
-      setTimeout(() => setFlash(null), 10);
-    });
-    // 경기 결과 수신 → 폰 센서 통계와 합쳐 RESULT로. arena가 MATCH_END에 보낸다
+    link.on('haptic', (pattern) => fireFlash(pattern));
+    // 경기 결과 수신 → 폰 센서 통계와 합쳐 RESULT로. arena가 MATCH_END에 보낸다.
+    // **경기 중 상태 색을 여기서 전부 끈다.** 마지막 명중 플래시가 경기 끝과 겹치면
+    // 그대로 결과 화면까지 따라온다. 결과는 중립 색이어야 한다.
     link.on('result', (r) => {
       setMatchResult(buildMatchResult(r, phoneStatsRef.current));
+      setFlash(null);
+      setGuarding(false);
+      setLastAction(null);
       setPhase(PHASE.RESULT);
     });
     return () => {
@@ -205,7 +211,7 @@ export default function App() {
       link.on('haptic', null);
       link.on('result', null);
     };
-  }, [link, push]);
+  }, [link, push, fireFlash]);
 
   useEffect(
     () => () => {
@@ -388,7 +394,7 @@ export default function App() {
         />
       ) : null}
 
-      <HapticFlash pattern={flash} />
+      <HapticFlash flash={flash} />
       {/* 가로 안내는 덮기만 한다. 센서 스트림은 끊지 않는다 */}
       {landscape ? <LandscapeGuard /> : null}
       {showDebug ? <DebugPanel pipeline={pipeline} log={log} /> : null}

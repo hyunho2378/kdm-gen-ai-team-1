@@ -391,18 +391,27 @@ export function LandscapeGuard() {
 /**
  * HapticFlash. 패턴 수신 인터페이스만 둔다. 실제 수신은 C3이다.
  * **iOS는 navigator.vibrate가 없다.** 그래서 화면 플래시가 기본 경로이고 진동은 있으면 얹는다.
+ *
+ * **flash는 매번 새 객체다.** 같은 패턴이 연달아 와도 이펙트가 다시 돌아야 하는데
+ * 예전에는 부모가 10ms 뒤 null로 되돌려 그 역할을 대신했다. 그것이 화면이 빨간 채로
+ * 굳는 버그의 원인이었다. null이 들어오면 의존성이 바뀌어 **이전 실행의 정리 함수가
+ * 140ms 복귀 타이머를 지우고** 새 실행은 조기 반환해서 setOn(null)에 영영 못 닿았다.
+ * 그래서 첫 명중 이후 경기 내내, 결과 화면까지 빨간색이 남았다.
+ *
+ * 지금은 **효과가 flash 하나에서 on을 통째로 결정한다.** 조기 반환이 없으므로
+ * null이 들어오면 그 자리에서 꺼진다(경기 종료 리셋이 이 경로를 쓴다).
  */
-export function HapticFlash({ pattern }) {
+export function HapticFlash({ flash }) {
   const [on, setOn] = useState(null);
   useEffect(() => {
-    if (!pattern) return undefined;
-    setOn(pattern);
+    setOn(flash ? flash.pattern : null);
+    if (!flash) return undefined;
     if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-      navigator.vibrate(pattern === 'parry' ? 30 : 60);
+      navigator.vibrate(flash.pattern === 'parry' ? 30 : 60);
     }
     const t = setTimeout(() => setOn(null), 140);
     return () => clearTimeout(t);
-  }, [pattern]);
+  }, [flash]);
 
   if (!on) return null;
   return (
