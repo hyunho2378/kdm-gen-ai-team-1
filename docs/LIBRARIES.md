@@ -28,6 +28,32 @@
 | pmndrs/meshline | MIT (LICENSE, Copyright 2016 Jaume Sanchez) | 채택 가능 | 라인 지오메트리 | 2026-08-06 |
 | protectwise/troika | MIT (LICENSE, Copyright 2019 ProtectWise, 2021 Jason Johnston) | 채택 가능 | SDF 텍스트 | 2026-08-06 |
 
+## 2차 게이트 (2026-08-06 확인)
+
+1차와 같은 방법이다. `repos/{owner}/{repo}/license`로 라이선스 파일을 받고 **본문을 내려받아 눈으로 확인했다.**
+2차부터는 **R3F 의존 여부**를 함께 적는다. arena와 brand 모두 react-three-fiber를 도입하지 않았으므로
+R3F 전용 저장소는 vanilla three에 그대로 못 얹는다(판정표 arena 행의 R3F 미도입 원칙).
+
+| 저장소 | 실확인 라이선스 | 판정 | R3F 의존 | 용도 후보 | 확인 일자 |
+|---|---|---|---|---|---|
+| nytimes/three-story-controls | **Apache-2.0**(LICENSE, Copyright 2021 The New York Times Company). 아래 불일치 기록 참고 | 채택 가능 | 없음(three ^0.137 직접 의존) | **스크롤 카메라 시네마틱.** 월드빌딩과 제품 상세의 카메라 이동을 스크롤에 묶는 자리 | 2026-08-06 |
+| PavelDoGreat/WebGL-Fluid-Simulation | MIT (LICENSE, Copyright 2017 Pavel Dobryakov) | 채택 가능 | 없음(package.json 자체가 없는 플레인 JS) | **vortex 유체 배경.** 히어로 뒤 소용돌이를 유체로 대체할 때의 1순위 | 2026-08-06 |
+| cloydlau/webgl-fluid | MIT (LICENSE, Copyright 2020-present Cloyd Lau) | 채택 가능 | 없음(three 의존도 없음) | 위 저장소의 ESM 포크. npm 설치가 필요하면 이쪽 | 2026-08-06 |
+| deepkolos/three-js-trail | MIT (LICENSE, Copyright 2023 DeepKolos) | 채택 가능 | 없음(three ^0.160 직접 의존) | **검끝 궤적 대안.** 지금은 arena 리본을 재사용 중이라 우선순위 낮음 | 2026-08-06 |
+| svartmc/trails | MIT (LICENSE, Copyright 2020 svartmc) | 채택 가능 | 없음(플레인 JS) | 궤적 대안 2순위 | 2026-08-06 |
+| richardevcom/threejs-z-fold-gift-card | MIT (LICENSE, Copyright 2025 richardevcom) | 채택 가능 | 없음(three ^0.181 직접 의존) | 접히는 카드 전환. 제품 상세 morph 후보 | 2026-08-06 |
+| Saganaki22/MetalFlow | MIT (LICENSE, Copyright 2025 drbaph) | 채택 가능(1차 판정 재확인) | 없음(플레인 JS) | 크롬 타이포 재질 | 2026-08-06 |
+
+**nytimes/three-story-controls 불일치 기록(ogl, segue, ahrs와 같은 규율).**
+
+- GitHub API가 감지한 SPDX는 **`NOASSERTION`**이다. 즉 기계 판독으로는 라이선스가 안 잡힌다.
+- 이유는 LICENSE 파일이 **Apache-2.0 전문이 아니라 짧은 고지문**이기 때문이다. 8행이고
+  "Licensed under the Apache License, Version 2.0"과 "AS IS" 면책 문단만 있으며 본문 링크가 마크다운으로 적혀 있다.
+- 다만 `package.json`의 `license` 필드는 **`Apache-2.0`**으로 명시돼 있다.
+- **판정: 채택 가능.** 규칙이 요구하는 "LICENSE 파일에 Apache-2.0 명시"를 문자 그대로 만족한다.
+  기계 판독이 실패했을 뿐 사람이 읽으면 어느 라이선스인지 한 줄로 드러난다.
+  **도입 시 Apache-2.0 의무를 진다**(저작권 고지와 라이선스 사본 동봉, 변경 파일 표시). CREDITS에 그 사실을 함께 적는다.
+
 ## 열람 금지 목록 추가분 (B3 게이트)
 
 아래 다섯은 **코드를 가져오지 않는 것은 물론 열어 보지도 않는다.** 기존 금지 목록(olivierlarose 전 저장소, cortiz2894, KalebKloppe, TrailRendererJS, adrianhajdin 원본, 게임 클론 전체)에 같은 지위로 더한다.
@@ -39,6 +65,8 @@
 - JosephASG/codrops-cinematic-scroll-animations
 
 **codrops 계정이라고 통과시키지 않는다.** 같은 계정 안에서도 `GridLayoutAnimation`은 LICENSE 파일이 있고 `FullscreenLayoutPageTransitions`는 없다. 저장소 단위로 확인한다.
+
+**2차 게이트에서 추가된 금지 대상은 없다.** 7개 전부 라이선스 파일이 실재했다.
 
 ## 채택 가능이 곧 도입은 아니다
 

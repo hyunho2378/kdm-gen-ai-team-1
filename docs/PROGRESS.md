@@ -1079,8 +1079,21 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **LIBRARIES 라이선스 게이트 2차. 트랙 선점.** 2차 리서치 후보 7개의 라이선스를 실확인해
-  `docs/LIBRARIES.md` 판정표에 편입한다. **문서만 만진다. 코드 변경과 라이브러리 설치는 없다**
+- **LIBRARIES 라이선스 게이트 2차 완료(확인 대기).** 문서만 만졌다. 트랙 선점 해제
+  - 후보 7개 전부 라이선스 파일이 실재했다. **사용 불가 0, 열람 금지 추가분 없다**
+  - **채택 가능 7.** three-story-controls(Apache-2.0), WebGL-Fluid-Simulation(MIT),
+    webgl-fluid(MIT), three-js-trail(MIT), svartmc/trails(MIT),
+    threejs-z-fold-gift-card(MIT), MetalFlow(MIT, 1차 판정 재확인)
+  - **2차부터 R3F 의존 열을 넣었다.** 일곱 다 R3F 비의존이라 vanilla three에 그대로 얹힌다.
+    셋은 `package.json`이 없는 플레인 JS 저장소이고 셋은 three를 직접 의존한다
+  - **three-story-controls 불일치를 기록했다.** GitHub SPDX가 `NOASSERTION`이다.
+    LICENSE가 Apache-2.0 전문이 아니라 8행짜리 짧은 고지문이라 기계 판독이 실패한다.
+    본문에 "Licensed under the Apache License, Version 2.0"이 있고 `package.json` license 필드도 `Apache-2.0`이다.
+    **채택 가능이되 도입 시 Apache-2.0 의무**(고지와 사본 동봉, 변경 파일 표시)를 진다고 표에 적었다.
+    ogl과 segue와 ahrs와 같은 불일치 기록 규율이다
+  - 로드맵 용도 한 줄씩 달았다. three-story-controls 스크롤 카메라 시네마틱,
+    WebGL-Fluid vortex 유체 배경, three-js-trail 검끝 궤적 대안
+  - **설치 0, 코드 변경 0, CREDITS 변경 없음.** 판정표는 게이트일 뿐 도입이 아니다
 - **brand B7 유파 셀렉션 완료(확인 대기).** `/duelists` 한 페이지만 만졌다. 트랙 선점 해제
   - **메커니즘 출처.** 팀 포폴 `hyunho2378/26-portfolio-hyunho`를 clone해
     `client/src/components/work/StackCarousel.jsx` **실파일을 읽고** 가져왔다(DESIGN 15절).
