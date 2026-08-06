@@ -34,7 +34,7 @@ const CORNER = {
   top: 'clamp(20px, 3.4vh, 44px)',
   zIndex: 3,
   fontFamily: typography.family,
-  fontSize: 'clamp(0.66rem, 0.9vw, 0.82rem)',
+  fontSize: typography.caption.size,
   fontWeight: 500,
   letterSpacing: '0.16em',
   lineHeight: 1.6,
@@ -135,7 +135,7 @@ export default function S1Cover({ active }) {
           style={{
             position: 'relative',
             fontFamily: typography.family,
-            fontSize: 'clamp(0.78rem, 1.5vw, 1.06rem)',
+            fontSize: typography.body.size,
             fontWeight: 500,
             letterSpacing: '0.1em',
             color: colors.text.secondary,

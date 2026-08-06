@@ -27,7 +27,7 @@ import { Eyebrow, GlassRim, StepDots } from '../components/Bits.jsx';
 
 const CAPTION = {
   fontFamily: typography.family,
-  fontSize: 'clamp(0.66rem, 0.94vw, 1.05rem)',
+  fontSize: typography.caption.size,
   fontWeight: 400,
   lineHeight: 1.7,
   color: colors.text.secondary,
@@ -158,7 +158,7 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
             style={{
               margin: 0,
               fontFamily: typography.family,
-              fontSize: 'clamp(0.92rem, 1.35vw, 1.5rem)',
+              fontSize: typography.headline.size,
               fontWeight: 700,
               letterSpacing: '-0.02em',
               lineHeight: 1.5,
@@ -173,7 +173,7 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
               style={{
                 margin: 'clamp(6px, 1vh, 12px) 0 0',
                 fontFamily: typography.family,
-                fontSize: 'clamp(0.72rem, 1.04vw, 1.16rem)',
+                fontSize: typography.body.size,
                 fontWeight: 400,
                 lineHeight: 1.65,
                 color: colors.text.secondary,
@@ -286,7 +286,7 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
                   <span
                     style={{
                       fontFamily: typography.family,
-                      fontSize: 'clamp(0.8rem, 1.56vw, 1.75rem)',
+                      fontSize: typography.headline.size,
                       fontWeight: 400,
                       letterSpacing: '-0.01em',
                       color: colors.text.primary,
@@ -297,7 +297,7 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
                   <span
                     style={{
                       fontFamily: typography.family,
-                      fontSize: 'clamp(0.7rem, 1.35vw, 1.5rem)',
+                      fontSize: typography.body.size,
                       fontWeight: 500,
                       color: colors.text.primary,
                     }}

@@ -18,6 +18,26 @@
 - 두 웹폰트는 `index.html`에서 CDN 로드(jsDelivr, 버전 고정). 미로드 시 시스템 한글 스택으로 fallback.
 - 본문은 `typography.family`(= SUIT), 아이브로우는 `Eyebrow`가 `typography.eyebrow.family`(= Pretendard).
 
+## 타이포 스케일 (PV2, 역할별 단일)
+
+**슬라이드마다 크기를 다시 적지 않는다.** `tokens.typography`의 role 하나씩만 참조한다.
+기준은 컬러 시스템 슬라이드(그리드 기준 슬라이드)의 실측값이다. **절제된 크기 + 굵기/여백 위계**
+(레퍼런스 정신: 작고 굵고 여백). 헤드라인과 본문 크기 차이를 크게 벌리지 않는다.
+
+| role | clamp | weight | 1440 실측 | 쓰임 |
+|---|---|---|---|---|
+| eyebrow | 1.3125rem 고정 | 700 | 21px | 섹션 라벨(좌상단, Pretendard) |
+| headline | clamp(0.92rem, 1.35vw, 1.5rem) | 700 | 19.4px | 전 슬라이드 설명형 헤드라인 |
+| body | clamp(0.72rem, 1.04vw, 1.16rem) | 400 | 15px | 설명, 카드 본문, 인용 |
+| caption | clamp(0.62rem, 0.94vw, 1.05rem) | 400 | 13.5px | 소형 라벨, 부라벨, HEX/RGB |
+| display | clamp(2.6rem, 9.4vw, 8.6rem) | 300 | 135px | 대형 워드마크(컨셉/네이밍 VORTEX, 데모 ENTER)만 |
+
+- **전 슬라이드 헤드라인이 headline 하나를 쓴다.** 슬라이드별 개별 헤드라인/본문 크기 지정은 전량 제거.
+  가장 긴 헤드라인(TARGET)이 1440에서 1350px = 콘텐츠 폭에 한 줄로 들어간다(실측). 마진 밖으로 안 넘친다.
+- **위계는 크기 대비가 아니라 굵기와 여백이 낸다.** 헤드라인 700 vs 본문 400, 카드 제목은 본문 크기 + 700.
+  1440에서 eyebrow(21) ≳ headline(19.4)이고 1920에서 headline이 24로 eyebrow를 넘는다(컬러 시스템과 동일).
+- 숫자/배지 등은 크기만 role에 맞추고 자간/행간은 자기 값을 유지(예: TARGET 원 안 번호는 headline 크기 + 숫자 자간).
+
 ## 그리드 (컬러 시스템 슬라이드 실측 → 전역)
 
 컬러 시스템 슬라이드를 1920x1080에서 실측(좌우 60px, 상단 78px, 하단 59px)해 `grid` 토큰으로 뽑았다.

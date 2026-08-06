@@ -24,9 +24,9 @@ const PANEL_SHIFT = 24.5; // vw
 
 const LINE2 = {
   fontFamily: typography.family,
-  fontSize: 'clamp(0.78rem, 1.35vw, 1rem)',
-  fontWeight: 400,
-  lineHeight: 1.65,
+  fontSize: typography.body.size,
+  fontWeight: typography.body.weight,
+  lineHeight: typography.body.leading,
   color: colors.text.secondary,
 };
 
@@ -188,10 +188,10 @@ export default function S2Why({ registerHandler, registerEnter }) {
               key={line}
               style={{
                 fontFamily: typography.family,
-                fontSize: 'clamp(1.25rem, 3vw, 2.4rem)',
-                fontWeight: 700,
-                letterSpacing: '-0.025em',
-                lineHeight: 1.28,
+                fontSize: typography.headline.size,
+                fontWeight: typography.headline.weight,
+                letterSpacing: typography.headline.tracking,
+                lineHeight: typography.headline.leading,
                 color: colors.text.primary,
               }}
             >

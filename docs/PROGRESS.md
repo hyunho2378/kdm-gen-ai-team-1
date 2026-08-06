@@ -1079,6 +1079,16 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **presentation-v2 PV2 헤드라인 아이브로우 텍스트 크기 통일 완료(확인 대기). 트랙 선점 해제.** presentation-v2만 만졌다.
+  색은 안 건드렸다(PV1). tokens.typography에 역할별 단일 스케일 신설(eyebrow/headline/body/caption/display),
+  전 슬라이드의 개별 fontSize clamp 리터럴을 전량 제거하고 role 토큰 하나씩만 참조하게 했다.
+  기준은 컬러 시스템 슬라이드. 상세 확정값은 docs/PRESENTATION_V2_FOUNDATION.md 타이포 스케일 표.
+  - **실측(1440, computed):** 통일 전 헤드라인 19.4~38.4 / 본문 13.5~22.5 / display 105~137로 제각각이었다.
+    통일 후 **헤드라인 전부 19.4/700, 아이브로우 21/700, 본문 15, 캡션 13.5, display 전부 135.4**로 동일.
+    가장 긴 헤드라인(TARGET)이 1440에서 1350px = 콘텐츠 폭에 한 줄로 들어간다. 위계는 굵기(700 vs 400)와 여백.
+  - **검증:** 페이지 가로 오버플로 320:0 / 3840:0(섹션 overflow hidden, 텍스트는 PV1보다 작아져 새 오버플로 없음).
+    각 슬라이드 스크린샷으로 절제된 크기와 일관성 확인. presentation-v2 빌드 통과.
+  - 커밋 예정: [presentation] PV2 헤드라인 아이브로우 본문 크기 전 슬라이드 통일. **푸시 안 함(일괄 예정).**
 - **brand BV2-1 디자인 시스템 파운데이션 완료.** 트랙 선점 해제. 푸시 안 함(일괄 예정).
   `shared/tokens.js`는 안 건드렸다. `brand/src/tokens.js`가 v2 값만 재정의한다.
 
@@ -1137,21 +1147,6 @@
     아래가 비어 있다. `HeroWordmark`의 liquid-metal 셰이더는 라이트에서 크롬이 배경에 녹을
     수 있는데, 헤드리스에서는 폴백(평면 잉크)이 떠서 셰이더 경로를 눈으로 못 봤다.
     **BV2-2에서 실기 GPU로 확인하고 필요하면 걷는다.**
-
-- **presentation-v2 PV1 파운데이션 완료(확인 대기). 트랙 선점 해제.** presentation-v2만 만졌다.
-  다크→라이트 반전(배경 #F6F6F6 + 잉크 #101010 전역), 브랜드 레드/블랙과 네이비 #263E5F는 컬러 시스템
-  슬라이드에만 격리, 본문 SUIT + 아이브로우 Pretendard(CDN 웹폰트 로딩 확인 + 시스템 fallback),
-  컬러 시스템 실측(1920에서 좌우 60 상단 78 하단 59)을 grid 토큰으로 뽑아 전역 공통 마진(아이브로우 좌상단 고정),
-  표지 VORTEX를 logo_main.svg(#101010 플랫, CSS mask)로 교체(S3/S5 워드마크도 잉크 평면), 01/14 카운터 제거 +
-  새로고침 첫 섹션(scrollRestoration manual). 상세 규칙은 docs/PRESENTATION_V2_FOUNDATION.md. tokens 단일 원천.
-  - **검증(실측 픽셀):** 12개 콘텐츠 섹션 전부 라이트 배경 + 잉크 텍스트 확인. 네이비/레드/whiteA는 grep으로
-    S6ColorSystem에만 잔존(견본 내용). SUIT/Pretendard document.fonts 로드 및 computed 적용 확인.
-    가로 오버플로 320:0 / 3840:-15(스크롤바 거터). build:all 4앱 통과 + presentation-v2 단독 빌드 통과.
-  - **프리뷰 페인 한계:** Lenis 셸 네비게이션이 숨겨진 프리뷰 페인에서 안 돌아(rAF 스로틀) 스크롤 이동 검증 불가.
-    섹션 격리(형제 display:none) + gsap opacity 강제 해제로 각 섹션을 개별 스크린샷했다. 셸 로직 자체는 무변경.
-    **주의:** 그 디버그 헬퍼가 aria-hidden 리시드 막까지 opacity 1로 올려 유파 사진을 가리는 착시가 있었다(실코드 정상).
-  - **미보수(트랙 밖):** 루트 build:all이 구 presentation을 빌드(v2 미포함). 발표 경로 확정 시 한 줄 교체.
-  - 커밋 예정: [presentation] PV1 파운데이션 색 폰트 그리드 시그니처. **푸시 안 함(일괄 예정).**
 
 - **presentation-v2 PV1 파운데이션 완료(확인 대기). 트랙 선점 해제.** presentation-v2만 만졌다.
   다크→라이트 반전(배경 #F6F6F6 + 잉크 #101010 전역), 브랜드 레드/블랙과 네이비 #263E5F는 컬러 시스템

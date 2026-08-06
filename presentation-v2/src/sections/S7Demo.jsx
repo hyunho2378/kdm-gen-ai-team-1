@@ -102,7 +102,7 @@ export default function S7Demo({ active }) {
               style={{
                 // 제목 폰트 미정. displayFamily 한 키만 바꾸면 S1 워드마크와 함께 교체된다.
                 fontFamily: typography.displayFamily,
-                fontSize: 'clamp(2.6rem, 9.4vw, 8.6rem)',
+                fontSize: typography.display.size,
                 fontWeight: 300,
                 letterSpacing: '-0.01em',
                 lineHeight: 1.06,

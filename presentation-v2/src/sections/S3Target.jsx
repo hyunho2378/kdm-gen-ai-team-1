@@ -60,10 +60,10 @@ export default function S3Target({ active }) {
           style={{
             margin: 'clamp(12px, 1.9vh, 24px) 0 0',
             fontFamily: typography.family,
-            fontSize: 'clamp(1.25rem, 2.6vw, 2.8rem)',
-            fontWeight: 600,
-            letterSpacing: '-0.03em',
-            lineHeight: 1.3,
+            fontSize: typography.headline.size,
+            fontWeight: typography.headline.weight,
+            letterSpacing: typography.headline.tracking,
+            lineHeight: typography.headline.leading,
             color: colors.text.primary,
           }}
         >
@@ -120,8 +120,9 @@ export default function S3Target({ active }) {
             <span
               style={{
                 fontFamily: typography.family,
-                fontSize: 'clamp(1rem, 1.82vw, 2rem)',
-                fontWeight: 600,
+                // 원 안 번호. 크기는 헤드라인과 같게 통일하고 숫자용 자간/행간만 유지.
+                fontSize: typography.headline.size,
+                fontWeight: typography.headline.weight,
                 letterSpacing: '0.02em',
                 lineHeight: 1,
                 color: colors.ink,
@@ -135,10 +136,10 @@ export default function S3Target({ active }) {
                   key={li}
                   style={{
                     fontFamily: typography.family,
-                    fontSize: 'clamp(0.68rem, 1.56vw, 1.7rem)',
-                    fontWeight: 400,
-                    letterSpacing: '-0.02em',
-                    lineHeight: 1.55,
+                    fontSize: typography.body.size,
+                    fontWeight: typography.body.weight,
+                    letterSpacing: typography.body.tracking,
+                    lineHeight: typography.body.leading,
                     color: colors.text.primary,
                   }}
                 >

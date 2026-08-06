@@ -127,10 +127,10 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
             style={{
               margin: 'clamp(12px, 1.9vh, 24px) 0 0',
               fontFamily: typography.family,
-              fontSize: 'clamp(1.15rem, 2.4vw, 2.6rem)',
-              fontWeight: 700,
-              letterSpacing: '-0.03em',
-              lineHeight: 1.32,
+              fontSize: typography.headline.size,
+              fontWeight: typography.headline.weight,
+              letterSpacing: typography.headline.tracking,
+              lineHeight: typography.headline.leading,
               color: colors.text.primary,
             }}
           >
@@ -142,9 +142,9 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
                 key={line}
                 style={{
                   fontFamily: typography.family,
-                  fontSize: 'clamp(0.72rem, 1.09vw, 1.2rem)',
-                  fontWeight: 400,
-                  lineHeight: 1.72,
+                  fontSize: typography.body.size,
+                  fontWeight: typography.body.weight,
+                  lineHeight: typography.body.leading,
                   color: colors.text.secondary,
                 }}
               >
@@ -224,7 +224,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
               <span
                 style={{
                   fontFamily: typography.family,
-                  fontSize: 'clamp(0.6rem, 0.94vw, 1.05rem)',
+                  fontSize: typography.caption.size,
                   fontWeight: 500,
                   letterSpacing: '-0.01em',
                   color: colors.text.secondary,
@@ -261,7 +261,8 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
             <div
               style={{
                 fontFamily: typography.family,
-                fontSize: 'clamp(0.86rem, 1.46vw, 1.6rem)',
+                // 상세 제목. 본문 크기 + 700로 위계를 굵기로.
+                fontSize: typography.body.size,
                 fontWeight: 700,
                 letterSpacing: '-0.025em',
                 lineHeight: 1.45,
@@ -274,9 +275,9 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
               style={{
                 marginTop: 4,
                 fontFamily: typography.family,
-                fontSize: 'clamp(0.74rem, 1.15vw, 1.26rem)',
-                fontWeight: 400,
-                lineHeight: 1.7,
+                fontSize: typography.body.size,
+                fontWeight: typography.body.weight,
+                lineHeight: typography.body.leading,
                 color: colors.text.secondary,
               }}
             >
@@ -290,7 +291,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
                 paddingLeft: 'clamp(10px, 1vw, 16px)',
                 borderLeft: `2px solid ${colors.ink}`,
                 fontFamily: typography.family,
-                fontSize: 'clamp(0.78rem, 1.25vw, 1.36rem)',
+                fontSize: typography.body.size,
                 fontWeight: 500,
                 lineHeight: 1.6,
                 color: colors.text.primary,
@@ -315,7 +316,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
               <span
                 style={{
                   fontFamily: typography.family,
-                  fontSize: 'clamp(0.62rem, 0.94vw, 1rem)',
+                  fontSize: typography.caption.size,
                   fontWeight: 500,
                   letterSpacing: '0.16em',
                   color: colors.text.faint,

@@ -34,14 +34,14 @@ const ON_LIGHT_SHADOW = `0 1px 3px ${inkA(0.55)}, 0 0 14px ${inkA(0.7)}`;
 
 const SWATCH_TITLE = {
   fontFamily: typography.family,
-  fontSize: 'clamp(0.86rem, 1.35vw, 1.5rem)',
+  fontSize: typography.headline.size,
   fontWeight: 400,
   letterSpacing: '-0.01em',
 };
 
 const KEY_LABEL = {
   fontFamily: typography.family,
-  fontSize: 'clamp(0.62rem, 0.94vw, 1.05rem)',
+  fontSize: typography.caption.size,
   fontWeight: 400,
   lineHeight: 1.9,
 };
@@ -127,7 +127,7 @@ export default function S6ColorSystem({ active }) {
             style={{
               margin: 0,
               fontFamily: typography.family,
-              fontSize: 'clamp(0.92rem, 1.35vw, 1.5rem)',
+              fontSize: typography.headline.size,
               fontWeight: 700,
               letterSpacing: '-0.02em',
               lineHeight: 1.5,
@@ -140,7 +140,7 @@ export default function S6ColorSystem({ active }) {
             style={{
               margin: 'clamp(6px, 1vh, 12px) 0 0',
               fontFamily: typography.family,
-              fontSize: 'clamp(0.72rem, 1.04vw, 1.16rem)',
+              fontSize: typography.body.size,
               fontWeight: 400,
               lineHeight: 1.65,
               color: colors.text.secondary,

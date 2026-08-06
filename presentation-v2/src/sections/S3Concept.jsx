@@ -136,7 +136,7 @@ export default function S3Concept({ active }) {
               marginTop: 'clamp(10px, 1.8vh, 22px)',
               // 제목 폰트 미정. displayFamily 한 키만 바꾸면 S1 워드마크와 함께 교체된다.
               fontFamily: typography.displayFamily,
-              fontSize: 'clamp(2.6rem, 7.3vw, 6.6rem)',
+              fontSize: typography.display.size,
               fontWeight: 300,
               letterSpacing: '0.005em',
               lineHeight: 1,
@@ -151,7 +151,7 @@ export default function S3Concept({ active }) {
             style={{
               marginTop: 'clamp(12px, 2.2vh, 28px)',
               fontFamily: typography.family,
-              fontSize: 'clamp(0.82rem, 1.41vw, 1.55rem)',
+              fontSize: typography.body.size,
               fontWeight: 500,
               letterSpacing: '-0.01em',
               lineHeight: 1.5,
@@ -211,7 +211,7 @@ export default function S3Concept({ active }) {
                 key={line}
                 style={{
                   fontFamily: typography.family,
-                  fontSize: 'clamp(0.78rem, 1.56vw, 1.7rem)',
+                  fontSize: typography.body.size,
                   fontWeight: 500,
                   letterSpacing: '-0.015em',
                   lineHeight: 1.75,

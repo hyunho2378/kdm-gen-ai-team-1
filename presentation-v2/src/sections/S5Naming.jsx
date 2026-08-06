@@ -72,7 +72,7 @@ export default function S5Naming({ active }) {
             style={{
               margin: 0,
               fontFamily: typography.family,
-              fontSize: 'clamp(0.92rem, 1.35vw, 1.5rem)',
+              fontSize: typography.headline.size,
               fontWeight: 700,
               letterSpacing: '-0.02em',
               lineHeight: 1.5,
@@ -85,7 +85,7 @@ export default function S5Naming({ active }) {
             style={{
               margin: 'clamp(6px, 1vh, 12px) 0 0',
               fontFamily: typography.family,
-              fontSize: 'clamp(0.72rem, 1.04vw, 1.16rem)',
+              fontSize: typography.body.size,
               fontWeight: 400,
               lineHeight: 1.65,
               color: colors.text.secondary,
@@ -117,7 +117,7 @@ export default function S5Naming({ active }) {
           style={{
             // 제목 폰트 미정. tokens.typography.displayFamily 한 키만 바꾸면 S1과 함께 교체된다.
             fontFamily: typography.displayFamily,
-            fontSize: 'clamp(2.6rem, 9.5vw, 8.6rem)',
+            fontSize: typography.display.size,
             fontWeight: 300,
             letterSpacing: '0.01em',
             lineHeight: 1,

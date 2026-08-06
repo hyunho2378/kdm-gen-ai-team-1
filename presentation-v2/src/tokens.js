@@ -122,8 +122,21 @@ export const typography = {
   // 디스플레이(제목) 계열. 미정이라 아이브로우와 같은 Pretendard 계열.
   displayFamily: fontFamily.display,
   fontFamily,
-  // 아이브로우 v2. 크기/굵기는 유지한다(21px 700). 색은 이제 잉크 단색이라 대비 요건이 아니라 스타일 선택이다.
+
+  // ── 역할별 타이포 스케일 (PV2, 전 슬라이드 단일) ─────────────────────────
+  // **슬라이드마다 크기를 다시 적지 않는다.** 아래 role 하나씩만 참조한다.
+  // 기준은 컬러 시스템 슬라이드(그리드 기준 슬라이드)의 실측값이다. 절제된 크기 + 굵기/여백 위계.
+  //   1440에서 headline 19.4 / body 15 / caption 13.5, eyebrow 21. 헤드라인과 본문 차이를 크게 안 벌린다.
+  // 아이브로우 v2. 21px 700 고정(반응형 clamp 금지 사유는 DESIGN 4절). 색은 잉크 단색.
   eyebrow: { size: '1.3125rem', weight: 700, tracking: '0.06em', leading: 1.25, family: fontFamily.eyebrow },
+  // 헤드라인. 전 슬라이드 설명형 문장이 이 하나를 쓴다(컬러 시스템 헤드라인과 동일 clamp).
+  headline: { size: 'clamp(0.92rem, 1.35vw, 1.5rem)', weight: 700, tracking: '-0.02em', leading: 1.4 },
+  // 본문. 헤드라인 아래 설명, 카드 본문, 인용 등(컬러 시스템 서브와 동일 clamp).
+  body: { size: 'clamp(0.72rem, 1.04vw, 1.16rem)', weight: 400, tracking: '0em', leading: 1.65 },
+  // 캡션. 소형 라벨, 카드 부라벨, HEX/RGB 등(컬러 시스템 라벨과 동일 clamp).
+  caption: { size: 'clamp(0.62rem, 0.94vw, 1.05rem)', weight: 400, tracking: '0.01em', leading: 1.6 },
+  // 디스플레이. 대형 워드마크(컨셉/네이밍 VORTEX, 데모 ENTER)만. 셋을 한 크기로 통일한다.
+  display: { size: 'clamp(2.6rem, 9.4vw, 8.6rem)', weight: 300, tracking: '0.005em', leading: 1 },
 };
 
 export const motion = {

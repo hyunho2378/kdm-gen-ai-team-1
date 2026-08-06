@@ -83,10 +83,10 @@ export default function S4Experience({ active }) {
           style={{
             margin: 'clamp(12px, 1.9vh, 24px) 0 0',
             fontFamily: typography.family,
-            fontSize: 'clamp(1.1rem, 2.3vw, 2.5rem)',
-            fontWeight: 700,
-            letterSpacing: '-0.03em',
-            lineHeight: 1.3,
+            fontSize: typography.headline.size,
+            fontWeight: typography.headline.weight,
+            letterSpacing: typography.headline.tracking,
+            lineHeight: typography.headline.leading,
             color: colors.text.primary,
           }}
         >
@@ -159,7 +159,8 @@ export default function S4Experience({ active }) {
               <span
                 style={{
                   fontFamily: typography.family,
-                  fontSize: 'clamp(0.8rem, 1.18vw, 1.32rem)',
+                  // 카드 제목. 본문 크기에 700으로 위계를 굵기로 낸다(크기 대비 아님).
+                  fontSize: typography.body.size,
                   fontWeight: 700,
                   letterSpacing: '-0.025em',
                   lineHeight: 1.35,
@@ -175,9 +176,9 @@ export default function S4Experience({ active }) {
                     key={line}
                     style={{
                       fontFamily: typography.family,
-                      fontSize: 'clamp(0.68rem, 0.98vw, 1.08rem)',
-                      fontWeight: 400,
-                      lineHeight: 1.7,
+                      fontSize: typography.caption.size,
+                      fontWeight: typography.caption.weight,
+                      lineHeight: typography.caption.leading,
                       color: colors.text.secondary,
                     }}
                   >

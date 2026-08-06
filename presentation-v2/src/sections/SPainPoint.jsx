@@ -136,7 +136,7 @@ export default function SPainPoint({ active }) {
             <div
               style={{
                 fontFamily: typography.family,
-                fontSize: 'clamp(0.7rem, 1.25vw, 1.36rem)',
+                fontSize: typography.caption.size,
                 fontWeight: 500,
                 letterSpacing: '-0.01em',
                 color: colors.text.secondary,
@@ -150,7 +150,7 @@ export default function SPainPoint({ active }) {
                   key={line}
                   style={{
                     fontFamily: typography.family,
-                    fontSize: 'clamp(0.76rem, 1.35vw, 1.48rem)',
+                    fontSize: typography.body.size,
                     fontWeight: 500,
                     letterSpacing: '-0.02em',
                     lineHeight: 1.6,
@@ -241,7 +241,7 @@ export default function SPainPoint({ active }) {
                 key={line}
                 style={{
                   fontFamily: typography.family,
-                  fontSize: 'clamp(0.76rem, 1.35vw, 1.48rem)',
+                  fontSize: typography.body.size,
                   fontWeight: 500,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.6,

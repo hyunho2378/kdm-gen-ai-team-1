@@ -87,7 +87,7 @@ export default function SPrologue({ active }) {
               margin: li === 0 ? 0 : 'clamp(10px, 2.2vh, 28px) 0 0',
               opacity: 0,
               fontFamily: typography.family,
-              fontSize: 'clamp(0.86rem, 1.98vw, 2.18rem)',
+              fontSize: typography.headline.size,
               letterSpacing: '-0.02em',
               lineHeight: 1.55,
               willChange: 'transform, opacity',
