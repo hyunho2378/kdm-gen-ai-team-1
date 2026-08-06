@@ -2177,6 +2177,27 @@
     - **남은 사람 단계: Vercel 프리뷰 배포 실 URL 육안 검증, Lighthouse LCP/CLS/INP 실측 전후 비교(헤드리스 pane 불안정으로 자동 측정 불가), 실브라우저에서 P3 스크럽·P6 Flip 모핑 육안 확인.** 배포는 외부 공개 액션이라 권한 확인 후 사람이 수행
   - **presentation 탈PPT 개편 P0~P7 전체 완료.** 실물 펜싱 프레임 도착 시 `presentation/public/frames/hero/` 폴더 덮어쓰기 + manifest.count만 바꾸면 반영(코드 수정 0)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
+- **GUARD_TWIST(길 B) 가드를 비틀기로 완료(실기 확인 대기).** 커밋 셋으로 나눠 각 직후 push했다.
+  가드 제스처를 옆으로 기울이기(roll, 길 A)에서 사용자가 실제로 하는 "잡은 채 화면이 몸을 보게 비틀기"
+  (전완 회외, 장축 둘레 회전)로 옮겼다. diff는 입력/렌더/미리보기 7파일뿐, 판정 파일 무변경.
+  - **비틀림 채널(orientation.js, shared/pose.js).** 자이로 각속도를 칼날 장축(기기 Y, BLADE_REST=(0,1,0))에
+    정사영(gamma)한 성분을 누수 적분(`twist += rate*dt; twist *= exp(-dt/TWIST_TAU)`). 빠른 비틀기는 쌓여
+    문턱을 넘고 느린 드리프트는 새어 0으로 돌아온다. **절대 트위스트각을 안 쓴다**(자기계 없어 드리프트).
+    비틀기는 swing에서 구조적으로 잘려 있어(길 A) swing/tiltFromQuaternion/cb.pose는 무변경. setBaseline에서 0 리셋.
+  - **가드 소스 교체(motion.js, pipeline.js).** detectGuard가 nextGuardTwist(크기 히스테리시스)로 낸다.
+    nextGuard(roll)는 라이브에서 끊고 길 A 후퇴선으로 pose.js에 남겼다. thrust(detectThrust, 임계 8, 수평비,
+    최소지속, 오탐 7종) 무변경. 비틀기는 자이로 각속도라 thrust의 가속 채널과 축·소스가 직교.
+  - **렌더 패리 스냅(ThreeRenderer.js).** 비틀림은 swing에 없어 폰 회전이 검을 안 눕힌다. 폰 쿼터니언 슬러프 뒤
+    guardBlend만큼 프리셋 대각 패리(SWORD_POSES.guard, D4 방어선)로 되돌린다. 찌르기 중엔 미적용(thrust>guard).
+  - **미리보기 정합(?posetest).** 비틀림 슬라이더 신설, 실기와 같은 nextGuardTwist로 가드 표시. roll은 가드 안 켬.
+    실측: roll 50→가드 없음 / twist 20→OFF, 30→ON, 15(ON 뒤)→ON(히스테리시스), 8→OFF.
+    실브라우저 육안: 키보드 경기 + posetest 수직 쿼터니언에서 가드 잡으면 검이 대각 패리로 스냅, 놓으면 복귀.
+  - **튜닝 레버(전부 ?debug 실측 확정).** TWIST_TAU_SEC=2.5(orientation.js), TWIST.onDeg=25 / offDeg=12(pose.js).
+    onDeg는 100~200ms 스냅이 넘길 값, offDeg는 정지 자이로 바이어스 정상상태(bias x TAU) 위. ?debug에 비틀림 값 표시.
+  - **불변식 확인.** 세로 중립 이산 이벤트 0(적분 0 근처), 드리프트 면역(각속도 누수 적분), 세로 고정 보장(swing 무변경).
+    **서명 1097/c820d0f2 유지**(13/13, 결정성, 판정 파일 무변경). build:all 4앱 + 서명 그린.
+  - **실기(사람 단계) 확인 필요.** 실제 폰 비틀기로 가드 ON/OFF, gamma 부호, 드리프트 수 분 방치, 찌르기 오탐 0,
+    TWIST_TAU와 ON/OFF 손맛 튜닝. 안 잡히면 길 A 후퇴선(nextGuard(roll) 복구)으로 배포본 동작 복귀.
 - **presentation-v2 P1 아이브로우 v2와 유파 문구 통일 완료(확인 대기). 트랙 선점 해제.** presentation-v2만 만졌다
   (brand/arena/controller 무변경). 커밋 하나.
   - **파트 A 아이브로우 v2.** `tokens.js`에 `typography.eyebrow`(size 1.3125rem=21px, weight 700, tracking 0.06em,
