@@ -13,6 +13,9 @@ const INK_RGB = '16, 16, 16';
 const BG_RGB = '246, 246, 246';
 // 밝은 파생 채널. red 채움 위 흰 글자, 실버 하이라이트 등 라이트 위에서 드물게 쓴다.
 const WHITE_RGB = '253, 253, 253';
+// 다크 스크림 채널(#111A26). 디자인 키워드 카드의 사진 위 가독 그라디언트 전용.
+// **브랜드 네이비(#263E5F, 컬러 시스템 전용)와 다른**, 사진 위 흰 텍스트를 받치는 어두운 네이비다.
+const SCRIM_RGB = '17, 26, 38';
 
 /** ink에서 알파만 바꿔 파생시킨다. 예: inkA(0.5) */
 export const inkA = (a) => `rgba(${INK_RGB}, ${a})`;
@@ -20,6 +23,8 @@ export const inkA = (a) => `rgba(${INK_RGB}, ${a})`;
 export const bgA = (a) => `rgba(${BG_RGB}, ${a})`;
 /** white에서 알파만 바꿔 파생시킨다. 예: whiteA(0.5) */
 export const whiteA = (a) => `rgba(${WHITE_RGB}, ${a})`;
+/** 다크 네이비 스크림에서 알파만 바꿔 파생시킨다. 키워드 카드 사진 위 가독 그라디언트 전용. 예: scrimA(0.9) */
+export const scrimA = (a) => `rgba(${SCRIM_RGB}, ${a})`;
 
 export const colors = {
   // ── 전역 기준 두 색 ────────────────────────────────────────────────

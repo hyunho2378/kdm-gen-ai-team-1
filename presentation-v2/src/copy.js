@@ -122,37 +122,34 @@ export const TARGET_ITEMS = [
 // 원본 라벨은 'Desigh Keyword'로 오타가 있다. 지시 문구대로 'Design Keyword'를 쓴다.
 export const KEYWORD = {
   label: { en: 'Design Keyword', ko: '디자인 키워드' },
-  headline: '빠르게 움직이고, 정확하게 판단하며, 끝까지 몰입한다.',
-  // 인트로 둘째 줄('이를 위해 Dynamic, Precision, Immersion의 세가지...')은 제거했다(PV3).
-  // 카드 자체가 세 키워드를 보여주므로 중복이고, 그 줄을 없애 카드를 위로 올린다.
-  body: [
-    '본 제품은 펜싱의 핵심 경험을 XR 기술로 확장하여 실시간 피드백과 직관적인 인터페이스를 통해 더욱 효과적인 트레이닝 환경을 제공한다.',
-  ],
+  headline: '빠르게 움직이고, 정확하게 판단하며, 끝까지 몰입한다',
+  // **인트로 문장은 전량 제거했다.** 참조 SVG(Slide 79)에 '본 제품은...'과 '이를 위해...' 두 줄이
+  // 남아 있어도 구현에서는 뺀다(카드가 세 키워드를 보여줘 중복). 그래서 body 없음.
 };
 
-// caption의 각 줄은 문자열이다.
-// 원본 SVG는 나열에 가운데점을 썼지만 프로젝트 텍스트 규칙이 금지하므로 쉼표로 바꿨다.
+// 키워드 3종. 참조 SVG(Slide 79)에서 확정한 문구. 카드 배경은 dk_1/2/3 이미지.
+// caption(설명)은 이미지 위 흰 텍스트로 카드 하단에 얹힌다. 각 줄은 문자열이다.
 export const KEYWORDS = [
   {
-    key: 'dynamic',
-    en: 'Dynamic',
-    ko: '역동적인',
-    img: '/images/keyword/dynamic.png',
-    caption: ['빠르게 변화하는 경기 상황 속에서도', '사용자의 움직임을 자연스럽게 따라가는 경험'],
+    key: 'transformative',
+    en: 'Transformative',
+    ko: '변화를 만드는',
+    img: '/images/keyword/dk_1.png',
+    caption: ['XR 기술로 기존 펜싱 훈련 방식을 새롭게 확장하며,', '더 효율적인 트레이닝 경험을 제안한다'],
   },
   {
-    key: 'precision',
-    en: 'Precision',
-    ko: '정확한',
-    img: '/images/keyword/precision.png',
-    caption: ['거리, 자세, 타이밍을', '정밀하게 분석하는 XR 글라스'],
+    key: 'guide',
+    en: 'Guide',
+    ko: '이끄는',
+    img: '/images/keyword/dk_2.png',
+    caption: ['실시간 분석과 직관적인 피드백으로 사용자가', '올바른 움직임을 스스로 익힐 수 있도록 안내한다'],
   },
   {
     key: 'immersion',
     en: 'Immersion',
     ko: '몰입하는',
-    img: '/images/keyword/immersion.png',
-    caption: ['현실과 디지털이 자연스럽게', '결합된 몰입형 훈련 경험'],
+    img: '/images/keyword/dk_3.png',
+    caption: ['현실과 디지털을 자연스럽게 연결하여 훈련에', '온전히 집중할 수 있는 몰입형 경험을 제공한다'],
   },
 ];
 

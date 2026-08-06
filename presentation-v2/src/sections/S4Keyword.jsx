@@ -1,67 +1,51 @@
-// 디자인 키워드. 원본 레이아웃은 `Slide 16_9 - 29.svg`(1920x1080)를 Chromium으로 렌더해 기준으로 삼았다.
+// 디자인 키워드. 참조 레이아웃은 `frames/ref/Slide 16_9 - 79.svg`(1920x1080).
+//   아이브로우 좌상단(x60 y233 계열) + 헤드라인, 3카드가 하단. 카드 배경은 dk_1/2/3 이미지.
+//   이미지 아래 어두운 네이비 그라디언트(#111A26→투명)로 카드 하단 흰 텍스트(영문 키워드/국문/설명)를 받친다.
+//   상단 표기(팀/행사/제품명)는 넣지 않는다. 인트로 문장도 제거(카드가 세 키워드를 보여줘 중복).
 //
-// 원본 실측(1920 기준, SVG에서 직접 뽑은 값):
-//   좌상단 라벨 2줄  x 64  y 78('Design Keyword') / y 123('디자인 키워드')
-//   우측 헤드라인    x 400 y 124, 본문 2줄 y 177 / 222
-//   카드 3장  x 60 / 673.333 / 1286.667,  y 293,  w 573.333,  h 624.339,  rx 20  (간격 40)
-//   카드 안 원  cx 346.667 / 960 / 1573.333,  cy 605.169,  r 117,  stroke #FDFDFD
-//   카드 아래 캡션 2줄  y 959 / 999
-// 카드 사진은 원본에 base64로 박혀 있으나 **라이선스 미확인 시안이라 임베드하지 않는다.**
-// 실제 파일이 없으면 AssetImage가 다크 플레이스홀더로 내려앉는다.
-//
-// **서브 진행 3단계.** 정적 동시 표시를 포커스 이동으로 바꿨다.
-// 셸 위임 구조는 S2Why(registerHandler/registerEnter)와 같다.
-//   단계 0 Dynamic / 1 Precision / 2 Immersion
-//   포커스 카드는 **제자리에서** 확대되고 선명해진다(좌우 이동 없음. transform-origin이 중앙이라 중심이 안 움직인다).
-//   나머지 둘은 축소 + blur + 어두워짐으로 물러난다.
-//   경계(0에서 위 / 2에서 아래)에서만 섹션이 바뀐다.
-// 애니메이션은 transform과 opacity와 filter blur만 만진다.
-// 부양감은 box-shadow를 트랜지션하지 않고 **별도 글로우 레이어의 opacity**로 낸다(규칙 준수).
+// **서브 진행: 기본 3카드 블러 → 방향키로 1,2,3 순서로 하나씩 확장(선명 + 강조).**
+//   focus -1(전부 블러) → 0 → 1 → 2. 경계(-1에서 위 / 2에서 아래)에서만 셸이 섹션을 옮긴다(DELEGATE_IDS).
+//   확장은 제자리 스케일 + blur 제거 + 밝기. 가장자리 카드는 transformOrigin을 안쪽으로 잡아
+//   확장이 그리드 마진 밖으로 안 나간다. 애니메이션은 transform/opacity/filter만 만진다.
 
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, grid, inkA, bgA } from '../tokens.js';
+import { colors, typography, motion, grid, inkA, whiteA, scrimA } from '../tokens.js';
 import { KEYWORD, KEYWORDS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SlideHeader, GlassRim, StepDots } from '../components/Bits.jsx';
-
-const CAPTION = {
-  fontFamily: typography.family,
-  fontSize: typography.caption.size,
-  fontWeight: 400,
-  lineHeight: 1.7,
-  color: colors.text.secondary,
-};
+import { SlideHeader, StepDots } from '../components/Bits.jsx';
 
 const STEPS = KEYWORDS.length; // 3
-const FOCUS_SCALE = 1.08;
-const REST_SCALE = 0.94;
-const REST_BLUR = 5; // px
-const REST_BRIGHT = 0.6;
+const START = -1; // 기본: 전부 블러(포커스 없음)
+const FOCUS_SCALE = 1.06;
+const REST_SCALE = 0.96;
+const REST_BLUR = 6; // px
+const REST_BRIGHT = 0.72;
 const DUR = 0.55;
+
+// 카드 하단 가독 스크림. 아래 진한 네이비 → 위로 투명. 텍스트가 앉는 하단을 덮는다.
+const SCRIM =
+  `linear-gradient(to top, ${scrimA(0.96)} 0%, ${scrimA(0.82)} 18%, ${scrimA(0.3)} 46%, ${scrimA(0)} 70%)`;
 
 export default function S4Keyword({ active, registerHandler, registerEnter }) {
   const headRef = useRef(null);
   const cardsRef = useRef([]);
   const glowRefs = useRef([]);
-  const [focus, setFocus] = useState(0);
-  const focusRef = useRef(0);
+  const [focus, setFocus] = useState(START);
+  const focusRef = useRef(START);
 
-  // ── 서브 진행 위임. S2Why와 같은 구조. ──
+  // ── 서브 진행 위임(셸 DELEGATE_IDS). ──
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 포커스 값을 실제 트랜스폼으로 옮긴다.
-    // opacity는 건드리지 않는다(진입 연출이 쥐고 있다. 겹치면 overwrite로 서로 죽인다).
     const apply = (next, instant) => {
       const d = instant ? 0 : DUR;
       cardsRef.current.filter(Boolean).forEach((el, i) => {
-        const on = i === next;
+        const on = i === next; // next=-1이면 어떤 카드도 on이 아니다(전부 블러)
         gsap.to(el, {
-          // reduced면 확대와 blur 없이 밝기만으로 포커스를 표시한다.
           scale: reduced ? 1 : on ? FOCUS_SCALE : REST_SCALE,
           filter: reduced
-            ? `brightness(${on ? 1 : 0.5})`
+            ? `brightness(${on ? 1 : 0.6})`
             : `blur(${on ? 0 : REST_BLUR}px) brightness(${on ? 1 : REST_BRIGHT})`,
           zIndex: on ? 2 : 1,
           duration: d,
@@ -74,19 +58,19 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
       });
     };
 
-    // 방향키를 소비하면 true(섹션 유지). 경계면 false → 셸이 앞뒤 섹션으로 옮긴다.
+    // 방향키 소비: focus를 -1..2에서 옮긴다. 경계 넘으면 false → 셸이 앞뒤 섹션으로.
     const handleStep = (dir) => {
       const next = focusRef.current + dir;
-      if (next < 0 || next >= STEPS) return false;
+      if (next < START || next >= STEPS) return false;
       focusRef.current = next;
       setFocus(next);
       apply(next, false);
       return true;
     };
 
-    // 진입 방향에 맞는 경계에서 시작한다. 아래로 진입 → 0(Dynamic), 위로 진입 → 2(Immersion).
+    // 진입: 아래로 진입 → -1(전부 블러부터). 위로 진입 → 2(마지막 카드부터).
     const handleEnter = (dir) => {
-      const next = dir > 0 ? 0 : STEPS - 1;
+      const next = dir > 0 ? START : STEPS - 1;
       focusRef.current = next;
       setFocus(next);
       apply(next, true);
@@ -101,26 +85,22 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
     };
   }, [registerHandler, registerEnter]);
 
-  // ── 진입 연출. 포커스와 별개 속성(opacity, y)만 만져 서로 안 부딪힌다. ──
+  // ── 진입 연출. 포커스와 별개 속성(opacity, y)만. ──
   useEffect(() => {
     if (!active) return undefined;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const head = headRef.current;
     const cards = cardsRef.current.filter(Boolean);
     if (!head) return undefined;
-
     if (reduced) {
       gsap.set([head, ...cards], { opacity: 1, y: 0 });
       return undefined;
     }
-
     gsap.set(head, { opacity: 0, y: 18 });
     gsap.set(cards, { opacity: 0, y: 38 });
-    // 셸의 섹션 이동이 1초다. 지연이 없으면 착지 전에 연출이 끝난다.
     const tl = gsap.timeline({ delay: 0.4 });
     tl.to(head, { opacity: 1, y: 0, duration: 0.8, ease: motion.gsapOut });
     tl.to(cards, { opacity: 1, y: 0, duration: 0.95, ease: motion.gsapOut, stagger: 0.13 }, 0.16);
-
     return () => {
       tl.kill();
     };
@@ -135,27 +115,23 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
         background: colors.bg,
         display: 'flex',
         flexDirection: 'column',
-        // 전역 그리드 마진(아이브로우 좌상단). 컬러 시스템과 같은 값을 공유한다.
         padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
-      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인+본문 우). */}
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 우). 인트로 제거로 서브 없음. */}
       <div ref={headRef} style={{ flexShrink: 0 }}>
-        <SlideHeader
-          eyebrow={{ en: KEYWORD.label.en, ko: KEYWORD.label.ko }}
-          headline={KEYWORD.headline}
-          sub={KEYWORD.body}
-        />
+        <SlideHeader eyebrow={{ en: KEYWORD.label.en, ko: KEYWORD.label.ko }} headline={KEYWORD.headline} />
       </div>
 
-      {/* 카드 3장. 원본 카드 h 624 / 1080 = 57.8vh, rx 20 */}
+      {/* 카드 3장. 인트로 제거로 위로 붙는다. 행은 minmax(0,1fr)로 남는 세로를 채운다(카드 내부가 absolute라 행 높이가 필요). */}
       <div
         style={{
           flex: '1 1 auto',
           minHeight: 0,
-          marginTop: 'clamp(16px, 3.3vh, 36px)',
+          marginTop: 'clamp(16px, 3vh, 32px)',
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateRows: 'minmax(0, 1fr)',
           gap: 'clamp(10px, 2.08vw, 50px)',
         }}
       >
@@ -167,19 +143,15 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
             }}
             style={{
               position: 'relative',
-              display: 'flex',
-              flexDirection: 'column',
               minWidth: 0,
               minHeight: 0,
-              // **확장이 그리드 마진을 안 넘게 가장자리 카드는 안쪽 기준으로 키운다.**
-              // 첫 카드는 좌측 고정(우로 확장), 끝 카드는 우측 고정(좌로 확장), 가운데는 중앙.
-              // 중앙 기준이면 포커스 1.08배에서 가장자리 카드/캡션이 marginX를 17px 넘었다(실측).
+              // 확장이 마진 밖으로 안 나가게 가장자리 카드는 안쪽 기준으로 확대.
               transformOrigin:
                 i === 0 ? 'left center' : i === KEYWORDS.length - 1 ? 'right center' : 'center center',
               willChange: 'transform, opacity, filter',
             }}
           >
-            {/* 부양감용 글로우. box-shadow를 트랜지션하지 않고 이 레이어의 opacity만 움직인다. */}
+            {/* 포커스 부양감 글로우(잉크 그림자). 포커스 카드만 opacity로 켠다. */}
             <div
               aria-hidden="true"
               ref={(el) => {
@@ -187,106 +159,79 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
               }}
               style={{
                 position: 'absolute',
-                // **위로는 번지지 않게 한다.** 위쪽으로 열어 두면 헤더 위에 어두운 판이 얹힌다(실측).
-                inset: '2% -3% 2% -3%',
+                inset: '2% -3%',
                 borderRadius: 24,
                 opacity: 0,
-                // 라이트 반전: 레드 글로우를 걷고 잉크 그림자로만 부양감을 낸다.
-                boxShadow: `0 18px 46px ${inkA(0.22)}`,
+                boxShadow: `0 20px 50px ${inkA(0.28)}`,
                 pointerEvents: 'none',
               }}
             />
 
-            {/* 사진 자리 + 중앙 원형 라벨 */}
-            <div
-              style={{
-                position: 'relative',
-                flex: '1 1 auto',
-                minHeight: 0,
-                borderRadius: 20,
-                overflow: 'hidden',
-                background: colors.raised,
-              }}
-            >
+            {/* 카드 = 이미지 + 하단 네이비 스크림 + 흰 텍스트. */}
+            <div style={{ position: 'absolute', inset: 0, borderRadius: 20, overflow: 'hidden', background: colors.raised }}>
               <AssetImage src={k.img} fit="cover" />
-              {/* 사진 위 아주 옅은 딤. 사진을 살리되 라벨 대비를 약간 돕는다(라이트 반전: 다크 → 미세). */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: `linear-gradient(180deg, ${inkA(0.06)} 0%, ${inkA(0.14)} 100%)`,
-                }}
-              />
+              <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: SCRIM }} />
+
+              {/* 하단 텍스트: 영문 키워드(작게) + 국문(큰 제목) + 설명 2줄. 전부 흰색. */}
               <div
                 style={{
                   position: 'absolute',
-                  inset: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  padding: 'clamp(16px, 2.2vw, 30px)',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  pointerEvents: 'none',
+                  flexDirection: 'column',
+                  gap: 'clamp(3px, 0.6vh, 8px)',
                 }}
               >
-                <div
+                <span
                   style={{
-                    // 원본 r 117 / 카드 폭 573 = 지름 40.9%
-                    position: 'relative',
-                    width: '41%',
-                    aspectRatio: '1 / 1',
-                    borderRadius: '50%',
-                    // 라이트 반전: 잉크 라벨이 사진 위에서 읽히게 옅은 라이트 디스크로 받친다.
-                    background: bgA(0.55),
-                    backdropFilter: 'blur(6px)',
-                    WebkitBackdropFilter: 'blur(6px)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 2,
-                    textAlign: 'center',
+                    fontFamily: typography.family,
+                    fontSize: typography.caption.size,
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    color: whiteA(0.72),
                   }}
                 >
-                  {/* TARGET과 같은 유리 림 문법. */}
-                  <GlassRim />
-                  <span
-                    style={{
-                      fontFamily: typography.family,
-                      fontSize: typography.headline.size,
-                      fontWeight: 400,
-                      letterSpacing: '-0.01em',
-                      color: colors.text.primary,
-                    }}
-                  >
-                    {k.en}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: typography.family,
-                      fontSize: typography.body.size,
-                      fontWeight: 500,
-                      color: colors.text.primary,
-                    }}
-                  >
-                    {k.ko}
-                  </span>
+                  {k.en}
+                </span>
+                <span
+                  style={{
+                    fontFamily: typography.family,
+                    fontSize: typography.headline.size,
+                    fontWeight: typography.headline.weight,
+                    letterSpacing: '-0.01em',
+                    lineHeight: 1.25,
+                    color: colors.white,
+                  }}
+                >
+                  {k.ko}
+                </span>
+                <div style={{ marginTop: 'clamp(2px, 0.6vh, 6px)' }}>
+                  {k.caption.map((line) => (
+                    <div
+                      key={line}
+                      style={{
+                        fontFamily: typography.family,
+                        fontSize: typography.body.size,
+                        fontWeight: 400,
+                        lineHeight: 1.55,
+                        color: whiteA(0.86),
+                        wordBreak: 'keep-all',
+                      }}
+                    >
+                      {line}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-
-            {/* 카드 아래 캡션 2줄 */}
-            <div style={{ marginTop: 'clamp(8px, 1.9vh, 22px)', flexShrink: 0 }}>
-              {k.caption.map((line) => (
-                <div key={line} style={CAPTION}>
-                  {line}
-                </div>
-              ))}
             </div>
           </div>
         ))}
       </div>
 
-      {/* 서브 진행 표시(3단계) */}
+      {/* 서브 진행 표시. 기본(-1)이면 활성 없음, 확장하면 해당 카드. */}
       <StepDots count={STEPS} active={focus} />
     </div>
   );
