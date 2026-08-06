@@ -1079,7 +1079,40 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **brand Vercel 빌드 실패 진단 작업중.** 로컬 통과 Vercel 실패의 격차를 잡는다
+- **brand Vercel 빌드 실패 수정 완료(확인 대기). 원인은 arena 파일의 `three` 해석이었다.** 트랙 선점 해제
+  - **잘렸던 진짜 원인 줄을 재현해서 뽑았다.**
+
+    ```
+    Error: [vite]: Rolldown failed to resolve import "three"
+      from ".../arena/src/game/render/three/trail.js"
+    ```
+
+  - **경로.** `brand/src/components/HeroTrail.jsx`가 `../../../arena/.../trail.js`를 직접 import한다
+    (BRAND_SITE_GUIDE 8절이 지시한 재사용이다). 그 arena 파일 안의 `import * as THREE from 'three'`가
+    **arena 폴더 기준으로 해석**돼 `arena/node_modules/three`를 찾는다.
+    **개발 기계에는 arena를 빌드해 본 적이 있어 그게 깔려 있고 clean 체크아웃에는 없다.**
+    이것이 "로컬 통과 Vercel 실패"의 정체다
+  - **시점도 맞는다.** 배포가 멈춘 `83e7180`은 HeroTrail이 생기기 전 커밋이다.
+    HeroTrail이 들어온 다음 커밋부터 모든 배포가 죽었다. 직전 트랙에서 확인한
+    "배포가 첫 커밋에서 멈춤"과 같은 사건의 양면이다
+  - **수정은 한 줄이다.** `brand/vite.config.js`에 `resolve: { dedupe: ['three'] }`.
+    bare specifier를 brand 기준 한 벌로 모은다
+  - **이건 이 리포가 이미 쓰던 관용구다. brand만 빠뜨렸다.** `presentation-v2/vite.config.js`에
+    같은 줄이 이미 있고 주석까지 달려 있다("리본(arena)과 S3 하네스가 같은 three 인스턴스를 쓰게 한다").
+    presentation-v2도 같은 arena 파일을 두 곳에서 import하는데 **격리 트리에서 정상 빌드된다**(실측)
+  - **덤. `Multiple instances of Three.js` 경고가 사라졌다.** 두 폴더가 각자 한 벌씩 물던 three가
+    한 벌이 됐다. 번들 1084KB에서 **926KB로 158KB 줄었다**. 런타임 경고 실측 0건
+  - **의심했던 둘은 아니었다.**
+    대소문자 감사 결과 상대 import **412건 전수에서 불일치 0건**이다(`git ls-files`와 바이트 대조.
+    걸린 둘은 `?url` 쿼리 접미사 오탐이고 실파일이 있다).
+    lockfile은 다섯 앱 전부 커밋돼 있고 vite는 lockfile과 설치본이 8.2.0으로 일치한다
+  - **오염을 한 번 걸렀다.** 한 트리에서 네 앱을 이어 빌드하면 arena의 `npm ci`가
+    옆 폴더에 `node_modules`를 만들어 presentation-v2가 그 덕을 본다. **앱마다 따로 푼 트리**에서
+    다시 재서 진짜 상태를 확인했다
+  - 검증: `git archive HEAD`로 **커밋된 것만** 푼 격리 트리에서 `npm ci` 후
+    brand, arena, controller, presentation-v2 **네 앱 전부 빌드 통과**.
+    격리 brand 프리뷰에서 히어로 canvas 2(리본 + 워드마크), 콘솔 에러 0
+  - **presentation과 presentation-v2는 손대지 않았다**(상시 규칙). 확인만 했고 둘 다 문제없다
 - **brand 구조 버그 진단 완료. 코드 버그가 아니었다. 배포본이 낡았다.** 트랙 선점 해제
   - **코드 변경 0.** 신고된 셋이 지금 리포에서 이미 의도대로다. 고칠 것을 못 찾은 게 아니라
     **고칠 것이 없다.** 없는 버그를 고치면 멀쩡한 코드가 망가진다

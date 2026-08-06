@@ -6,6 +6,47 @@
 
 ---
 
+## 로컬은 통과하는데 CI와 배포에서만 빌드가 죽는다
+
+**로컬 `node_modules`가 커밋되지 않은 상태를 메워 주고 있기 때문이다.** 개발 기계에는
+다른 패키지를 빌드하며 깔린 것들이 남아 있고, CI는 매번 빈 상태에서 시작한다.
+그 격차가 곧 원인이다.
+
+**모노레포에서 가장 흔한 형태는 옆 패키지 파일을 직접 import할 때다.** 예를 들어
+`brand/src/.../HeroTrail.jsx`가 `../../../arena/.../trail.js`를 부르면,
+그 arena 파일 안의 `import * as THREE from 'three'`는 **arena 폴더 기준으로 해석**돼
+`arena/node_modules/three`를 찾는다. 개발 기계에는 그게 있고 clean 체크아웃에는 없다.
+
+```
+Error: [vite]: Rolldown failed to resolve import "three" from ".../arena/.../trail.js"
+```
+
+**해결은 dedupe다.** 부르는 쪽 vite 설정에 넣으면 bare specifier가 그 프로젝트 기준 한 벌로 모인다.
+
+```js
+resolve: { dedupe: ['three'] }
+```
+
+덤으로 `Multiple instances of Three.js being imported` 경고도 사라진다. 두 폴더가 각자 한 벌씩
+물던 것이 한 벌이 되기 때문이다(실측: 번들 1084KB에서 926KB로 줄었다).
+
+**확인 규율. 로컬 빌드 통과를 완료 근거로 쓰지 않는다.** 커밋된 것만으로 빌드해야 한다.
+
+```
+git archive HEAD | tar -x -C /tmp/clean       # 커밋된 파일만
+cd /tmp/clean/<앱> && npm ci && npm run build
+```
+
+**앱을 여러 개 검사할 때는 각각 따로 푼 트리에서 돌린다.** 한 트리에서 이어 돌리면
+앞 앱의 `npm ci`가 옆 폴더에 `node_modules`를 만들어 뒤 앱이 그 덕을 본다.
+**이 오염 때문에 한 번 통과로 잘못 읽을 뻔했다**(격리해서 다시 재니 진짜 상태가 나왔다).
+
+**대소문자는 별개 원인이고 별도로 검사한다.** 맥과 윈도우는 파일명 대소문자를 무시하고
+리눅스는 구분한다. `git ls-files`가 아는 경로와 import 문자열을 바이트 단위로 대조하면
+실제로 위험한 것만 걸러진다(`?url` 같은 쿼리 접미사는 떼고 비교해야 오탐이 안 난다).
+
+---
+
 ## 배포본이 리포보다 낡았을 때 (버그로 오진하기 쉽다)
 
 배포 화면에서 이상한 것을 보면 **먼저 그 배포본이 지금 코드인지 확인한다.** 코드는 이미 고쳐졌는데
