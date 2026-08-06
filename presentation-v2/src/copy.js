@@ -18,26 +18,6 @@ export const COVER = {
   sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 훈련',
 };
 
-// 배경 PROLOGUE (원본 Slide 16_9 - 2.svg)
-// body의 각 줄은 조각 배열이다. b가 true인 조각만 강조(밝고 굵게), 나머지는 저알파.
-export const PROLOGUE = {
-  label: 'PROLOGUE',
-  body: [
-    [
-      { t: '펜싱은 빠른 공격보다 ' },
-      { t: '상대와의 거리, 타이밍, 움직임', b: true },
-      { t: '을 읽는 감각이 중요한 ' },
-      { t: '1:1 대결 스포츠', b: true },
-      { t: '다.' },
-    ],
-    [
-      { t: '하지만 높은 진입장벽으로 많은 사람들에게는 ' },
-      { t: "'관람하는 스포츠'", b: true },
-      { t: '에 머물러 있다.' },
-    ],
-  ],
-};
-
 // 인사이트 PAIN POINT (원본 1.svg)
 // 상단 페인 3장과 하단 인사이트 3장이 같은 열에 선다. 배열 순서가 곧 열 순서다.
 export const PAINPOINT = {
@@ -185,15 +165,6 @@ export const LOGO_GUIDE = {
   ],
 };
 
-// 브랜드 네이밍 (원본 Slide 16_9 - 30.svg)
-export const NAMING = {
-  label: { en: 'Brand Naming', ko: '브랜드 네이밍' },
-  headline:
-    "펜싱 검이 그리는 곡선의 궤적과 경기의 긴장감이 소용돌이처럼 몰입으로 이어지는 순간을 'VORTEX'라는 이름에 담았다.",
-  sub: '사용자의 움직임과 정확한 피드백이 하나의 경험으로 이어지는 XR 트레이닝을 상징한다.',
-  shots: ['/images/naming/photo-1.png', '/images/naming/photo-2.png'],
-};
-
 // 마지막 섹션 데모 CTA (원본 Slide 16_9 - 9.svg)
 export const DEMO = {
   label: 'IMMERSIVE FENCING XR',
@@ -311,14 +282,12 @@ export const DUELIST_STYLES = [
 // App.jsx가 위임과 컴포넌트 선택을 전부 id로 하므로 삽입이 안전하다.
 export const SECTION_LABELS = [
   { id: 'cover', ko: '표지', en: 'COVER' },
-  { id: 'prologue', ko: '배경', en: 'PROLOGUE' },
   { id: 'painpoint', ko: '인사이트', en: 'PAIN POINT' },
   { id: 'why', ko: '문제', en: 'WHY' },
   { id: 'target', ko: '대상', en: 'TARGET' },
   { id: 'keyword', ko: '디자인 키워드', en: 'DESIGN KEYWORD' },
   { id: 'logo-motif', ko: '로고 모티프', en: 'LOGO MOTIF' },
   { id: 'logo-guide', ko: '로고 가이드', en: 'LOGO GUIDE' },
-  { id: 'naming', ko: '브랜드 네이밍', en: 'BRAND NAMING' },
   { id: 'color', ko: '컬러 시스템', en: 'COLOR SYSTEM' },
   { id: 'concept', ko: '컨셉', en: 'CONCEPT' },
   { id: 'experience', ko: '인터랙션', en: 'EXPERIENCE' },

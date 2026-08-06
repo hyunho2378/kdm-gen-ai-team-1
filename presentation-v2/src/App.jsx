@@ -10,14 +10,12 @@ import { colors, grid } from './tokens.js';
 import { SECTION_LABELS } from './copy.js';
 import { SlideHeader } from './components/Bits.jsx';
 import S1Cover from './sections/S1Cover.jsx';
-import SPrologue from './sections/SPrologue.jsx';
 import SPainPoint from './sections/SPainPoint.jsx';
 import S2Why from './sections/S2Why.jsx';
 import S3Target from './sections/S3Target.jsx';
 import S4Keyword from './sections/S4Keyword.jsx';
 import SLogoMotif from './sections/SLogoMotif.jsx';
 import SLogoGuide from './sections/SLogoGuide.jsx';
-import S5Naming from './sections/S5Naming.jsx';
 import S6ColorSystem from './sections/S6ColorSystem.jsx';
 import S3Concept from './sections/S3Concept.jsx';
 import S4Experience from './sections/S4Experience.jsx';
@@ -162,8 +160,6 @@ export default function App() {
             {/* **인덱스가 아니라 id로 고른다.** 섹션을 끼워 넣어도 짝이 어긋나지 않는다. */}
             {s.id === 'cover' ? (
               <S1Cover active={current === i} />
-            ) : s.id === 'prologue' ? (
-              <SPrologue active={current === i} />
             ) : s.id === 'painpoint' ? (
               <SPainPoint
                 active={current === i}
@@ -185,8 +181,6 @@ export default function App() {
               <SLogoMotif active={current === i} />
             ) : s.id === 'logo-guide' ? (
               <SLogoGuide active={current === i} />
-            ) : s.id === 'naming' ? (
-              <S5Naming active={current === i} />
             ) : s.id === 'color' ? (
               <S6ColorSystem active={current === i} />
             ) : s.id === 'concept' ? (
