@@ -13,10 +13,11 @@ export default function Section({ id, eyebrow, headline, sub, children }) {
       id={id}
       className="vx-shell vx-section"
       style={{
-        minHeight: '100dvh',
+        // **세로 중앙 정렬을 걷어냈다.** 100dvh를 통으로 잡고 콘텐츠를 중앙에 놓으면
+        // 헤더 아래부터 콘텐츠까지 화면 위 3분의 1이 텅 빈다. 이제 콘텐츠 높이에 맞춰
+        // 자연히 흐르고 위아래 간격은 `.vx-section`의 section-gap이 진다(상단 기준 배치).
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
         gap: spacing.unit * 3,
       }}
     >

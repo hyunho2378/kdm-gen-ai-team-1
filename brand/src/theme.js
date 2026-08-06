@@ -26,8 +26,10 @@ export function applyThemeVars(root = document.documentElement) {
     // 세로 리듬. 섹션 간격도 한 곳에서 나온다
     '--section-gap': spacing.section,
     '--header-h': `${HEADER_H}px`,
-    // 하위 페이지 상단. 섹션 간격에 헤더 높이를 더한 값이라 계산을 페이지가 하지 않는다
-    '--page-top': `calc(${spacing.section} + ${HEADER_H}px)`,
+    // 하위 페이지 콘텐츠 상단. **헤더 바로 아래 완만한 거리**에서 시작한다.
+    // 예전에는 `섹션 간격 + 헤더`(최대 228px)라 헤더와 제목 사이가 통째로 비었다(화면 위 3분의 1).
+    // 이제 헤더 높이에 8pt 격자의 완만한 gap(clamp 24~48px)만 더해 콘텐츠가 위로 붙는다.
+    '--page-top': `calc(${HEADER_H}px + clamp(1.5rem, 1rem + 2vw, 3rem))`,
 
     // 커서는 토스트보다도 위다. 화면의 어떤 것도 커서를 가리면 안 된다
     '--z-cursor': String(zIndex.toast + 10),

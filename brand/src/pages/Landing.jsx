@@ -77,7 +77,10 @@ function HeroSection() {
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        // **워드마크를 화면 정중앙이 아니라 상단 기준으로 올린다.** 중앙 정렬은 헤더 아래로
+        // 위 여백이 크게 비었다. 히어로만 100dvh를 유지(궤적이 화면을 채운다)하되 콘텐츠는
+        // 위쪽(섹션 상단 여백 아래)에서 시작해 위 빈 공간을 줄인다.
+        justifyContent: 'flex-start',
       }}
     >
       {/* 배경은 순흑이다. 깔던 레드 글로우를 걷어냈다. 빛나는 것은 궤적뿐이다 */}
