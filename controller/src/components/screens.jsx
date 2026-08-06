@@ -21,16 +21,30 @@ const CONNECTING_TEXT = {
 
 /**
  * CONNECT(구 JOIN). 두 모드다.
- * - 코드 입력: 네이티브 input 대신 칸 4개 + 자체 키패드(PITFALLS 네이티브 UI 노출, 혼동 문자 제외).
+ * - 코드 입력: 칸 4개 표시 + **폰 기본 키보드**. 칸 위에 투명 input을 덮어
+ *   탭하면 iOS/안드로이드 시스템 키보드가 뜬다.
  * - 접속 중/실패: 스피너(연결 중) 또는 평문 에러 + 재시도(무한 스피너 금지 N9, N1 상태 가시성).
  *   paired가 되면 App이 SELECT로 넘긴다.
+ *
+ * **자체 키패드를 걷어냈다.** 알파벳 32칸 그리드가 실기에서 코드를 찾기 어려웠다.
+ * PITFALLS의 네이티브 UI 금지는 `select`와 `date`처럼 OS 위젯이 통째로 뜨는 것을 말하고
+ * 텍스트 입력은 그 대상이 아니다. 혼동 문자(0/O, 1/I) 배제는 입력 필터가 그대로 이어받는다.
  */
 export function ConnectScreen({ initialCode, onDone, onBack, connecting, linkStatus, linkError, onRetry, onCancel }) {
   const [code, setCode] = useState(initialCode ?? '');
-  const boxRef = useRef(null);
+  const inputRef = useRef(null);
 
   const ok = code.length === CODE_LEN;
-  const push = (ch) => setCode((c) => (c.length >= CODE_LEN ? c : c + ch));
+  // 대문자로 올리고 혼동 문자를 걸러 4자리까지만 받는다. 키패드가 하던 일이다
+  const onInput = (e) =>
+    setCode(
+      e.target.value
+        .toUpperCase()
+        .split('')
+        .filter((ch) => ALPHABET.includes(ch))
+        .slice(0, CODE_LEN)
+        .join('')
+    );
 
   // 접속 진행/실패 모드. 코드 입력 위에 덮지 않고 화면을 통째로 바꾼다(한 화면 한 초점).
   if (connecting) {
@@ -67,74 +81,72 @@ export function ConnectScreen({ initialCode, onDone, onBack, connecting, linkSta
       <Title>세션 코드</Title>
       <Body>arena 화면의 QR을 찍으면 코드가 자동으로 들어온다. 직접 입력해도 된다.</Body>
 
-      {/* 코드 칸 4개. 탭하면 숨은 입력이 아니라 아래 키패드로 넣는다 */}
-      <div ref={boxRef} style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-        {Array.from({ length: CODE_LEN }, (_, i) => (
-          <div
-            key={i}
-            style={{
-              width: 56,
-              height: 68,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: radius.md,
-              background: colors.bg.raised,
-              border: `1px solid ${code.length === i ? colors.red.light : colors.line.default}`,
-              fontFamily: typography.family,
-              fontSize: typography.heading.size,
-              fontWeight: 700,
-              color: colors.text.primary,
-            }}
-          >
-            {code[i] ?? ''}
-          </div>
-        ))}
+      {/* 코드 칸 4개 + 그 위를 덮는 투명 input. 칸을 탭하면 시스템 키보드가 뜬다 */}
+      <div style={{ position: 'relative', marginTop: 4 }}>
+        <div aria-hidden="true" style={{ display: 'flex', gap: 10 }}>
+          {Array.from({ length: CODE_LEN }, (_, i) => (
+            <div
+              key={i}
+              style={{
+                width: 56,
+                height: 68,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: radius.md,
+                background: colors.bg.raised,
+                border: `1px solid ${code.length === i ? colors.red.light : colors.line.default}`,
+                fontFamily: typography.family,
+                fontSize: typography.heading.size,
+                fontWeight: 700,
+                color: colors.text.primary,
+              }}
+            >
+              {code[i] ?? ''}
+            </div>
+          ))}
+        </div>
+        <input
+          ref={inputRef}
+          type="text"
+          value={code}
+          onChange={onInput}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && ok) onDone(code);
+          }}
+          autoCapitalize="characters"
+          autoCorrect="off"
+          autoComplete="off"
+          spellCheck={false}
+          maxLength={CODE_LEN}
+          aria-label={`세션 코드 ${CODE_LEN}자리`}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            margin: 0,
+            padding: 0,
+            border: 0,
+            background: 'transparent',
+            // 글자는 뒤 칸이 그린다. 여기 텍스트와 커서는 감춘다
+            opacity: 0,
+            color: 'transparent',
+            caretColor: 'transparent',
+            // **16px 아래로 내리지 마라.** iOS는 그보다 작은 입력에 초점이 가면 화면을 확대한다
+            fontSize: 16,
+          }}
+        />
       </div>
 
-      {/* 자체 키패드. 자동 대문자이고 혼동 문자가 없다 */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(8, 1fr)',
-          gap: 6,
-          width: '100%',
-          maxWidth: 360,
-          marginTop: 8,
-        }}
+      <ButtonPrimary
+        onClick={() => ok && onDone(code)}
+        style={{ opacity: ok ? 1 : 0.45, marginTop: 4 }}
+        aria-disabled={!ok}
       >
-        {ALPHABET.split('').map((ch) => (
-          <button
-            key={ch}
-            type="button"
-            onClick={() => push(ch)}
-            style={{
-              minHeight: 44,
-              borderRadius: radius.sm,
-              border: `1px solid ${colors.line.default}`,
-              background: 'transparent',
-              color: colors.text.primary,
-              fontFamily: typography.family,
-              fontSize: typography.body.size,
-              touchAction: 'manipulation',
-            }}
-          >
-            {ch}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-        <ButtonGhost onClick={() => setCode((c) => c.slice(0, -1))}>지우기</ButtonGhost>
-        <ButtonPrimary
-          onClick={() => ok && onDone(code)}
-          style={{ opacity: ok ? 1 : 0.45 }}
-          aria-disabled={!ok}
-        >
-          다음
-        </ButtonPrimary>
-      </div>
-      <Body tone={colors.text.dim}>다음을 누르면 그 방으로 접속한다.</Body>
+        다음
+      </ButtonPrimary>
+      <Body tone={colors.text.dim}>칸을 탭하면 키보드가 뜬다. 네 자리를 채우면 그 방으로 접속한다.</Body>
     </Screen>
     </>
   );
