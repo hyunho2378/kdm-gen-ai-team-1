@@ -175,12 +175,17 @@ Pretendard Variable 단일. fallback은 -apple-system, BlinkMacSystemFont, sans-
 |---|---|---|
 | 불릿 원 | red.light 채움 6~8px | **없음** |
 | 크기 | caption 0.8125rem (13px) | **eyebrow 1.3125rem (21px), +8px** |
-| weight | 600 | 600 유지 |
+| weight | 600 | **700** (대비 요건, 아래) |
 | 스택 | 영문 위 국문 아래 | 유지 |
 | 색 | 영문 red.light, 국문 text.dim | 유지(카드 안처럼 조용해야 하는 자리는 plain 톤) |
 
 **원이 지던 존재감을 크기가 대신 진다.** 크기는 `shared/tokens.js`의 `typography.eyebrow`가
 쥐고 컴포넌트가 그 값을 읽는다. rem이라 사용자 글자 크기 설정을 그대로 따른다.
+
+**weight를 600에서 700으로 개정한다. 사유는 대비다.** 아이브로우 영문은 red.light이고 그 색은
+bg.base 위 4.02:1이다(2절). WCAG 대형 기준은 24px 이상이거나 **18.66px 이상이면서 굵기 700 이상**이라,
+21px라도 굵기 600은 대형으로 안 쳐서 본문 기준 4.5:1을 요구받고 **0.48 모자랐다**(R4 실측).
+700으로 올리면 21px가 대형에 들어 기준이 3.0이 되어 통과한다. 굵기를 낮추면 그 순간 미달로 돌아간다.
 
 **brand와 presentation-v2 둘 다 적용한다.** presentation-v2는 자체 tokens를 쓰므로
 별도 트랙(P1)에서 같은 값을 넣는다. brand 세션은 그 폴더를 건드리지 않는다.
