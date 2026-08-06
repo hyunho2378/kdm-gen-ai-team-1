@@ -25,7 +25,7 @@ import { useEffect, useRef, useState } from 'react';
 import { colors, typography, motion, grid } from '../tokens.js';
 import { DUELIST, DUELIST_STYLES } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { Eyebrow, Badge, StepDots } from '../components/Bits.jsx';
+import { SlideHeader, Badge, StepDots } from '../components/Bits.jsx';
 
 const N = DUELIST_STYLES.length;
 const STATES = N * 2; // 0 인트로 + (전진, 복귀) x 3 → 마지막 복귀는 없으므로 0~5
@@ -115,44 +115,17 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
           pointerEvents: 'none',
         }}
       >
-        <Eyebrow en={DUELIST.label.en} ko={DUELIST.label.ko} />
-        <div
-          style={{
+        {/* 공용 2단 헤더. 포커스 상태에서는 우측 열(헤드라인/서브)만 물리고 아이브로우는 남는다. */}
+        <SlideHeader
+          eyebrow={{ en: DUELIST.label.en, ko: DUELIST.label.ko }}
+          headline={DUELIST.headline}
+          sub={DUELIST.sub}
+          rightStyle={{
             opacity: focused ? 0 : 1,
             transform: focused ? 'translateY(-8px)' : 'translateY(0)',
             transition: `opacity ${dur}ms ease, transform ${dur}ms ${EASE}`,
           }}
-        >
-          <h2
-            style={{
-              margin: 'clamp(12px, 1.9vh, 24px) 0 0',
-              fontFamily: typography.family,
-              fontSize: typography.headline.size,
-              fontWeight: typography.headline.weight,
-              letterSpacing: typography.headline.tracking,
-              lineHeight: typography.headline.leading,
-              color: colors.text.primary,
-            }}
-          >
-            {DUELIST.headline}
-          </h2>
-          <div style={{ marginTop: 'clamp(10px, 1.7vh, 22px)' }}>
-            {DUELIST.sub.map((line) => (
-              <div
-                key={line}
-                style={{
-                  fontFamily: typography.family,
-                  fontSize: typography.body.size,
-                  fontWeight: typography.body.weight,
-                  lineHeight: typography.body.leading,
-                  color: colors.text.secondary,
-                }}
-              >
-                {line}
-              </div>
-            ))}
-          </div>
-        </div>
+        />
       </div>
 
       {/* 카드 3장. 인트로는 가로 일렬, 포커스 상태는 한 장이 좌측으로 나오고 나머지는 blur로 물러난다. */}

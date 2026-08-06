@@ -14,99 +14,61 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, grid, inkA } from '../tokens.js';
+import { colors, motion, grid, inkA } from '../tokens.js';
 import { PROLOGUE } from '../copy.js';
-import { Eyebrow } from '../components/Bits.jsx';
+import { SlideHeader } from '../components/Bits.jsx';
 
 export default function SPrologue({ active }) {
-  const labelRef = useRef(null);
-  const lineRefs = useRef([]);
+  const headRef = useRef(null);
 
   useEffect(() => {
     if (!active) return undefined;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const label = labelRef.current;
-    const lines = lineRefs.current.filter(Boolean);
-    if (!label) return undefined;
+    const head = headRef.current;
+    if (!head) return undefined;
 
     if (reduced) {
-      gsap.set([label, ...lines], { opacity: 1, y: 0 });
+      gsap.set(head, { opacity: 1, y: 0 });
       return undefined;
     }
 
-    gsap.set(label, { opacity: 0, y: 14 });
-    gsap.set(lines, { opacity: 0, y: 26 });
+    gsap.set(head, { opacity: 0, y: 20 });
     // 셸의 섹션 이동이 1초다. 지연이 없으면 착지 전에 연출이 끝난다.
     const tl = gsap.timeline({ delay: 0.45 });
-    tl.to(label, { opacity: 1, y: 0, duration: 0.6, ease: motion.gsapOut });
-    tl.to(lines, { opacity: 1, y: 0, duration: 0.85, ease: motion.gsapOut, stagger: 0.16 }, 0.15);
+    tl.to(head, { opacity: 1, y: 0, duration: 0.85, ease: motion.gsapOut });
 
     return () => {
       tl.kill();
     };
   }, [active]);
 
+  // 강조 조각만 밝고 굵게(위치는 copy.js). 2단 헤더의 우측 열 헤드라인으로 얹는다.
+  const statement = PROLOGUE.body.map((segs, li) => (
+    <span key={li} style={{ display: 'block', marginTop: li === 0 ? 0 : '0.5em' }}>
+      {segs.map((sg, si) => (
+        <span key={si} style={{ fontWeight: sg.b ? 700 : 400, color: sg.b ? colors.text.primary : inkA(0.55) }}>
+          {sg.t}
+        </span>
+      ))}
+    </span>
+  ));
+
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* 좌상단 라벨. 전역 그리드에 맞춰 아이브로우를 좌상단 고정(전 슬라이드 같은 자리). */}
+      {/* 공용 2단 헤더. 아이브로우 좌, 진술문을 우측 열 헤드라인으로. 전역 그리드 좌상단. */}
       <div
-        ref={labelRef}
+        ref={headRef}
         style={{
           position: 'absolute',
           left: grid.marginX,
+          right: grid.marginX,
           top: grid.marginTop,
           zIndex: 3,
           opacity: 0,
           pointerEvents: 'none',
         }}
       >
-        <Eyebrow en={PROLOGUE.label} />
-      </div>
-
-      {/* 본문 2줄. 원본대로 가운데 정렬. */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: '52%',
-          transform: 'translateY(-50%)',
-          zIndex: 3,
-          padding: '0 clamp(20px, 6vw, 150px)',
-          textAlign: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        {PROLOGUE.body.map((segs, li) => (
-          <p
-            key={li}
-            ref={(el) => {
-              lineRefs.current[li] = el;
-            }}
-            style={{
-              margin: li === 0 ? 0 : 'clamp(10px, 2.2vh, 28px) 0 0',
-              opacity: 0,
-              fontFamily: typography.family,
-              fontSize: typography.headline.size,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.55,
-              willChange: 'transform, opacity',
-            }}
-          >
-            {/* 강조 조각만 밝고 굵게. 위치는 copy.js가 쥔다. */}
-            {segs.map((sg, si) => (
-              <span
-                key={si}
-                style={{
-                  fontWeight: sg.b ? 700 : 400,
-                  color: sg.b ? colors.text.primary : inkA(0.55),
-                }}
-              >
-                {sg.t}
-              </span>
-            ))}
-          </p>
-        ))}
+        <SlideHeader eyebrow={{ en: PROLOGUE.label }} headline={statement} />
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { colors, typography, motion, grid, inkA } from '../tokens.js';
 import { TARGET, TARGET_ITEMS } from '../copy.js';
-import { Eyebrow, GlassRim } from '../components/Bits.jsx';
+import { SlideHeader, GlassRim } from '../components/Bits.jsx';
 
 export default function S3Target({ active }) {
   const headRef = useRef(null);
@@ -43,7 +43,7 @@ export default function S3Target({ active }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* 상단 좌측: 라벨과 헤드라인. 전역 그리드에 정렬(아이브로우 좌상단 고정). */}
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 우). 전역 그리드 좌상단에 절대배치. */}
       <div
         ref={headRef}
         style={{
@@ -55,20 +55,7 @@ export default function S3Target({ active }) {
           pointerEvents: 'none',
         }}
       >
-        <Eyebrow en={TARGET.label.en} ko={TARGET.label.ko} />
-        <h2
-          style={{
-            margin: 'clamp(12px, 1.9vh, 24px) 0 0',
-            fontFamily: typography.family,
-            fontSize: typography.headline.size,
-            fontWeight: typography.headline.weight,
-            letterSpacing: typography.headline.tracking,
-            lineHeight: typography.headline.leading,
-            color: colors.text.primary,
-          }}
-        >
-          {TARGET.headline}
-        </h2>
+        <SlideHeader eyebrow={{ en: TARGET.label.en, ko: TARGET.label.ko }} headline={TARGET.headline} />
       </div>
 
       {/* 원 3개. 원본 지름 462.7 / 1920 = 24.1vw, 중심 y 655.8 / 1080 = 60.7vh */}

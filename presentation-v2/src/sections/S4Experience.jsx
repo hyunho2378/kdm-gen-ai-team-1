@@ -20,7 +20,7 @@ import gsap from 'gsap';
 import { Footprints, PersonStanding, Swords, Brain } from 'lucide-react';
 import { colors, typography, motion, grid, inkA } from '../tokens.js';
 import { EXPERIENCE, INTERACTIONS } from '../copy.js';
-import { Eyebrow } from '../components/Bits.jsx';
+import { SlideHeader } from '../components/Bits.jsx';
 
 // copy.js가 아이콘을 이름으로 지정한다. 이름 → 컴포넌트 매핑은 여기 한 곳.
 const ICONS = { Footprints, PersonStanding, Swords, Brain };
@@ -76,22 +76,9 @@ export default function S4Experience({ active }) {
         padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
-      {/* 상단 좌측: 라벨과 헤드라인 */}
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 우). */}
       <div ref={headRef} style={{ flexShrink: 0, opacity: 0 }}>
-        <Eyebrow en={EXPERIENCE.label.en} ko={EXPERIENCE.label.ko} />
-        <h2
-          style={{
-            margin: 'clamp(12px, 1.9vh, 24px) 0 0',
-            fontFamily: typography.family,
-            fontSize: typography.headline.size,
-            fontWeight: typography.headline.weight,
-            letterSpacing: typography.headline.tracking,
-            lineHeight: typography.headline.leading,
-            color: colors.text.primary,
-          }}
-        >
-          {EXPERIENCE.headline}
-        </h2>
+        <SlideHeader eyebrow={{ en: EXPERIENCE.label.en, ko: EXPERIENCE.label.ko }} headline={EXPERIENCE.headline} />
       </div>
 
       {/* 4열 카드. 아주 좁은 폭에서는 2x2로 접힌다. */}

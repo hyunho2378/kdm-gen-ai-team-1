@@ -13,7 +13,7 @@ import gsap from 'gsap';
 import { colors, typography, motion, grid, bgA } from '../tokens.js';
 import { NAMING, TITLE } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { Eyebrow } from '../components/Bits.jsx';
+import { SlideHeader } from '../components/Bits.jsx';
 
 export default function S5Naming({ active }) {
   const headRef = useRef(null);
@@ -48,7 +48,7 @@ export default function S5Naming({ active }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* 상단: 좌측 라벨 2줄 + 우측 헤드라인과 서브. 전역 그리드 마진에 정렬(아이브로우 좌상단). */}
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인+서브 우). 전역 그리드 좌상단에 절대배치. */}
       <div
         ref={headRef}
         style={{
@@ -57,43 +57,14 @@ export default function S5Naming({ active }) {
           right: grid.marginX,
           top: grid.marginTop,
           zIndex: 4,
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 'clamp(16px, 4vw, 96px)',
           pointerEvents: 'none',
         }}
       >
-        <div style={{ flex: '0 0 auto' }}>
-          <Eyebrow en={NAMING.label.en} ko={NAMING.label.ko} />
-        </div>
-
-        <div style={{ flex: '1 1 auto', minWidth: 0 }}>
-          <h2
-            style={{
-              margin: 0,
-              fontFamily: typography.family,
-              fontSize: typography.headline.size,
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.5,
-              color: colors.text.primary,
-            }}
-          >
-            {NAMING.headline}
-          </h2>
-          <p
-            style={{
-              margin: 'clamp(6px, 1vh, 12px) 0 0',
-              fontFamily: typography.family,
-              fontSize: typography.body.size,
-              fontWeight: 400,
-              lineHeight: 1.65,
-              color: colors.text.secondary,
-            }}
-          >
-            {NAMING.sub}
-          </p>
-        </div>
+        <SlideHeader
+          eyebrow={{ en: NAMING.label.en, ko: NAMING.label.ko }}
+          headline={NAMING.headline}
+          sub={NAMING.sub}
+        />
       </div>
 
       {/* 중앙 대형 워드마크. 원본은 얇은 획이라 weight를 낮게 잡는다. */}

@@ -64,6 +64,64 @@ export function Eyebrow({ en, ko, tone = colors.text.primary }) {
   );
 }
 
+/**
+ * **전 슬라이드 공용 2단 헤더(PV3).** 컬러 시스템 슬라이드 구조를 그대로 옮긴 단일 틀이다.
+ * 좌측 열에 아이브로우(auto 폭), 우측 열에 헤드라인+서브. 두 열 top 정렬, gap는 컬러 시스템 실측값.
+ * **콘텐츠는 이 헤더 아래(또는 섹션이 절대배치로) 흐른다.** 슬라이드마다 헤더를 다시 짜지 않는다.
+ *
+ * @param {{en:string, ko?:string, tone?:string}} eyebrow 아이브로우 라벨
+ * @param {string|string[]|React.ReactNode} headline 헤드라인. 문자열/배열이면 줄 단위, 노드면 그대로
+ * @param {string|string[]} [sub] 서브 문장(들)
+ * @param {string} [headlineColor] 헤드라인 색(기본 잉크)
+ * @param {object} [rightStyle] 우측 열에 얹는 스타일(유파 포커스 페이드 등)
+ */
+export function SlideHeader({ eyebrow, headline, sub, headlineColor = colors.text.primary, rightStyle }) {
+  const isText = typeof headline === 'string' || (Array.isArray(headline) && headline.every((h) => typeof h === 'string'));
+  const headNode = isText
+    ? (Array.isArray(headline) ? headline : [headline]).map((h, i) => (
+        <span key={i} style={{ display: 'block' }}>{h}</span>
+      ))
+    : headline;
+  const subs = sub == null ? [] : Array.isArray(sub) ? sub : [sub];
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(16px, 4vw, 96px)', flexShrink: 0 }}>
+      <div style={{ flex: '0 0 auto' }}>
+        <Eyebrow en={eyebrow.en} ko={eyebrow.ko} tone={eyebrow.tone} />
+      </div>
+      <div style={{ flex: '1 1 auto', minWidth: 0, ...rightStyle }}>
+        <h2
+          style={{
+            margin: 0,
+            fontFamily: typography.family,
+            fontSize: typography.headline.size,
+            fontWeight: typography.headline.weight,
+            letterSpacing: typography.headline.tracking,
+            lineHeight: 1.5,
+            color: headlineColor,
+          }}
+        >
+          {headNode}
+        </h2>
+        {subs.map((line, i) => (
+          <p
+            key={i}
+            style={{
+              margin: 'clamp(6px, 1vh, 12px) 0 0',
+              fontFamily: typography.family,
+              fontSize: typography.body.size,
+              fontWeight: typography.body.weight,
+              lineHeight: typography.body.leading,
+              color: colors.text.secondary,
+            }}
+          >
+            {line}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Badge({ text, filled }) {
   return (
     <span

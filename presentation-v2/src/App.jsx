@@ -6,8 +6,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Observer } from 'gsap/Observer';
 import Lenis from 'lenis';
-import { colors } from './tokens.js';
-import { SECTION_LABELS, PLACEHOLDER_SUFFIX } from './copy.js';
+import { colors, grid } from './tokens.js';
+import { SECTION_LABELS } from './copy.js';
+import { SlideHeader } from './components/Bits.jsx';
 import S1Cover from './sections/S1Cover.jsx';
 import SPrologue from './sections/SPrologue.jsx';
 import SPainPoint from './sections/SPainPoint.jsx';
@@ -187,49 +188,23 @@ export default function App() {
             ) : s.id === 'demo' ? (
               <S7Demo active={current === i} />
             ) : (
+              // 아직 안 채운 섹션(워크플로우, 산출물). 공용 2단 헤더 틀에 맞춰 아이브로우 좌상단 +
+              // 우측 열에 옅은 "콘텐츠 확정 예정"만. 채워지면 전용 섹션 컴포넌트로 교체한다.
               <div
                 style={{
                   position: 'absolute',
                   inset: 0,
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 12,
-                  // 아직 채우지 않은 섹션임을 드러내는 은은한 경계
+                  padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
                   boxShadow: `inset 0 0 0 1px ${colors.line.hairline}`,
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 'clamp(4rem, 18vh, 12rem)',
-                    fontWeight: 800,
-                    letterSpacing: '-0.04em',
-                    lineHeight: 1,
-                    color: colors.line.default,
-                  }}
-                >
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span
-                  style={{
-                    fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
-                    fontWeight: 600,
-                    letterSpacing: '0.02em',
-                    color: colors.text.secondary,
-                  }}
-                >
-                  {s.ko}
-                </span>
-                <span
-                  style={{
-                    fontSize: '0.8125rem',
-                    letterSpacing: '0.24em',
-                    color: colors.text.faint,
-                  }}
-                >
-                  {`${s.en}  ${PLACEHOLDER_SUFFIX}`}
-                </span>
+                <SlideHeader
+                  eyebrow={{ en: s.en, ko: s.ko }}
+                  headline="콘텐츠 확정 예정"
+                  headlineColor={colors.text.faint}
+                />
               </div>
             )}
           </section>

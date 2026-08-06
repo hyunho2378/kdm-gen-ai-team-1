@@ -23,7 +23,7 @@ import gsap from 'gsap';
 import { colors, typography, motion, grid, inkA, bgA } from '../tokens.js';
 import { KEYWORD, KEYWORDS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { Eyebrow, GlassRim, StepDots } from '../components/Bits.jsx';
+import { SlideHeader, GlassRim, StepDots } from '../components/Bits.jsx';
 
 const CAPTION = {
   fontFamily: typography.family,
@@ -139,50 +139,13 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
         padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
-      {/* 상단: 좌측 라벨 2줄 + 우측 헤드라인과 본문 */}
-      <div
-        ref={headRef}
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 'clamp(16px, 4vw, 96px)',
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ flex: '0 0 auto', minWidth: 0 }}>
-          <Eyebrow en={KEYWORD.label.en} ko={KEYWORD.label.ko} />
-        </div>
-
-        <div style={{ flex: '1 1 auto', minWidth: 0 }}>
-          <h2
-            style={{
-              margin: 0,
-              fontFamily: typography.family,
-              fontSize: typography.headline.size,
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.5,
-              color: colors.text.primary,
-            }}
-          >
-            {KEYWORD.headline}
-          </h2>
-          {KEYWORD.body.map((line) => (
-            <p
-              key={line}
-              style={{
-                margin: 'clamp(6px, 1vh, 12px) 0 0',
-                fontFamily: typography.family,
-                fontSize: typography.body.size,
-                fontWeight: 400,
-                lineHeight: 1.65,
-                color: colors.text.secondary,
-              }}
-            >
-              {line}
-            </p>
-          ))}
-        </div>
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인+본문 우). */}
+      <div ref={headRef} style={{ flexShrink: 0 }}>
+        <SlideHeader
+          eyebrow={{ en: KEYWORD.label.en, ko: KEYWORD.label.ko }}
+          headline={KEYWORD.headline}
+          sub={KEYWORD.body}
+        />
       </div>
 
       {/* 카드 3장. 원본 카드 h 624 / 1080 = 57.8vh, rx 20 */}

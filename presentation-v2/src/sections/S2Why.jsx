@@ -13,7 +13,7 @@ import gsap from 'gsap';
 import { colors, typography, motion, grid, inkA, bgA } from '../tokens.js';
 import { WHY } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { Eyebrow, Badge, StepDots } from '../components/Bits.jsx';
+import { SlideHeader, Badge, StepDots } from '../components/Bits.jsx';
 
 const STEPS = 1; // 단계 0과 1
 
@@ -171,34 +171,18 @@ export default function S2Why({ registerHandler, registerEnter }) {
         }}
       />
 
-      {/* 상단 좌측: 라벨과 헤드라인 2줄. 아이브로우는 전역 그리드 좌상단. */}
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 2줄 우). 전역 그리드 좌상단. */}
       <div
         style={{
           position: 'absolute',
           left: grid.marginX,
+          right: grid.marginX,
           top: grid.marginTop,
           zIndex: 6,
           pointerEvents: 'none',
         }}
       >
-        <Eyebrow en={WHY.label.en} ko={WHY.label.ko} />
-        <div style={{ marginTop: 'clamp(12px, 1.8vh, 22px)' }}>
-          {WHY.headline.map((line) => (
-            <div
-              key={line}
-              style={{
-                fontFamily: typography.family,
-                fontSize: typography.headline.size,
-                fontWeight: typography.headline.weight,
-                letterSpacing: typography.headline.tracking,
-                lineHeight: typography.headline.leading,
-                color: colors.text.primary,
-              }}
-            >
-              {line}
-            </div>
-          ))}
-        </div>
+        <SlideHeader eyebrow={{ en: WHY.label.en, ko: WHY.label.ko }} headline={WHY.headline} />
       </div>
 
       {/* 하단 배지와 캡션. 단계 0에서는 화면 하단 중앙, 단계 1에서는 각 패널 아래. */}
