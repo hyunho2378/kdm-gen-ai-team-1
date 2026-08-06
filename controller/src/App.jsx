@@ -1,5 +1,5 @@
-// controller 루트 = VORTEX 폰 앱. 화면 상태 머신 HOME → CONNECT → SELECT → PERMISSION →
-// CALIBRATION → PLAY → RESULT. 강릉페이 시스템 이식(ScreenContainer 프레임 + HIG).
+// controller 루트 = VORTEX 폰 앱. 화면 상태 머신 SPLASH → HOME → CONNECT → SELECT →
+// PERMISSION → CALIBRATION → PLAY → RESULT. 강릉페이 시스템 이식(ScreenContainer 프레임 + HIG).
 //
 // **센서(C2)와 소켓(C3) 로직은 무변경이다.** 아래 pipeline/link 배선과 핸들러는 그대로 옮겨 왔고,
 // 화면 계층(phase 순서, HOME/SELECT/RESULT 신설, ScreenContainer 래핑)만 확장했다.
@@ -23,6 +23,7 @@ import DebugPanel, { debugEnabled } from './components/DebugPanel.jsx';
 import ScreenContainer from './layout/ScreenContainer.jsx';
 import CoachMarkOverlay from './components/common/CoachMarkOverlay.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
+import SplashScreen from './components/SplashScreen.jsx';
 import SelectScreen from './components/SelectScreen.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
 import { PLAY_COACH } from './copy.js';
@@ -37,7 +38,9 @@ import {
 } from './components/screens.jsx';
 
 // 화면 순서. HANDOVER 3절 앱 화면 흐름 그대로다.
+// SPLASH는 세션 첫 진입 1회다. 여기로 되돌아오는 경로가 없어서 BACK_OF에도 없다.
 const PHASE = {
+  SPLASH: 'SPLASH',
   HOME: 'HOME',
   CONNECT: 'CONNECT',
   SELECT: 'SELECT',
@@ -116,7 +119,7 @@ export default function App() {
     return v ? v.toUpperCase().slice(0, 4) : '';
   }, []);
 
-  const [phase, setPhase] = useState(PHASE.HOME);
+  const [phase, setPhase] = useState(PHASE.SPLASH);
   const [code, setCode] = useState(roomFromUrl);
   const [connecting, setConnecting] = useState(false);
   const [denied, setDenied] = useState(false);
@@ -312,10 +315,17 @@ export default function App() {
     setPhase((p) => BACK_OF[p] ?? p);
   }, []);
 
+  // **정체성이 고정돼야 한다.** 인라인 화살표로 넘기면 App이 다시 그려질 때마다
+  // SplashScreen의 효과가 재실행되어 대기 타이머가 매번 처음부터 다시 시작한다.
+  // 연결 로그 하나만 들어와도 스플래시가 안 끝나게 된다
+  const splashDone = useCallback(() => setPhase(PHASE.HOME), []);
+
   return (
     <>
       {/* statusBarBg 미지정 → colors.bg.base 기본. 다크 배경이라 light 스테이터스바. */}
       <ScreenContainer statusBarLight>
+        {phase === PHASE.SPLASH ? <SplashScreen onDone={splashDone} /> : null}
+
         {phase === PHASE.HOME ? <HomeScreen onGuest={onGuest} /> : null}
 
         {phase === PHASE.CONNECT ? (
