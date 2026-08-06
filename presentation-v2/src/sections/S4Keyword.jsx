@@ -119,12 +119,32 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
         padding: `${grid.marginTop} ${grid.marginX} ${grid.marginBottom}`,
       }}
     >
-      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 + 본문 2줄 우). 본문은 레귤러. */}
+      {/* 상단: 공용 2단 헤더(아이브로우 좌 | 헤드라인 + 큰 줄 + 본문 우).
+          큰 줄(lead)은 헤드라인 크기 semibold, 본문은 레귤러에 b:true 조각만 볼드(SUIT wght 축). */}
       <div ref={headRef} style={{ flexShrink: 0 }}>
         <SlideHeader
           eyebrow={{ en: KEYWORD.label.en, ko: KEYWORD.label.ko }}
           headline={KEYWORD.headline}
-          sub={KEYWORD.body}
+          sub={[
+            <span
+              key="lead"
+              style={{
+                display: 'block',
+                fontSize: typography.headline.size,
+                fontWeight: 600,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.45,
+                color: colors.text.primary,
+              }}
+            >
+              {KEYWORD.lead}
+            </span>,
+            <span key="body">
+              {KEYWORD.body.map((seg, i) => (
+                <span key={i} style={{ fontWeight: seg.b ? 700 : 400 }}>{seg.t}</span>
+              ))}
+            </span>,
+          ]}
         />
       </div>
 

@@ -88,6 +88,13 @@ export const brandGradient =
 // 위 그라디언트의 스톱을 순서대로. 컬러 시스템의 Color1~4 라벨이 이 배열에서 값을 읽는다.
 export const brandGradientStops = [colors.white, colors.red, colors.redDeep, colors.black];
 
+// **새 색 체계(컬러 시스템 견본 전용). 브랜딩 네이비 / 브랜딩 실버 두 그라디언트.**
+// 이 슬라이드는 색 견본이 내용이라 여기서만 네이비/실버가 보인다(전역 라이트 규칙과 별개).
+export const brandNavyGradient = 'linear-gradient(150deg, #101925 0%, #3C5E8B 100%)';
+export const brandNavyStops = ['#101925', '#3C5E8B'];
+export const brandSilverGradient = 'linear-gradient(150deg, #FDFDFD 0%, #C4C4C4 100%)';
+export const brandSilverStops = ['#FDFDFD', '#C4C4C4'];
+
 /** '#E60D15' → '230, 13, 21'. 컬러 시스템이 RGB 표기를 토큰에서 유도하게 하는 유일한 통로. */
 export const hexToRgbText = (hex) => {
   const h = hex.replace('#', '');
