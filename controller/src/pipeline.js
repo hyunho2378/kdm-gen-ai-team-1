@@ -20,8 +20,10 @@ export const CALIB_MS = 3000;
 export const STEP = { ADVANCE: 'advance', RETREAT: 'retreat' };
 
 export function createPipeline() {
-  const motion = createMotion();
   const orientation = createOrientation();
+  // **가드는 자세가 낸다.** 자이로가 아는 값을 가속 쪽에 물려 준다(motion.js의 readTilt).
+  // orientation을 먼저 세워야 하는 이유가 이 한 줄이다.
+  const motion = createMotion({ readTilt: () => orientation.tilt() });
   const wake = createWakeLock();
 
   // 캘리브레이션 중 관측한 정지 노이즈. 개인 임계의 근거다
@@ -84,7 +86,7 @@ export function createPipeline() {
      */
     endCalibration() {
       sampling = false;
-      motion.setBaseline();
+      // 기준 자세는 한 곳에서만 잡는다. 가드가 자세로 옮겨 가면서 가속 쪽 기준은 필요 없어졌다
       orientation.setBaseline();
       const suggested = Math.max(motion.getConfig().thrust, noisePeak * 2.4);
       motion.setThreshold(suggested);
@@ -131,9 +133,6 @@ export function createPipeline() {
     },
     getConfig() {
       return motion.getConfig();
-    },
-    getPose() {
-      return orientation.read();
     },
     /** 캘리브레이션 기준 자세. MSG.CALIB이 싣는 값이다. */
     getBaseline() {

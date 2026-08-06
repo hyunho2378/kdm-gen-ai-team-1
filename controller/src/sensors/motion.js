@@ -5,6 +5,11 @@
 // 폰에서 이미 둘을 갈라 보내므로 arena가 연속 스트림에서 THRUST를 재추론할 필요가 없다.
 // 그래서 **여기 감지 품질이 곧 판정 품질**이다.
 //
+// ── 두 이산 이벤트가 서로 다른 것을 본다 ────────────────────────────────────
+// **찌르기는 가속이 내고 가드는 자세가 낸다.** 축도 다르다(앞뒤 대 좌우).
+// 하나가 다른 하나의 궤적에 얹히면 두 동작이 같은 구간에서 싸우므로 소스부터 갈라 둔다.
+// 자세는 자이로가 아는 것이라 여기서 만들지 않고 orientation.js가 준 것을 받아 쓴다.
+//
 // ── 전방 축을 하드코딩하지 않는 이유 ────────────────────────────────────────
 // DeviceMotion 가속도는 기기 좌표계다. 폰을 검처럼 쥐었을 때 "전방"이 +y인지 -z인지는
 // 파지법과 기기와 브라우저마다 다르다. 상수로 박으면 반드시 어딘가에서 틀린다.
@@ -14,21 +19,29 @@
 //   - 폰 고쳐잡기는 크기가 작고 지속이 짧아 최소 지속 필터에 걸린다
 // 이러면 어떤 파지법에서도 같은 규칙이 돈다.
 
+import { nextGuard } from '../../../shared/pose.js';
+
 const G = 9.80665;
+
+/** 최근 최대 수평 가속을 붙들어 두는 시간. 실기에서 자기 손목 값을 읽으라고 있는 값이다. */
+const PEAK_HOLD_MS = 2000;
 
 /** 기본 임계. 캘리브레이션에서 개인 보정으로 덮인다. */
 export const DEFAULTS = {
-  thrust: 18,          // m/s^2. 수평 성분 크기
+  // **손목 스케일.** 여기 값은 EMA를 지난 뒤의 크기라 손이 낸 실제 피크보다 훨씬 작다.
+  // 아래 EMA 0.2는 120ms짜리 찌르기 펄스를 **원 피크의 56%까지 깎는다**(합성 신호 실측).
+  // 그래서 예전 18은 실제로 **원 피크 37 m/s^2 = 3.77G**를 요구했다. 손목으로 낼 수 있는
+  // 값이 아니라 팔을 휘둘러야 나오는 값이고, 그것이 "몇 판 만에 지친다"의 정체였다.
+  //
+  // 8이면 원 피크 17 = 1.73G다. 앉아서 손목 스냅으로 닿는 범위이면서 툭 건드리는 수준은 아니다.
+  // **크기 관문을 내려도 오탐이 안 늘어난다**(실측). 걷기와 고쳐잡기를 자르는 것은
+  // 크기가 아니라 수평비와 최소지속이고, 그 둘은 그대로 두었다.
+  // 캘리브레이션이 개인 노이즈의 2.4배로 이 값을 밀어 올리는 바닥 보정도 그대로 산다.
+  // **최종 확정은 실기다.** ?debug=1의 "수평 최대"로 자기 손목 값을 읽고 맞춘다
+  thrust: 8,           // m/s^2. 수평 성분 크기(EMA 통과 후)
   horizRatio: 1.25,    // 수평이 수직보다 이만큼 커야 찌르기다. 걷기를 여기서 자른다
   minHoldMs: 40,       // 단일 스파이크 무시. 이만큼은 임계 위에 머물러야 한다
   cooldownMs: 350,     // arena judge.js의 THRUST_COOLDOWN_MS와 같은 값
-  // **가드는 기준 자세 안쪽이다.** 기준이 "폰 세로, 단자 아래"라 세워 둔 상태가 곧 가드다.
-  // 전에는 부등호가 반대여서(기준에서 35도 이상 기울면 가드) 눕힐수록 가드가 켜졌다.
-  // 눕히는 것은 찌르기 방향이라 두 동작이 같은 구간에서 싸웠다.
-  guardZoneDeg: 20,     // 기준 자세에서 이 안이면 폰이 서 있는 것으로 본다
-  guardReleaseDeg: 30,  // 풀리는 각. 문턱이 하나면 경계에서 on/off가 떨며 판정에 이벤트가 쏟아진다
-  guardStillMs: 150,   // 그 자세로 이만큼 정지해야 가드다
-  guardStillAcc: 3.0,  // 정지 판정 가속 상한
 };
 
 /** power 정규화. 임계에서 0, 임계의 2.5배에서 1이다(ARENA_INPUT 8절 미해결 해소). */
@@ -48,8 +61,14 @@ export const SUPPORT = {
   NONE: 'none',                 // 센서 없음. 탭 버튼 모드로 내려간다
 };
 
+/**
+ * @param opts.readTilt 지금 폰이 기준에서 얼마나 기울었는지 돌려주는 함수. 자세는 자이로가 알고
+ *   여기는 가속만 안다. 그래서 **주입받는다.** pipeline이 orientation을 물려 준다.
+ *   없으면 가드가 안 나가고 찌르기만 산다(센서가 약한 기기의 우아한 저하).
+ */
 export function createMotion(opts = {}) {
-  const cfg = { ...DEFAULTS, ...opts };
+  const { readTilt = null, ...rest } = opts;
+  const cfg = { ...DEFAULTS, ...rest };
   let support = SUPPORT.NONE;
   let attached = false;
 
@@ -65,10 +84,10 @@ export function createMotion(opts = {}) {
   let peak = 0;
   let lastThrustAt = -Infinity;
   let guarding = false;
-  let stillSince = 0;
-  // 캘리브레이션 기준 중력. 가드 판정의 기준 자세다
-  const baseGravity = { x: 0, y: -1, z: 0 };
-  let baseSet = false;
+  // 최근 최대 수평 가속. 실기 튜닝용 표시값이고 판정에 쓰지 않는다
+  let holdPeak = 0;
+  let holdAt = 0;
+  let tilt = { pitchDeg: 0, rollDeg: 0 };
 
   const cb = { thrust: null, guard: null, sample: null };
 
@@ -119,27 +138,27 @@ export function createMotion(opts = {}) {
   }
 
   /**
-   * 가드. **기준 자세(폰 세로)를 유지하고 잠깐 멈추면 켜진다.**
-   * 앞으로 눕히면(찌르기 방향) 풀린다. 켜지는 각과 풀리는 각을 벌려 경계 떨림을 막는다.
+   * 가드. **좌우로 기울이면 켜지고 세로로 돌아오면 풀린다.**
+   *
+   * 전에는 "기준 자세 부근이면 가드"였다. 기준이 곧 쉬는 자세라 **가드가 상시로 켜졌고**
+   * `judge.js`의 `resolveTelegraphEnd`가 guarding이면 무조건 패리라 AI가 공격으로
+   * 득점하지 못했다(4유파 x 5시드 20경기 실측: AI 득점 8점에서 0점, 사용자 20/20 승).
+   * 그래서 가드를 **능동적 동작**으로 옮겼다. 세로는 앙가르드이고 아무 이벤트도 내지 않는다.
+   *
+   * 각도 규칙과 히스테리시스는 `shared/pose.js`가 쥔다. arena의 `?posetest=1` 미리보기가
+   * 같은 함수를 읽어야 미리보기와 실기가 다른 말을 하지 않는다.
+   *
+   * **정지 조건을 두지 않는다.** 가드는 반응이고 홀드 대기를 걸면 지연이 그대로 보인다
+   * (MOTION 1절, ThreeRenderer의 GUARD_IN_SEC 55ms와 같은 이유).
+   * 대신 앞뒤가 우세하면 가드로 안 읽어서 찌르기 궤적과 섞이지 않는다.
    */
-  function detectGuard(now, total) {
-    if (!baseSet) return;
-    const cosTilt = Math.min(1, Math.max(-1, dot(gravity, baseGravity)));
-    const tilt = (Math.acos(cosTilt) * 180) / Math.PI;
-    const still = total <= cfg.guardStillAcc;
-    if (tilt <= cfg.guardZoneDeg && still) {
-      if (!stillSince) stillSince = now;
-      if (!guarding && now - stillSince >= cfg.guardStillMs) {
-        guarding = true;
-        cb.guard?.(true);
-      }
-      return;
-    }
-    stillSince = 0;
-    if (guarding && tilt > cfg.guardReleaseDeg) {
-      guarding = false;
-      cb.guard?.(false);
-    }
+  function detectGuard() {
+    if (!readTilt) return;
+    tilt = readTilt();
+    const next = nextGuard(guarding, tilt);
+    if (next === guarding) return;
+    guarding = next;
+    cb.guard?.(guarding);
   }
 
   function handle(e) {
@@ -186,9 +205,25 @@ export function createMotion(opts = {}) {
     const vertAbs = Math.abs(vert);
 
     detectThrust(now, horiz, vertAbs);
-    detectGuard(now, len(acc));
+    detectGuard();
 
-    cb.sample?.({ horiz, vert: vertAbs, total: len(acc), dt, support, guarding, threshold: cfg.thrust });
+    // 최근 최대 수평. 실기에서 자기 손목 스냅이 임계에 닿는지 눈으로 재는 값이다
+    if (horiz > holdPeak || now - holdAt > PEAK_HOLD_MS) {
+      holdPeak = horiz;
+      holdAt = now;
+    }
+
+    cb.sample?.({
+      horiz,
+      vert: vertAbs,
+      total: len(acc),
+      dt,
+      support,
+      guarding,
+      threshold: cfg.thrust,
+      peak: holdPeak,
+      tilt,
+    });
   }
 
   return {
@@ -205,13 +240,6 @@ export function createMotion(opts = {}) {
     },
     on(name, fn) {
       if (name in cb) cb[name] = typeof fn === 'function' ? fn : null;
-    },
-    /** 캘리브레이션이 기준 자세를 박는다. 가드 판정의 기준이 된다. */
-    setBaseline() {
-      baseGravity.x = gravity.x;
-      baseGravity.y = gravity.y;
-      baseGravity.z = gravity.z;
-      baseSet = true;
     },
     /** 개인 임계. 캘리브레이션 중 관측한 정지 노이즈 위로 올려 잡는다. */
     setThreshold(v) {

@@ -13,6 +13,7 @@
 // 이산 이벤트는 스로틀하지 않는다(motion.js가 즉시 낸다).
 
 import AHRS from 'ahrs';
+import { tiltFromQuaternion } from '../../../shared/pose.js';
 
 const DEG2RAD = Math.PI / 180;
 /** 송신 주기. SERVER.md 프로토콜의 MOTION 스트림 주기와 같다. */
@@ -102,15 +103,23 @@ export function createOrientation() {
     on(name, fn) {
       if (name in cb) cb[name] = typeof fn === 'function' ? fn : null;
     },
-    /** 캘리브레이션. 지금 자세를 원점으로 삼는다(켤레를 저장). */
+    /**
+     * 캘리브레이션. 지금 자세를 원점으로 삼는다(켤레를 저장).
+     *
+     * **상대 자세를 그 자리에서 다시 계산한다.** 안 그러면 다음 센서 이벤트가 올 때까지
+     * `rel`이 보정 전 값으로 남는다. 가드가 이 값의 각도를 보게 되면서 그 한 틱이
+     * 엉뚱한 guard on/off 한 쌍을 판정에 밀어 넣을 수 있게 됐다. 경기 시작 순간이라 더 나쁘다.
+     */
     setBaseline() {
       base = [raw[0], raw[1], raw[2], raw[3]];
       baseConj = [-raw[0], -raw[1], -raw[2], raw[3]];
+      mul(baseConj, raw, rel);
     },
     /**
-     * 기준 자세 원본. **read()를 대신 쓰면 안 된다.**
-     * rel은 다음 센서 이벤트에서야 다시 계산되므로 setBaseline 직후에 읽으면
-     * 보정 전 값이 나온다(실측으로 92도짜리 엉뚱한 쿼터니언이 나갔다).
+     * 기준 자세 원본. MSG.CALIB이 싣는 값이다. **read()를 대신 쓰면 안 된다.**
+     * 둘은 다른 것이다. 여기는 보정 전 절대 자세이고 read()는 그 기준 대비 상대 자세라
+     * 캘리브레이션 직후에는 단위 쿼터니언이다(예전에는 보정 전 값이 그대로 남아
+     * 92도짜리 엉뚱한 쿼터니언이 나갔다. 지금은 setBaseline이 그 자리에서 다시 계산한다).
      */
     getBaseline() {
       return base;
@@ -118,6 +127,16 @@ export function createOrientation() {
     /** 마지막 상대 자세. debug 화면이 읽는다. */
     read() {
       return rel;
+    },
+    /**
+     * 기준 대비 기울기를 조작 축 둘로 분해한 값(도). `{ pitchDeg, rollDeg }`.
+     *
+     * **연속 채널의 예외가 아니다.** 이 값 자체는 판정에 안 들어간다.
+     * motion.js가 이걸 받아 문턱을 넘는 순간에만 guard on/off라는 **이산 이벤트**를 내고,
+     * 판정에 가는 것은 그 불리언뿐이다(ARENA_INPUT 1절 채널 계약).
+     */
+    tilt() {
+      return tiltFromQuaternion(rel);
     },
     /** 실측 이벤트 주기. 고정 상수를 쓰지 않는다는 증거이자 튜닝 지표다. */
     getHz() {

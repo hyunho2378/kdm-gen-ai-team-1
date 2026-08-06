@@ -304,9 +304,10 @@ export function PlayScreen({ code, support, tapMode, guarding, onStep, onStepEnd
           </>
         ) : (
           <>
-            <Title>{guarding ? '가드' : '찌른다'}</Title>
+            {/* 세로는 중립이라 "찌른다"가 아니다. 가만히 있으면 아무 이벤트도 안 나간다 */}
+            <Title>{guarding ? '가드' : '앙가르드'}</Title>
             <Body tone={colors.text.dim}>
-              {support === 'gravityOnly' ? '간이 센서 모드로 동작 중이다.' : '세워 두면 가드. 앞으로 눕혀 지르면 찌르기.'}
+              {support === 'gravityOnly' ? '간이 센서 모드로 동작 중이다.' : '좌우로 기울이면 가드. 앞으로 눕혀 지르면 찌르기.'}
             </Body>
           </>
         )}

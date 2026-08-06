@@ -6,6 +6,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { colors, radius, typography } from '../tokens.js';
+import { POSE_STATE, TILT, poseState } from '../../../shared/pose.js';
+import { DEFAULTS } from '../sensors/motion.js';
+
+/** 조작 상태 이름. 사람이 읽는 말로 바꾼다. */
+const STATE_LABEL = {
+  [POSE_STATE.NEUTRAL]: '중립(앙가르드)',
+  [POSE_STATE.GUARD]: '가드',
+  [POSE_STATE.THRUST_ZONE]: '찌르기 구간',
+};
 
 const W = 320;
 const H = 90;
@@ -20,19 +29,13 @@ export function debugEnabled(isDev) {
   return isDev || p === '1';
 }
 
-/** 쿼터니언 → 오일러(도). 숫자로 보는 편이 작은 화면에서 읽기 쉽다. */
-function euler([x, y, z, w]) {
-  const sinp = 2 * (w * y - z * x);
-  const pitch = Math.abs(sinp) >= 1 ? Math.sign(sinp) * 90 : (Math.asin(sinp) * 180) / Math.PI;
-  const roll = (Math.atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y)) * 180) / Math.PI;
-  const yaw = (Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z)) * 180) / Math.PI;
-  return { roll, pitch, yaw };
-}
-
 export default function DebugPanel({ pipeline, log }) {
   const canvasRef = useRef(null);
   const histRef = useRef([]);
-  const [info, setInfo] = useState({ horiz: 0, vert: 0, threshold: 0, hz: 0, guarding: false, support: '-', pose: [0, 0, 0, 1] });
+  const [info, setInfo] = useState({
+    horiz: 0, vert: 0, threshold: 0, hz: 0, guarding: false, support: '-',
+    peak: 0, tilt: { pitchDeg: 0, rollDeg: 0 },
+  });
 
   // 샘플 수집은 파이프라인 콜백으로, 그리기는 rAF로 분리한다
   useEffect(() => {
@@ -53,7 +56,7 @@ export default function DebugPanel({ pipeline, log }) {
       if (c) {
         const g = c.getContext('2d');
         g.clearRect(0, 0, W, H);
-        const thr = last?.threshold ?? 18;
+        const thr = last?.threshold ?? DEFAULTS.thrust;
         const top = Math.max(thr * 2.6, 30);
         // 임계선
         g.strokeStyle = colors.red.light;
@@ -84,7 +87,8 @@ export default function DebugPanel({ pipeline, log }) {
           hz: pipeline.getHz(),
           guarding: last.guarding,
           support: last.support,
-          pose: pipeline.getPose(),
+          peak: last.peak ?? 0,
+          tilt: last.tilt ?? { pitchDeg: 0, rollDeg: 0 },
         });
       }
       raf = requestAnimationFrame(tick);
@@ -93,7 +97,6 @@ export default function DebugPanel({ pipeline, log }) {
     return () => cancelAnimationFrame(raf);
   }, [pipeline]);
 
-  const e = euler(info.pose);
   const row = (k, v) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
       <span style={{ color: colors.text.dim }}>{k}</span>
@@ -122,12 +125,18 @@ export default function DebugPanel({ pipeline, log }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px', marginTop: 8 }}>
         {row('수평', info.horiz.toFixed(1))}
         {row('수직', info.vert.toFixed(1))}
+        {/* **손목 튜닝의 눈.** 앉아서 손목만으로 한 번 지르고 이 값이 임계를 넘는지 본다.
+            2초 붙들어 두므로 동작이 끝난 뒤 화면을 봐도 값이 남아 있다 */}
+        {row('수평 최대', info.peak.toFixed(1))}
         {row('임계', info.threshold.toFixed(1))}
         {row('주기', `${info.hz.toFixed(0)}Hz`)}
-        {row('가드', info.guarding ? '켜짐' : '꺼짐')}
         {row('센서', info.support)}
-        {row('roll', `${e.roll.toFixed(0)}도`)}
-        {row('pitch', `${e.pitch.toFixed(0)}도`)}
+        {/* 가드가 실제로 보는 두 축이다. shared/pose.js가 이 값으로 상태를 정한다.
+            예전 오일러 표시는 분해가 달라서 가드가 왜 켜졌는지를 설명하지 못했다 */}
+        {row('좌우 roll', `${info.tilt.rollDeg.toFixed(0)}도 / ${TILT.rollOnDeg}`)}
+        {row('앞뒤 pitch', `${info.tilt.pitchDeg.toFixed(0)}도`)}
+        {row('가드', info.guarding ? '켜짐' : '꺼짐')}
+        {row('상태', STATE_LABEL[poseState(info.guarding, info.tilt)])}
       </div>
       <div style={{ marginTop: 6, color: colors.text.secondary, maxHeight: 62, overflow: 'hidden' }}>
         {log.slice(0, 4).map((l) => (
