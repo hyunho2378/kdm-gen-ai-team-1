@@ -38,7 +38,7 @@ html { scrollbar-gutter: stable; }
 /* 아래 값은 전부 src/theme.js가 tokens에서 주입한 CSS 변수다. 여기에 HEX를 적지 마라. */
 
 *:focus-visible {
-  outline: 2px solid var(--red-light);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -120,18 +120,19 @@ html { scrollbar-gutter: stable; }
 /* CTA 채움. **배경을 인라인 style로 걸지 않는다.**
    인라인은 스타일시트를 이겨서 아래 :active가 통째로 죽는다(arena에서 죽어 있던 함정). */
 .vx-cta {
-  background: var(--red-fill);
+  background: var(--fill);
   color: var(--text-on-fill);
-  border: 1px solid var(--red-fill);
+  border: 1px solid var(--fill);
   transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-press) var(--ease-out),
     background-color var(--dur-press) var(--ease-out);
 }
 .vx-cta:hover {
-  box-shadow: var(--glow-red);
+  background: var(--fill-press);
+  border-color: var(--fill-press);
 }
 .vx-cta:active {
-  background: var(--red-press);
-  border-color: var(--red-press);
+  background: var(--fill-press);
+  border-color: var(--fill-press);
   transform: scale(0.97);
 }
 
@@ -389,8 +390,8 @@ html { scrollbar-gutter: stable; }
   border-radius: 999px;
 }
 .vx-pnav-pill-fill {
-  background: var(--red-fill);
-  border-color: var(--red-fill);
+  background: var(--fill);
+  border-color: var(--fill);
 }
 
 /* 좁은 화면. 제품명 아래로 줄이 접힌다. 높이를 고정하지 않는다 */
@@ -443,91 +444,6 @@ html { scrollbar-gutter: stable; }
   width: 8px;
   height: 8px;
   background: var(--text-primary);
-}
-
-/* ── 프리로더와 스플래시 (REBOOT_PLAN 1.1, 2.5) ──────────────────────────
-   정적 배치는 여기가 쥐고 움직임만 GSAP이 건다. 커서보다 위에 선다(로드 중에는 커서도 덮는다). */
-.vx-pre {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-preloader);
-  /* **페이지와 같은 그라디언트다.** 단색으로 두면 프리로더가 걷히는 순간 배경이 한 번 바뀐다 */
-  background: var(--page-bg);
-  overflow: hidden;
-}
-
-/* 좌하단 초대형 카운터. **화면 밖으로 살짝 잘린다**(1.1절 실측 문법).
-   숫자가 도형처럼 읽혀야 해서 tabular-nums로 자리 흔들림을 없앤다 */
-.vx-pre-counter {
-  position: absolute;
-  left: -0.06em;
-  bottom: -0.22em;
-  display: flex;
-  font-family: var(--font-display);
-  /* 상한을 3840 기준으로 잡는다. 22rem에서 멈추면 4K에서 카운터가 작아 보인다(RESPONSIVE 4K 절) */
-  font-size: clamp(6rem, 24vw, 34rem);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
-/* 한 자리. 창을 1em 높이로 잘라 그 안에서 숫자 열이 굴러간다 */
-.vx-pre-digit {
-  display: block;
-  height: 1em;
-  overflow: hidden;
-}
-.vx-pre-roll {
-  display: flex;
-  flex-direction: column;
-  will-change: transform;
-}
-.vx-pre-roll > span {
-  display: block;
-  height: 1em;
-  text-align: center;
-}
-
-/* 중앙 진행 획. 검끝 모티프의 가는 선 하나가 좌에서 우로 차오른다 */
-.vx-pre-track {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: min(320px, 44vw);
-  height: 1px;
-  background: var(--line-default);
-}
-.vx-pre-bar {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background: var(--text-primary);
-  transform-origin: left center;
-  transform: scaleX(0);
-  will-change: transform;
-}
-
-/* 스플래시 워드마크. 사본 여섯 장이 같은 자리에 겹친다 */
-.vx-pre-stage {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-  width: min(62vw, 640px);
-  aspect-ratio: 570 / 108;
-  will-change: transform, opacity;
-}
-.vx-pre-stage img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  /* **초기값을 CSS가 쥔다.** GSAP이 set하기 전 한 프레임 동안 워드마크가 통째로
-     번쩍이는 것을 막는다(실측에서 잡았다). 등장은 타임라인이 이 값을 올려서 한다 */
-  opacity: 0;
-  will-change: transform, opacity;
 }
 
 /* ── 스크롤 워프 (REBOOT_PLAN 1.2) ────────────────────────────────────────

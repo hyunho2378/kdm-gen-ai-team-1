@@ -22,7 +22,6 @@ import { ScrollTrigger } from './lib/motion.js';
 import { PRODUCTS } from './copy.js';
 import { applyThemeVars } from './theme.js';
 import Cursor from './components/Cursor.jsx';
-import Preloader, { splashPlayed } from './components/Preloader.jsx';
 import ScrollWarp from './components/ScrollWarp.jsx';
 import Header from './components/Header.jsx';
 import Landing from './pages/Landing.jsx';
@@ -49,10 +48,7 @@ function useSmoothScroll() {
   useEffect(() => {
     const lenis = new Lenis({ autoRaf: true });
     lenisRef.current = lenis;
-    // **프리로더가 뜨는 최초 로드에만 세워 둔다.** 스플래시 중에 스크롤이 먹으면
-    // 인계 순간 히어로 워드마크가 제자리에 없어서 착지가 어긋난다.
-    // 모듈 플래그를 여기서 직접 읽어 의존성을 만들지 않는다(재생성 방지)
-    if (!splashPlayed()) lenis.stop();
+    // **스크롤 잠금이 없다.** 프리로더 스플래시를 걷어서 멈춰 둘 이유가 사라졌다
     // **Lenis가 스크롤 위치를 쥐므로 ScrollTrigger에 진행을 알려 줘야 한다.**
     // 안 묶으면 pin 구간이 스크롤 중간 프레임을 놓쳐 계단처럼 끊긴다
     lenis.on('scroll', ScrollTrigger.update);
@@ -83,17 +79,16 @@ function ScrollToTop() {
 }
 
 export default function App() {
-  const lenisRef = useSmoothScroll();
+  useSmoothScroll();
   // CSS 변수 주입. hover와 :active와 focus-visible이 이 값을 읽는다
   useEffect(() => applyThemeVars(), []);
 
   return (
     <BrowserRouter>
       <ScrollToTop />
-      {/* 프리로더와 커서는 라우트 밖에 둔다. 페이지가 갈려도 하나만 산다 */}
-      <Preloader
-        onDone={() => lenisRef.current?.start()}
-      />
+      {/* 커서는 라우트 밖에 둔다. 페이지가 갈려도 하나만 산다.
+          **프리로더 스플래시를 걷었다.** 최초 로드에 히어로가 바로 선다.
+          스크롤 잠금도 함께 사라져서 Lenis를 멈췄다 다시 켜는 배선이 없다 */}
       <Cursor />
       <Header />
       {/* 스크롤 워프는 **스크롤되는 콘텐츠에만** 건다. 위의 프리로더와 커서와 헤더는

@@ -16,7 +16,7 @@
 // 이 페이지는 이미지와 DOM과 CSS로 충분하다. **three.js 컨텍스트를 만들지 않는다.**
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { colors, glow, motion, radius, spacing, typography, weight } from '../tokens.js';
+import { colors, motion, radius, spacing, typography, weight } from '../tokens.js';
 import { DUELISTS } from '../copy.js';
 
 // 규약 경로. 파일을 이 자리에 놓으면 코드 수정 없이 뜬다.
@@ -174,10 +174,10 @@ export default function DuelistSelector({ reduced }) {
               minHeight: 44,
               padding: spacing.unit * 3,
               borderRadius: radius.lg,
-              // **테두리를 걷어냈다(REBOOT_PLAN 2.1).** 선택 상태는 글로우와 배율과 흐림이 낸다.
-              // 셋이 함께 움직이므로 색 단독 구분이 아니다(DESIGN 13절)
+              // **테두리도 글로우도 없다.** 선택 상태는 배율과 흐림과 불투명도가 낸다.
+              // 셋이 함께 움직이므로 색 단독 구분이 아니다(DESIGN 13절).
+              // 글로우는 라이트 배경에서 성립하지 않아 레드와 함께 걷었다
               background: colors.bg.raised,
-              boxShadow: isActive && !reduced ? glow.red : 'none',
               cursor: 'pointer',
               transform: `scale(${scale})`,
               filter,
@@ -223,7 +223,7 @@ export default function DuelistSelector({ reduced }) {
                 fontFamily: typography.family,
                 fontSize: typography.caption.size,
                 letterSpacing: typography.hud.tracking,
-                color: colors.red.light,
+                color: colors.text.primary,
               }}
             >
               {d.ver} {d.trait}

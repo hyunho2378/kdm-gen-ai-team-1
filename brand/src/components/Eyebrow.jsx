@@ -23,7 +23,7 @@ export const EYEBROW_TONE = {
 };
 
 const EN_COLOR = {
-  [EYEBROW_TONE.RED]: colors.red.light,
+  [EYEBROW_TONE.RED]: colors.text.primary,
   [EYEBROW_TONE.PLAIN]: colors.text.primary,
 };
 

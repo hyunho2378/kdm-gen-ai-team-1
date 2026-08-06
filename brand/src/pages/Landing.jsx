@@ -16,7 +16,6 @@ import Section from '../components/Section.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import HeroTrail from '../components/HeroTrail.jsx';
 import HeroWordmark from '../components/HeroWordmark.jsx';
-import Newsletter from '../components/Newsletter.jsx';
 
 const { hero, gates, outro } = LANDING;
 
@@ -29,8 +28,6 @@ export default function Landing() {
     <main>
       <HeroSection />
       <GatewaySection />
-      <CtaSection />
-      <Newsletter id={SECTION.NEWSLETTER} />
       <Footer />
     </main>
   );
@@ -205,7 +202,7 @@ function HeroSection() {
             fontSize: typography.hud.size,
             letterSpacing: typography.hud.tracking,
             fontWeight: typography.hud.weight,
-            color: colors.red.light,
+            color: colors.text.primary,
           }}
         >
           {hero.scrollHint}
@@ -315,62 +312,6 @@ function GatewaySection() {
     </Section>
   );
 }
-
-/**
- * CTA 섹션. 결투로의 초대다. 큰 문구 하나와 레드 채움 버튼(/experience로).
- * **무배경, 선 없음.** 채움과 press는 `.vx-cta` 클래스가 쥔다(배경 인라인 금지, PITFALLS).
- */
-function CtaSection() {
-  const { cta } = outro;
-  return (
-    <section
-      id={SECTION.CTA}
-      className="vx-shell vx-section"
-      style={{
-        minHeight: '100dvh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        gap: spacing.unit * 4,
-      }}
-    >
-      <h2
-        style={{
-          margin: 0,
-          fontFamily: displayFamily,
-          fontSize: typography.display.size,
-          fontWeight: typography.display.weight,
-          letterSpacing: typography.display.tracking,
-          lineHeight: typography.display.leading,
-          color: colors.text.primary,
-          maxWidth: spacing.maxContent,
-          wordBreak: 'keep-all',
-        }}
-      >
-        {cta.title}
-      </h2>
-      <Link to={cta.to} className="vx-cta" style={ctaLinkStyle}>
-        {cta.button}
-      </Link>
-    </section>
-  );
-}
-
-// 배경 없이 글자만 큰 climax. **background는 `.vx-cta`가 쥔다.** 여기서 걸면 :active press가 죽는다
-const ctaLinkStyle = {
-  display: 'inline-flex',
-  alignSelf: 'flex-start',
-  alignItems: 'center',
-  justifyContent: 'center',
-  minHeight: 44,
-  padding: '14px 32px',
-  borderRadius: radius.pill,
-  fontFamily: typography.family,
-  fontSize: typography.body.size,
-  fontWeight: weight.semibold,
-  lineHeight: 1,
-  textDecoration: 'none',
-};
 
 /**
  * 푸터. 맨 아래. 워드마크(소형 크롬), 메뉴(HEADER.nav 재사용), 크레딧과 팀, 저작권.

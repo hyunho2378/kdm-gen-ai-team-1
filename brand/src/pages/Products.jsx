@@ -160,7 +160,7 @@ export default function Products() {
               onClick={() => captureFlip(visualRefs.current[c.slug])}
             >
               {c.name}
-              <span style={{ fontSize: typography.hud.size, letterSpacing: typography.hud.tracking, color: colors.red.light }}>
+              <span style={{ fontSize: typography.hud.size, letterSpacing: typography.hud.tracking, color: colors.text.primary }}>
                 {detailCta}
               </span>
             </Link>
@@ -276,7 +276,7 @@ function DeepDive({ card, deep, onLeave, bindVisual }) {
             onClick={onLeave}
           >
             {card.name}
-            <span style={{ fontSize: typography.hud.size, letterSpacing: typography.hud.tracking, color: colors.red.light }}>
+            <span style={{ fontSize: typography.hud.size, letterSpacing: typography.hud.tracking, color: colors.text.primary }}>
               {detailCta}
             </span>
           </Link>

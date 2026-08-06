@@ -26,7 +26,7 @@ export default function NotFound() {
           fontSize: typography.caption.size,
           letterSpacing: typography.hud.tracking,
           fontWeight: weight.semibold,
-          color: colors.red.light,
+          color: colors.text.primary,
         }}
       >
         {NOT_FOUND.code}

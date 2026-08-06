@@ -7,7 +7,7 @@
 // `:active`의 press 색이 통째로 죽는다(arena에서 실제로 죽어 있던 함정이다).
 // 그래서 CTA 배경은 클래스가 쥔다.
 
-import { colors, displayFamily, glow, motion, pageGradient, radius, spacing, withAlpha, zIndex } from './tokens.js';
+import { colors, displayFamily, motion, pageGradient, radius, spacing, withAlpha, zIndex } from './tokens.js';
 
 /**
  * 헤더가 상주하는 높이. 하위 페이지 상단 여백이 이 값을 더해야 제목이 안 가린다.
@@ -62,8 +62,6 @@ export function applyThemeVars(root = document.documentElement) {
     // 서브내비 판. 페이지 그라디언트 위에 얹히므로 밝은 끝을 옅게 깔아 글자가 뚫리지 않게 한다
     '--pnav-bg': withAlpha(colors.bg.base, 0.82),
     '--z-cursor': String(zIndex.toast + 10),
-    // 프리로더는 로드 중 화면 전체를 덮으므로 커서보다도 위다
-    '--z-preloader': String(zIndex.toast + 20),
     '--text-primary': colors.text.primary,
     '--text-dim': colors.text.dim,
     '--bg-base': colors.bg.base,
@@ -71,13 +69,13 @@ export function applyThemeVars(root = document.documentElement) {
     '--page-bg': pageGradient,
     '--font-display': displayFamily,
 
-    '--red-light': colors.red.light,
-    '--red-fill': colors.red.fill,
-    '--red-press': colors.red.press,
-    '--text-on-fill': colors.text.onFill,
+    // 강조는 잉크가 진다. 레드는 브랜드에서 걷었다
+    '--accent': colors.text.primary,
+    '--fill': colors.fill.base,
+    '--fill-press': colors.fill.press,
+    '--text-on-fill': colors.fill.on,
     '--line-default': colors.line.default,
     '--line-strong': colors.line.strong,
-    '--glow-red': glow.red,
     '--ease-out': motion.easeOut,
     '--dur-press': `${motion.duration.press}ms`,
     // 호버 반응. DOM UI라 300ms 미만이어야 하고(DESIGN 7절) 커서를 스쳐도 거슬리지 않는 길이가 tooltip이다

@@ -41,7 +41,7 @@ export default function Experience() {
                 fontSize: typography.eyebrow.size,
                 fontWeight: weight.bold,
                 lineHeight: 1,
-                color: colors.red.light,
+                color: colors.text.primary,
               }}
             >
               {i + 1}

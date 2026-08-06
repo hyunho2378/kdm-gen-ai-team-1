@@ -56,23 +56,20 @@ export const colors = {
     overlay: withAlpha(INK, 0.45),
   },
   /**
-   * 레드. **실측으로 갈아탔다.**
+   * 강조 채움. **레드를 브랜드에서 통째로 걷었다.**
    *
-   *   #E60D15  #C1C1C1 위 2.63:1   #F6F6F6 위 4.38:1   대형 3.0조차 미달
-   *   #80070C  #C1C1C1 위 5.97:1   #F6F6F6 위 9.95:1   본문 4.5 통과
+   * 라이트 배경에서 레드는 어느 값을 써도 대가가 있었다. #E60D15는 그라디언트 최상단
+   * #C1C1C1 위에서 2.63:1이라 대형 기준 3.0도 미달이고, 그래서 #80070C로 내렸는데
+   * 그것은 이미 브랜드 레드로 안 읽히는 자주색이다. **레드가 살아 있는 자리가 없다.**
    *
-   * 그래서 light와 fill을 둘 다 딥 레드로 내린다. 채움으로 쓸 때 흰 글자 대비가 10.57이고
-   * 버튼 경계도 배경 대비 5.97이라 UI 요소 3:1을 넘긴다(#E60D15 채움은 경계가 2.63이라 미달했다).
-   * 값은 shared의 RED_DEEP과 같으므로 새 HEX가 아니다.
+   * 그래서 강조는 잉크가 진다. 채움은 #101010이고 그 위 흰 글자가 18.71:1이다.
+   * 레퍼런스도 같은 문법이다(Satisfy 흰 배경에 검은 알약, Apple 흰 배경에 검은 텍스트).
    */
-  red: {
-    light: sharedColors.red.deep,
-    fill: sharedColors.red.deep,
-    deep: sharedColors.red.deep,
-    press: darken(sharedColors.red.deep, 0.2),
-    // 라이트 배경에서 발광은 성립하지 않는다. glow와 함께 걷었다
-    glow: 'transparent',
-    tonal: withAlpha(sharedColors.red.deep, 0.1),
+  fill: {
+    base: INK,
+    // 눌린 상태. 잉크는 더 어두워질 수 없으므로 알파를 낮춰 물러난다
+    press: withAlpha(INK, 0.82),
+    on: PAPER,
   },
   text: {
     primary: INK,
@@ -143,7 +140,7 @@ export const typography = {
 };
 
 /** 라이트 배경에서 발광은 성립하지 않는다. 전부 걷는다(PLAN 1절 모션). */
-export const glow = { red: 'none', blue: 'none', steel: 'none' };
+export const glow = { blue: 'none', steel: 'none' };
 
 /**
  * 워드마크와 대형 제목의 글자 처리. **크롬 그라디언트를 걷고 평면 잉크로 간다.**
@@ -156,9 +153,3 @@ export const steelText = { color: INK };
 // 제목(디스플레이) 폰트는 미정이다. 지금은 본문과 같은 Pretendard를 가리키고
 // 폰트가 정해지면 **이 키 한 줄만** 바꾼다. 워드마크와 대형 제목이 이 키를 참조한다.
 export const displayFamily = "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif";
-
-// 2.1 Brand Gradient. 스톱 순서 FDFDFD, E60D15, 80070C, 101010.
-//
-// **배경에 쓰지 마라(REBOOT_PLAN 2.1).** 넓은 면을 먹는 레드 그라디언트는 전량 금지다.
-// v2에서 페이지 배경은 위의 pageGradient가 진다. 이 값은 브랜드 자산으로만 남는다.
-export const brandGradient = 'linear-gradient(105deg, #FDFDFD 0%, #E60D15 42%, #80070C 72%, #101010 100%)';
