@@ -190,6 +190,11 @@ bg.base 위 4.02:1이다(2절). WCAG 대형 기준은 24px 이상이거나 **18.
 **brand와 presentation-v2 둘 다 적용한다.** presentation-v2는 자체 tokens를 쓰므로
 별도 트랙(P1)에서 같은 값을 넣는다. brand 세션은 그 폴더를 건드리지 않는다.
 
+**P1 적용 완료.** presentation-v2 `tokens.js`에 `typography.eyebrow`(21px 700 고정)를 신설하고
+`Bits.jsx`의 공용 `Eyebrow`에서 레드 불릿을 걷고 영문·국문을 같은 21px 700으로 세웠다.
+반응형 clamp를 쓰지 않는 이유는 brand와 같다(작은 폭에서 18.66px 아래로 떨어지면 대형 기준을 잃어
+레드 아이브로우가 대비 미달로 돌아간다). 색은 pres-v2 기존(영문 red, 국문 primary)을 유지했다.
+
 ---
 
 ## 5. 플랫폼 형태 (앱별 확정)

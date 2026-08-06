@@ -2177,6 +2177,23 @@
     - **남은 사람 단계: Vercel 프리뷰 배포 실 URL 육안 검증, Lighthouse LCP/CLS/INP 실측 전후 비교(헤드리스 pane 불안정으로 자동 측정 불가), 실브라우저에서 P3 스크럽·P6 Flip 모핑 육안 확인.** 배포는 외부 공개 액션이라 권한 확인 후 사람이 수행
   - **presentation 탈PPT 개편 P0~P7 전체 완료.** 실물 펜싱 프레임 도착 시 `presentation/public/frames/hero/` 폴더 덮어쓰기 + manifest.count만 바꾸면 반영(코드 수정 0)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
+- **presentation-v2 P1 아이브로우 v2와 유파 문구 통일 완료(확인 대기). 트랙 선점 해제.** presentation-v2만 만졌다
+  (brand/arena/controller 무변경). 커밋 하나.
+  - **파트 A 아이브로우 v2.** `tokens.js`에 `typography.eyebrow`(size 1.3125rem=21px, weight 700, tracking 0.06em,
+    leading 1.25) 신설. `components/Bits.jsx`의 공용 `Eyebrow`에서 레드 불릿 원을 걷고 영문·국문을 같은
+    21px 700으로 세웠다. 개별 구현은 없었다(전 섹션이 이 컴포넌트 하나를 쓴다). 색은 pres-v2 기존 유지
+    (영문 red, 국문 primary). **반응형 clamp를 안 쓴다**: brand와 같은 근거로, 작은 폭에서 18.66px 아래로
+    떨어지면 레드 아이브로우가 대형 대비 기준을 잃는다. 21px 고정이라 전 폭에서 대형(700) 3.0 통과.
+  - **파트 B 유파 문구 통일(기준 brand copy.js DUELISTS 확정본).** `copy.js`에서
+    `COVER.sub`(몰입형 펜싱 XR → 훈련), `DUELIST.headline`('로 구성' 제거),
+    `DUELIST.sub`(인격이다/진화한다 2줄), `DUELIST_STYLES` quote(유발한다/불리해진다/승리다, 인용부호 제거).
+    styles 세 줄은 이미 brand와 일치했다. `VORTEX_DESIGN_SYSTEM.md` 3.11과 `DESIGN.md` 4절도 개정.
+  - **실측(presentation-v2).** 레드 아이브로우 12곳 전부 21px / weight 700, 레드 불릿 0개.
+    유파 headline/sub/cover-sub 신규 문구 렌더 확인, 옛 문구('로 구성', '코치이자 상대', '펜싱 XR') 소멸.
+    방향키 셸 진행 정상(01→02), 320/768/1440/3840 가로 오버플로 0(최장 아이브로우 267px<320).
+    build:all 4앱 + presentation-v2 빌드 통과.
+  - **미검증(환경 한계).** 프리뷰 rAF 스로틀로 유파 카드 포커스 시 인용구의 실시간 필름은 못 잡았다.
+    인용 문구는 copy.js 데이터로 확정됐고(빌드 통과) headline/sub가 같은 원천에서 정상 렌더됨을 확인했다.
 - **brand R6 하단 CTA와 뉴스레터 리빌과 푸터 완료(확인 대기). 트랙 선점 해제.** 랜딩 하단만 손댔다.
   새 라이브러리 없이 GSAP ScrollTrigger와 Lenis만. 커밋 하나(세 블록이 한 흐름이라).
   - **구현.** `copy.js`에 `LANDING.outro`(cta/newsletter/footer)와 `SECTION.CTA/NEWSLETTER` 신설.
@@ -2334,12 +2351,10 @@
   3D 카메라 궤도 같은 화려한 연출은 **채택 가능한 시네마틱 소스를 더 확보한 뒤** 별도 세션으로 올린다.
   현재 LIBRARIES 판정표에서 시네마틱 계열은 codrops/GridLayoutAnimation과 daniel-cotton/segue가 채택 가능이고
   JosephASG cinematic-scroll과 codrops FullscreenLayoutPageTransitions는 **사용 불가**다
-- **brand 유파 문구가 VORTEX_DESIGN_SYSTEM 3.11 원문과 갈렸다.**
-  - B4 확정 라이팅이 어미를 다듬었다. "긴장감을 조성해서 실수를 유발시키자" 대 "긴장감을 조성해 실수를 유발한다",
-    "침착한 관찰력이 곧 승리다" 대 "침착한 관찰이 곧 승리다". 서브도 "코치이자 상대"가 "진화한다"로 끝난다
-  - 히어로 서브도 갈렸다. 3.11 계열 문서는 "몰입형 펜싱 XR"이고 brand는 "몰입형 펜싱 훈련"이다
-  - **presentation-v2는 3.11 원문을 그대로 쓴다.** 두 사이트가 같은 유파를 다른 문장으로 말한다.
-    확정본이 brand 쪽이면 VORTEX_DESIGN_SYSTEM 3.11과 presentation-v2 copy를 맞춰야 한다. **판단 대기**
+- ~~**brand 유파 문구가 VORTEX_DESIGN_SYSTEM 3.11 원문과 갈렸다.**~~ **해소(P1).**
+  - brand 확정본을 기준으로 삼아 presentation-v2 copy와 VORTEX_DESIGN_SYSTEM 3.11을 그 확정본으로 통일했다.
+    유파 문구(유발한다/불리해진다/승리다, 인용부호 제거), 서브(진화한다), 히어로 서브(몰입형 펜싱 훈련) 일치.
+    상세는 아래 "presentation-v2 P1" 완료 항목.
 - **유파 셀렉션의 "겨루기"가 대전 진입에 미연결이다(B7).**
   - 버튼은 활성 카드에만 서고 **비활성 모양에 사유 문구("대전 진입 준비 중")를 옆에 단다.**
     동작 없는 버튼을 활성처럼 보이게 두지 않았다(ArenaCta와 같은 규율)

@@ -81,6 +81,12 @@ export const typography = {
   // 디스플레이(제목) 계열. **폰트 미정이라 본문과 분리해 둔다.**
   // S1 워드마크와 S3 컨셉명이 이 키만 참조하므로 이 한 줄을 바꾸면 제목 폰트가 전부 교체된다.
   displayFamily: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif",
+  // 아이브로우 v2 (DESIGN 4절, BRAND_REBOOT_PLAN 2.2). **brand와 정합**시킨 값이다.
+  // 불릿 원을 없앤 자리를 크기가 대신 진다. **21px 고정(1.3125rem)이고 반응형 clamp를 쓰지 않는다.**
+  // 사유는 대비다. 레드 아이브로우(#E60D15)는 bg.black 위 4.02:1이라 본문 기준 4.5에 못 미친다.
+  // WCAG 대형 기준(18.66px 이상 + 굵기 700)에 들어가야 3.0으로 통과하는데, 반응형으로 줄면
+  // 작은 폭에서 18.66px 아래로 떨어져 미달로 돌아간다. brand shared/tokens.js와 같은 근거로 고정한다.
+  eyebrow: { size: '1.3125rem', weight: 700, tracking: '0.06em', leading: 1.25 },
 };
 
 export const motion = {

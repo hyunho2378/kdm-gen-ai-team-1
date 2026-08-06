@@ -30,66 +30,35 @@ export function GlassRim({ width = 1.2 }) {
 }
 
 /**
- * 전 섹션 공용 아이브로우. **개별 하드코딩 아이브로우를 두지 않는다.**
+ * 전 섹션 공용 아이브로우 v2 (DESIGN 4절, BRAND_REBOOT_PLAN 2.2). **개별 하드코딩 아이브로우를 두지 않는다.**
  *
- * 구조: 왼쪽에 작은 레드 원 하나 + 라벨 스택(영문 위 작게, 국문 아래).
- * 국문이 없으면 단일 라벨로 뜬다. weight는 전부 600으로 통일한다.
+ * **불릿 원(레드 점)을 없앴다.** 원이 지던 존재감을 크기가 대신 진다.
+ * 영문 위 국문 아래 스택은 유지한다. 국문이 없으면 단일 라벨로 뜬다.
  *
- * 예전에는 영문과 국문을 얇은 가로선으로 갈라 한 줄에 늘어놨다.
- * 그 구분선을 없애고 스택으로 바꾼 것이 이번 통일이다(가운데점을 안 쓰기 위한 장치였는데
- * 스택이면 구분자 자체가 필요 없다).
+ * **크기와 굵기는 tokens.eyebrow가 쥔다(21px 700 고정, brand와 정합).**
+ * 700인 것은 취향이 아니라 대비 요건이다. red 아이브로우가 4.02:1이라 21px가 대형(굵기 700)으로
+ * 인정돼야 기준 3.0으로 통과한다. 굵기를 낮추거나 크기를 줄이면 그 순간 미달로 돌아간다.
+ *
+ * 색은 pres-v2 기존을 유지한다. 영문 tone(기본 red), 국문 primary. 둘 다 같은 크기와 굵기다.
  *
  * @param {string} en 영문 라벨(필수)
  * @param {string} [ko] 국문 라벨. 없으면 단일 라벨
  * @param {string} [tone] 영문 라벨 색. 기본 red
  */
 export function Eyebrow({ en, ko, tone = colors.red }) {
+  const base = {
+    fontFamily: typography.family,
+    fontSize: typography.eyebrow.size,
+    fontWeight: typography.eyebrow.weight,
+    letterSpacing: typography.eyebrow.tracking,
+    lineHeight: typography.eyebrow.leading,
+    whiteSpace: 'nowrap',
+  };
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-      {/* 원은 영문 라인의 baseline에 맞춘다. em 기준이라 폰트가 커져도 따라간다. */}
-      <span
-        aria-hidden="true"
-        style={{
-          width: 7,
-          height: 7,
-          marginTop: '0.44em',
-          background: colors.red,
-          boxShadow: `0 0 10px ${colors.redGlow}`,
-          borderRadius: '50%',
-          flexShrink: 0,
-        }}
-      />
-      <span style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(3px, 0.5vh, 7px)' }}>
-        <span
-          style={{
-            fontFamily: typography.family,
-            fontSize: 'clamp(0.66rem, 0.94vw, 0.9rem)',
-            fontWeight: 600,
-            letterSpacing: '0.18em',
-            lineHeight: 1.1,
-            color: tone,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {en}
-        </span>
-        {ko ? (
-          <span
-            style={{
-              fontFamily: typography.family,
-              fontSize: 'clamp(0.8rem, 1.25vw, 1.38rem)',
-              fontWeight: 600,
-              letterSpacing: '-0.01em',
-              lineHeight: 1.2,
-              color: colors.text.primary,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {ko}
-          </span>
-        ) : null}
-      </span>
-    </div>
+    <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <span style={{ ...base, color: tone }}>{en}</span>
+      {ko ? <span style={{ ...base, color: colors.text.primary }}>{ko}</span> : null}
+    </span>
   );
 }
 

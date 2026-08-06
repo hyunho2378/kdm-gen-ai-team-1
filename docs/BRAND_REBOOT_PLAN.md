@@ -192,7 +192,7 @@ transform(y)과 opacity만 움직이고 **fixed pin을 쓰지 않는다**(월드
 | R4 | 제품 재편(2종) + 상세 Kew 문법 + demo-app을 experience로 흡수 | R1 |
 | R5 | About 신설 | R1 |
 | R6 | 하단 트랙: CTA + 뉴스레터 리빌 + 푸터 | R1, 리빌 실측 |
-| P1 | presentation-v2 아이브로우 v2 적용 (별도 트랙, brand 금지 규칙 유지) | 없음 |
+| P1 | presentation-v2 아이브로우 v2 적용 + 유파 문구 brand 확정본 통일 (별도 트랙) **완료** | 없음 |
 
 각 세션 공통: DESIGN 15절 코드 출처 계약, 실제 픽셀 검증, clean 빌드(npm ci) 통과, Vercel 초록불 확인, CREDITS/LIBRARIES/PROGRESS 기록.
 

@@ -14,7 +14,8 @@ export const COVER = {
   team: 'Team 1',
   members: '김다영 주현호 윤소희',
   event: '2026 KDM+ AI Workshop',
-  sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 XR',
+  // 히어로 서브. **brand LANDING.hero.sub 확정본과 통일**(두 사이트 문구 일치). 'XR' → '훈련'
+  sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 훈련',
 };
 
 // 배경 PROLOGUE (원본 Slide 16_9 - 2.svg)
@@ -235,12 +236,16 @@ export const INTERACTIONS = [
 ];
 
 // 유파별 AI (원본 Slide 16_9 - 7.svg). 배열 순서가 곧 서브 진행 순서다.
+// **문구는 brand copy.js DUELISTS 확정본과 통일한다**(두 사이트가 같은 유파를 같은 문장으로 말한다).
+// 어미를 다듬은 버전(유발한다, 불리해진다, 승리다)과 서브(진화한다)로 맞추고 인용부호를 걷었다.
+// VORTEX_DESIGN_SYSTEM 3.11 원문도 이 확정본으로 함께 개정했다.
 export const DUELIST = {
   label: { en: 'AI DUELIST', ko: '유파별 AI' },
-  headline: '당신과 마주 서는 것은, 매번 다른 유파로 구성',
+  headline: '당신과 마주 서는 것은, 매번 다른 유파',
+  // brand header.sub와 같은 문장. 두 문장이라 서브 2줄 레이아웃에 그대로 나눠 싣는다
   sub: [
-    'AI 대전자는 유파별 거리 습관을 가진 별도의 인격으로 설계되며,',
-    '사용자의 패턴을 학습해 세 스타일을 조합하고 진화시키는 코치이자 상대',
+    'AI 대전자는 유파별 거리 습관을 가진 별도의 인격이다.',
+    '사용자의 패턴을 학습해 세 스타일을 조합하고 진화한다.',
   ],
   // 상세 미디어 슬롯. 실제 영상이 없어 자리만 잡는다.
   mediaPending: '상세 영상 예정',
@@ -252,7 +257,7 @@ export const DUELIST_STYLES = [
     school: '이탈리아 세이버 유파',
     badge: 'Ver.1 공격형',
     style: '빠른 풋워크로 거칠게 좁혀오는 스타일',
-    quote: '“긴장감을 조성해서 실수를 유발시키자.”',
+    quote: '긴장감을 조성해 실수를 유발한다',
     img: '/images/duelist/style-1.png',
   },
   {
@@ -260,7 +265,7 @@ export const DUELIST_STYLES = [
     school: '프랑스 에페 유파',
     badge: 'Ver.2 카운터형',
     style: '거리를 일정하게 유지하며 상대를 기다리는 스타일',
-    quote: '“먼저 움직이면 불리해진다.”',
+    quote: '먼저 움직이면 불리해진다',
     img: '/images/duelist/style-2.png',
   },
   {
@@ -268,7 +273,7 @@ export const DUELIST_STYLES = [
     school: '헝가리안 유파',
     badge: 'Ver.3 심리전형',
     style: '페인트와 리듬 브레이크로 판단을 교란하는 스타일',
-    quote: '“침착한 관찰력이 곧 승리다.”',
+    quote: '침착한 관찰이 곧 승리다',
     img: '/images/duelist/style-3.png',
   },
 ];
