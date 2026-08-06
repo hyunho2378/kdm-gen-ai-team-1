@@ -7,9 +7,13 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, grid, brandNavyGradient, brandSilverGradient } from '../tokens.js';
+import { colors, typography, motion, grid, brandNavyStops, brandSilverStops } from '../tokens.js';
 import { LOGO_GUIDE } from '../copy.js';
 import { Eyebrow } from '../components/Bits.jsx';
+
+// **위에서 아래로 그라데이션(참조 벤토).** 네이비/실버 견본이 내용이라 이 슬라이드에서만 보인다.
+const NAVY_V = `linear-gradient(180deg, ${brandNavyStops[0]} 0%, ${brandNavyStops[1]} 100%)`;
+const SILVER_V = `linear-gradient(180deg, ${brandSilverStops[0]} 0%, ${brandSilverStops[1]} 100%)`;
 
 function GuideCard({ item }) {
   const onNavy = item.tone === 'navy';
@@ -20,8 +24,7 @@ function GuideCard({ item }) {
         position: 'relative',
         borderRadius: 20,
         overflow: 'hidden',
-        // 네이비/실버 견본이 내용이라 이 슬라이드에서만 두 그라디언트가 보인다.
-        background: onNavy ? brandNavyGradient : brandSilverGradient,
+        background: onNavy ? NAVY_V : SILVER_V,
         boxShadow: onNavy ? 'none' : `inset 0 0 0 1px ${colors.line.faint}`,
         display: 'flex',
         flexDirection: 'column',

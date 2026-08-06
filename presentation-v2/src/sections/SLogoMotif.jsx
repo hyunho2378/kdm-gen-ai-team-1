@@ -46,9 +46,9 @@ export default function SLogoMotif({ active }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* 풀블리드 배경 사진. */}
-      <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <AssetImage src={LOGO_MOTIF.bg} fit="cover" />
+      {/* 배경 사진: 밴드 아래 영역에 둔다. 상단 정렬이라 선수 머리가 위에 오고 아래가 잘린다. */}
+      <div aria-hidden="true" style={{ position: 'absolute', top: BAND_H, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
+        <AssetImage src={LOGO_MOTIF.bg} fit="cover" position="center top" />
       </div>
 
       {/* 상단 흰 밴드: 아이브로우 좌 + 본문 우(2단 헤더 정신). */}
