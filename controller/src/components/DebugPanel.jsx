@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { colors, radius, typography } from '../tokens.js';
-import { POSE_STATE, TWIST, poseState } from '../../../shared/pose.js';
+import { POSE_STATE, TILT, poseState } from '../../../shared/pose.js';
 import { DEFAULTS } from '../sensors/motion.js';
 
 /** 조작 상태 이름. 사람이 읽는 말로 바꾼다. */
@@ -34,7 +34,7 @@ export default function DebugPanel({ pipeline, log }) {
   const histRef = useRef([]);
   const [info, setInfo] = useState({
     horiz: 0, vert: 0, threshold: 0, hz: 0, guarding: false, support: '-',
-    peak: 0, tilt: { pitchDeg: 0, rollDeg: 0 }, twist: 0,
+    peak: 0, tilt: { pitchDeg: 0, rollDeg: 0 },
   });
 
   // 샘플 수집은 파이프라인 콜백으로, 그리기는 rAF로 분리한다
@@ -89,7 +89,6 @@ export default function DebugPanel({ pipeline, log }) {
           support: last.support,
           peak: last.peak ?? 0,
           tilt: last.tilt ?? { pitchDeg: 0, rollDeg: 0 },
-          twist: last.twist ?? 0,
         });
       }
       raf = requestAnimationFrame(tick);
@@ -132,11 +131,9 @@ export default function DebugPanel({ pipeline, log }) {
         {row('임계', info.threshold.toFixed(1))}
         {row('주기', `${info.hz.toFixed(0)}Hz`)}
         {row('센서', info.support)}
-        {/* **가드 소스는 비틀림이다(GUARD_TWIST).** 누수 적분 크기가 ON을 넘으면 켜지고
-            OFF 아래로 새면 풀린다. 부호는 방향이라 크기로 문턱과 견준다.
-            roll/pitch는 더는 가드를 안 내고 표시 전용이다(가드는 twist가 낸다) */}
-        {row('비틀림', `${Math.abs(info.twist).toFixed(0)}도 / ${TWIST.onDeg}`)}
-        {row('좌우 roll', `${info.tilt.rollDeg.toFixed(0)}도`)}
+        {/* 가드가 실제로 보는 두 축이다. shared/pose.js가 이 값으로 상태를 정한다.
+            예전 오일러 표시는 분해가 달라서 가드가 왜 켜졌는지를 설명하지 못했다 */}
+        {row('좌우 roll', `${info.tilt.rollDeg.toFixed(0)}도 / ${TILT.rollOnDeg}`)}
         {row('앞뒤 pitch', `${info.tilt.pitchDeg.toFixed(0)}도`)}
         {row('가드', info.guarding ? '켜짐' : '꺼짐')}
         {row('상태', STATE_LABEL[poseState(info.guarding, info.tilt)])}
