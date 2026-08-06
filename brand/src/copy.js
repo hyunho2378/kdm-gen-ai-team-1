@@ -26,8 +26,9 @@ export const TODO_PRODUCT_SPEC = `제품 스펙 ${TODO_MARK}`;
 export const TODO_PRODUCT_FEATURES = `제품 특징 ${TODO_MARK}`;
 // 실제 제품 3D 모델이 없어 뷰어가 플레이스홀더 프리미티브를 띄운다. 모델이 들어오면 이 자리가 사라진다
 export const TODO_PRODUCT_MODEL = `제품 3D 모델 ${TODO_MARK}`;
-// 제품군이 4종에서 3종으로 줄면서 "각 장치가 거리, 자세, 타이밍, 대결을 맡는다"가
-// 네 개 전제라 안 맞게 됐다. 새 문장을 지어내지 않고 자리표시로 둔다
+// 제품군이 4종에서 3종으로, 다시 2종으로 줄었다(REBOOT_PLAN 3.1). 원래 문장
+// "각 장치가 거리, 자세, 타이밍, 대결을 맡는다"가 네 개 전제라 처음부터 안 맞았고
+// 지금은 더 안 맞는다. 새 문장을 지어내지 않고 자리표시로 둔다
 export const PRODUCTS_INDEX_LINE_TODO = `제품군 한 줄 ${TODO_MARK}`;
 // 이미지와 영상이 아직 없는 자리. **빈 박스나 다크 사각형을 두지 않는다**(REBOOT_PLAN 2.1).
 // 자리표시 문구만 dim으로 둔다. 에셋이 들어오면 이 상수를 참조하는 자리가 이미지로 바뀐다
@@ -80,8 +81,10 @@ export const LANDING = {
       key: 'products',
       to: '/products',
       eyebrow: 'PRODUCTS',
-      title: '검을 이루는 세 개의 장치',
-      line: 'XR 글라스부터 데모 앱까지, 훈련을 완성하는 제품군',
+      // 제품군이 2종으로 줄었다(REBOOT_PLAN 3.1). 인터랙티브 데모 앱은 제품이 아니라
+      // 체험이라 /experience로 옮겼다. 여기 한 줄도 남은 둘의 이름으로 다시 쓴다
+      title: '검을 이루는 두 개의 장치',
+      line: 'XR 글라스와 모의 검 컨트롤러, 훈련을 완성하는 제품군',
       link: '제품 보기',
     },
     {
@@ -109,9 +112,11 @@ export const LANDING = {
 export const PRODUCTS = {
   index: {
     eyebrow: { en: 'PRODUCTS', ko: '제품군' },
-    title: '검을 이루는 세 개의 장치',
+    title: '검을 이루는 두 개의 장치',
     line: PRODUCTS_INDEX_LINE_TODO,
   },
+  // **인터랙티브 데모 앱은 여기 없다(REBOOT_PLAN 3.1).** 그것은 제품이 아니라 체험이라
+  // /experience가 소개를 맡는다. 라우트도 함께 사라져 /product/demo-app은 NotFound로 떨어진다
   cards: [
     {
       slug: 'xr-glass',
@@ -126,13 +131,6 @@ export const PRODUCTS = {
       line: '폰이 검이 되는 모션 컨트롤러',
       detail: '폰 센서로 찌르기와 거리를 읽어 검의 움직임으로 옮긴다',
       demoCta: false,
-    },
-    {
-      slug: 'demo-app',
-      name: '인터랙티브 데모 앱',
-      line: '지금 바로 겨루는 브라우저 데모',
-      detail: '설치 없이 노트북과 폰으로 결투를 체험한다',
-      demoCta: true,
     },
   ],
 };
@@ -152,7 +150,6 @@ export const PRODUCT_DETAIL = {
   hero: {
     'xr-glass': '보는 것이 곧 겨루는 것',
     controller: '손안의 검',
-    'demo-app': '설치 없이, 지금',
   },
   labels: DETAIL_LABELS,
   // 왼쪽 세로 탭. 오버워치의 스킨 리스트 자리를 이 둘이 대신한다.
@@ -183,13 +180,6 @@ export const PRODUCT_DETAIL = {
       { name: '배터리', value: TODO_MARK },
       { name: '연결', value: '무선' },
     ],
-    'demo-app': [
-      { name: '실행 환경', value: '웹 브라우저' },
-      { name: '설치', value: '불필요' },
-      { name: '지원 기기', value: '노트북과 폰' },
-      { name: '페어링', value: '방 코드' },
-      { name: '연결', value: '실시간 중계' },
-    ],
   },
   features: {
     'xr-glass': [
@@ -203,12 +193,6 @@ export const PRODUCT_DETAIL = {
       '찌르기 속도와 방향을 검의 움직임으로 변환',
       '명중 순간 손잡이 진동으로 타격 반동 재현',
       '전진과 후퇴를 거리로 환산',
-    ],
-    'demo-app': [
-      '설치 없이 겨루는 브라우저 데모',
-      '노트북과 폰을 방 코드로 연결',
-      '접속과 캘리브레이션과 결투의 세 단계',
-      '유파 3종과 즉시 대전',
     ],
   },
   specTodo: TODO_PRODUCT_SPEC,
@@ -273,7 +257,11 @@ export const DUELISTS = {
 export const EXPERIENCE = {
   eyebrow: { en: 'EXPERIENCE', ko: '체험' },
   title: '거리 안으로 들어선다',
-  body: '노트북은 도장이 되고 폰은 검이 된다. 방 코드로 둘을 잇고 결투를 시작한다.',
+  // **인터랙티브 데모 앱을 여기로 흡수했다(REBOOT_PLAN 3.1).** 그 제품이 하던 소개를
+  // 이 문단이 대신한다. 데모 앱 문구 중 방 코드 연결과 3단계와 노트북과 폰은 이미
+  // 이 페이지에 있었고(body 뒷문장, steps), 없던 것은 "설치 없이 브라우저"뿐이라
+  // 그 한 가지만 앞에 붙였다. 새 자리를 만들지 않았다
+  body: '설치 없이 브라우저에서 겨룬다. 노트북은 도장이 되고 폰은 검이 된다. 방 코드로 둘을 잇고 결투를 시작한다.',
   steps: ['접속', '캘리브레이션', '결투'],
   cta: '데모 시작',
   notice: TODO_EXPERIENCE_NOTICE,
