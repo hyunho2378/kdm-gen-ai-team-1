@@ -2310,9 +2310,24 @@
     - **남은 사람 단계: Vercel 프리뷰 배포 실 URL 육안 검증, Lighthouse LCP/CLS/INP 실측 전후 비교(헤드리스 pane 불안정으로 자동 측정 불가), 실브라우저에서 P3 스크럽·P6 Flip 모핑 육안 확인.** 배포는 외부 공개 액션이라 권한 확인 후 사람이 수행
   - **presentation 탈PPT 개편 P0~P7 전체 완료.** 실물 펜싱 프레임 도착 시 `presentation/public/frames/hero/` 폴더 덮어쓰기 + manifest.count만 바꾸면 반영(코드 수정 0)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
-- **brand 레이아웃 강화 세로정렬과 제품 가독 작업중. 트랙 선점.** 레이아웃만(색/카피 무변경).
-  섹션을 세로 중앙에서 상단 정렬로(빈 상단 3분의 1 제거), 제품 인덱스 제목 압축과 카드 판독,
-  관문 위계 확대. --page-top 축소, Section 100dvh/center 제거, .vx-card 판 신설.
+- **brand 레이아웃 강화 세로정렬과 제품 가독 완료(확인 대기). 트랙 선점 해제.** 레이아웃만, 색/카피 무변경.
+  커밋 둘로 나눴다(섹션 상단 정렬 전역 / 제품·관문 카드 가독).
+  - **파트 A 섹션 상단 정렬.** `theme.js` `--page-top`을 `섹션간격+헤더`(최대 228px)에서
+    `헤더 + clamp(24~48px)`(약 112px)로 낮춰 하위 페이지 빈 상단 3분의 1을 제거했다.
+    `Section.jsx`에서 `minHeight:100dvh`와 `justifyContent:center`를 걷어 콘텐츠 높이에 맞춰 자연 흐름 상단 정렬.
+    히어로는 100dvh를 유지(궤적)하되 `justifyContent: center → flex-start`로 워드마크를 상단으로 올렸다.
+    실측: About/products pageTop 112px, 히어로 아이브로우 157px(중앙 대비 축소), 관문 콘텐츠 상단 정렬(중앙 아님).
+  - **파트 B 제품 인덱스 가독.** `Page.jsx`에 `compact` 모드 신설(제목 68→40px, 간격 축소).
+    Products가 `fit compact`. 카드에 `.vx-card` 판(`--card-bg` 미세 상승 + 라운드 16 + 호버 밝기, 선 없음),
+    안쪽 패딩, 이미지 슬롯 상단(자리표시 가운데). `data-flip-id` 유지(B8a). **실측: 제품 2종이 첫 화면에
+    스크롤 없이 다 보인다(320/768/1440/3840 전부 allInView).** 카드가 판으로 또렷이 읽힌다(스크린샷).
+  - **파트 C 관문 위계.** 관문 제목 heading(28px) → title 계열(clamp 최대 42px, 실측 41.6px)로 확대,
+    `.vx-card` 판+호버 적용(파트 B 문법), 상단 정렬(파트 A). 셋 균형.
+  - `index.css`에 `.vx-card` 신설, `theme.js`에 `--card-bg`/`--card-bg-hover`/`--card-radius`.
+  - **검증.** 워프(R3)·Flip(B8a)·커서(R1)는 레이아웃 변경 대상 밖이라 무변경. 320/768/1440/3840 가로 오버플로 ≤ 0.
+    build:all 4앱 통과. REBOOT_PLAN 2.3에 세로 정렬 규칙과 카드 가독 문법 추가.
+  - **참고: getComputedStyle이 트리 요소의 var 기반 background를 투명으로 오보고**하는 프리뷰 페인 아티팩트가 있어
+    카드 판독은 스크린샷(시각)으로 확정했다(헤더 CTA 레드도 같은 오보고, 실제로는 렌더됨).
 - **GUARD_TWIST(길 B) 가드를 비틀기로 완료(실기 확인 대기).** 커밋 셋으로 나눠 각 직후 push했다.
   가드 제스처를 옆으로 기울이기(roll, 길 A)에서 사용자가 실제로 하는 "잡은 채 화면이 몸을 보게 비틀기"
   (전완 회외, 장축 둘레 회전)로 옮겼다. diff는 입력/렌더/미리보기 7파일뿐, 판정 파일 무변경.

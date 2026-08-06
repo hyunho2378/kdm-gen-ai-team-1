@@ -7,7 +7,7 @@
 // `:active`의 press 색이 통째로 죽는다(arena에서 실제로 죽어 있던 함정이다).
 // 그래서 CTA 배경은 클래스가 쥔다.
 
-import { colors, displayFamily, glow, motion, spacing, withAlpha, zIndex } from './tokens.js';
+import { colors, displayFamily, glow, motion, radius, spacing, withAlpha, zIndex } from './tokens.js';
 
 /**
  * 헤더가 상주하는 높이. 하위 페이지 상단 여백이 이 값을 더해야 제목이 안 가린다.
@@ -30,6 +30,13 @@ export function applyThemeVars(root = document.documentElement) {
     // 예전에는 `섹션 간격 + 헤더`(최대 228px)라 헤더와 제목 사이가 통째로 비었다(화면 위 3분의 1).
     // 이제 헤더 높이에 8pt 격자의 완만한 gap(clamp 24~48px)만 더해 콘텐츠가 위로 붙는다.
     '--page-top': `calc(${HEADER_H}px + clamp(1.5rem, 1rem + 2vw, 3rem))`,
+
+    // ── 카드 판 (제품 인덱스, 관문) ──────────────────────────────────────
+    // **선이 아니라 아주 낮은 대비의 배경 상승으로 경계를 만든다**(R1 선 금지 유지, 판독 개선).
+    // 검은 페이지 위 흰 오버레이(withAlpha)라 판이 아니라 은은한 상승으로 읽힌다. 호버에 한 단계 밝아진다.
+    '--card-bg': withAlpha(colors.text.primary, 0.03),
+    '--card-bg-hover': withAlpha(colors.text.primary, 0.06),
+    '--card-radius': `${radius.lg}px`,
 
     // 커서는 토스트보다도 위다. 화면의 어떤 것도 커서를 가리면 안 된다
     '--z-cursor': String(zIndex.toast + 10),

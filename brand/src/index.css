@@ -43,9 +43,25 @@ html { scrollbar-gutter: stable both-edges; }
   padding-block: var(--section-gap);
 }
 
-/* 목록 카드의 비주얼 자리. 남는 세로를 먹어 첫 화면 안에서 늘어난다.
-   **좁은 화면에서는 접는다.** 320에서 3장을 한 화면에 넣으면 이 자리에 줄 높이가 안 남아
-   카드끼리 글자가 겹쳤다(실측 스크린샷). 좁을 때는 이름과 한 줄만 남기는 것이 맞다.
+/* ── 카드 판 (제품 인덱스, 관문) ──────────────────────────────────────────
+   **카드로 읽히게 한다.** 선을 다시 넣지 않고(R1) 아주 낮은 대비의 배경 상승으로 경계를 만든다.
+   검은 페이지 위 흰 오버레이(--card-bg)라 판이 아니라 은은한 상승으로 읽히고, 호버/포커스에
+   한 단계 밝아져 클릭 대상임이 읽힌다(R1 커스텀 커서가 a를 이미 확대 대상으로 본다).
+   카드 전체가 링크라 히트 영역이 넓다. 배경만 바꾸므로 레이아웃과 Flip 짝은 영향이 없다. */
+.vx-card {
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  transition: background-color var(--dur-hover) var(--ease-out);
+}
+.vx-card:hover,
+.vx-card:focus-visible {
+  background: var(--card-bg-hover);
+}
+
+/* 목록 카드의 비주얼 자리(이미지 슬롯). 카드 상단에서 남는 세로를 먹어 첫 화면 안에서 늘어난다.
+   자리표시 문구를 가운데 놓아 **비어 있는 이미지 영역**으로 읽힌다(이미지가 오면 이 자리에 들어간다).
+   **좁은 화면에서는 접는다.** 320에서 여러 장을 한 화면에 넣으면 이 자리에 줄 높이가 안 남아
+   카드끼리 글자가 겹쳤다(실측). 좁을 때는 이름과 한 줄만 남기는 것이 맞다.
    md 이상에서만 자리가 선다. 요소는 계속 있으므로 Flip 전환의 짝은 그대로 성립한다 */
 .vx-card-visual {
   display: none;
@@ -55,8 +71,10 @@ html { scrollbar-gutter: stable both-edges; }
     display: flex;
     flex: 1;
     min-height: 0;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
+    border-radius: var(--card-radius);
   }
 }
 

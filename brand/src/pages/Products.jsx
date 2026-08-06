@@ -28,7 +28,7 @@ export default function Products() {
   }, []);
 
   return (
-    <Page eyebrow={PRODUCTS.index.eyebrow} headline={PRODUCTS.index.title} sub={PRODUCTS.index.line} fit>
+    <Page eyebrow={PRODUCTS.index.eyebrow} headline={PRODUCTS.index.title} sub={PRODUCTS.index.line} fit compact>
       {/* **첫 화면에서 완결한다(REBOOT_PLAN 2.3).** 남는 세로를 격자가 통째로 먹고
           카드 안에서는 비주얼 자리가 늘어난다. 그래서 어느 폭에서도 스크롤 없이 카드 셋이 다 보인다.
           고정 높이(aspect-ratio)를 주면 좁은 화면에서 반드시 화면을 넘긴다 */}
@@ -50,6 +50,7 @@ export default function Products() {
           <li key={p.slug} style={{ minHeight: 0 }}>
             <Link
               to={`/product/${p.slug}`}
+              className="vx-card"
               style={cardStyle}
               // 떠나기 직전에 썸네일 자리를 기록한다. 라우트가 바뀌면 이 요소는 사라지므로
               // 상태를 모듈 변수에 맡긴다(lib/flip.js)
@@ -100,14 +101,16 @@ export default function Products() {
   );
 }
 
-// **카드 보더와 판을 걷어냈다(REBOOT_PLAN 2.1).** 구분은 여백과 타이포 스케일이 진다.
+// **카드가 카드로 읽히게 한다(레이아웃 강화).** 채움과 호버는 `.vx-card`(index.css)가 쥐고
+// 여기서는 배치와 안쪽 여백만 준다. 선은 없다(R1). 배경 상승과 라운드와 호버 밝기로 경계를 낸다.
+// **배경을 인라인으로 걸지 않는다.** 걸면 `:hover`/`:focus-visible` 밝기가 죽는다(PITFALLS 인라인 우선).
 const cardStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: 10,
   height: '100%',
   minHeight: 0,
-  paddingBlock: spacing.unit,
+  padding: spacing.unit * 2,
   textDecoration: 'none',
 };
 

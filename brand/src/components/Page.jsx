@@ -4,12 +4,18 @@
 import { colors, spacing, typography } from '../tokens.js';
 import Eyebrow from './Eyebrow.jsx';
 
+// 압축 제목 크기. **title(최대 68px)과 heading(최대 28px) 사이.** 목록 페이지에서 제목 블록이
+// 첫 화면 절반을 먹어 카드가 밀리던 것을 줄인다. weight/tracking/leading은 title 그대로라 제목으로 읽힌다.
+const COMPACT_TITLE_SIZE = 'clamp(1.5rem, 1rem + 1.8vw, 2.5rem)';
+
 /**
  * @param fit 첫 화면 완결 모드(REBOOT_PLAN 2.3). 높이를 화면에 고정해 자식이 남는 세로를
  *   나눠 갖게 한다. 목록 페이지가 스크롤 없이 끝나야 할 때 쓴다.
  *   기본(false)은 내용만큼 늘어나는 일반 페이지다.
+ * @param compact 제목 블록을 압축한다. 제목 크기를 낮추고 간격을 좁혀 상단이 적게 차지하게 한다.
+ *   목록 페이지에서 카드가 첫 화면 안에 확실히 들어오게 하려고 쓴다(제품 인덱스).
  */
-export default function Page({ eyebrow, headline, sub, fit = false, children }) {
+export default function Page({ eyebrow, headline, sub, fit = false, compact = false, children }) {
   return (
     <main
       className="vx-shell vx-page"
@@ -19,7 +25,7 @@ export default function Page({ eyebrow, headline, sub, fit = false, children }) 
         [fit ? 'height' : 'minHeight']: '100dvh',
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.unit * 3,
+        gap: compact ? spacing.unit * 2 : spacing.unit * 3,
       }}
     >
       {eyebrow ? <Eyebrow en={eyebrow.en} ko={eyebrow.ko} /> : null}
@@ -29,7 +35,7 @@ export default function Page({ eyebrow, headline, sub, fit = false, children }) 
           style={{
             margin: 0,
             fontFamily: typography.family,
-            fontSize: typography.title.size,
+            fontSize: compact ? COMPACT_TITLE_SIZE : typography.title.size,
             fontWeight: typography.title.weight,
             letterSpacing: typography.title.tracking,
             lineHeight: typography.title.leading,

@@ -171,14 +171,14 @@ function GatewaySection() {
                 `.vx-gate`는 호버 반응의 뿌리다. 반응 자체는 index.css가 쥔다 */}
             <Link
               to={g.to}
-              className="vx-gate"
+              className="vx-gate vx-card"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: spacing.unit * 1.5,
                 height: '100%',
                 minHeight: 180,
-                paddingBlock: spacing.unit * 2,
+                padding: spacing.unit * 2,
                 textDecoration: 'none',
               }}
             >
@@ -199,12 +199,17 @@ function GatewaySection() {
 
               {/* 개별 구현이던 자리다. 컴포넌트로 통합해 크기와 굵기가 전 페이지와 같아진다 */}
               <Eyebrow en={g.eyebrow} />
+              {/* **관문 제목을 키워 위계를 세운다.** 히어로 워드마크 다음가는 존재감이라
+                  heading(최대 28px)에서 title 계열(최대 42px)로 올린다. 굵기와 자간은 title을 써
+                  제목으로 확실히 읽힌다. 셋이 같은 크기라 균형이 선다 */}
               <span
                 className="vx-gate-title"
                 style={{
                   fontFamily: typography.family,
-                  fontSize: typography.heading.size,
-                  fontWeight: typography.heading.weight,
+                  fontSize: 'clamp(1.5rem, 1rem + 1.9vw, 2.6rem)',
+                  fontWeight: typography.title.weight,
+                  letterSpacing: typography.title.tracking,
+                  lineHeight: typography.title.leading,
                   color: colors.text.primary,
                   wordBreak: 'keep-all',
                 }}
