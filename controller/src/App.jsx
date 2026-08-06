@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HAPTIC, INPUT_EVENT } from '../../shared/protocol.js';
 import { createPipeline, SUPPORT } from './pipeline.js';
-import { LINK, LINK_LABEL, createLink } from './net/socket.js';
+import { LINK, LINK_LABEL, createLink, ensureIdentity, fetchRecords } from './net/socket.js';
 import {
   PERM,
   motionPermissionNeeded,
@@ -136,10 +136,11 @@ export default function App() {
   const [matchResult, setMatchResult] = useState(null);
   // MAIN 활성 탭. 기본은 가운데 CONTROLLER다
   const [tab, setTab] = useState('CONTROLLER');
-  // 치른 경기 누적. **메모리뿐이다.** 서버 기록이 아직 없어서 앱을 닫으면 사라지고,
-  // 그 사실을 RECORDS 탭이 화면에 적는다(localStorage는 금지라 대안이 아니다)
+  // 누적 기록. **서버가 준 것이다.** 앱은 저장하지 않고 읽기만 한다.
+  // 신원은 httpOnly 쿠키에 있어서 여기서 id를 들고 다니지 않는다(localStorage 금지).
   const [records, setRecords] = useState([]);
-  const recordId = useRef(0);
+  // 서버가 기록을 받고 있나. DATABASE_URL이 없으면 false이고 화면이 그 사실을 적는다
+  const [recordsEnabled, setRecordsEnabled] = useState(false);
   const resetPhoneStats = useCallback(() => {
     phoneStatsRef.current = { thrusts: 0, powerSum: 0, powerMax: 0, guards: 0, tremorSum: 0, tremorCount: 0, lastQ: null };
   }, []);
@@ -161,6 +162,31 @@ export default function App() {
   const [linkError, setLinkError] = useState(null);
   const [log, setLog] = useState([]);
   const logId = useRef(0);
+
+  /** 서버에서 내 누적 기록을 다시 읽는다. 신원은 쿠키에 있으므로 인자가 없다. */
+  const refreshRecords = useCallback(async () => {
+    const r = await fetchRecords();
+    setRecords(r.records);
+    setRecordsEnabled(r.enabled);
+  }, []);
+
+  // **신원을 소켓보다 먼저 확보한다.** 핸드셰이크는 이미 있는 쿠키만 실어 나르므로
+  // 이게 늦으면 그 판의 기록이 주인을 못 찾는다. 실패해도 경기는 그대로 된다
+  useEffect(() => {
+    let alive = true;
+    ensureIdentity().then(() => {
+      if (alive) refreshRecords();
+    });
+    return () => {
+      alive = false;
+    };
+  }, [refreshRecords]);
+
+  // MAIN에 들어오거나 탭을 옮길 때마다 다시 읽는다. 경기 직후 서버 삽입이 끝난 뒤라
+  // 결과 화면에서 돌아오면 그 판이 이미 목록에 있다
+  useEffect(() => {
+    if (phase === PHASE.MAIN) refreshRecords();
+  }, [phase, tab, refreshRecords]);
 
   const push = useCallback((text) => {
     logId.current += 1;
@@ -217,11 +243,9 @@ export default function App() {
     // **경기 중 상태 색을 여기서 전부 끈다.** 마지막 명중 플래시가 경기 끝과 겹치면
     // 그대로 결과 화면까지 따라온다. 결과는 중립 색이어야 한다.
     link.on('result', (r) => {
-      const built = buildMatchResult(r, phoneStatsRef.current);
-      setMatchResult(built);
-      // 누적은 append다. 최근 판이 위로 온다
-      recordId.current += 1;
-      setRecords((list) => [{ ...built, id: recordId.current }, ...list]);
+      setMatchResult(buildMatchResult(r, phoneStatsRef.current));
+      // **여기서 기록을 만들지 않는다.** 같은 RESULT를 서버가 중계하면서 append하고,
+      // 앱은 MAIN으로 돌아올 때 그것을 다시 읽는다. 두 곳에서 세면 숫자가 갈린다
       setFlash(null);
       setGuarding(false);
       setLastAction(null);
@@ -380,6 +404,7 @@ export default function App() {
             tab={tab}
             onTab={setTab}
             records={records}
+            recordsEnabled={recordsEnabled}
             paired={linkStatus === LINK.PAIRED}
             onConnect={toConnect}
             onStart={onStart}

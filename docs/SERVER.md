@@ -1,6 +1,9 @@
 # SERVER.md 간합 중계 서버 명세
 
-이전 프로젝트 BACKEND.md를 대체한다. 간합 server는 DB 없는 Socket.io 릴레이다. Postgres, 인증, 마이그레이션 전부 없음.
+이전 프로젝트 BACKEND.md를 대체한다. 간합 server는 Socket.io 릴레이이고, **그 위에 경기 기록 하나만 얹혀 있다.**
+
+**릴레이가 본체이고 기록은 부속이다.** `DATABASE_URL`이 없으면 기록만 꺼지고 중계는 그대로 돈다.
+데모가 DB 때문에 멈추면 안 된다. 방 상태는 여전히 메모리 Map이고 DB에 안 들어간다.
 
 ## 역할 한 줄
 
@@ -8,7 +11,9 @@ arena와 controller를 방 코드로 짝지어 메시지를 그대로 중계한�
 
 ## 스택
 
-Node 20 + Express + Socket.io. 상태는 메모리 Map에만. 프로세스 재시작 시 소멸을 전제한다. 배포 Render, GET /health로 상태 확인.
+Node 20 + Express + Socket.io + Postgres(pg). 방 상태는 메모리 Map에만 들고 프로세스 재시작 시 소멸을 전제한다.
+경기 기록만 Postgres에 남는다. 배포 Render, DB는 Neon 등 외부 Postgres, GET /health로 상태 확인
+(`{"ok":true,"records":true|false}`의 records가 기록 저장소 연결 여부다).
 
 ## 방 생명주기
 
@@ -38,11 +43,38 @@ action.kind: thrust, guard, advance, retreat. haptic.pattern: hit, parry, lose.
 
 controller는 motion 원본을 30Hz로 보내되 THRUST 같은 이산 판정은 폰에서 1차 감지해 action으로도 보낸다(지연 대비 이중화). 서버는 스로틀하지 않는다. 송신 측이 30Hz를 지킨다.
 
+## 경기 기록
+
+**서버가 쓴다. 폰이 점수를 직접 써넣는 경로를 열지 않는다.** arena가 MATCH_END에 보내는
+`result`를 중계하는 김에 그대로 append할 뿐이고, 서버가 값을 다시 계산하지 않는다.
+쓰기 조건이 "보낸 소켓의 역할이 arena"라서 폰이 result를 흉내 내도 저장되지 않는다.
+
+신원은 **httpOnly 쿠키 `vx_id`의 익명 UUID** 하나다. 로그인이 아직 없어서 신원 종류를 나누지
+않는다. 소켓 핸드셰이크가 그 쿠키를 실어 오므로 **앱은 소켓을 붙이기 전에 `/api/me`를 한 번
+불러야 한다.** 그 순서가 어긋나면 그 판의 기록이 주인을 못 찾는다.
+
+| 경로 | 하는 일 |
+|---|---|
+| `GET /api/me` | 신원 보장. 없으면 발급하고 Set-Cookie |
+| `GET /api/records` | 쿠키 신원의 누적 기록. 질의로 남의 것을 부를 방법이 없다 |
+
+**비파괴가 규율이다.** 스키마는 `CREATE TABLE IF NOT EXISTS`와 `ALTER ... ADD COLUMN IF NOT EXISTS`뿐이고
+쓰기는 append뿐이다. `server/src/db.js`에 DROP, TRUNCATE, DELETE가 한 건도 없다. 부팅마다 스키마를
+다시 돌려도 기존 행에 손대는 경로 자체가 존재하지 않는다.
+
+저장하는 것은 **arena가 이미 내던 지표뿐이다.** 승패, 스코어, 상대 유파 이름, thrusts, hits,
+리포스트, 피스트아웃, 경기 시간, 부위 분포. 폰 통계(파워, 손떨림, 가드 수)는 폰 안에서만 계산되고
+서버를 거치지 않아서 저장하지 않는다(저장하려면 폰이 쓰는 경로를 열어야 하고 그게 신뢰 경계를 깬다).
+
 ## 규율
 
-- 서버에 게임 로직, 판정, 상태 해석을 넣지 않는다. 방 존재 확인 외 검증 없음
-- CORS origin은 env CORS_ORIGINS 배열로만, 끝 슬래시 없이 정확히. credentials 불필요(쿠키 없음)
-- 환경 변수: PORT, CORS_ORIGINS. 하드코딩 금지
+- 서버에 게임 로직, 판정, 상태 해석을 넣지 않는다. 방 존재 확인 외 검증 없음.
+  **기록 append는 판정이 아니다.** 확정된 결과를 받아 적는 부수효과이고 실패해도 경기가 안 끊긴다
+- CORS origin은 env CORS_ORIGINS 배열로만, 끝 슬래시 없이 정확히.
+  **credentials가 필요하다**(신원 쿠키). Express와 Socket.io 양쪽에 켠다
+- 프런트와 서버 도메인이 다르면 쿠키에 SameSite=None과 Secure가 둘 다 필요하고 `trust proxy`도 켜야 한다.
+  `NODE_ENV=production`이 그 스위치다. 로컬은 localhost끼리라 포트가 달라도 same-site로 쳐서 Lax로 충분하다
+- 환경 변수: PORT, CORS_ORIGINS, DATABASE_URL, NODE_ENV. 하드코딩 금지
 - Render 무료 티어 콜드 스타트 대비: arena가 PAIRING 진입 전에 /health를 먼저 때려 깨운다. 실패 시 "서버 깨우는 중" 문구
 - 로그는 접속, 페어링, 단절만. motion 스트림 로깅 금지(로그 폭주)
 
@@ -51,7 +83,10 @@ controller는 motion 원본을 30Hz로 보내되 THRUST 같은 이산 판정은 
 세 서비스가 서로의 주소를 알아야 하므로 **순서가 있다.** 서버를 먼저 띄우고 그 주소를 두 프런트에 넣는다.
 
 1. **Render에 server 배포.** Node 웹 서비스, 무료 플랜. 루트 디렉터리 `server`, 빌드 `npm install`, 시작 `npm start`.
-   환경 변수는 `CORS_ORIGINS` 하나다(PORT는 Render가 준다). 이 시점에는 프런트 주소를 아직 모르므로 비워 두고 3단계에서 채운다.
+   환경 변수는 `CORS_ORIGINS`, `DATABASE_URL`, `NODE_ENV=production` 셋이다(PORT는 Render가 준다).
+   `CORS_ORIGINS`는 이 시점에 프런트 주소를 아직 모르므로 비워 두고 3단계에서 채운다.
+   **`DATABASE_URL`이 비면 기록만 꺼지고 서버는 정상으로 뜬다.** `/health`의 `records`가 false면 그 상태다.
+   **`NODE_ENV`를 빼면 신원 쿠키가 안 붙는다**(도메인이 달라 SameSite=None과 Secure가 필요하다).
    배포 후 `https://<서비스>.onrender.com/health`가 `{"ok":true}`를 내면 산 것이다.
 2. **Vercel의 arena와 controller에 서버 주소를 넣는다.**
    - arena: `VITE_SERVER_URL=https://<서비스>.onrender.com`, `VITE_CONTROLLER_URL=https://<controller>.vercel.app`

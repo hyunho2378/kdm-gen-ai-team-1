@@ -53,6 +53,37 @@ export function serverUrl() {
   return typeof v === 'string' ? v.trim() : '';
 }
 
+/**
+ * 신원을 확보한다. 서버가 httpOnly 쿠키로 익명 id를 준다.
+ * **소켓을 붙이기 전에 한 번 불러야 한다.** 핸드셰이크는 이미 있는 쿠키만 실어 나르므로
+ * 이게 늦으면 그 판의 기록이 주인을 못 찾는다. localStorage는 금지라 쿠키가 유일한 그릇이다.
+ */
+export async function ensureIdentity() {
+  const url = serverUrl();
+  if (!url) return false;
+  try {
+    const res = await fetch(`${url}/api/me`, { credentials: 'include' });
+    return res.ok;
+  } catch {
+    // 서버가 안 깨어 있어도 경기는 되어야 한다. 기록만 그 판에서 빠진다
+    return false;
+  }
+}
+
+/** 내 누적 기록. 신원은 쿠키에 있으므로 인자가 없다. */
+export async function fetchRecords() {
+  const url = serverUrl();
+  if (!url) return { records: [], enabled: false };
+  try {
+    const res = await fetch(`${url}/api/records`, { credentials: 'include' });
+    if (!res.ok) return { records: [], enabled: true };
+    const body = await res.json();
+    return { records: Array.isArray(body?.records) ? body.records : [], enabled: body?.enabled === true };
+  } catch {
+    return { records: [], enabled: false };
+  }
+}
+
 export function createLink() {
   let socket = null;
   let room = '';
@@ -103,6 +134,8 @@ export function createLink() {
       setStatus(LINK.CONNECTING);
 
       socket = io(url, {
+        // 핸드셰이크가 쿠키를 실어 가야 서버가 이 판의 기록을 내 것으로 적는다
+        withCredentials: true,
         transports: ['websocket', 'polling'],
         reconnectionDelay: 800,
         reconnectionDelayMax: 4000,

@@ -107,7 +107,7 @@ export default function ResultScreen({ result, onAgain, onHome }) {
           <Button variant="filled" size="md" onClick={onAgain}>다시 대전</Button>
         </div>
         <span style={{ textAlign: 'center', fontFamily: typography.family, fontSize: ig.caption1.size, color: colors.text.dim }}>
-          이 경기는 RECORDS 탭에 쌓입니다. 서버 저장은 아직 없어 앱을 닫으면 사라집니다.
+          경기 결과는 RECORDS 탭에 쌓입니다. 파워와 손떨림은 이 화면에서만 보는 값이고,
           손떨림은 자세 안정도의 근사 지표입니다.
         </span>
       </div>

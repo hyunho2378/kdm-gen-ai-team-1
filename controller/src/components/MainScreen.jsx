@@ -117,7 +117,45 @@ function ProductStage() {
   );
 }
 
-function RecordsPanel({ records }) {
+const OUTCOME_LABEL = { win: MAIN.recordsWin, loss: MAIN.recordsLose, draw: MAIN.recordsDraw };
+
+/** `2026-08-07T...` → `8월 7일 14:03`. 목록에서 판을 가르는 것은 시각이다. */
+function fmtPlayedAt(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const two = (n) => String(n).padStart(2, '0');
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 ${two(d.getHours())}:${two(d.getMinutes())}`;
+}
+
+function fmtDuration(ms) {
+  const s = Math.round(ms / 1000);
+  const m = Math.floor(s / 60);
+  return m > 0 ? `${m}분 ${s % 60}초` : `${s}초`;
+}
+
+function RecordsPanel({ records, enabled }) {
+  // 서버가 기록을 못 받는 상태를 빈 목록으로 위장하지 않는다. 사유가 보여야 고칠 수 있다
+  if (!enabled) {
+    return (
+      <Card style={{ gap: 6 }}>
+        <span style={{ fontFamily: typography.family, fontSize: ig.body.size, color: colors.text.primary }}>
+          {MAIN.recordsOffTitle}
+        </span>
+        <span
+          style={{
+            fontFamily: typography.family,
+            fontSize: ig.footnote.size,
+            lineHeight: ig.footnote.leading,
+            color: colors.text.dim,
+            wordBreak: 'keep-all',
+          }}
+        >
+          {MAIN.recordsOffBody}
+        </span>
+      </Card>
+    );
+  }
+
   if (records.length === 0) {
     return (
       <Card style={{ alignItems: 'center', textAlign: 'center', gap: 6, padding: '32px 16px' }}>
@@ -141,10 +179,10 @@ function RecordsPanel({ records }) {
                 fontFamily: typography.family,
                 fontSize: ig.title3.size,
                 fontWeight: ig.title3.weight,
-                color: r.win ? colors.red.light : colors.text.primary,
+                color: r.outcome === 'win' ? colors.red.light : colors.text.primary,
               }}
             >
-              {r.win ? MAIN.recordsWin : MAIN.recordsLose}
+              {OUTCOME_LABEL[r.outcome] ?? r.outcome}
             </span>
             <span
               style={{
@@ -158,8 +196,20 @@ function RecordsPanel({ records }) {
               {r.score[0]} : {r.score[1]}
             </span>
           </div>
-          <Row label="명중률" value={`${Math.round(r.accuracy * 100)}%`} />
-          <Row label="찌르기" value={`${r.phoneThrusts}회`} />
+          {r.schoolName ? <Row label="상대" value={r.schoolName} /> : null}
+          <Row label="명중률" value={r.thrusts > 0 ? `${Math.round((r.hits / r.thrusts) * 100)}%` : '—'} />
+          <Row label="리포스트" value={`${r.ripostes}회`} />
+          <Row label="경기 시간" value={fmtDuration(r.durationMs)} />
+          <span
+            style={{
+              fontFamily: typography.family,
+              fontSize: ig.caption1.size,
+              color: colors.text.dim,
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {fmtPlayedAt(r.playedAt)}
+          </span>
         </Card>
       ))}
       <span
@@ -287,7 +337,7 @@ function OpponentPanel() {
   );
 }
 
-export default function MainScreen({ tab, onTab, records, paired, onConnect, onStart }) {
+export default function MainScreen({ tab, onTab, records, recordsEnabled, paired, onConnect, onStart }) {
   const title = MAIN.tabs.find((t) => t.key === tab)?.title ?? '';
 
   return (
@@ -340,7 +390,7 @@ export default function MainScreen({ tab, onTab, records, paired, onConnect, onS
       </div>
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '8px 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {tab === 'RECORDS' ? <RecordsPanel records={records} /> : null}
+        {tab === 'RECORDS' ? <RecordsPanel records={records} enabled={recordsEnabled} /> : null}
         {tab === 'CONTROLLER' ? <ControllerPanel /> : null}
         {tab === 'OPPONENT' ? <OpponentPanel /> : null}
       </div>

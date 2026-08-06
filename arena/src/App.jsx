@@ -236,6 +236,9 @@ export default function App() {
       link.sendResult({
         score: [snapshot.score.me, snapshot.score.ai],
         winner: snapshot.winner,
+        // 기록에 남을 "상대 유파"다. **키가 아니라 화면에 뜬 이름을 보낸다.**
+        // MIXED는 라운드마다 갈아타므로 끝난 시점의 이름이 그 경기의 상대다
+        schoolName: snapshot.school?.name ?? null,
         parts: { ...partsRef.current },
         ...engine.getMatchStats(),
       });
