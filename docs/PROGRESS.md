@@ -1079,6 +1079,9 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **brand B8b 제품 상세 오버워치식 레이아웃 작업중.** `brand/src/pages/ProductDetail.jsx`와
+  새 `brand/src/components/ProductViewer.jsx`를 잡는다. 다른 페이지는 손대지 않는다.
+  `data-flip-id`는 뷰어 영역이 그대로 이어받아 B8a 전환이 계속 산다
 - **brand B8a 제품 카드 상세 Flip 전환 완료(확인 대기).** 전환만 했다. 트랙 선점 해제
   - **짝은 썸네일이다.** 카드 전체가 아니라 카드 썸네일과 상세 대표 비주얼이 같은
     `data-flip-id`(`product-<slug>`)를 공유한다. 카드에는 상세에 없는 문구가 있어
