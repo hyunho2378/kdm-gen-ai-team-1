@@ -165,14 +165,18 @@ export const PRODUCT_NAV = {
   /**
    * **5탭이다.** Apple의 Tech Specs 한 자리를 마스크와 컨트롤러 둘로 쪼갰다.
    * 제품이 둘뿐이라 각각 자기 탭을 가지는 편이 스펙을 깊게 펴기 좋다.
-   * 다섯 다 한 페이지 안의 섹션이고 탭은 그 자리로 보내는 앵커다.
+   *
+   * **다섯이 각자 독립 라우트다(개정).** 예전에는 한 페이지 안의 앵커였고 탭을 누르면
+   * 스크롤이 움직였다. **Apple의 로컬 내비도 앵커가 아니라 라우트다**(실측:
+   * `/apple-vision-pro/`, `/apple-vision-pro/specs/`, `/os/visionos/`). 탭을 누르면
+   * 화면이 통째로 바뀌고 각 페이지가 자기 최상단에서 시작한다.
    */
   tabs: [
-    { key: 'overview', label: 'OVERVIEW', ko: '오버뷰' },
-    { key: 'mask', label: 'MASK', ko: '마스크' },
-    { key: 'controller', label: 'CONTROLLER', ko: '컨트롤러' },
-    { key: 'vision', label: 'VISION', ko: '비전화면' },
-    { key: 'experience', label: 'EXPERIENCE', ko: '경험하기' },
+    { key: 'overview', label: 'OVERVIEW', ko: '오버뷰', to: '/' },
+    { key: 'mask', label: 'MASK', ko: '마스크', to: '/mask' },
+    { key: 'controller', label: 'CONTROLLER', ko: '컨트롤러', to: '/controller' },
+    { key: 'vision', label: 'VISION', ko: '비전화면', to: '/vision' },
+    { key: 'experience', label: 'EXPERIENCE', ko: '경험하기', to: '/experience' },
   ],
   demo: '체험 예약',
   buy: '구매',
@@ -253,32 +257,50 @@ export const PRODUCT_DEEPDIVE = {
 // ---------------------------------------------------------------------------
 export const PRODUCT_DETAIL = {
   /**
-   * 사양 표. **지금 화면에 렌더하는 자리가 없다.**
+   * 사양. **Apple Tech Specs 문법이다(실측 재현).**
    *
-   * Apple 문법은 각 섹션을 큰 미디어 하나와 짧은 글로 세우고 표는 별도 Tech Specs 면으로
-   * 뺀다. 우리에게는 그 면이 없어서 이 항목들이 갈 곳을 잃었다. **지어낸 값이 아니라
-   * 확정된 하드웨어 항목이라 지우지 않고 남긴다.** 사양 면이 생기면 이 자리를 그대로 쓴다.
+   * 그쪽 `.techspecs-row`는 좌측 카테고리 라벨 24px/600이 216px 열에 서고, 우측 값이
+   * 17px로 735px 열에 여러 줄 눕는다(1440에서 라벨 x223, 값 x467, 갭 28).
+   * **구조만 가져온다. Apple의 스펙 문구와 수치는 옮기지 않는다.**
    *
-   * **값이 `TODO_MARK`인 넷은 실제 하드웨어 수치라 지어낼 수 없는 자리다.**
-   * 시야각, 디스플레이, 무게, 배터리. 항목 이름은 확정이고 값만 미확정이다.
+   * 카테고리는 PRODUCT_PAGE_APPLE_MAPPING 2.2가 우리 제품에 맞게 정해 둔 목록이다.
+   * **값은 우리 것이고, 실제 하드웨어 수치는 지어낼 수 없어 자리표시로 둔다.**
+   * 확정되면 이 배열의 값만 바꾸고 참조처는 안 건드린다.
    */
   spec: {
     mask: [
-      { name: '추적 방식', value: '마커리스 검끝 추적' },
-      { name: '시야각', value: TODO_MARK },
-      { name: '디스플레이', value: TODO_MARK },
-      { name: '무게', value: TODO_MARK },
-      { name: '연결', value: '무선' },
+      { label: '디스플레이', values: [`해상도 ${TODO_MARK}`, `주사율 ${TODO_MARK}`] },
+      { label: '시야각', values: [TODO_MARK] },
+      { label: '트래킹', values: ['마커리스 검끝 추적', '상대 유파 식별', '명중 순간 시야 표시'] },
+      { label: '시간 처리', values: ['최적 타이밍에 시야 팽창'] },
+      { label: '오디오', values: [TODO_MARK] },
+      { label: '배터리', values: [TODO_MARK] },
+      { label: '무게', values: [TODO_MARK] },
+      { label: '크기', values: [TODO_MARK] },
+      { label: '연결', values: ['무선'] },
     ],
     controller: [
-      { name: '입력 방식', value: '모션 센서' },
-      { name: '감지 축', value: '가속도와 자이로' },
-      { name: '햅틱', value: '진동 피드백' },
-      { name: '배터리', value: TODO_MARK },
-      { name: '연결', value: '무선' },
+      { label: '입력', values: ['모션 센서'] },
+      { label: '감지 축', values: ['가속도', '자이로'] },
+      { label: '변환', values: ['찌르기 속도와 방향을 검끝 궤적으로', '전진과 후퇴를 간합으로'] },
+      { label: '햅틱', values: ['진동 피드백'] },
+      { label: '배터리', values: [TODO_MARK] },
+      { label: '무게', values: [TODO_MARK] },
+      { label: '크기', values: [TODO_MARK] },
+      { label: '연결', values: ['무선'] },
     ],
   },
-  specTodo: TODO_PRODUCT_SPEC,
+  /**
+   * In the Box. **벤토 그리드로 눕는다.**
+   * Apple Vision Pro 스펙 면에는 이 섹션이 없다(직접 열어 확인했다). 우리 기획이라
+   * 베낄 대상 자체가 없고, 구성품은 우리 제품의 것이다.
+   */
+  boxLabel: 'In the Box',
+  box: {
+    mask: ['마스크 본체', '충전 케이블', `구성품 ${TODO_MARK}`],
+    controller: ['컨트롤러 본체', '충전 케이블', `구성품 ${TODO_MARK}`],
+  },
+  specLabel: '사양',
   viewer: {
     // 마우스 전용 조작이라는 사실을 글로 알린다. 뷰어를 못 쓰는 사람은 탭 정보만으로 제품을 이해한다
     hint: '드래그해 돌린다',

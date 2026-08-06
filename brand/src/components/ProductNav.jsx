@@ -23,11 +23,17 @@
 // 그 조상을 기준으로 튄다(PITFALLS). sticky는 그 함정을 안 밟는다. BV2-4 딥다이브에서
 // 같은 방식으로 워프와의 공존을 실측했다(워프 한복판에도 가로 초과 0).
 //
-// 색은 전부 v2 라이트 팔레트다. 선 장식을 두지 않고 현재 탭 밑줄만 잉크로 긋는다.
+// ── 탭은 라우트다(개정) ─────────────────────────────────────────────────────
+// **Apple의 로컬 내비도 앵커가 아니라 라우트다.** 실측한 href가 `/apple-vision-pro/`,
+// `/apple-vision-pro/specs/`, `/os/visionos/`였다. 우리도 다섯 탭이 각자 주소를 갖고,
+// 누르면 스크롤이 아니라 화면이 통째로 바뀐다. 현재 탭은 라우트가 정한다.
+//
+// 색은 전부 v2 라이트 팔레트다. 선 장식을 두지 않고 **현재 탭 밑줄만 네이비로** 긋는다.
 
 import { useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { colors, typography, weight } from '../tokens.js';
-import { PRODUCT_NAV } from '../copy.js';
+import { HERO, PRODUCT_NAV } from '../copy.js';
 import { arenaUrl } from './ArenaCta.jsx';
 
 const TABS = PRODUCT_NAV.tabs;
@@ -41,8 +47,9 @@ const itemText = {
   whiteSpace: 'nowrap',
 };
 
-export default function ProductNav({ productName, active, onJump }) {
+export default function ProductNav() {
   const demo = arenaUrl();
+  const { pathname } = useLocation();
   const ref = useRef(null);
 
   /**
@@ -83,9 +90,12 @@ export default function ProductNav({ productName, active, onJump }) {
     <nav ref={ref} className="vx-pnav" data-warp="none" aria-label={PRODUCT_NAV.label}>
       <div className="vx-pnav-bar">
         {/* 좌측 워드마크. Apple 21px/600 자리라 heading 토큰을 쓴다.
-            **링크가 아니다.** 사이트에 페이지가 이것뿐이라 자기 자신으로 가는 링크가 된다 */}
-        <span
+            **다시 링크가 됐다.** 탭이 라우트로 갈리면서 돌아갈 첫 화면이 생겼다
+            (Apple도 좌측 제품명이 `/apple-vision-pro/`로 간다) */}
+        <Link
+          to="/"
           style={{
+            textDecoration: 'none',
             fontFamily: typography.family,
             fontSize: typography.heading.size,
             fontWeight: typography.heading.weight,
@@ -94,33 +104,30 @@ export default function ProductNav({ productName, active, onJump }) {
             whiteSpace: 'nowrap',
           }}
         >
-          {productName}
-        </span>
+          {HERO.wordmark}
+        </Link>
 
         {/* 우측 묶음. 탭 셋과 CTA 둘이 한 줄에 선다 */}
         <div className="vx-pnav-right">
           {TABS.map((t) => {
-            const on = t.key === active;
+            const on = t.to === pathname;
             return (
-              <a
+              <Link
                 key={t.key}
-                href={`#${t.key}`}
-                aria-current={on ? 'true' : undefined}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onJump(t.key);
-                }}
+                to={t.to}
+                aria-current={on ? 'page' : undefined}
                 className="vx-pnav-tab"
                 style={{
                   ...itemText,
-                  // **색 하나로 구분하지 않는다.** 굵기와 밑줄이 함께 움직인다(DESIGN 13절)
+                  // **색 하나로 구분하지 않는다.** 굵기와 밑줄이 함께 움직인다(DESIGN 13절).
+                  // 현재 탭만 네이비이고 나머지는 dim이라 강조가 한 자리에만 선다
                   fontWeight: on ? weight.bold : weight.medium,
                   color: on ? colors.text.primary : colors.text.dim,
                   borderBottomColor: on ? colors.text.primary : 'transparent',
                 }}
               >
                 {t.label}
-              </a>
+              </Link>
             );
           })}
 

@@ -190,6 +190,78 @@ html { scrollbar-gutter: stable; }
   pointer-events: auto;
 }
 
+/* ── 스펙 면 (Apple Tech Specs 실측 재현) ─────────────────────────────────
+   Apple `/apple-vision-pro/specs/`를 직접 열어 잰 값이다(1440).
+
+     대표 이미지  747x432(1.729:1), top 314. **풀블리드가 아니다.** 가운데 놓인다
+     스펙 행      `.techspecs-row` 17개
+     좌 라벨      x 223, 폭 216, 24px / 600
+     우 값        x 467, 폭 735, 17px
+     갭          28px
+
+   **구조만 옮긴다.** Apple의 스펙 문구와 수치는 한 글자도 가져오지 않는다. */
+
+/* 대표 미디어. 오버뷰의 1425x704와 다른 치수인 것이 면의 성격 차이라 그대로 옮긴다 */
+.vx-spec-media {
+  width: 100%;
+  max-width: 747px;
+  margin-inline: auto;
+  height: clamp(200px, calc(min(100%, 747px) / 1.729), 432px);
+  aspect-ratio: 747 / 432;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 스펙 행. **라벨 216 : 값 735.** Apple 실측 비율(22.7 대 77.3)을 그대로 쓴다.
+   좁은 화면에서는 라벨이 값 위로 올라간다. 216px 열을 320에서 쥐면 값이 한 글자씩 꺾인다 */
+.vx-spec-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding-block: 24px;
+}
+@media (min-width: 768px) {
+  .vx-spec-row {
+    grid-template-columns: 216px minmax(0, 735px);
+    gap: 28px;
+    align-items: start;
+  }
+}
+
+/* ── In the Box 벤토 ──────────────────────────────────────────────────────
+   **Apple Vision Pro 스펙 면에는 이 섹션이 없다**(직접 열어 확인했다). 우리 기획이고
+   구성품도 우리 것이라 베낄 대상 자체가 없다.
+
+   셀은 카드와 같은 표면이다. 이미지가 오면 위쪽을 덮고 이름은 바닥에 남는다 */
+.vx-bento {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.vx-bento-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  min-height: 220px;
+  padding: 24px;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+}
+/* 첫 칸이 두 배 폭을 먹는다. 벤토의 리듬은 칸 크기가 갈리는 데서 나온다 */
+@media (min-width: 768px) {
+  .vx-bento-cell:first-child {
+    grid-column: span 2;
+  }
+}
+
 /* ── 제품 서브내비 (PRODUCT_PAGE_APPLE_MAPPING) ───────────────────────────
    Apple 실측: nav가 sticky top 0, 높이 52px, 전폭. 좌측 제품명, 우측 탭과 CTA.
 
@@ -262,17 +334,6 @@ html { scrollbar-gutter: stable; }
     justify-content: flex-start;
     gap: 12px;
   }
-}
-
-/* 앵커 섹션. **서브내비 아래로 제목이 숨지 않게** 스크롤 여백을 준다.
-   전역 헤더가 사라져 서브내비 높이와 한 뼘만 남는다.
-
-   **높이를 숫자로 적지 않는다.** 좁은 화면에서 바가 두 줄로 접혀 52가 아니라 147이 된다
-   (320에서 실측). ProductNav가 자기 높이를 재서 `--pnav-h`로 내보내고 여기가 그것을 읽는다.
-   폴백 52는 그 변수가 붙기 전 한 프레임과 서브내비가 없는 화면(NotFound)을 위한 값이다 */
-.vx-pd-section {
-  scroll-margin-top: calc(var(--pnav-h, 52px) + 16px);
-  padding-block: var(--section-gap);
 }
 
 /* ── 커스텀 커서 (REBOOT_PLAN 2.4) ────────────────────────────────────────
