@@ -1079,6 +1079,8 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **LIBRARIES 라이선스 게이트 2차. 트랙 선점.** 2차 리서치 후보 7개의 라이선스를 실확인해
+  `docs/LIBRARIES.md` 판정표에 편입한다. **문서만 만진다. 코드 변경과 라이브러리 설치는 없다**
 - **brand B7 유파 셀렉션 완료(확인 대기).** `/duelists` 한 페이지만 만졌다. 트랙 선점 해제
   - **메커니즘 출처.** 팀 포폴 `hyunho2378/26-portfolio-hyunho`를 clone해
     `client/src/components/work/StackCarousel.jsx` **실파일을 읽고** 가져왔다(DESIGN 15절).
