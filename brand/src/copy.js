@@ -20,6 +20,12 @@ const TODO_MARK = '확정 예정';
 
 export const TODO_XR_GLASS_DETAIL = `XR 글라스 상세 ${TODO_MARK}`;
 export const TODO_EXPERIENCE_NOTICE = `데모 주의 사항 ${TODO_MARK}`;
+// 상세 탭 정보 패널. **스펙표와 특징 목록은 아직 확정된 것이 하나도 없다.**
+// 지어내지 않는다. 아래 PRODUCT_DETAIL.spec과 .features가 비어 있는 동안 이 문장이 대신 뜬다
+export const TODO_PRODUCT_SPEC = `제품 스펙 ${TODO_MARK}`;
+export const TODO_PRODUCT_FEATURES = `제품 특징 ${TODO_MARK}`;
+// 실제 제품 3D 모델이 없어 뷰어가 플레이스홀더 프리미티브를 띄운다. 모델이 들어오면 이 자리가 사라진다
+export const TODO_PRODUCT_MODEL = `제품 3D 모델 ${TODO_MARK}`;
 // 제품군이 4종에서 3종으로 줄면서 "각 장치가 거리, 자세, 타이밍, 대결을 맡는다"가
 // 네 개 전제라 안 맞게 됐다. 새 문장을 지어내지 않고 자리표시로 둔다
 export const PRODUCTS_INDEX_LINE_TODO = `제품군 한 줄 ${TODO_MARK}`;
@@ -126,20 +132,45 @@ export const PRODUCTS = {
 // ---------------------------------------------------------------------------
 // productDetail. 히어로 제목만 slug별이고 나머지는 공통이다
 // ---------------------------------------------------------------------------
+
+// 탭 라벨. tabs와 labels가 같은 문자열을 봐야 해서 밖으로 뺐다
+const DETAIL_LABELS = {
+  overview: 'OVERVIEW',
+  features: 'FEATURES',
+  experience: 'EXPERIENCE',
+};
+
 export const PRODUCT_DETAIL = {
   hero: {
     'xr-glass': '보는 것이 곧 겨루는 것',
     controller: '손안의 검',
     'demo-app': '설치 없이, 지금',
   },
-  labels: {
-    overview: 'OVERVIEW',
-    features: 'FEATURES',
-    experience: 'EXPERIENCE',
+  labels: DETAIL_LABELS,
+  // 왼쪽 세로 탭. 오버워치의 스킨 리스트 자리를 이 둘이 대신한다.
+  // **영문 라벨만으로는 무엇이 바뀌는지 안 읽혀서 국문을 함께 세운다**(색 단독 구분 금지와 같은 방향)
+  tabs: [
+    { key: 'overview', label: DETAIL_LABELS.overview, ko: '스펙' },
+    { key: 'features', label: DETAIL_LABELS.features, ko: '특징' },
+  ],
+  tabsLabel: '제품 정보',
+  // **탭 정보 패널의 내용. 지금은 셋 다 비어 있다.**
+  // 확정된 스펙표와 특징 목록이 없어서 지어내지 않고 빈 배열로 둔다.
+  // 비면 화면에 위 TODO 자리표시가 뜬다. 확정되면 여기에 항목만 채우고 컴포넌트는 손대지 않는다.
+  // spec 항목은 { name, value }, features 항목은 문자열이다
+  spec: { 'xr-glass': [], controller: [], 'demo-app': [] },
+  features: { 'xr-glass': [], controller: [], 'demo-app': [] },
+  specTodo: TODO_PRODUCT_SPEC,
+  featuresTodo: TODO_PRODUCT_FEATURES,
+  viewer: {
+    // 마우스 전용 조작이라는 사실을 글로 알린다. 뷰어를 못 쓰는 사람은 탭 정보만으로 제품을 이해한다
+    hint: '드래그해 돌린다',
+    placeholder: TODO_PRODUCT_MODEL,
+    // WebGL을 못 얻었을 때. 뷰어가 죽어도 페이지는 살아 있다는 것을 알린다
+    unavailable: '3D 뷰어를 표시할 수 없다',
   },
   back: '제품군으로',
   cta: '체험하기',
-  visualPlaceholder: `대표 비주얼 ${TODO_MARK}`,
 };
 
 // ---------------------------------------------------------------------------

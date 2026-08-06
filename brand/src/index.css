@@ -31,6 +31,26 @@ html, body { background: #101010; color: #FDFDFD; }
   transform: scale(0.97);
 }
 
+/* 제품 상세 4구역. 기본은 한 열이라 탭, 뷰어, 정보 패널이 세로로 선다.
+   md(768) 이상에서만 왼쪽 탭 열이 갈라진다. 구조 변화라 브레이크포인트를 쓴다(DESIGN 6절) */
+.vx-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.vx-tablist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (min-width: 768px) {
+  .vx-detail {
+    grid-template-columns: minmax(140px, 200px) minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+
 /* 헤더 메뉴. md(768) 미만에서는 접는다. 햄버거는 B8 이후다 */
 @media (max-width: 767px) {
   .vx-nav {

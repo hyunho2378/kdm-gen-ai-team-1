@@ -19,6 +19,8 @@ const DURATION = 0.48;
 const STALE_MS = 1200;
 
 let pending = null;
+// 지금 재생 중인 전환이 끝나는 시각. 무거운 초기화를 이 뒤로 미루려는 쪽이 읽는다
+let playingUntil = 0;
 
 /** 떠나는 쪽에서 부른다. 이 요소의 지금 자리를 기록한다. */
 export function captureFlip(el) {
@@ -55,6 +57,7 @@ export function playFlip(el) {
   try {
     // 겹쳐 들어오는 트윈을 먼저 끊는다. 연타로 두 전환이 같은 요소를 다투지 않게
     gsap.killTweensOf(el);
+    playingUntil = performance.now() + DURATION * 1000;
     Flip.from(p.state, {
       targets: el,
       duration: DURATION,
@@ -73,4 +76,15 @@ export function playFlip(el) {
 /** 기록만 버린다. 전환 없이 이동시키고 싶을 때. */
 export function clearFlip() {
   pending = null;
+}
+
+/**
+ * 재생 중인 전환이 끝나기까지 남은 시간(ms). 전환이 없으면 0.
+ *
+ * **무거운 초기화를 이 시간만큼 미루라고 알려 주는 값이다.** 도착지에서 WebGL 컨텍스트를
+ * 만들면 첫 셰이더 컴파일이 메인 스레드를 수백 ms 잡는데, 그 자리가 전환 구간과 겹치면
+ * rAF가 굶어 전환이 두 프레임으로 끊긴다(제품 상세 뷰어에서 실측했다. 800ms에 프레임 2개).
+ */
+export function flipSettleMs() {
+  return Math.max(0, playingUntil - performance.now());
 }
