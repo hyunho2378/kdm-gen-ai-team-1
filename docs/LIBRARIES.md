@@ -1,3 +1,51 @@
+# [brand 라이선스 게이트 판정표. B5 이후 세션의 유일한 채택 근거다]
+
+리서치가 후보로 올린 저장소의 라이선스를 **실제로 열어** 확인한 결과다. README 문구나 리서치 요약으로 판정하지 않았다.
+
+**확인 방법.** GitHub API `repos/{owner}/{repo}/license`로 라이선스 파일의 존재와 SPDX를 받고, **채택 가능으로 넘어간 것은 파일 본문을 내려받아 첫 줄과 저작권자를 눈으로 확인했다.** 파일이 안 잡힌 것은 루트 목록을 받아 `LICENSE` `LICENCE` `COPYING` `LEGAL` 어느 이름으로도 없는 것을 확인했다.
+
+**판정 규칙.** LICENSE 파일에 MIT, Apache-2.0, ISC, Zlib, CC0가 명시되면 채택 가능. MPL-2.0은 파일 단위 소스 공개 의무 경고를 달고 보류. **파일이 없거나 커스텀 제한이거나 확인 실패면 사용 불가이고 열람도 하지 않는다.**
+
+확인 일자 2026-08-06.
+
+| 저장소 | 실확인한 라이선스 | 판정 | 용도 후보 | 확인 일자 |
+|---|---|---|---|---|
+| gnss-creative-lab/webgl-particle-simulation | MIT (LICENSE, Copyright 2026 GNSS) | 채택 가능 | vortex 배경 파티클 | 2026-08-06 |
+| Saganaki22/MetalFlow | MIT (LICENSE, Copyright 2025 drbaph) | 채택 가능 | 크롬 타이포 재질 | 2026-08-06 |
+| wass08/r3f-ultimate-character-configurator | **없음** (루트에 라이선스류 파일 0, package.json license 필드도 없음) | **사용 불가** | 셀렉션 UI. R3F라 어차피 기각 기본값 | 2026-08-06 |
+| Cuberto/bglines | **없음** (루트에 라이선스류 파일 0, package.json license 필드도 없음) | **사용 불가** | 배경 라인 | 2026-08-06 |
+| niccolofanton/image-trail-shader | MIT (LICENSE, Copyright 2026 Niccolo Fanton) | 채택 가능 | 이미지 트레일 | 2026-08-06 |
+| 23x2/generative-flow-field | MIT (LICENSE, Copyright 2025 Mikolaj Czyz) | 채택 가능 | 플로우 필드 배경 | 2026-08-06 |
+| danlex/particles | MIT (LICENSE, Copyright 2026 Alexandru DAN) | 채택 가능 | 파티클 | 2026-08-06 |
+| amandaghassaei/VortexShedding | **없음** (루트에 라이선스류 파일 0) | **사용 불가** | vortex 유체 시뮬 | 2026-08-06 |
+| marcofugaro/webgl-iridescence-twerk | MIT (LICENSE, Copyright Marco Fugaro) | 채택 가능 | 이리데슨스 재질 | 2026-08-06 |
+| heinergiehl/threejs-cursor-trail | MIT (LICENSE, Copyright 2025 Heiner Giehl) | 채택 가능 | 커서 트레일. **히어로는 arena 리본으로 이미 해결** | 2026-08-06 |
+| PANDAKO-GitHub/threejs-trail-ribbon | MIT (LICENSE, Copyright 2026 PANDAKO-GitHub) | 채택 가능 | 트레일 리본. 위와 같은 이유로 우선순위 낮음 | 2026-08-06 |
+| daniel-cotton/segue | MIT (**파일명이 `LICENCE`**, 본문에 "MIT License" 제목이 없고 Copyright 2023 DANIEL COTTON으로 시작하는 MIT 전문) | 채택 가능 | 페이지 전환 | 2026-08-06 |
+| codrops/GridLayoutAnimation | MIT (LICENSE, Copyright 2009-2021 Codrops) | 채택 가능 | 그리드 레이아웃 전환 | 2026-08-06 |
+| codrops/FullscreenLayoutPageTransitions | **없음** (루트에 라이선스류 파일 0) | **사용 불가** | 풀스크린 페이지 전환 | 2026-08-06 |
+| JosephASG/codrops-cinematic-scroll-animations | **없음** (루트에 라이선스류 파일 0, package.json license 필드도 없음) | **사용 불가** | 시네마틱 스크롤 | 2026-08-06 |
+| pmndrs/meshline | MIT (LICENSE, Copyright 2016 Jaume Sanchez) | 채택 가능 | 라인 지오메트리 | 2026-08-06 |
+| protectwise/troika | MIT (LICENSE, Copyright 2019 ProtectWise, 2021 Jason Johnston) | 채택 가능 | SDF 텍스트 | 2026-08-06 |
+
+## 열람 금지 목록 추가분 (B3 게이트)
+
+아래 다섯은 **코드를 가져오지 않는 것은 물론 열어 보지도 않는다.** 기존 금지 목록(olivierlarose 전 저장소, cortiz2894, KalebKloppe, TrailRendererJS, adrianhajdin 원본, 게임 클론 전체)에 같은 지위로 더한다.
+
+- wass08/r3f-ultimate-character-configurator
+- Cuberto/bglines
+- amandaghassaei/VortexShedding
+- codrops/FullscreenLayoutPageTransitions
+- JosephASG/codrops-cinematic-scroll-animations
+
+**codrops 계정이라고 통과시키지 않는다.** 같은 계정 안에서도 `GridLayoutAnimation`은 LICENSE 파일이 있고 `FullscreenLayoutPageTransitions`는 없다. 저장소 단위로 확인한다.
+
+## 채택 가능이 곧 도입은 아니다
+
+이 표는 **라이선스 게이트만** 통과시킨 것이다. 실제 도입은 BRAND_SITE_GUIDE 3절 코드 출처 계약대로 npm 실설치 또는 실클론 후 파일을 열어 읽고 결정하며, 도입한 것만 같은 커밋에서 CREDITS.md에 기록한다. **이 세션은 아무것도 설치하지 않았으므로 CREDITS는 건드리지 않았다.**
+
+---
+
 > # [presentation 개편 스택 판정 — 이 표가 조사 원문 추천보다 우선한다]
 >
 > 이 문서 하단 "presentation 개편 조사"(compass A 원문)의 추천 중 아래와 어긋나는 부분은 **이 판정표를 따른다.** 원문은 무수정으로 보존하되 채택은 이 표가 결정한다.
