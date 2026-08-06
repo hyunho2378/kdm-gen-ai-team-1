@@ -1079,6 +1079,12 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **brand R2 프리로더와 스플래시 작업중.** 앱 최초 로드에 프리로더와 VORTEX 슬라이스 스플래시를 세운다
+  - 오버레이 하나만 만진다. **히어로 내부와 다른 페이지 금지.** 새 라이브러리 없이 GSAP만
+  - 인계는 히어로 코드를 고치지 않고 오버레이가 `[data-enter="wordmark"]` 상자를 읽어
+    그 자리로 날아가 겹친 뒤 크로스페이드하는 방식으로 한다
+  - 워드마크 SVG는 리포 루트 `VORTEX.svg`가 사양과 일치(viewBox 0 0 570 108, 흰 채움 path 1개)해
+    `brand/public/brand/vortex-wordmark.svg`로 반입했다
 - **brand R1 전역 표피 리셋 완료(확인 대기).** 트랙 선점 해제. 커밋 `6f68dc5` `ac963e7`
   - **1. 마진 시스템.** 거터는 이미 한 변수를 쓰고 있었고 **진짜 불일치는 최대폭이었다.**
     Page/Section/WorldScene/Landing은 1680, ProductDetail/NotFound는 1280이라
