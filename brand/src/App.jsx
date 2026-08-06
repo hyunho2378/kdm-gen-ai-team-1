@@ -9,12 +9,17 @@
 // **남은 화면이 하나뿐이라 그 화면이 루트다.** 사이트의 유일한 페이지가 하위 주소에 사는 것은
 // 주소만 보고는 읽히지 않는다.
 //
+// 나갔던 주소는 리다이렉트로 살린다. `/products`는 루트로, `/product/mask`와
+// `/product/controller`는 그 제품의 앵커로 보낸다. **탭이 라우트가 아니라 앵커라서**
+// 다섯 자리가 전부 이 한 페이지 안에 있다.
+//
 // 걷어낸 넷은 리다이렉트를 두지 않는다. 갈 자리가 없어진 것이라 없는 주소가 맞고,
 // 조용히 홈으로 튕기면 주소가 틀렸다는 사실이 화면에 안 남는다(NotFound와 같은 규율).
 
 import { useEffect, useRef } from 'react';
 import {
   BrowserRouter,
+  Navigate,
   NavigationType,
   Route,
   Routes,
@@ -94,7 +99,10 @@ export default function App() {
       <ScrollWarp>
         <Routes>
           <Route path="/" element={<Products />} />
-          <Route path="/products" element={<Products />} />
+          {/* 나갔던 주소를 살린다. 앵커까지 붙여 보내야 그 제품 자리에서 열린다 */}
+          <Route path="/products" element={<Navigate to="/" replace />} />
+          <Route path="/product/mask" element={<Navigate to="/#mask" replace />} />
+          <Route path="/product/controller" element={<Navigate to="/#controller" replace />} />
           {/* **홈으로 튕기지 않는다.** 주소가 틀렸다는 사실이 화면에 남아야 사람이 오타를 찾는다 */}
           <Route path="*" element={<NotFound />} />
         </Routes>

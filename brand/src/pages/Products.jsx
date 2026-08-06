@@ -1,4 +1,7 @@
-// 제품 사이트. **하나의 페이지에 5탭 섹션이 세로로 이어진다.**
+// 제품 사이트. **브랜드 사이트의 유일한 페이지다.** 5탭 섹션이 세로로 이어진다.
+//
+// 랜딩과 `/about`과 `/duelists`와 `/experience`와 제품 상세를 걷어내고 이 한 벌만 남겼다.
+// 그래서 이 페이지가 루트(`/`)이고, 상단 내비가 사이트의 유일한 헤더다.
 //
 // ── 구조 (PRODUCT_PAGE_APPLE_MAPPING, Apple 오버뷰 문법) ─────────────────────
 // Apple 실측: 로컬 내비가 sticky로 상단에 붙고 그 아래로 섹션이 계속 이어진다.
@@ -27,6 +30,7 @@ import { MEDIA_PENDING, PRODUCT_DETAIL, PRODUCT_NAV, PRODUCT_SECTION_PENDING, PR
 import { gsap, ScrollTrigger, isReduced } from '../lib/motion.js';
 import ArenaCta from '../components/ArenaCta.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
+import Footer from '../components/Footer.jsx';
 import ProductNav from '../components/ProductNav.jsx';
 import ProductViewer from '../components/ProductViewer.jsx';
 
@@ -54,8 +58,14 @@ export default function Products() {
     const nodes = TABS.map((t) => sectionRefs.current[t.key]).filter(Boolean);
     if (nodes.length === 0) return undefined;
     const pick = () => {
-      // 서브내비 아래 한 뼘. 이 선을 지난 마지막 섹션이 현재다
-      const line = 160;
+      // 서브내비 아래 한 뼘. 이 선을 지난 마지막 섹션이 현재다.
+      //
+      // **높이를 숫자로 적으면 좁은 화면에서 틀린다.** 바가 두 줄로 접히면 52가 아니라
+      // 147이 되고(320에서 실측), 앵커로 뛴 섹션이 163에 서는데 선이 160이면 그 섹션이
+      // 아직 안 지난 것으로 읽혀 탭이 앞 섹션에 남는다. ProductNav가 잰 값을 그대로 쓴다.
+      // 여백 24는 `scroll-margin-top`의 16보다 커야 착지 직후가 현재로 잡힌다
+      const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pnav-h')) || 52;
+      const line = navH + 24;
       let current = nodes[0].id;
       for (const n of nodes) {
         if (n.getBoundingClientRect().top <= line) current = n.id;
@@ -175,6 +185,9 @@ export default function Products() {
           <Section key={t.key} tab={t} bind={bind(t.key)} specSlug={SPEC_OF[t.key]} demo={t.key === 'experience'} />
         ))}
       </main>
+
+      {/* 랜딩이 사라지면서 갈 곳을 잃은 크레딧과 팀과 저작권이 여기로 내려왔다 */}
+      <Footer />
     </>
   );
 }

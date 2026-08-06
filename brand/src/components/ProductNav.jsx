@@ -1,4 +1,8 @@
-// 제품 서브내비. **Apple Vision Pro의 로컬 내비 구조를 옮겼다(PD-1).**
+// 제품 내비. **사이트의 유일한 헤더다.**
+//
+// PD-1에서는 Apple Vision Pro의 로컬 내비(서브내비) 구조로 들어왔고, 그 위에 전역 헤더가
+// 따로 상주했다. **바 둘이 위아래로 붙어 자리를 다퉜다.** 헤더 통합 세션에서 전역 헤더를
+// 걷어내면서 이 바가 그 역할까지 물려받았다. 좌측 워드마크가 그 흔적이다.
 //
 // ── Apple 실측 (1440x900, 직접 열어 computed로) ──────────────────────────────
 //
@@ -11,8 +15,8 @@
 //   테두리     border-bottom 없음
 //   스크롤     글로벌내비가 밀려 올라가면 그 자리를 이어받아 top 0에 붙는다
 //
-// **우리는 헤더가 늘 fixed로 남는다.** 그래서 서브내비는 top 0이 아니라 헤더 높이 아래에 붙는다.
-// 그 자리가 Apple의 "글로벌내비가 사라진 뒤 top 0"과 등가다.
+// **우리도 top 0이다.** 전역 헤더가 없어져 Apple의 "글로벌내비가 사라진 뒤 top 0"과
+// 같은 자리에 처음부터 서 있다. 문서의 첫 요소라 스크롤해도 안 움직인다.
 //
 // ── 고정 방식 ───────────────────────────────────────────────────────────────
 // **sticky다. fixed가 아니다.** fixed는 transform이 걸린 조상(R3 워프)에 잡혀 뷰포트가 아니라
@@ -21,7 +25,8 @@
 //
 // 색은 전부 v2 라이트 팔레트다. 선 장식을 두지 않고 현재 탭 밑줄만 잉크로 긋는다.
 
-import { colors, spacing, typography, weight } from '../tokens.js';
+import { useEffect, useRef } from 'react';
+import { colors, typography, weight } from '../tokens.js';
 import { PRODUCT_NAV } from '../copy.js';
 import { arenaUrl } from './ArenaCta.jsx';
 
@@ -38,11 +43,47 @@ const itemText = {
 
 export default function ProductNav({ productName, active, onJump }) {
   const demo = arenaUrl();
+  const ref = useRef(null);
 
+  /**
+   * 실제 바 높이를 CSS 변수로 내보낸다. 앵커 섹션의 `scroll-margin-top`이 이 값을 읽는다.
+   *
+   * **52px을 상수로 적으면 좁은 화면에서 틀린다.** 좁아지면 제품명 아래로 줄이 접혀
+   * 바가 두 줄이 되는데, 320에서 잰 높이가 **147px**이었다. 그때 앵커로 뛰면 섹션 top이
+   * 68에 서고 바 바닥이 147이라 아이브로우가 바 아래로 숨는다(실측).
+   *
+   * 폭마다 접히는 정도가 달라 media query로 값을 나눠 적어도 또 어긋난다. 그래서 숫자를
+   * 적지 않고 잰다. ResizeObserver라 폰트가 늦게 붙어 높이가 바뀌어도 따라온다.
+   */
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const push = () => {
+      document.documentElement.style.setProperty('--pnav-h', `${Math.round(el.getBoundingClientRect().height)}px`);
+    };
+    push();
+    const ro = new ResizeObserver(push);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      document.documentElement.style.removeProperty('--pnav-h');
+    };
+  }, []);
+
+  // **워프에서 뺀다. 이게 흔들림의 원인이었다.**
+  //
+  // 스크롤 워프(R3)가 콘텐츠 래퍼에 `skewY`를 거는데, 이 바도 그 안에 있어 함께 기울었다.
+  // sticky가 잡아 두는 것은 흐름상의 자리라서 top 값 자체는 0으로 멀쩡한데, 그 위에 얹힌
+  // skew가 바를 통째로 비스듬히 눕힌다. **실측: 스크롤 중 바의 사각형 top이 0에서
+  // -37까지 갔다 왔다.** 3도에 폭 절반 720px이면 720*tan(3도) = 37.7px이라 값이 맞는다.
+  //
+  // 전역 헤더와 자리를 다퉈서가 아니었다. 헤더를 걷어낸 뒤에도 이 값은 그대로 남아 있었다.
+  // `data-warp="none"`이 같은 각을 빼서 이 요소만 안 기운 채로 세운다(ScrollWarp의 EXCLUDE).
   return (
-    <nav className="vx-pnav" aria-label={PRODUCT_NAV.label}>
+    <nav ref={ref} className="vx-pnav" data-warp="none" aria-label={PRODUCT_NAV.label}>
       <div className="vx-pnav-bar">
-        {/* 좌측 제품명. Apple 21px/600 자리라 heading 토큰을 쓴다 */}
+        {/* 좌측 워드마크. Apple 21px/600 자리라 heading 토큰을 쓴다.
+            **링크가 아니다.** 사이트에 페이지가 이것뿐이라 자기 자신으로 가는 링크가 된다 */}
         <span
           style={{
             fontFamily: typography.family,
@@ -107,7 +148,7 @@ export default function ProductNav({ productName, active, onJump }) {
           )}
 
           {/* Buy 자리. 아직 갈 곳이 없어 비활성이다. Apple은 파란 채움이고
-              우리는 브랜드 레드 채움이다(흰 글자 대비 10.57) */}
+              우리는 잉크 채움이다(#101010 위 흰 글자 18.71) */}
           <span
             className="vx-pnav-pill vx-pnav-pill-fill"
             aria-disabled="true"
@@ -122,6 +163,4 @@ export default function ProductNav({ productName, active, onJump }) {
   );
 }
 
-/** 서브내비 아래로 앵커가 가려지지 않게 섹션이 확보해야 하는 여백. */
-export const PNAV_H = spacing.unit * 6.5;
 
