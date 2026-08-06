@@ -45,11 +45,13 @@ export const SECTION = {
 // ---------------------------------------------------------------------------
 export const HEADER = {
   wordmark: BRAND,
+  // ABOUT을 맨 앞에 둔다. 데스크톱 바와 모바일 시트가 이 배열 하나를 같은 순서로 렌더하고
+  // 탭 순서와 현재 표시(aria-current, 레드 점)도 여기서 파생된다
   nav: [
+    { to: '/about', label: 'ABOUT' },
     { to: '/products', label: 'PRODUCTS' },
     { to: '/duelists', label: 'DUELISTS' },
     { to: '/experience', label: 'EXPERIENCE' },
-    { to: '/about', label: 'ABOUT' },
   ],
   cta: '체험하기',
   // md 미만 햄버거. **아이콘 단독 버튼이라 aria-label이 필수다**(DESIGN 11절).

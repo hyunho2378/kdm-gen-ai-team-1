@@ -2177,6 +2177,14 @@
     - **남은 사람 단계: Vercel 프리뷰 배포 실 URL 육안 검증, Lighthouse LCP/CLS/INP 실측 전후 비교(헤드리스 pane 불안정으로 자동 측정 불가), 실브라우저에서 P3 스크럽·P6 Flip 모핑 육안 확인.** 배포는 외부 공개 액션이라 권한 확인 후 사람이 수행
   - **presentation 탈PPT 개편 P0~P7 전체 완료.** 실물 펜싱 프레임 도착 시 `presentation/public/frames/hero/` 폴더 덮어쓰기 + manifest.count만 바꾸면 반영(코드 수정 0)
 - (착수 전 여기에 트랙 선점 선언. P-A presentation / P-B brand / P-C arena+controller)
+- **brand 헤더 About 순서 이동 완료(확인 대기). 트랙 선점 해제.** 헤더 메뉴에서 ABOUT을 맨 앞으로
+  (ABOUT, PRODUCTS, DUELISTS, EXPERIENCE). **copy.js `HEADER.nav` 배열 하나만 재정렬했다.**
+  데스크톱 바와 모바일 시트가 이 배열을 같은 순서로 렌더하고, 탭 순서(DOM 순서)와 현재 표시
+  (aria-current, 레드 점)도 전부 여기서 파생돼 다른 파일은 손대지 않았다. 워드마크는 맨 왼쪽 유지.
+  - 실측: 데스크톱(1440) 탭 순서 VORTEX→ABOUT→PRODUCTS→DUELISTS→EXPERIENCE→체험하기(시각 순서와 일치),
+    모바일 시트도 ABOUT 첫 항목 + 레드 점. /about에서 ABOUT aria-current=page, /products로 가면
+    PRODUCTS로 옮겨간다(현재 표시 정상). 320/768/1440/3840 가로 오버플로 ≤ 0. build:all 4앱 통과.
+  - 커밋: [brand] 헤더 ABOUT 메뉴 맨 앞으로. **푸시는 사용자가 나중에 일괄 수행.**
 - **brand R5 월드빌딩 제거와 About 신설 완료(확인 대기). 트랙 선점 해제.** 커밋 둘로 나눴다.
   - **파트 A: 월드빌딩 섹션과 pin 제거.** `WorldScene.jsx`(ScrollTrigger sticky pin 소유)를 git rm으로 삭제하고
     Landing에서 `WorldSection`과 import, `world` 구조분해를 걷어냈다. copy.js에서 `LANDING.world`와
