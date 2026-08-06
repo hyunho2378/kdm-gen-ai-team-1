@@ -44,6 +44,7 @@ R3F 전용 저장소는 vanilla three에 그대로 못 얹는다(판정표 arena
 | richardevcom/threejs-z-fold-gift-card | MIT (LICENSE, Copyright 2025 richardevcom) | 채택 가능 | 없음(three ^0.181 직접 의존) | 접히는 카드 전환. 제품 상세 morph 후보 | 2026-08-06 |
 | Saganaki22/MetalFlow | LICENSE는 MIT(Copyright 2025 drbaph)이나 **상류가 PolyForm Shield 1.0.0** | **사용 불가(2026-08-06 정정)** | 없음(플레인 JS) | 크롬 타이포 재질. 아래 정정 기록 | 2026-08-06 |
 | PavelDoGreat/WebGL-Fluid-Simulation | MIT (LICENSE, Copyright 2017 Pavel Dobryakov). **상류 추적 완료, 아래 기록** | 채택 가능(상류 추적 후 유지) | 없음(three 비의존 순수 WebGL) | vortex 유체 배경. 히어로 뒤 | 2026-08-06 |
+| paper-design/shaders (`@paper-design/shaders`) | **Apache-2.0**. 저장소 SPDX와 npm `license` 필드와 동봉 LICENSE 전문이 전부 일치하고 **NOTICE 파일도 동봉**된다. **상류 추적 완료, 아래 기록** | 채택 가능. **도입 시 Apache-2.0 의무를 진다** | 없음(의존성 0, peer 0. three도 R3F도 안 쓰고 자체 WebGL2 런타임 `ShaderMount`를 들고 온다) | 워드마크 크롬. MetalFlow 대체재 | 2026-08-06 |
 
 ## 포크는 상류까지 확인한다 (2026-08-06 신설. MetalFlow 오판에서 나온 규칙)
 
@@ -80,6 +81,32 @@ R3F 전용 저장소는 vanilla three에 그대로 못 얹는다(판정표 arena
 - **잔여 위험 기록.** `fluids-2d`는 같은 JavaScript WebGL 유체이고 GPL이다. 실제 코드 유입 여부는
   그 저장소를 열어야 알 수 있는데 **위 규칙대로 열지 않았다.** 저자의 MIT 선언과 파생 진술 부재를 근거로 통과시켰다.
 - 에셋 `LDR_LLL1_0.png`(디더링 텍스처)는 **별도 고지가 없어 미확인으로 보고 반입하지 않았다.** 코드로 만든 노이즈로 대체한다.
+
+### paper-design/shaders 상류 추적 (MetalFlow 오판 직후라 같은 절차를 더 세게 돌렸다)
+
+**이 저장소는 MetalFlow의 상류였던 `paper-design/liquid-logo`와 같은 계정이다.** 그래서
+"Apache 배포본도 결국 PolyForm 코드 아니냐"를 먼저 확인해야 했다. **아니다.**
+
+- **`shaders`가 `liquid-logo`보다 먼저다.** 저장소 생성일이 `shaders` **2024-10-09**,
+  `liquid-logo` **2025-02-18**로 넉 달 차이다. 라이브러리가 먼저고 데모 앱이 나중이다.
+  파생 방향이 반대라 PolyForm이 위로 올라오지 않는다
+- **설령 코드가 겹쳐도 문제가 없다.** 두 저장소의 저작권자가 **같은 `paper-design`**이다.
+  저작권자는 자기 코드를 배포처마다 다른 라이선스로 낼 수 있다. MetalFlow가 막힌 이유는
+  **제3자인 drbaph가 남의 코드를 재라이선스**했기 때문이고 여기는 그 구조가 아니다
+- **파생 진술 없음.** README 90줄에서 `ported`, `fork of`, `based on`, `derived`, `adapted`,
+  `liquid-logo`, `inspired`를 grep했다. 히트 1건인데 그건 상류 주장이 아니라
+  **하류 재배포자에게 LICENSE와 NOTICE를 보존해 달라는 요청**이다
+- 라이선스 표기 3중 일치. 저장소 SPDX `Apache-2.0`, npm `license` 필드 `Apache-2.0`,
+  동봉 `LICENSE` Apache 2.0 전문. **`NOTICE` 파일까지 동봉**된다(Apache-2.0에서 NOTICE가 있으면 재배포 시 보존 의무)
+- **에셋 의존 0.** `dist`에 이미지도 HDR도 없다. `liquid-metal.js`의 `fetch(...)`는
+  사용자가 넘긴 이미지나 Blob을 읽는 헬퍼이고 번들 에셋이 아니다
+- **의존성 0, peer 0.** three도 R3F도 안 쓴다. 자체 WebGL2 런타임 `ShaderMount`를 들고 온다.
+  즉 리본의 three 컨텍스트와 **별개 컨텍스트**가 하나 더 생긴다는 뜻이다
+
+**도입 시 지는 Apache-2.0 의무.** 저작권 고지 유지, 라이선스 사본 동봉, **NOTICE 동봉**,
+변경한 파일에 변경 사실 표시. npm 설치본을 그대로 쓰면 `node_modules` 안에 LICENSE와 NOTICE가
+따라오므로 배포 번들에서 그 사실과 출처를 CREDITS로 밝힌다. README가 "Powered by Paper Shaders"
+가시 크레딧을 권하나 **의무는 아니다**(appreciated 표현).
 
 **nytimes/three-story-controls 불일치 기록(ogl, segue, ahrs와 같은 규율).**
 

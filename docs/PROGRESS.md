@@ -1079,6 +1079,8 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **brand 워드마크 shaders 재시도 작업중.** 히어로 워드마크만 잡는다.
+  리본과 배경과 다른 섹션은 손대지 않는다
 - **brand A 히어로 vortex 유체 배경 시도 후 미채택. fps 판정 실패다.** 트랙 선점 해제
   - **코드 변경 0.** 히어로는 배경 레드 radial + 리본 + steelText 워드마크 그대로다.
     반입했던 `vendor/webgl-fluid/fluid.js`와 `components/HeroFluid.jsx`는 지웠다.
