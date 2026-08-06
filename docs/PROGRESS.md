@@ -1079,6 +1079,9 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **brand B8a 제품 카드 상세 전환 작업중. 트랙 선점.** `/products` 카드에서 `/product/:slug` 상세로
+  가는 shared element 전환을 GSAP Flip으로 만든다. **전환만 한다.**
+  상세 내부 레이아웃과 3D는 다음 세션이다. 소유 폴더는 brand와 docs뿐이다
 - **LIBRARIES 라이선스 게이트 2차 완료(확인 대기).** 문서만 만졌다. 트랙 선점 해제
   - 후보 7개 전부 라이선스 파일이 실재했다. **사용 불가 0, 열람 금지 추가분 없다**
   - **채택 가능 7.** three-story-controls(Apache-2.0), WebGL-Fluid-Simulation(MIT),
