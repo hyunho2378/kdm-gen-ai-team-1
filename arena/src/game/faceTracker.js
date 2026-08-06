@@ -17,13 +17,40 @@ const WASM_ROOT = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/
 const MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
 
-/** 추론 주기. 얼굴은 빠르게 안 움직이므로 15Hz면 충분하고 CPU 여유가 남는다. */
-const INFER_HZ = 15;
+/**
+ * 추론 주기. **앞뒤 반응이 이 주기에 직접 묶인다.**
+ * detectForVideo는 메인 스레드를 동기로 잡으므로 올릴수록 fps 예산을 먹는다.
+ * 20Hz는 표본 지연을 33ms에서 25ms로 줄이면서 15Hz 대비 부하가 1.33배에 그치는 자리다.
+ */
+const INFER_HZ = 20;
 const INFER_MS = 1000 / INFER_HZ;
 
-/** 지표는 전부 EMA로 눌러 쓴다. 원시값은 프레임마다 튄다. */
-const EMA_FAST = 0.25;   // 위치. 따라오는 느낌이 있어야 한다
-const EMA_SLOW = 0.08;   // 안정도. 천천히 쌓여야 판단이 흔들리지 않는다
+/**
+ * 지표는 전부 EMA로 눌러 쓴다. 원시값은 프레임마다 튄다.
+ *
+ * **계수가 아니라 시정수(초)로 적는다.** 예전에는 프레임당 계수(0.25, 0.08)였는데
+ * 그러면 추론 주기를 건드리는 순간 필터의 실제 응답과 안정도의 뜻이 같이 바뀐다.
+ * 시정수로 두고 dt로 보정하면 Hz를 올려도 거동이 같고, 빠르게 만들 값만 따로 줄일 수 있다.
+ *
+ * 위치와 안정도는 **기존 응답을 그대로 재현하는 값**이다(15Hz에서 계수 0.25와 0.08).
+ * focused는 안정도에서 나오므로 이 보존이 곧 판정 계약 보존이다.
+ */
+const TAU_POS = 0.232;        // 위치와 요. 기존 15Hz x 0.25와 같은 응답
+const TAU_STABILITY = 0.80;   // 안정도. 기존 15Hz x 0.08과 같은 응답
+
+/**
+ * 앞뒤(얼굴 크기) 시정수. **여기만 줄인다. 둔함의 주범이었다.**
+ * 232ms짜리 EMA에 표본 지연과 렌더 스무딩이 얹혀 앞뒤가 반 박자 늦게 따라왔다.
+ * 더 줄이면 20Hz 표본에서 원시 잡음이 그대로 새어 화면이 떤다.
+ */
+const TAU_SCALE = 0.12;
+
+/**
+ * 안정도 기준 주기(초). **jump를 이 주기로 환산한다.**
+ * 예전에는 표본 사이 이동량을 그대로 썼는데, 그러면 Hz를 올리는 순간 같은 움직임이
+ * 더 작은 jump로 보여 안정도가 부풀고 focused가 쉽게 켜진다. 판정 의미가 조용히 바뀌는 경로다.
+ */
+const STEADY_REF_SEC = 1 / 15;
 
 /** 이 값을 넘게 안정되어 있으면 "집중"으로 본다. 시간 팽창의 캠 경로 조건이다. */
 const FOCUS_STABILITY = 0.72;
@@ -86,6 +113,8 @@ export function createFaceTracker() {
   const m = { headX: 0, headYaw: 0, scale: 0, stability: 0 };
   // 안정도 계산용 직전 원시 위치
   let prevRaw = null;
+  // 추론 간 실측 간격. 고정 상수를 쓰면 Hz가 흔들릴 때 필터가 어긋난다
+  let lastInferAt = 0;
 
   /**
    * 집중 판정. **한 곳에만 둔다.**
@@ -114,14 +143,22 @@ export function createFaceTracker() {
     } catch {
       return;
     }
+    // dt 실측. 이 값이 아래 세 필터의 계수를 만든다
+    const dt = lastInferAt ? Math.min(0.25, (now - lastInferAt) / 1000) : INFER_MS / 1000;
+    lastInferAt = now;
+    const kPos = 1 - Math.exp(-dt / TAU_POS);
+    const kScale = 1 - Math.exp(-dt / TAU_SCALE);
+    const kStab = 1 - Math.exp(-dt / TAU_STABILITY);
+
     const face = res?.faceLandmarks?.[0];
     if (!face || face.length === 0) {
       if (now - lastSeenAt > LOST_MS) {
         setStatus(CAM.LOST);
         // 소실이면 지표를 0으로 되돌린다. 패럴랙스가 마지막 자세에 굳으면 안 된다
-        m.headX += (0 - m.headX) * EMA_FAST;
-        m.headYaw += (0 - m.headYaw) * EMA_FAST;
-        m.stability += (0 - m.stability) * EMA_SLOW;
+        m.headX += (0 - m.headX) * kPos;
+        m.headYaw += (0 - m.headYaw) * kPos;
+        m.scale += (0 - m.scale) * kScale;
+        m.stability += (0 - m.stability) * kStab;
       }
       return;
     }
@@ -143,18 +180,20 @@ export function createFaceTracker() {
     // 얼굴 크기. 앞뒤 움직임이다
     const rawScale = clamp((span - 0.13) / 0.10, -1, 1);
 
-    // 안정도. 직전 프레임 대비 움직임이 작을수록 1에 가깝다
+    // 안정도. 직전 표본 대비 움직임이 작을수록 1에 가깝다.
+    // **속도로 환산해 기준 주기로 되돌린다.** 그래야 Hz를 바꿔도 같은 움직임이 같은 값을 낸다
     let steady = 0;
     if (prevRaw) {
       const jump = Math.hypot(rawX - prevRaw.x, rawYaw - prevRaw.yaw, rawScale - prevRaw.s);
-      steady = clamp(1 - jump * 6, 0, 1);
+      steady = clamp(1 - (jump / Math.max(dt, 1e-3)) * STEADY_REF_SEC * 6, 0, 1);
     }
     prevRaw = { x: rawX, yaw: rawYaw, s: rawScale };
 
-    m.headX += (rawX - m.headX) * EMA_FAST;
-    m.headYaw += (rawYaw - m.headYaw) * EMA_FAST;
-    m.scale += (rawScale - m.scale) * EMA_FAST;
-    m.stability += (steady - m.stability) * EMA_SLOW;
+    m.headX += (rawX - m.headX) * kPos;
+    m.headYaw += (rawYaw - m.headYaw) * kPos;
+    // 앞뒤만 빠른 시정수를 쓴다
+    m.scale += (rawScale - m.scale) * kScale;
+    m.stability += (steady - m.stability) * kStab;
   }
 
   return {
@@ -222,6 +261,7 @@ export function createFaceTracker() {
       if (disposed) return;
 
       lastSeenAt = performance.now();
+      lastInferAt = 0;   // 첫 추론은 공칭 주기로 시작한다
       // **메인 루프 밖에서 돈다.** 렌더 콜백 안에서 추론하면 프레임이 통째로 밀린다
       timer = setInterval(() => infer(performance.now()), INFER_MS);
     },
