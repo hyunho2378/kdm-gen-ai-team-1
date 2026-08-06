@@ -18,6 +18,7 @@ import {
   useNavigationType,
 } from 'react-router-dom';
 import Lenis from 'lenis';
+import { ScrollTrigger } from './lib/motion.js';
 import { PRODUCTS } from './copy.js';
 import { applyThemeVars } from './theme.js';
 import Header from './components/Header.jsx';
@@ -42,7 +43,13 @@ import NotFound from './pages/NotFound.jsx';
 function useSmoothScroll() {
   useEffect(() => {
     const lenis = new Lenis({ autoRaf: true });
-    return () => lenis.destroy();
+    // **Lenis가 스크롤 위치를 쥐므로 ScrollTrigger에 진행을 알려 줘야 한다.**
+    // 안 묶으면 pin 구간이 스크롤 중간 프레임을 놓쳐 계단처럼 끊긴다
+    lenis.on('scroll', ScrollTrigger.update);
+    return () => {
+      lenis.off('scroll', ScrollTrigger.update);
+      lenis.destroy();
+    };
   }, []);
 }
 
