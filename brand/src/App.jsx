@@ -10,7 +10,6 @@
 import { useEffect } from 'react';
 import {
   BrowserRouter,
-  Navigate,
   NavigationType,
   Route,
   Routes,
@@ -18,8 +17,14 @@ import {
   useNavigationType,
 } from 'react-router-dom';
 import Lenis from 'lenis';
+import { applyThemeVars } from './theme.js';
+import Header from './components/Header.jsx';
 import Landing from './pages/Landing.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
+import Products from './pages/Products.jsx';
+import Duelists from './pages/Duelists.jsx';
+import Experience from './pages/Experience.jsx';
+import NotFound from './pages/NotFound.jsx';
 
 /**
  * 스무스 스크롤(실설치 lenis 1.3.26). **일반 스크롤이다.**
@@ -58,14 +63,21 @@ function ScrollToTop() {
 
 export default function App() {
   useSmoothScroll();
+  // CSS 변수 주입. hover와 :active와 focus-visible이 이 값을 읽는다
+  useEffect(() => applyThemeVars(), []);
+
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <Header />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/products" element={<Products />} />
         <Route path="/product/:slug" element={<ProductDetail />} />
-        {/* 그 밖의 주소는 랜딩으로. SPA rewrite가 모든 경로를 index.html로 보내므로 빈 화면을 남기지 않는다 */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/duelists" element={<Duelists />} />
+        <Route path="/experience" element={<Experience />} />
+        {/* **랜딩으로 튕기지 않는다.** 주소가 틀렸다는 사실이 화면에 남아야 사람이 오타를 찾는다 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

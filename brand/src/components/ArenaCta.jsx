@@ -4,7 +4,7 @@
 // 값이 없으면 콘솔 경고 한 줄을 남기고 화면은 그대로 산다. 버튼은 비활성으로 두고
 // 옆에 사유를 적는다. 눌러도 아무 일이 없는 버튼이 제일 나쁜 실패다.
 
-import { colors, radius, typography, glow } from '../tokens.js';
+import { colors, radius, typography } from '../tokens.js';
 import { DEMO } from '../copy.js';
 
 export function arenaUrl() {
@@ -38,7 +38,7 @@ export default function ArenaCta({ label = DEMO.cta }) {
 
   // 외부 앱이라 새 탭으로 연다. noopener는 새 탭이 이 페이지를 조작하지 못하게 막는다
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+    <a href={url} target="_blank" rel="noopener noreferrer" className="vx-cta" style={linkStyle}>
       {label}
     </a>
   );
@@ -67,13 +67,9 @@ const shared = {
   textDecoration: 'none',
 };
 
-const linkStyle = {
-  ...shared,
-  color: colors.text.onFill,
-  background: colors.red.fill,
-  border: `1px solid ${colors.red.fill}`,
-  boxShadow: glow.red,
-};
+// **채움과 press는 `.vx-cta` 클래스가 쥔다.** 여기서 background를 인라인으로 걸면
+// 인라인이 스타일시트를 이겨 `:active`의 press 색이 죽는다(arena에서 죽어 있던 함정).
+const linkStyle = { ...shared };
 
 const disabledStyle = {
   ...shared,

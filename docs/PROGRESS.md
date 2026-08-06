@@ -1079,9 +1079,32 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **brand B3 구조 재편 작업중. 트랙 선점.** 셋을 한다. 리서치 후보 저장소의 라이선스 실확인 게이트,
-  brand 라우팅 5페이지 재편, 상단 고정 헤더 신설. **비주얼 라이브러리 신규 설치는 하지 않는다.**
-  문구는 임시 자리만 잡고 확정 라이팅은 B4다. 소유 폴더는 brand와 docs뿐이다
+- **brand B3 구조 재편 완료(확인 대기).** 라이선스 게이트, 5페이지 재편, 고정 헤더. 트랙 선점 해제
+  - **라이선스 게이트(커밋 cecf1d0).** 후보 17개를 GitHub API로 열어 확인했다.
+    채택 가능 12, **사용 불가 5**(LICENSE 파일이 어느 이름으로도 없다).
+    채택 가능분은 파일 본문을 내려받아 첫 줄과 저작권자까지 봤다. 판정표는 `docs/LIBRARIES.md` 최상단이고
+    **B5 이후 세션의 유일한 채택 근거다**. 사용 불가 5개는 열람 금지 목록에 넣었다
+  - **codrops 계정이라고 통과시키지 않는다.** 같은 계정에서 `GridLayoutAnimation`은 LICENSE가 있고
+    `FullscreenLayoutPageTransitions`는 없다. 저장소 단위로 확인한다
+  - **5페이지 재편.** `/` 랜딩(관문), `/products`, `/product/:slug`, `/duelists`, `/experience`.
+    랜딩은 히어로와 월드빌딩만 남기고 나머지는 **관문 카드 셋**으로 줄였다. 제품군과 유파와 데모 섹션의
+    본문은 삭제하지 않고 각자 페이지로 옮겼다(`pages/Products.jsx`, `Duelists.jsx`, `Experience.jsx`)
+  - **없는 경로를 랜딩으로 튕기지 않는다.** 전역 `NotFound`를 세웠다. 조용히 홈으로 보내면
+    주소가 틀렸다는 사실이 화면에 안 남아 사람이 오타를 못 찾는다
+  - B8 Flip을 위해 카드에 `data-flip-id`만 미리 달았다. 제품은 slug, 유파는 ver 기준이다(실측 확인)
+  - **고정 헤더 신설.** 워드마크(steelText 축소본) + 메뉴 3 + 체험하기 CTA. z-index 50(DESIGN 8절).
+    최상단에서는 투명이고 60px를 넘기면 `rgba(16,16,16,0.85)` + `blur(12px)` + 헤어라인이 켜진다.
+    현재 라우트는 red 점과 `aria-current`와 **weight 700**으로 함께 표시한다(색 단독 구분 금지)
+  - **press 함정을 brand에서 실제로 막았다.** `theme.js`로 토큰을 CSS 변수로 내보내고
+    채움을 `.vx-cta` 클래스가 쥔다. **인라인 background를 걸지 않았다.**
+    누른 상태 배경이 `rgb(184, 10, 17)`(red.press)로 실제로 바뀌는 것을 실측했다.
+    같은 이유로 기존 `ArenaCta`의 인라인 background도 클래스로 옮겼다
+  - **검증(실브라우저):** 5라우트 + 상세 + 깊은 오타 경로 전부 직접 URL과 링크 이동 양쪽으로 열린다.
+    랜딩 섹션 hero world products(관문) 셋, **히어로 궤적 초당 122 드로우콜로 재편 뒤에도 살아 있다.**
+    헤더 최상단 투명 대 스크롤 후 딤과 blur 실측, 현재 페이지 표시 정확, 헤더 CTA는 `/experience`로,
+    experience의 arena CTA는 `VITE_ARENA_URL`로 향한다. 320 / 768 / 1440 / 3840 **가로 overflow 0**,
+    페이지 에러 0, 4앱 빌드 성공
+  - **이 세션은 라이브러리를 설치하지 않았다. CREDITS 변경 없음**
 - **P-B brand 세션 2 히어로 검끝 궤적과 Lenis 완료(확인 대기).** 히어로 섹션 하나만 만졌다
   - **궤적 방식은 후보 A(arena 리본 재사용)로 확정했다. 둘 다 실제로 확보해 비교했다**
     - 후보 B `@newkrok/three-particles`를 임시 폴더에 **실설치**해 확인했다. 3.0.0, LICENSE 파일 MIT,
@@ -1459,10 +1482,22 @@
   - 제품 상세 4종의 대표 비주얼과 랜딩 카드 썸네일 자리가 비어 있다. 히어로와 월드빌딩도 비주얼이 없다
   - 반입되는 이미지는 **전부 미확인 시안으로 간주**한다(BRAND_SITE_GUIDE 7절 6항).
     팀 자체 제작 확정분만 CREDITS 채택이고 나머지는 **제출 전 교체 필수**다
-- **brand 임시 카피 다섯 곳. 화면에 `임시` 꼬리표로 드러나 있다.**
-  - 제품군 4종의 한 줄 카피와 제품군 섹션 헤드라인이다. `brand/src/copy.js`의 `temp` 플래그를 지우면 꼬리표가 사라진다
-  - **월드빌딩 섹션은 카피 자체가 없다.** "검술 도장 세계관"이라는 주제만 있어 지어내지 않고 자리만 잡았다.
-    확정 문장이 오면 `WORLD.headline`과 `WORLD.body`를 채우고 `todo`를 지운다
+- **brand 임시 카피 여덟 곳. 화면에 `임시` 꼬리표로 드러나 있다. 확정 라이팅은 B4다.**
+  - 제품군 4종의 한 줄, 제품군 헤드라인, **랜딩 관문 카드 3장의 한 줄**(B3에서 추가).
+    `brand/src/copy.js`의 `temp` 플래그를 지우면 꼬리표가 사라진다
+  - **월드빌딩 섹션과 experience 데모 설명은 카피 자체가 없다.** 주제만 있고 확정 문장이 없어
+    지어내지 않고 자리만 잡았다. `WORLD.headline`과 `PAGES.experience.todo`가 그 자리다
+- **brand 모바일(md 768 미만) 헤더 메뉴가 접혀 있고 햄버거가 없다.**
+  - 지금은 `index.css`의 미디어쿼리가 `.vx-nav`를 숨기고 워드마크와 체험하기 CTA만 남긴다.
+    좁은 화면에서 PRODUCTS, DUELISTS, EXPERIENCE로 가는 길이 랜딩 관문 카드뿐이다
+  - **햄버거와 시트는 B8 이후다.** 그때 페이지 전환 연출(GSAP Flip)과 같이 붙인다
+- **brand 페이지 전환이 즉시 이동이다. 연출은 B8이다.**
+  - 카드에 `data-flip-id`는 이미 달려 있다(제품 slug, 유파 ver). Flip이 이 속성으로 짝을 찾는다
+- **라이선스 사용 불가 판정 5개. 열람도 하지 않는다.**
+  - wass08/r3f-ultimate-character-configurator, Cuberto/bglines, amandaghassaei/VortexShedding,
+    codrops/FullscreenLayoutPageTransitions, JosephASG/codrops-cinematic-scroll-animations
+  - 전부 루트에 `LICENSE` `LICENCE` `COPYING` `LEGAL` 어느 이름의 파일도 없다(2026-08-06 실확인).
+    셋은 `package.json`의 license 필드도 없다. 근거와 채택 가능 12개는 `docs/LIBRARIES.md` 최상단 판정표에 있다
 - **brand 제목(디스플레이) 폰트 미정.** `brand/src/tokens.js`의 `displayFamily`가 지금 본문과 같은 Pretendard다.
   참조처는 히어로 워드마크와 ENTER THE VORTEX 둘뿐이라 폰트가 정해지면 그 키 한 줄만 바꾼다
   (presentation-v2의 같은 이름 키와는 별개 파일이다)

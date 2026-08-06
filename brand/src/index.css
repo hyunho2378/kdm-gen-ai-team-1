@@ -6,6 +6,38 @@ html, body { background: #101010; color: #FDFDFD; }
 /* 위 두 값은 부트스트랩 시점의 유일한 예외. 첫 페인트 깜빡임 방지용.
    컴포넌트 레벨에서는 반드시 tokens 경유. */
 
+/* 아래 값은 전부 src/theme.js가 tokens에서 주입한 CSS 변수다. 여기에 HEX를 적지 마라. */
+
+*:focus-visible {
+  outline: 2px solid var(--red-light);
+  outline-offset: 2px;
+}
+
+/* CTA 채움. **배경을 인라인 style로 걸지 않는다.**
+   인라인은 스타일시트를 이겨서 아래 :active가 통째로 죽는다(arena에서 죽어 있던 함정). */
+.vx-cta {
+  background: var(--red-fill);
+  color: var(--text-on-fill);
+  border: 1px solid var(--red-fill);
+  transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-press) var(--ease-out),
+    background-color var(--dur-press) var(--ease-out);
+}
+.vx-cta:hover {
+  box-shadow: var(--glow-red);
+}
+.vx-cta:active {
+  background: var(--red-press);
+  border-color: var(--red-press);
+  transform: scale(0.97);
+}
+
+/* 헤더 메뉴. md(768) 미만에서는 접는다. 햄버거는 B8 이후다 */
+@media (max-width: 767px) {
+  .vx-nav {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

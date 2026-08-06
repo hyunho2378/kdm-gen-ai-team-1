@@ -120,11 +120,72 @@ export const DEMO = {
   unavailable: '데모 주소가 아직 설정되지 않았다',
 };
 
+// 상단 헤더. 메뉴는 라우트와 1:1이다. ABOUT 자리는 아직 만들지 않았다.
+export const NAV = [
+  { to: '/products', label: 'PRODUCTS' },
+  { to: '/duelists', label: 'DUELISTS' },
+  { to: '/experience', label: 'EXPERIENCE' },
+];
+
+// 랜딩 관문 카드. **랜딩에서 다 보여주지 않고 유인만 한다.**
+// 각 관문의 본문은 해당 페이지가 가진다. 한 줄 카피는 TEMP다.
+export const GATEWAYS = [
+  {
+    key: 'products',
+    to: '/products',
+    title: '제품군 4종',
+    line: 'XR 글라스에서 데모 앱까지, 하나의 경험을 이루는 네 갈래',
+    temp: true,
+  },
+  {
+    key: 'duelists',
+    to: '/duelists',
+    title: 'AI 대전자',
+    line: '유파마다 다른 거리 습관을 가진 세 인격',
+    temp: true,
+  },
+  {
+    key: 'experience',
+    to: '/experience',
+    title: '체험해보기',
+    line: '노트북과 폰 두 화면으로 바로 겨룬다',
+    temp: true,
+  },
+];
+
+// 페이지별 머리말. 확정 라이팅은 B4에서 붓는다.
+export const PAGES = {
+  products: {
+    eyebrow: PRODUCTS_SECTION.eyebrow,
+    headline: PRODUCTS_SECTION.headline,
+    headlineTemp: true,
+  },
+  duelists: {
+    eyebrow: DUELISTS_SECTION.eyebrow,
+    headline: DUELISTS_SECTION.headline,
+    sub: DUELISTS_SECTION.sub,
+  },
+  experience: {
+    eyebrow: DEMO.eyebrow,
+    headline: DEMO.headline,
+    // 데모 설명은 확정 문장이 없다. 지어내지 않고 자리만 잡는다
+    todo: '데모 진행 방식 설명 확정 예정',
+  },
+};
+
 // 상세페이지 공통 골격 라벨.
 export const DETAIL = {
   back: '뒤로 가기',
   visualPlaceholder: '대표 비주얼 예정',
   notFound: '없는 제품이다',
+};
+
+// 전역 NotFound. 제품 상세의 "없는 제품이다"를 경로 전체로 승격한 것이다.
+export const NOT_FOUND = {
+  code: '404',
+  title: '없는 경로다',
+  body: '주소가 바뀌었거나 아직 만들지 않은 페이지다.',
+  home: '처음으로',
 };
 
 // 화면에 임시임을 드러내는 꼬리표. 확정 카피가 오면 temp 플래그를 지운다.
