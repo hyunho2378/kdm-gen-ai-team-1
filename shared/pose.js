@@ -82,8 +82,37 @@ export function tiltFromQuaternion(q) {
 }
 
 /**
- * 가드 상태 전이. **이전 상태를 받아 다음 상태를 낸다(히스테리시스).**
+ * 비틀림 가드 문턱 (GUARD_TWIST, 길 B). **누수 적분 출력 단위(도)다.**
+ * orientation.js가 자이로의 장축 각속도를 누수 적분한 값을 **크기**로 받아 히스테리시스를 건다.
+ * 절대 트위스트각이 아니라 각속도의 적분이라 자기계 없는 세션에서도 드리프트에 면역이다.
+ *
+ * 손맛은 세 레버로 맞춘다. `TWIST_TAU`(orientation.js, 빠르면 예민 느리면 둔함)와 아래 두 각.
+ * 전부 `?debug=1` 실측으로 확정한다. onDeg는 100~200ms 스냅 비틀기가 넘길 만큼,
+ * offDeg는 정지 시 자이로 바이어스의 정상상태(bias x TWIST_TAU) 위로 잡는다.
+ */
+export const TWIST = {
+  onDeg: 25,   // 이만큼 빠르게 비틀면 가드가 켜진다
+  offDeg: 12,  // 이 아래로 새면 풀린다. 정지 드리프트 정상상태보다 위여야 한다
+};
+
+/**
+ * 비틀림 가드 전이. **크기 기준 히스테리시스라 양방향 비틀기를 다 받는다.**
+ * 방향(화면 몸 쪽)은 부호로 알 수 있으나(?debug로 검증), 손맛은 양방향이 자연스러워 크기로 낸다.
+ * 순수 함수라 미리보기와 실기가 같은 답을 낸다(pose.js 계약).
+ * **판정에는 이 불리언만 간다. 비틀림 각/각속도 같은 연속값은 judge로 새지 않는다(채널 계약).**
+ */
+export function nextGuardTwist(guarding, twistMag, cfg = TWIST) {
+  if (guarding) return twistMag >= cfg.offDeg;
+  return twistMag >= cfg.onDeg;
+}
+
+/**
+ * 가드 상태 전이(roll 기반). **이전 상태를 받아 다음 상태를 낸다(히스테리시스).**
  * 순수 함수라 같은 입력이면 같은 출력이고, 미리보기와 실기가 같은 답을 낸다.
+ *
+ * **GUARD_TWIST 이후 라이브 가드는 `nextGuardTwist`가 낸다.** 이 함수는 길 A(옆으로 기울이기)의
+ * 후퇴선으로 남겨 둔다. 새 비틀기 감지가 발표 전까지 안 잡히면 motion.js와 PoseTest의 호출을
+ * 이 함수로 되돌리면 배포본 동작으로 복귀한다.
  */
 export function nextGuard(guarding, tilt, cfg = TILT) {
   const roll = Math.abs(tilt.rollDeg);

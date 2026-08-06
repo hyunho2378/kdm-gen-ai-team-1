@@ -23,6 +23,14 @@ const DEG2RAD = Math.PI / 180;
  * 손맛이 굼뜨면 내리고 흔들리면 올린다(구조 변경 없는 강도 한 단계).
  */
 const G_TAU_SEC = 0.9;
+/**
+ * 비틀림 누수 적분 시정수(초) (GUARD_TWIST, 길 B). **손맛의 첫 레버다.**
+ * 빠른 비틀기는 쌓이기 전에 새지 못해 문턱을 넘고, 느린 드리프트는 쌓이기 전에 새어 0으로 돌아온다.
+ * 짧으면 예민하고(작은 흔들림도 가드) 길면 둔하다(정지 바이어스가 정상상태 bias x TAU만큼 쌓인다).
+ * 100~200ms 스냅이 TWIST.onDeg를 넘기고 정지 드리프트가 수 초 안에 0으로 새는 값으로 잡는다.
+ * G_TAU_SEC와 같은 계수식 dt 보정이라 샘플 주기가 흔들려도 같은 시정수를 낸다. `?debug`로 확정한다.
+ */
+const TWIST_TAU_SEC = 2.5;
 /** 송신 주기. SERVER.md 프로토콜의 MOTION 스트림 주기와 같다. */
 export const SEND_HZ = 30;
 const SEND_MS = 1000 / SEND_HZ;
@@ -102,6 +110,12 @@ export function createOrientation() {
   let lastAt = 0;
   let lastSendAt = 0;
   let hz = 0;
+  /**
+   * 비틀림 누수 적분값(도) (GUARD_TWIST). **자이로 장축 각속도를 누수 적분한 값이다.**
+   * 절대 트위스트각이 아니라 각속도의 적분이라 드리프트에 면역이다. motion.js가 크기로 받아
+   * 가드 히스테리시스를 건다. swing과 완전히 별개이고 판정에는 이 값이 아니라 가드 불리언만 간다.
+   */
+  let twist = 0;
   // 캘리브레이션 기준의 켤레. 상대 회전을 만들 때 쓴다
   let baseConj = null;
   // 기준 자세 원본. MSG.CALIB이 이 값을 싣는다(ARENA_INPUT 4절의 기준 쿼터니언)
@@ -130,6 +144,18 @@ export function createOrientation() {
     const dt = lastAt ? Math.min(0.1, (now - lastAt) / 1000) : 1 / 60;
     lastAt = now;
     if (dt > 0) hz += (1 / dt - hz) * 0.05;
+
+    // ── 비틀림 채널 (GUARD_TWIST, 길 B) ──────────────────────────────────────
+    // 자이로 각속도를 칼날 장축(기기 좌표계 BLADE_REST=(0,1,0), 곧 기기 Y축)에 정사영한 성분이
+    // 폰을 자기 장축 둘레로 도는 속도다. DeviceMotion rotationRate에서 Y축 둘레 회전은 gamma다
+    // (ahrs.update의 둘째 인자와 같은 축). BLADE_REST=(0,1,0)과의 내적이 곧 이 성분이다.
+    // **부호는 ?debug로 검증한다.** 가드는 크기 기준이라 부호가 틀려도 동작은 같다.
+    //
+    // **누수 적분.** 빠른 비틀기는 새기 전에 쌓여 문턱을 넘고, 느린 드리프트는 쌓이기 전에 새어
+    // 0으로 돌아온다. 절대 트위스트각은 자기계 없는 세션에서 드리프트하므로 각속도로만 잡는다.
+    const twistRate = r.gamma;                 // deg/s. 장축(기기 Y) 둘레 회전 성분
+    twist += twistRate * dt;
+    twist *= Math.exp(-dt / TWIST_TAU_SEC);
 
     // **deg/s → rad/s.** 이 줄이 빠지면 필터가 57배 빠른 회전을 보고 자세가 튄다
     ahrs.update(
@@ -224,6 +250,9 @@ export function createOrientation() {
       // 소비처가 보정 전 스윙을 본다. 예전 한 틱 지연 버그와 같은 함정이다
       updateUp();
       swingAbout(rel, up, swing);
+      // **비틀림 적분기도 원점으로.** 캘리브레이션 직전에 쌓인 값이 남아 경기 시작 순간
+      // 엉뚱한 가드 한 쌍을 밀어 넣지 않게 한다(세로 중립 이산 이벤트 0 불변식).
+      twist = 0;
     },
     /**
      * 기준 자세 원본. MSG.CALIB이 싣는 값이다. **read()를 대신 쓰면 안 된다.**
@@ -247,6 +276,14 @@ export function createOrientation() {
      */
     tilt() {
       return tiltFromQuaternion(swing);
+    },
+    /**
+     * 비틀림 누수 적분값(도) (GUARD_TWIST). motion.js가 이걸 받아 크기 히스테리시스로 가드를 낸다.
+     * **연속 채널의 예외가 아니다.** 이 값은 판정에 안 들어가고, 문턱을 넘는 순간의 가드 불리언만 간다.
+     * swing과 별개라 세로 고정 보장(swing 경로)에는 손대지 않는다. 부호는 방향, 크기는 세기다.
+     */
+    twistDeg() {
+      return twist;
     },
     /** 실측 이벤트 주기. 고정 상수를 쓰지 않는다는 증거이자 튜닝 지표다. */
     getHz() {
