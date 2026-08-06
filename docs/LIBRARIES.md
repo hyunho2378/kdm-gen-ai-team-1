@@ -11,6 +11,7 @@
 | 저장소 | 실확인한 라이선스 | 판정 | 용도 후보 | 확인 일자 |
 |---|---|---|---|---|
 | gnss-creative-lab/webgl-particle-simulation | MIT (LICENSE, Copyright 2026 GNSS) | 채택 가능 | vortex 배경 파티클 | 2026-08-06 |
+| ehsan-shv/react-creative-cursor | MIT (LICENSE, Copyright 2022 eh. sh). npm 1.2.7 실설치 | **라이선스 통과, 미채택** | 커스텀 커서. 마운트 시점 1회 조회라 SPA에서 호버가 안 걸린다(아래 25번 판정) | 2026-08-06 |
 | Saganaki22/MetalFlow | LICENSE는 MIT(Copyright 2025 drbaph)이나 **상류가 PolyForm Shield 1.0.0** | **사용 불가(2026-08-06 정정)** | 크롬 타이포 재질. 아래 정정 기록 | 2026-08-06 |
 | wass08/r3f-ultimate-character-configurator | **없음** (루트에 라이선스류 파일 0, package.json license 필드도 없음) | **사용 불가** | 셀렉션 UI. R3F라 어차피 기각 기본값 | 2026-08-06 |
 | Cuberto/bglines | **없음** (루트에 라이선스류 파일 0, package.json license 필드도 없음) | **사용 불가** | 배경 라인 | 2026-08-06 |
@@ -364,10 +365,31 @@ R3F 전용 저장소는 vanilla three에 그대로 못 얹는다(판정표 arena
 - 훔칠 핵심 기법: lerp 보간 자석 인력, triggerArea/magneticForce/interpolationFactor 설정, 외부 RAF 연동 가능
 - 이식 난이도: 그대로 씀
 
-**25. ehsan-shv/react-creative-cursor** 🟢
+**25. ehsan-shv/react-creative-cursor** 🟢 라이선스 통과, **미채택(R1에서 실설치 판정)**
 - URL: https://github.com/ehsan-shv/react-creative-cursor
 - 영역: **brand** (블렌드모드/젤리 커서) | 훔칠 핵심 기법: isGelly 젤리 애니메이션, data-cursor-magnetic 속성, exclusion 블렌드모드(cuberto/14islands 영감)
-- 이식 난이도: 그대로 씀(React 전용)
+- 라이선스: **MIT**(LICENSE 파일 확인, Copyright 2022 eh. sh). npm 1.2.7 실설치, 의존 gsap ^3.10.3
+
+**미채택 사유(brand R1, 2026-08-06). 라이선스가 아니라 구현이 우리 구조와 안 맞는다.**
+
+1. **대상 요소를 마운트 시점에 한 번만 모은다.** `src/Cursor.tsx`의 큰 `useLayoutEffect`가
+   `document.querySelectorAll('[data-cursor-size]')` 등을 실행해 그때 있던 요소에만 리스너를 건다.
+   **우리는 라우터 SPA라 페이지 내용이 항상 커서보다 나중에 마운트된다.**
+   실측: 마운트 뒤에 `data-cursor-size`를 단 요소는 라우트를 6회 오간 뒤에도 리스너 0건이었다.
+   즉 호버 확대가 어느 페이지에서도 안 걸린다
+2. **정리 함수가 리스너를 못 뗀다.** `removeEventListener(..., () => {})`로 매번 새 익명 함수를
+   넘긴다. 참조가 달라 하나도 제거되지 않는다. 그 이펙트에 의존성 배열도 없어서
+   컴포넌트가 리렌더될 때마다 같은 요소에 리스너가 겹겹이 쌓이는 구조다
+3. **클릭 수축이 없다.** `mousedown`/`click` 처리가 소스에 아예 없다.
+   실측으로 눌러도 폭이 12px 그대로였다. 우리 스펙(2.4)의 세 동작 중 하나가 빠진다
+4. **터치와 모션 감소 가드가 없다.** `matchMedia` 사용처가 0건이라 폴백을 우리가 다시 짜야 한다
+5. 동봉 scss가 태그된 요소의 자식 `a`, `button`에 `transform: translate(0,0) !important`를 건다.
+   brand의 GSAP Flip 공유 요소 전환과 정면으로 부딪친다
+
+**대안: 자체 구현(`brand/src/components/Cursor.jsx`).** DOM 두 겹 + GSAP, transform만 쓴다.
+핵심 차이는 **이벤트 위임**이다. `document` 하나에만 리스너를 걸고 매 이벤트에서 `closest`로
+판단하므로 나중에 생긴 요소도 그대로 걸리고 리스너가 자라지 않는다.
+GSAP은 이미 확보분이라 새 의존성이 늘지 않는다. 판정 후 패키지는 제거했다.
 
 **26. ajmnz/custom-cursor-react, Phazr-Inc/react-custom-cursor**
 - 영역: brand | 훔칠 핵심 기법: difference 블렌드모드 커서, 타겟 셀렉터 hover 스케일, SSR 호환

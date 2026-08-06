@@ -178,6 +178,38 @@ html { scrollbar-gutter: stable both-edges; }
   transform: translateY(0);
 }
 
+/* ── 커스텀 커서 (REBOOT_PLAN 2.4) ────────────────────────────────────────
+   **기본 커서는 커스텀이 실제로 떠 있을 때만 감춘다.** 터치 기기와 모션 감소에서는
+   컴포넌트가 렌더 자체를 안 하고 이 속성도 안 붙어서 기본 커서가 그대로 산다.
+   숨김을 무조건 걸어 두면 커서가 안 뜨는 환경에서 화면에 커서가 통째로 사라진다. */
+[data-cursor-on='true'],
+[data-cursor-on='true'] * {
+  cursor: none;
+}
+
+.vx-cursor-ring,
+.vx-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-cursor);
+  /* 커서는 절대 입력을 가로채지 않는다. 클릭도 포커스도 아래 요소가 그대로 받는다 */
+  pointer-events: none;
+  border-radius: 50%;
+  /* transform과 opacity만 움직인다(DESIGN 7절) */
+  will-change: transform, opacity;
+}
+.vx-cursor-ring {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--text-primary);
+}
+.vx-cursor-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--text-primary);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

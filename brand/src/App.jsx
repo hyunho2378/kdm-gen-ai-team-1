@@ -21,6 +21,7 @@ import Lenis from 'lenis';
 import { ScrollTrigger } from './lib/motion.js';
 import { PRODUCTS } from './copy.js';
 import { applyThemeVars } from './theme.js';
+import Cursor from './components/Cursor.jsx';
 import Header from './components/Header.jsx';
 import Landing from './pages/Landing.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
@@ -78,6 +79,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      {/* 커서는 라우트 밖에 둔다. 페이지가 갈려도 하나만 산다 */}
+      <Cursor />
       <Header />
       <Routes>
         <Route path="/" element={<Landing />} />
