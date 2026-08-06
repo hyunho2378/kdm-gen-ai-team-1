@@ -139,8 +139,24 @@ export default function App() {
       if (st === LINK.PAIRED) engine.send(EV.PAIRED);
     });
     const detach = attachSocket(link, engine.input, poseChannel, {
-      // 폰이 준비를 마쳤다. 캘리브레이션 자체는 폰이 이미 적용했고 여기서는 phase만 넘긴다
-      onCalibrated: () => engine.send(EV.CALIBRATED),
+      // 폰이 준비를 마쳤다. 캘리브레이션 자체는 폰이 이미 적용했고 여기서는 phase만 넘긴다.
+      //
+      // **다시 대전(rematch)도 이 경로를 재사용한다(DEMO_CONTROLLER).** 폰이 결과 화면에서
+      // 다시 대전을 누르면 첫 경기와 같은 세로 홀드 캘리브레이션을 한 번 더 거쳐(setBaseline 재실행)
+      // CALIB을 다시 보낸다. 그때 arena는 MATCH_END에 있어 EV.CALIBRATED가 무전이(no-op)다.
+      // 그 CALIB을 MatchEndScreen 다시 대전 버튼과 **동일한 정리 + 기존 EV.REMATCH**로 받아
+      // 매 라운드가 깨끗한 세로 기준에서 시작하게 한다. machine과 새 메시지를 만들지 않는다.
+      // MATCH_END에서 CALIB이 오는 경우는 폰 재캘리브뿐이라 오발화가 없다.
+      onCalibrated: () => {
+        if (engine.phase === PHASE.MATCH_END) {
+          rendererRef.current?.clear();
+          partsRef.current = {};
+          resultSentRef.current = false;
+          engine.send(EV.REMATCH);
+          return;
+        }
+        engine.send(EV.CALIBRATED);
+      },
       // 폰이 유파를 골랐다. A3의 진입점(setSchool)으로 세우고 로비에 반영한다. 경기 시작 전이라 안전하다
       onSelect: (school) => {
         engine.setSchool(school);
