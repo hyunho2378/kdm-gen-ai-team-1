@@ -1079,6 +1079,10 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **presentation-v2 디자인 키워드 슬라이드 재구성 작업중. 트랙 선점.** presentation-v2 디자인 키워드(S4Keyword)만.
+  참조 SVG(frames/ref/Slide 16_9 - 79) 레이아웃 기준. 문구 변경(Transformative/Guide/Immersion + 국문 + 설명 2줄),
+  헤드라인 유지, 인트로 줄 전량 삭제, 상단 표기 없음. dk_1/2/3를 카드 배경 이미지로. 이미지 아래 어두운 네이비
+  그라디언트(#111A26→투명)로 흰 텍스트 가독. 기본 3카드 블러 → 방향키로 1,2,3 순 확장(마진 안). 색 무변경. 푸시 안 함.
 - **presentation-v2 표지 사진 제거와 로고 중앙 완료(확인 대기). 트랙 선점 해제.** presentation-v2 표지(S1Cover)만 만졌다.
   fencer 사진 패널 제거, logo_main.svg를 정중앙(가로/세로, clamp 240~520px display 스케일, PV1 평면 잉크).
   서브카피는 로고 바로 아래 중앙(absolute+keep-all 한 줄), 팀/행사 표기는 상단 모서리 유지. 색/토큰 무변경.
