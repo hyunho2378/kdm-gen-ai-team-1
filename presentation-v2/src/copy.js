@@ -250,6 +250,26 @@ export const CONTROLLER = {
   ],
 };
 
+// 마스크 제품 슬라이드 (참조 Slide 16_9 - 125.svg). 컨트롤러 슬라이드와 동일 문법. 텍스트는 참조 SVG 원문.
+// 아이브로우 'Concept/제품 컨셉'(참조 원문). 상단 표기 '2026 KDM+ AI Workshop'은 규율대로 제거.
+// desc para1 끝은 참조가 '제공합'(절단)이라 자연스러운 '제공합니다'로 완성.
+export const MASK = {
+  label: { en: 'Concept', ko: '제품 컨셉' },
+  headline: ['펜싱경험을 극대화 시킨,', '몰입형 XR'],
+  desc: [
+    [
+      { t: '기존 ' },
+      { t: '메쉬 시야 구조를 넓은 XR 글라스로 재해석', b: true },
+      { t: '하여 몰입감 있는 시야를 제공합니다' },
+    ],
+    [
+      { t: '불필요한 부피를 줄이고 보호 구조를 재구성하여 가볍고 역동적인 착용 경험을 제공' },
+    ],
+  ],
+  bg: '/images/mask/mask-back.png', // XR 마스크 착용 렌더(풀블리드 배경)
+  view: { label: 'Side View', img: '/images/mask/mask1.png' }, // 글래스 카드 안, 좌우반전
+};
+
 // 인터랙션 4종 (원본 `바인더1.pdf` 6페이지의 4카드 그리드).
 // icon은 lucide-react 아이콘 이름. 컴포넌트가 이름으로 골라 쓴다.
 // name과 desc의 각 줄은 전부 문자열이다.
@@ -357,6 +377,7 @@ export const SECTION_LABELS = [
   { id: 'logo-guide', ko: '로고 가이드', en: 'LOGO GUIDE' },
   { id: 'color', ko: '컬러 시스템', en: 'COLOR SYSTEM' },
   { id: 'concept', ko: '컨셉', en: 'CONCEPT' },
+  { id: 'mask', ko: '제품 컨셉', en: 'MASK' },
   { id: 'controller', ko: '컨트롤러', en: 'CONTROLLER' },
   { id: 'experience', ko: '인터랙션', en: 'EXPERIENCE' },
   { id: 'duelist', ko: '유파', en: 'AI DUELIST' },

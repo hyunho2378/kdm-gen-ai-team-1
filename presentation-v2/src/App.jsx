@@ -18,6 +18,7 @@ import SLogoMotif from './sections/SLogoMotif.jsx';
 import SLogoGuide from './sections/SLogoGuide.jsx';
 import S6ColorSystem from './sections/S6ColorSystem.jsx';
 import S3Concept from './sections/S3Concept.jsx';
+import SMask from './sections/SMask.jsx';
 import SController from './sections/SController.jsx';
 import S4Experience from './sections/S4Experience.jsx';
 import S5Duelist from './sections/S5Duelist.jsx';
@@ -191,6 +192,8 @@ export default function App() {
               <S6ColorSystem active={current === i} />
             ) : s.id === 'concept' ? (
               <S3Concept active={current === i} />
+            ) : s.id === 'mask' ? (
+              <SMask />
             ) : s.id === 'controller' ? (
               <SController />
             ) : s.id === 'experience' ? (
