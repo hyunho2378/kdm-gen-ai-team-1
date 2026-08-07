@@ -23,13 +23,16 @@ import { colors, typography, motion } from '../tokens.js';
 import { CONCEPT_SCENE } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 
-const K = 100 / 1080; // vh per ref-px (높이 기준 스케일)
-const vh = (refPx) => `${(refPx * K).toFixed(3)}vh`;
+// **1 ref-px를 contain-fit 단위로.** min(가로배율, 세로배율)이라 전체화면 종횡비가 16:9가 아니어도
+// 1920x1080 구도가 통째로 들어와 안 잘린다(16:9에선 세로 기준과 동일). 좁은 비율에선 폭에 맞춰 축소.
+// (이전 vh 고정은 16:10 등에서 좌우 텍스트 "소용돌이처럼 몰아치는/경기의 긴장감"이 마진 밖으로 잘렸다.)
+const REF = 'min(100vw / 1920, 100vh / 1080)';
+const vh = (refPx) => `calc(${refPx} * ${REF})`;
 // 참조 좌표(x,y)를 뷰포트 중앙 앵커 left/top으로. 요소는 translate(-50%,-50%)로 자기 중심 정렬.
 const at = (x, y) => ({
   position: 'absolute',
-  left: `calc(50% + ${((x - 960) * K).toFixed(3)}vh)`,
-  top: `calc(50% + ${((y - 540) * K).toFixed(3)}vh)`,
+  left: `calc(50% + ${(x - 960).toFixed(3)} * ${REF})`,
+  top: `calc(50% + ${(y - 540).toFixed(3)} * ${REF})`,
   transform: 'translate(-50%, -50%)',
 });
 
@@ -161,7 +164,7 @@ export default function S3Concept({ active }) {
         ref={textLRef}
         style={{
           position: 'absolute',
-          left: `calc(50% + ${((60 - 960) * K).toFixed(3)}vh)`,
+          left: `calc(50% + ${(60 - 960).toFixed(3)} * ${REF})`,
           top: '50%',
           transform: 'translateY(-50%)',
           zIndex: 4,
@@ -181,7 +184,7 @@ export default function S3Concept({ active }) {
         ref={textRRef}
         style={{
           position: 'absolute',
-          left: `calc(50% + ${((1728 - 960) * K).toFixed(3)}vh)`,
+          left: `calc(50% + ${(1728 - 960).toFixed(3)} * ${REF})`,
           top: '50%',
           transform: 'translateY(-50%)',
           zIndex: 4,

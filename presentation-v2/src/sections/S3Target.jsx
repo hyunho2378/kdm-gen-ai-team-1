@@ -126,8 +126,8 @@ export default function S3Target({ active }) {
                   key={li}
                   style={{
                     fontFamily: typography.family,
-                    // 본문보다 4pt 키운다(1440에서 15→19px).
-                    fontSize: 'clamp(0.97rem, 1.32vw, 1.41rem)',
+                    // 타이포 통일: 설명은 전 슬라이드 body 토큰 하나만 쓴다(개별 크기 금지).
+                    fontSize: typography.body.size,
                     letterSpacing: typography.body.tracking,
                     lineHeight: typography.body.leading,
                     color: colors.text.primary,
