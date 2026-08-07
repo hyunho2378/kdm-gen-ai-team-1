@@ -32,7 +32,16 @@ export function placeholderFrames(n = 24) {
 // 진행률(0~1)에서 blur(px). 흐림→선명 수렴. 컴포넌트가 CSS로 얹어 실프레임/플레이스홀더 둘 다 적용된다.
 const blurFor = (p) => `blur(${(1 - p) * 10}px)`;
 
-export default function MediaSequence({ frames, mode = 'enter', fps = 24, pending, ratio = '320 / 158' }) {
+export default function MediaSequence({
+  frames,
+  mode = 'enter',
+  fps = 24,
+  pending,
+  ratio = '320 / 158',
+  className = '',
+  style,
+  alt = '',
+}) {
   const list = frames && frames.length ? frames : placeholderFrames();
   const N = list.length;
   const imgRef = useRef(null);
@@ -109,7 +118,7 @@ export default function MediaSequence({ frames, mode = 'enter', fps = 24, pendin
     <img
       ref={imgRef}
       src={list[idx]}
-      alt=""
+      alt={alt}
       draggable="false"
       className="vx-seq-img"
       style={{ filter: mode === 'enter' ? blurFor(0) : undefined }}
@@ -120,7 +129,7 @@ export default function MediaSequence({ frames, mode = 'enter', fps = 24, pendin
   if (mode === 'scroll') {
     return (
       <div ref={wrapRef} className="vx-seq-scroll" style={{ height: '200dvh' }}>
-        <div className="vx-seq-sticky" style={{ aspectRatio: ratio }}>
+        <div className={`vx-seq-sticky ${className}`} style={{ aspectRatio: ratio, ...style }}>
           {img}
           {pending ? <span className="vx-seq-pending">{pending}</span> : null}
         </div>
@@ -129,7 +138,7 @@ export default function MediaSequence({ frames, mode = 'enter', fps = 24, pendin
   }
   // enter 모드: 제자리에서 1회 재생.
   return (
-    <div ref={wrapRef} className="vx-seq" style={{ aspectRatio: ratio }} data-beat>
+    <div ref={wrapRef} className={`vx-seq ${className}`} style={{ aspectRatio: ratio, ...style }} data-beat>
       {img}
       {pending ? <span className="vx-seq-pending">{pending}</span> : null}
     </div>

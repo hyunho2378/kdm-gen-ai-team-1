@@ -21,10 +21,17 @@ import { useEffect, useRef, useState } from 'react';
 import { isReduced } from '../lib/motion.js';
 import { captionStyle } from './typo.js';
 
-export default function AutoVideo({ src, pending, ratio = '1425 / 848', className, style }) {
+export default function AutoVideo({ src, pending, ratio = '1425 / 848', rate, className, style }) {
   const ref = useRef(null);
   // 자동 재생이 거부됐거나 모션 감소면 컨트롤을 켠다. 사람이 누를 길이 남아야 한다
   const [manual, setManual] = useState(false);
+
+  // 재생 속도. **속성이 아니라 프로퍼티라 마크업으로 못 준다.** 1보다 작으면 느려진다.
+  // 매 재생마다 다시 걸어야 한다. `play()`가 값을 되돌리지는 않지만 소스가 바뀌면 1로 돌아간다
+  useEffect(() => {
+    const el = ref.current;
+    if (el && rate) el.playbackRate = rate;
+  }, [rate, src]);
 
   useEffect(() => {
     const el = ref.current;
@@ -44,6 +51,7 @@ export default function AutoVideo({ src, pending, ratio = '1425 / 848', classNam
             // 그건 정상 동작이지 자동 재생 거부가 아닌데, 여기서 컨트롤을 켜 버리면
             // 한 번 훑고 지나간 것만으로 영상이 영영 컨트롤 달린 채로 남는다.
             // **막힌 것은 `NotAllowedError` 하나다.** 그때만 사람이 누를 길을 연다
+            if (rate) el.playbackRate = rate;
             el.play().catch((err) => {
               if (err?.name === 'NotAllowedError') setManual(true);
             });
@@ -57,7 +65,7 @@ export default function AutoVideo({ src, pending, ratio = '1425 / 848', classNam
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [src]);
+  }, [src, rate]);
 
   if (!src) {
     return (

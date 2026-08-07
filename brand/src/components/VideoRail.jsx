@@ -41,7 +41,12 @@ export default function VideoRail() {
   }, []);
 
   return (
-    <section aria-label={VIDEO_RAIL.label} style={{ paddingBlock: 'var(--section-gap)' }}>
+    // **아래 여백만 절반이다.** 뒤에 오는 수렴 섹션이 어두운 판이라 표준 간격을 다 주면
+    // 그 판이 페이지에서 떨어져 나온 조각으로 읽힌다. 캐러셀에서 그대로 잠기게 붙인다
+    <section
+      aria-label={VIDEO_RAIL.label}
+      style={{ paddingTop: 'var(--section-gap)', paddingBottom: 'calc(var(--section-gap) * 0.5)' }}
+    >
       <div
         className="vx-shell"
         style={{ display: 'flex', justifyContent: 'flex-end', gap: spacing.unit, marginBottom: spacing.unit * 2 }}
@@ -53,14 +58,19 @@ export default function VideoRail() {
       <div ref={railRef} className="vx-rail" onScroll={readEdge}>
         {VIDEO_RAIL.items.map((item) => (
           <figure key={item.key} data-rail-card className="vx-rail-card">
+            {/* **비율은 소스가 정한다.** Apple 카드는 820x530(1.547:1)인데 우리 mask-360은
+                1920x1920 정사각이라 그 틀에 넣으면 위아래가 잘려 마스크가 깎인다(실측).
+                치수 문법은 카드 폭이 지고 비율은 소재가 진다 */}
             <AutoVideo
               className="vx-rail-media"
               src={item.src}
               pending={MEDIA_PENDING}
-              // Apple 카드 820x530과 같은 비율이다
-              ratio="820 / 530"
+              ratio={item.ratio}
+              rate={item.rate}
             />
-            <figcaption style={{ ...bodyStyle, marginTop: spacing.unit * 1.5 }}>{item.line}</figcaption>
+            {/* 영상과 이름 사이. **12에서 32로 벌렸다.** 붙어 있으면 이름이 영상의
+                자막처럼 읽힌다. 떨어져야 그것이 제품 이름으로 선다 */}
+            <figcaption style={{ ...bodyStyle, marginTop: spacing.unit * 4 }}>{item.line}</figcaption>
           </figure>
         ))}
       </div>

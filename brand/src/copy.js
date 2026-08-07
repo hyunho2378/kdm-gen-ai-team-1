@@ -21,8 +21,7 @@ const TODO_MARK = '확정 예정';
 // 사양이 비어 있는 동안 대신 뜨는 문장. **특징 목록은 걷었다.** 딥다이브 비트가
 // 같은 사실을 이미 문장으로 펴고 있어서 한 탭 안에서 두 번 읽혔다
 export const TODO_PRODUCT_SPEC = `제품 스펙 ${TODO_MARK}`;
-// 실제 제품 3D 모델이 없어 뷰어가 플레이스홀더 프리미티브를 띄운다. 모델이 들어오면 이 자리가 사라진다
-export const TODO_PRODUCT_MODEL = `제품 3D 모델 ${TODO_MARK}`;
+// **3D 모델 자리표시를 걷었다.** 뷰어가 사라지면서 이 문구를 읽는 곳이 없어졌다
 // 이미지와 영상이 아직 없는 자리. **빈 박스나 다크 사각형을 두지 않는다**(REBOOT_PLAN 2.1).
 // 자리표시 문구만 dim으로 둔다. 에셋이 들어오면 이 상수를 참조하는 자리가 이미지로 바뀐다
 export const MEDIA_PENDING = '이미지 첨부 예정';
@@ -47,12 +46,13 @@ export const ARENA_CTA = {
 // 랜딩을 걷을 때 이 문구까지 함께 사라졌는데, 브랜드 한 줄과 팀 표기는 사이트에
 // 다른 자리가 없다. 제품 페이지 최상단이 그 자리를 이어받는다.
 // ---------------------------------------------------------------------------
+// **워크숍 표기와 스크롤 안내를 걷었다.** 둘 다 제품이 아니라 이 페이지가 만들어진
+// 사정을 말하는 문구였다. 워크숍 크레딧은 푸터가 이미 이고 있고, 스크롤 안내는
+// 아래에 콘텐츠가 있다는 사실을 글로 다시 적는 자리라 표지의 정적을 깬다.
 export const HERO = {
   eyebrow: { en: 'IMMERSIVE FENCING XR', ko: '몰입형 펜싱 XR' },
   wordmark: BRAND,
   sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 훈련',
-  scrollHint: '아래로 진입',
-  team: '2026 KDM+ AI Workshop',
   // 표지 구도의 두 요소. 장식이 아니라 제품이라 대체 텍스트를 준다
   maskAlt: '마스크를 쓴 대전자',
   controllerAlt: '손에 쥔 컨트롤러',
@@ -73,30 +73,61 @@ export const HERO = {
 //
 // `src`가 null이면 영상 자리표시가 선다. 파일이 오면 이 값만 채운다.
 // ---------------------------------------------------------------------------
+// **캡션은 제품 이름이다.** 영상이 무엇을 하는지 설명하지 않는다("한 바퀴 돈다" 같은
+// 구어 서술 금지). 영상이 이미 보여주고 있는 것을 글로 되풀이하면 격이 떨어진다.
+//
+// `ratio`는 소스의 실제 비율이다. mask-360은 **1920x1920 정사각**이라 820x530 카드에
+// 넣으면 위아래가 잘려 마스크가 깎인다(실측). 소스 비율을 그대로 쓴다.
+// `rate`는 재생 속도다. 1보다 작으면 느리게 돈다.
 export const VIDEO_RAIL = {
-  label: '영상',
+  label: '제품 영상',
   prev: '이전 영상',
   next: '다음 영상',
   items: [
-    {
-      key: 'mask-360',
-      src: '/images/home/mask-360.mp4',
-      line: '마스크가 한 바퀴 돈다. 쓰는 각도마다 시야가 어디로 열리는지 보인다.',
-    },
-    { key: 'controller', src: null, line: '컨트롤러를 쥔 손이 검이 되는 순간' },
-    { key: 'match', src: null, line: '거리를 재고 찌르는 한 합' },
+    { key: 'mask-360', src: '/images/home/mask-360.mp4', line: 'Vortex Mask', ratio: '1 / 1', rate: 0.5 },
+    // 작업 중에 도착한 파일이다. mask-360과 같은 규격(1920x1920, 5.08초)이라 같은 값을 준다
+    { key: 'controller', src: '/images/home/con-360.mp4', line: 'Vortex Controller', ratio: '1 / 1', rate: 0.5 },
+    { key: 'match', src: null, line: 'Vortex Duel', ratio: '1 / 1' },
   ],
 };
 
 /**
- * 흐림에서 선명으로 수렴하는 가로 영상. **캐러셀 아래 풀블리드 한 섹션이다.**
- * Apple도 풀블리드 영상 자리를 1425x848(1.68:1)로 쓴다(실측).
+ * 흐림에서 선명으로 수렴하는 가로 영상. **스크롤 연동 섹션이다.**
+ *
+ * 소스는 2576x1440(1.789:1)이라 그 비율을 그대로 쓴다. 영상이 화면 폭을 다 먹지
+ * 않으므로 좌우에 여백이 남고, **그 여백이 이 섹션의 절반이다.** 스크롤 진행에 따라
+ * 정보 조각이 하나씩 서고 끝에서 제품 면으로 가는 문이 열린다.
+ *
+ * `asides`는 좌우로 갈라 세운다. 짝수가 왼쪽, 홀수가 오른쪽이다.
  */
 export const CONVERGE = {
   src: '/images/home/man-blur.mp4',
+  ratio: '2576 / 1440',
   eyebrow: { en: 'FOCUS', ko: '수렴' },
   line: '흐릿하던 거리가 한 점으로 모인다',
-  body: '거리와 타이밍이 맞물리는 순간에만 결투가 성립한다. 그 수렴을 몸이 먼저 안다.',
+  asides: [
+    { en: 'IMMERSIVE XR', ko: '시야 전체를 쓰는 몰입' },
+    { en: 'DETERMINISTIC JUDGEMENT', ko: '결정적 판정' },
+    { en: 'MARKERLESS TRACKING', ko: '마커 없는 검끝 추적' },
+    { en: 'TIME DILATION', ko: '결정의 순간 확장' },
+  ],
+  cta: '제품 상세보기',
+  ctaTo: '/mask',
+};
+
+/**
+ * 닫는 영상. **마스크를 내리는 장면이다.**
+ *
+ * 오버뷰의 마지막 미디어 자리에 둔다. 캐러셀이 제품을 세우고 수렴 섹션이 판정을
+ * 말한 뒤, 이 자리가 겨루기 이후를 남긴다. 바로 뒤에 오는 원칙("장비가 아니라 감각을
+ * 남긴다")이 이 장면의 문장이라 둘이 붙어 하나로 읽힌다.
+ */
+export const CLOSING = {
+  src: '/images/home/man-mak.mp4',
+  ratio: '2576 / 1440',
+  eyebrow: { en: 'AFTER THE DUEL', ko: '한 합 뒤' },
+  line: '마스크를 내리는 순간의 잔상',
+  body: '거리와 타이밍의 기억이 몸에 남는다. 훈련이 남기는 것은 기록이 아니라 감각이다.',
 };
 
 /**
@@ -306,13 +337,56 @@ export const PRODUCT_CONCEPT = {
     concept: '펜싱 경험을 극대화 시킨, 몰입형 XR',
     productConcept:
       '기존 메쉬 시야 구조를 넓은 XR 글라스로 재해석하여 몰입감 있는 시야를 제공. 불필요한 부피를 줄이고 보호 구조를 재구성하여 가볍고 역동적인 착용 경험을 제공.',
-    views: ['Side View', 'Front View', 'Top View'],
+    // **실제 렌더다.** 발표에 쓴 것과 같은 원본에서 왔다. 마스크는 탑 뷰 렌더가 아직
+    // 없어 그 자리만 대기 표면으로 남는다(지어내지 않는다)
+    views: [
+      { label: 'Side View', src: '/images/product/mask-side.jpg' },
+      { label: 'Front View', src: '/images/product/mask-front.jpg' },
+      { label: 'Top View', src: null },
+    ],
   },
   controller: {
     concept: '펜싱의 상징적인 곡선을 재해석한 미래형 인터페이스 컨트롤러',
     productConcept:
       '손을 자연스럽게 감싸는 인체공학적 그립으로 장시간 플레이에도 안정적인 그립과 조작성을 제공. 메쉬 인서트 패널을 적용하여 마스크와 통일된 CMF 아이덴티티 구현.',
-    views: ['Side View', 'Front View', 'Top View'],
+    views: [
+      { label: 'Side View', src: '/images/product/con-side.jpg' },
+      { label: 'Front View', src: '/images/product/con-front.jpg' },
+      { label: 'Top View', src: '/images/product/con-top.jpg' },
+    ],
+  },
+};
+
+// ---------------------------------------------------------------------------
+// 제품 면의 미디어. **3D 뷰어를 걷어낸 자리다.**
+//
+// 예전에는 딥다이브 고정 미디어가 three.js 뷰어(플레이스홀더 프리미티브)였다. 실제
+// 제품 렌더가 확보되면서 짐작으로 세운 도형을 띄울 이유가 없어졌다.
+//
+// **마스크 대표 미디어는 프레임 시퀀스다.** `mask-360.mp4`(1920x1920, 5.08초)에서 뽑은
+// webp 30장이고, 진입에서 흐림에서 선명으로 한 바퀴 돌고 마지막 프레임에 선다.
+// 영상 태그가 아니라 프레임이라 진행을 우리가 쥔다.
+//
+// **원본 렌더는 2048x2048 PNG로 한 장에 3~6MB다.** 그대로 실으면 다섯 장이 24MB라
+// 1200px JPEG로 내려 `images/product/`에 둔다(다섯 합 692KB).
+// ---------------------------------------------------------------------------
+const MASK_FRAME_COUNT = 30;
+
+export const PRODUCT_MEDIA = {
+  mask: {
+    frames: Array.from(
+      { length: MASK_FRAME_COUNT },
+      (_, i) => `/frames/mask-360/frame-${String(i).padStart(3, '0')}.webp`
+    ),
+    // 소스가 정사각이라 시퀀스도 정사각이다
+    leadRatio: '1 / 1',
+    dive: { src: '/images/product/mask-front.jpg', alt: '마스크 정면 렌더' },
+  },
+  controller: {
+    // 컨트롤러는 회전 영상이 없다. 대표 미디어가 정면 렌더 한 장이다
+    lead: { src: '/images/product/con-front.jpg', alt: '컨트롤러 정면 렌더' },
+    leadRatio: '1 / 1',
+    dive: { src: '/images/product/con-side.jpg', alt: '컨트롤러 측면 렌더' },
   },
 };
 
@@ -366,13 +440,8 @@ export const PRODUCT_DETAIL = {
     controller: ['컨트롤러 본체', '충전 케이블', `구성품 ${TODO_MARK}`],
   },
   specLabel: '사양',
-  viewer: {
-    // 마우스 전용 조작이라는 사실을 글로 알린다. 뷰어를 못 쓰는 사람은 탭 정보만으로 제품을 이해한다
-    hint: '드래그해 돌린다',
-    placeholder: TODO_PRODUCT_MODEL,
-    // WebGL을 못 얻었을 때. 뷰어가 죽어도 페이지는 살아 있다는 것을 알린다
-    unavailable: '3D 뷰어를 표시할 수 없다',
-  },
+  // **viewer 문구 묶음을 걷었다.** 3D 뷰어가 사라지면서 조작 안내("드래그해 돌린다")와
+  // WebGL 실패 안내가 가리킬 대상이 없어졌다. 제품 면은 이제 스펙과 렌더만 이고 있다
   cta: '체험하기',
 };
 

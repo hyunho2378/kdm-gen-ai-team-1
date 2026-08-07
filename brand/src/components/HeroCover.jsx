@@ -26,7 +26,7 @@
 // **모션을 줄여 달라고 했으면 셋이 최종 자리에 그대로 선다.** 등장만 생략하고 구도는 같다.
 
 import { useEffect, useRef } from 'react';
-import { spacing, typography } from '../tokens.js';
+import { spacing } from '../tokens.js';
 import { HERO } from '../copy.js';
 import { gsap, isReduced } from '../lib/motion.js';
 
@@ -91,13 +91,10 @@ export default function HeroCover() {
           <span>{HERO.eyebrow.en}</span>
           <span>{HERO.eyebrow.ko}</span>
         </div>
+        {/* **워크숍 표기와 스크롤 안내를 걷었다.** 둘 다 제품이 아니라 이 페이지가 만들어진
+            사정을 말하는 문구였다. 크레딧은 푸터가 이미 이고 있고, 스크롤 안내는 아래에
+            콘텐츠가 있다는 사실을 글로 다시 적는 자리라 표지의 정적을 깬다 */}
         <p data-cover="text" className="vx-cover-sub">{HERO.sub}</p>
-        <div data-cover="text" className="vx-cover-tail">
-          <span>{HERO.team}</span>
-          <span style={{ letterSpacing: typography.hud.tracking, fontWeight: typography.hud.weight }}>
-            {HERO.scrollHint}
-          </span>
-        </div>
       </div>
 
       {/* 블랙에서 아래 라이트로 넘어가는 띠. 경계가 칼로 자른 선으로 안 보이게 한다 */}

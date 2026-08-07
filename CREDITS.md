@@ -18,11 +18,11 @@
 | Socket.IO | MIT | arena, controller, server 실시간 릴레이 | https://github.com/socketio/socket.io |
 | Express | MIT | server HTTP와 헬스체크 | https://github.com/expressjs/express |
 | magnetic-elements | MIT | presentation demo 섹션 CTA 자석 인력 | https://github.com/ToonRombaut/magnetic-elements |
-| three.js | MIT | arena 1인칭 렌더러, brand 히어로 궤적 캔버스, brand 제품 상세 360 뷰어(양쪽 0.185.1로 맞춤) | https://github.com/mrdoob/three.js |
-| three.js OrbitControls (애드온) | MIT, **three.js와 같은 라이선스** | brand 제품 상세 360 뷰어의 드래그 회전과 자동 회전. `brand/src/components/ProductViewer.jsx` | https://github.com/mrdoob/three.js |
+| three.js | MIT | **arena 1인칭 렌더러.** brand에서는 걷었다(아래 주 참고) | https://github.com/mrdoob/three.js |
+| ~~three.js OrbitControls (애드온)~~ | MIT | **폐기.** 쓰던 곳(brand 제품 상세 360 뷰어)이 사라졌다 | https://github.com/mrdoob/three.js |
 | postprocessing | Zlib | arena 후처리(Bloom, Afterimage, ShockWave, ChromaticAberration, Vignette, HueSaturation) | https://github.com/pmndrs/postprocessing |
 | 궤적 리본 | 자체 구현 | arena 궤적. `ribbon-geometry`(MIT)를 검토했으나 생성자 전용이라 in-place 갱신이 없고 폭이 단일 상수여서 나이별 감쇠를 못 한다. 매 프레임 지오메트리를 새로 만들면 가비지가 쌓여 미채택 | (참고) https://github.com/yomotsu/ribbon-geometry |
-| 궤적 리본 재사용 | 자체 구현(사내) | brand 히어로가 `arena/src/game/render/three/trail.js`의 `createTrailRibbon`을 그대로 import한다. arena 파일은 읽기만 하고 수정하지 않는다(BRAND_SITE_GUIDE 8절). brand 쪽은 좌표계와 추종 로직만 소유한다 | (사내 모듈) |
+| ~~궤적 리본 재사용~~ | 자체 구현(사내) | **폐기.** brand 히어로가 `arena/src/game/render/three/trail.js`의 `createTrailRibbon`을 import하던 것인데 표지 구도 히어로로 바뀌며 `HeroTrail`이 사라졌다. arena 원본은 그대로 살아 있고 arena가 쓴다 | (사내 모듈) |
 | 카메라 셰이크 (trauma 방식) | MIT, **로직 포팅** | arena 명중 연출. `three-screenshake`가 npm에 없어(404) `sajmoni/screen-shake`의 trauma 방식을 JS로 포팅 | https://github.com/sajmoni/screen-shake |
 | snoise (simplex 3D) | MIT, **GLSL 코드 이식** | presentation 배경 셰이더(StageShader). Ashima/stegu webgl-noise의 3D simplex를 프래그먼트에 그대로 이식. three.js 없이 raw WebGL 사용(P5 판정) | https://github.com/stegu/webgl-noise |
 | qrcode-generator | MIT | arena PAIRING 화면 QR(`components/QRPanel.jsx`). **인코딩만 라이브러리가 하고 그리기는 우리가 한다.** 모듈 배열만 받아 SVG 사각형으로 직접 그려 canvas도 이미지도 만들지 않는다. 2.0.4, 의존성 0. npm 메타와 `dist/qrcode.js` 헤더 양쪽에서 MIT를 확인했다(Copyright 2009 Kazuhiko Arase). 저장소에 별도 LICENSE 파일은 없고 소스 헤더가 라이선스 표기다 | https://github.com/kazuhikoarase/qrcode-generator |
@@ -49,7 +49,13 @@ MIT와 달리 지켜야 할 것이 넷이라 배포물에 실제로 실었다. `
 README가 권하는 "Powered by Paper Shaders" 가시 크레딧은 **의무가 아니라 권장**이다(appreciated).
 NOTICE 파일에 그 문구가 그대로 실려 배포된다.
 
-**three.js OrbitControls는 새 설치가 아니다(2026-08-06 확인).** 이미 채택한 `three` 패키지 안의 파일이라
+**brand에서 three.js를 걷었다(2026-08-07).** 쓰던 곳이 둘이었는데 둘 다 사라졌다. 히어로 궤적 리본
+(`HeroTrail`)은 발표 표지 구도로 히어로가 바뀌면서, 제품 상세 360 뷰어(`ProductViewer`)는 실제 제품
+렌더가 확보되면서 걷었다(뷰어가 띄우던 것은 실제 모델이 아니라 플레이스홀더 프리미티브였다).
+`npm uninstall three`와 `vite.config.js`의 `dedupe` 제거까지 같은 커밋이다. **arena는 그대로 쓴다.**
+아래 OrbitControls 항목은 그 뷰어 하나만 쓰던 것이라 함께 폐기됐고, 기록으로만 남긴다.
+
+**three.js OrbitControls는 새 설치가 아니었다(2026-08-06 확인, 지금은 폐기).** 이미 채택한 `three` 패키지 안의 파일이라
 별도 npm 설치도 clone도 없다. 그래도 별 행으로 남기는 이유는 **애드온을 실제로 코드에 들였다는 사실**이
 CREDITS에 드러나야 하기 때문이다. 라이선스 근거 셋을 직접 확인했다. 설치본 루트 `LICENSE`가
 The MIT License(Copyright 2010-2026 three.js authors), `package.json`의 `license` 필드가 `MIT`,

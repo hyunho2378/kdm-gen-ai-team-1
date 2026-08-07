@@ -14,7 +14,7 @@ import { useRef } from 'react';
 import { isReduced } from '../lib/motion.js';
 import { captionStyle } from './typo.js';
 
-export default function HoverMedia({ src, poster, pending, label, ratio = '1 / 1' }) {
+export default function HoverMedia({ src, image, poster, pending, label, ratio = '1 / 1', className = '' }) {
   const vref = useRef(null);
 
   const canPlay = () =>
@@ -37,13 +37,18 @@ export default function HoverMedia({ src, poster, pending, label, ratio = '1 / 1
 
   return (
     <div
-      className="vx-hover-media"
+      className={`vx-hover-media ${className}`}
       data-cursor
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       style={{ aspectRatio: ratio }}
     >
-      {src ? (
+      {/* **정지 이미지 슬롯.** 제품 뷰 렌더가 확보되면서 생긴 자리다. 영상이 아니라
+          호버 재생이 없고, 커서 반응과 라벨은 컨테이너에 그대로 산다.
+          영상이 나중에 오면 `src`를 주면 되고 그때 이 분기는 안 탄다 */}
+      {image && !src ? (
+        <img className="vx-hover-video" src={image} alt={label} loading="lazy" />
+      ) : src ? (
         <video
           ref={vref}
           className="vx-hover-video"
