@@ -33,7 +33,7 @@ const SECTIONS = SECTION_LABELS;
 // **인덱스를 어디에도 쓰지 않는다.** 등록도 조회도 전부 id로 한다.
 // 예전에는 인덱스로 조회했는데 앞에 섹션을 끼울 때마다 위임이 엉뚱한 섹션에 붙었다.
 // 이제 표지 뒤에 두 장을 더 넣어도 아래 두 줄과 각 섹션 코드가 그대로 산다.
-const DELEGATE_IDS = ['painpoint', 'why', 'keyword', 'duelist'];
+const DELEGATE_IDS = ['painpoint', 'why', 'keyword', 'duelist', 'logo-guide'];
 
 // easeInOutCubic. 1초 섹션 이동에 붙는다.
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -47,6 +47,8 @@ export default function App() {
   // 지금 위임하는 섹션은 둘. 문제(2단계) / 유파(6단계).
   const subHandlers = useRef({});
   const subEnters = useRef({});
+  // 모티프→가이드 연결: 섹션 클립 밖 fixed 트래블링 로고. 모티프 로고 rect → 가이드 조합형 심볼 자리로 비행.
+  const flightRef = useRef(null);
 
   // id별 register 함수는 렌더마다 새로 만들면 자식 useEffect가 매번 다시 돈다. 한 번만 만든다.
   const reg = useMemo(() => {
@@ -75,12 +77,36 @@ export default function App() {
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
+    // 모티프→가이드 로고 비행. 모티프 로고 rect를 출발점, 가이드 조합형 심볼의 최종 화면 위치를 도착점으로
+    // fixed 오버레이를 1초(스크롤과 동기) 이동시킨 뒤 가이드 실제 심볼로 크로스페이드 핸드오프.
+    const startLogoFlight = () => {
+      if (reduced) return;
+      const overlay = flightRef.current;
+      const src = document.getElementById('motif-flight-logo');
+      const guideSection = document.getElementById('logo-guide');
+      const slot = document.getElementById('guide-comb-symbol');
+      if (!overlay || !src || !guideSection || !slot) return;
+      const from = src.getBoundingClientRect();
+      const gTop = guideSection.getBoundingClientRect().top; // 가이드는 아직 화면 아래(≈viewportH)
+      const raw = slot.getBoundingClientRect();
+      // 스크롤 완료 후 가이드가 화면을 채우면 심볼의 화면상 위치 = 가이드 안 오프셋(raw.top - gTop).
+      const to = { left: raw.left, top: raw.top - gTop, width: raw.width, height: raw.height };
+      src.style.opacity = '0'; // 원본 숨김(비행 중 이중 노출 방지). 모티프 재진입 시 자체 진입 연출이 복원.
+      gsap.set(overlay, { left: from.left, top: from.top, width: from.width, height: from.height, opacity: 1 });
+      gsap.to(overlay, {
+        left: to.left, top: to.top, width: to.width, height: to.height,
+        duration: 1, ease: easeInOut,
+        onComplete: () => gsap.to(overlay, { opacity: 0, duration: 0.35 }), // 가이드 심볼 페이드인과 크로스페이드
+      });
+    };
+
     let unlockTimer = null;
     const go = (dir) => {
       if (animatingRef.current) return;
       // 위임 섹션에 머무는 동안 방향키는 그 섹션의 서브 단계를 소비한다.
       // 경계(처음/끝)에서만 핸들러가 false를 돌려 섹션이 바뀐다. **조회는 현재 섹션 id로 한다.**
-      const sub = subHandlers.current[SECTIONS[currentRef.current].id];
+      const fromId = SECTIONS[currentRef.current].id;
+      const sub = subHandlers.current[fromId];
       if (sub && sub(dir)) return;
       const next = currentRef.current + dir;
       if (next < 0 || next >= SECTIONS.length) return; // 경계에서 멈춘다(순환 없음)
@@ -89,6 +115,8 @@ export default function App() {
       setCurrent(next);
       // 위임 섹션으로 진입하면 방향에 맞는 경계 단계에서 시작하도록 알린다(아래→처음, 위→끝)
       subEnters.current[SECTIONS[next].id]?.(dir);
+      // 모티프에서 가이드로 내려가면 로고 비행을 건다(가이드 handleEnter가 먼저 심볼을 숨긴 뒤 측정).
+      if (fromId === 'logo-motif' && SECTIONS[next].id === 'logo-guide') startLogoFlight();
       const target = document.getElementById(SECTIONS[next].id);
       const unlock = () => {
         animatingRef.current = false;
@@ -129,6 +157,11 @@ export default function App() {
       } else if (k === 'End') {
         e.preventDefault();
         go(SECTIONS.length - 1 - currentRef.current);
+      } else if (k === 'f' || k === 'F') {
+        // 전체화면 토글. f 전용(방향키 셸과 충돌 없음). esc 해제는 브라우저 기본 동작. 화면 안내 없음.
+        e.preventDefault();
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -180,7 +213,7 @@ export default function App() {
             ) : s.id === 'logo-motif' ? (
               <SLogoMotif active={current === i} />
             ) : s.id === 'logo-guide' ? (
-              <SLogoGuide active={current === i} />
+              <SLogoGuide registerHandler={reg[s.id].handler} registerEnter={reg[s.id].enter} />
             ) : s.id === 'color' ? (
               <S6ColorSystem active={current === i} />
             ) : s.id === 'concept' ? (
@@ -214,6 +247,14 @@ export default function App() {
           </section>
         ))}
       </main>
+      {/* 모티프→가이드 트래블링 로고. 섹션 클립 밖(fixed)이라 경계를 넘어 비행한다. 평소엔 숨김. */}
+      <div
+        ref={flightRef}
+        aria-hidden="true"
+        style={{ position: 'fixed', left: 0, top: 0, zIndex: 50, opacity: 0, pointerEvents: 'none', willChange: 'transform, opacity' }}
+      >
+        <img src="/images/assets/logo.svg" alt="" draggable="false" style={{ width: '100%', height: '100%', objectFit: 'contain', userSelect: 'none' }} />
+      </div>
     </>
   );
 }

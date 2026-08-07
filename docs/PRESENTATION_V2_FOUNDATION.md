@@ -9,6 +9,9 @@
 - 흑 계열 텍스트/선은 `inkA(a)`로 파생(`text.*`, `line.*`, `surface.*`). 밝은 파생은 `whiteA`/`bgA`.
 - **컬러 시스템 슬라이드는 새 색 체계(브랜딩 네이비/실버) 견본을 소개한다(레드 견본 폐기).**
   브랜딩 네이비 `#101925→#3C5E8B`(`brandNavyGradient`), 브랜딩 실버 `#FDFDFD→#C4C4C4`(`brandSilverGradient`).
+  **그라디언트는 대각선(구 150deg linear)을 폐기하고 `radial-gradient(85% 85% at 100% 100%, …)`로 바꿨다.**
+  기본은 어두운 단색(#101925/#FDFDFD)이고 우하단 모서리에서만 나머지 색(#3C5E8B/#C4C4C4)이 은은하게
+  차오른다(주인공이 되지 않게). 두 토큰은 컬러 견본 + 솔루션(why) 네이비 배경이 공유한다(단일 원천).
   견본이 내용이라 이 슬라이드에서만 네이비/실버가 보인다(전역 라이트 규칙과 별개). 아이브로우 tone도 네이비.
   솔루션(why)·문제점(painpoint) 슬라이드도 이 네이비를 배경/스크림으로 쓴다(그 슬라이드 한정).
 - **네이비 프라이머리(`colors.navy` #263E5F)를 전역 액센트로 승격.** 아이브로우(컨셉/인터랙션/유파/
@@ -110,6 +113,25 @@
   우하우 그리드 버전(실버, `lgoo_line.svg` 그리드 오버레이 — 라벨 'Grid'는 참조에 없어 최소로 지어 넣음).
   **라벨 영문만(국문 삭제), 헤드라인 문장 삭제.** 네이비/실버는 tokens `brandNavyGradient`/`brandSilverGradient`
   파생이라 이 슬라이드에서 실제로 렌더된다(이전 `scrimA` 네이비 → 브랜드 네이비로 교체, 그라디언트 미반영 해소).
+  **조합형 셀은 심볼과 워드마크를 개별 요소로 분리한다(연결 인터랙션용).** 심볼=흰 `logo.svg`,
+  워드마크=`black_wm.svg`를 흰색 CSS 마스크로 찍은 요소(좌→우 clip으로 그린다). 로고타입/심볼 셀은
+  잉크 `black_wm.svg`/`logo_black.svg`, 그리드 셀은 `lgoo_line.svg`(클립 2단으로 심볼→그리드선 순차 노출).
+
+### 로고 모티프 → 로고 가이드 연결 인터랙션 (핵심)
+
+**방향키 셸의 균일 1초 스크롤 전환에 커스텀 연출을 얹는다.** 셸은 전환별 타임라인 훅이 없고 각 섹션이
+`overflow:hidden`으로 클립돼 로고가 경계를 넘을 수 없다. 그래서 두 축으로 구현한다.
+
+- **트래블링 오버레이(비트1, App 소유).** App에 `position:fixed` 로고(`logo.svg`) 한 장을 섹션 클립 밖에 둔다.
+  `go()`에서 `fromId==='logo-motif' && toId==='logo-guide'`일 때 `startLogoFlight()`가 모티프 로고
+  (`#motif-flight-logo`) rect → 가이드 조합형 심볼(`#guide-comb-symbol`)의 **최종 화면 위치**(가이드가 화면을
+  채웠을 때 = `slotRect.top - guideSectionTop`)로 1초(스크롤과 동기, `easeInOut`) 이동시킨다. 착지 후 0.35s
+  페이드아웃으로 가이드 실제 심볼(페이드인)과 크로스페이드. 실측: 오버레이 최종 rect가 심볼 rect와 0px 일치.
+- **가이드 순차 진입(비트2~5, `registerEnter(dir)`).** 가이드를 위임 섹션(`DELEGATE_IDS`)에 추가하되 내부
+  스텝은 없다(`handleStep`은 항상 false → 방향키는 섹션 전환에 쓰임). `handleEnter(dir)`: **아래 진입(dir>0)=
+  비행 착지에 맞춘 순차 타임라인**(delay `FLIGHT_DUR`=1s), 위 진입(dir<0)·reduced=전부 정착 즉시 표시.
+  타임라인: 비트3 심볼 페이드인 + 심볼 셀 + 그리드 셀(클립 심볼 크롭) → 비트4(+0.32s) 워드마크 좌→우 그리기
+  + 로고타입 셀 → 비트5(+0.95s) 그리드 셀 클립 전개(그리드선/사각형 채워짐). transform/opacity/clip-path만.
 
 ## 솔루션(why) / 문제점(painpoint) 슬라이드 — 네이비 배경 + 하위 스텝
 
