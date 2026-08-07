@@ -1079,6 +1079,24 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **controller 앱 전면 재설계 작업중. 트랙 선점.** controller와 docs만.
+  A: 디자인 시스템을 네이비로 교체(#101925~#263E5F 배경, #FDFDFD 텍스트), SUIT, 로고, con1.png,
+  스테이터스 바 네이비. B: 흐름 재편(게스트 로그인 -> 코드 입력 -> 연결 후에만 3탭).
+  C: RECORDS 더미 데이터와 도넛과 추이 그래프. D: OPPONENT 목록과 상세를 하나로 통일.
+  E: CONTROLLER 탭을 대전 시작이 아니라 조작 상세 설정으로. 커밋 2분할. 푸시 안 함.
+- **presentation-v2 컨셉 슬라이드 재구성 완료(확인 대기). 트랙 선점 해제.** presentation-v2만. 푸시 안 함.
+  커밋 1건([presentation] 컨셉 슬라이드 글래스 축회전 재구성).
+  - **참조 `Slide 16_9 - 103.svg` getBBox 실측 좌표로 재구성.** 기존 좌측텍스트+우측사진 레이아웃 폐기.
+    글래스 원(cx949.867 cy540 r368) + 내부 디스크(r190.657) + 축선(x478.617→1436.17 y539.5) + 조합 로고(center948,548)
+    + 하단 워드마크(black_wm 흰색 마스크, center950,991) + 좌우 텍스트(x60/x1728 y549). concept.png 풀블리드 배경.
+  - **좌표 매핑:** 섹션 중앙 앵커 50%/50% + 높이 스케일(vh) 오프셋(k=100/1080). 50vw는 스크롤바로 x+10 드리프트 →
+    50%로 교체(실측 확인). concept.png height-cover와 정합. **16:9·3840에서 원 cx949.8 r368.0 참조와 픽셀 일치 실측.**
+  - **글래스:** 외곽 원 backdrop-filter blur(4px)+흰 림 1.5px+inset 하이라이트, 내부 디스크 blur(3px)+white0.3+ring. border-box.
+  - **연출:** 회전 그룹(원+축선+디스크) rotation -260°→0 scale0.9→1 power3.out 1.5s(소용돌이 축회전 안착) →
+    로고+워드마크 → 텍스트 순차. **실측 종료 상태: ring transform identity(회전0), 전 요소 opacity1, 로고/워드마크 cx 보존.**
+  - copy.js에 `CONCEPT_SCENE`(textLeft/textRight) 추가. 기존 CONCEPT(quote/body)는 미사용이나 보존.
+  - **검증:** 320/768/1440/3840 overflowX 0(텍스트는 극단 폭에서 섹션 overflow:hidden으로 클립). npm ci + build 통과. 콘솔 에러 0.
+    스크린샷은 인앱 브라우저가 비-0 스크롤 위치를 캡처 못 해(cover만 렌더) DOM/computed/getBBox/elementFromPoint 실측으로 검증.
 - **presentation-v2 로고 연결 인터랙션과 문제점 컬러시스템 수정 완료(확인 대기). 트랙 선점 해제.** presentation-v2만. 푸시 안 함.
   커밋 2분할 예정([presentation] 문제점 화살표·AS-IS 정렬·컬러시스템·f키 / [presentation] 로고 연결 인터랙션).
   - **파트1 문제점 화살표 확대:** 폴리곤 삼각형 border 7/7/11 → 16/16/24(32×24px, 이전 14×11 대비 확실히 큼). whiteA 0.72→0.78.

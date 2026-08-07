@@ -207,6 +207,13 @@ export const CONCEPT = {
   ],
 };
 
+// 컨셉 슬라이드 재구성(참조 Slide 16_9 - 103.svg). 글래스 원 좌우로 갈라 앉는 두 문구.
+// 원문 tspan: 좌 "소용돌이처럼 몰아치는"(x60), 우 "경기의 긴장감"(x1728). SUIT 24.
+export const CONCEPT_SCENE = {
+  textLeft: '소용돌이처럼 몰아치는',
+  textRight: '경기의 긴장감',
+};
+
 // 인터랙션 4종 (원본 `바인더1.pdf` 6페이지의 4카드 그리드).
 // icon은 lucide-react 아이콘 이름. 컴포넌트가 이름으로 골라 쓴다.
 // name과 desc의 각 줄은 전부 문자열이다.

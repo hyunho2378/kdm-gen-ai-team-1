@@ -1,228 +1,201 @@
-// S3 컨셉. 원본 레이아웃은 `Slide 16_9 - 4.svg`(1920x1080)를 Chromium으로 렌더해 기준으로 삼았고,
-// 좌표와 그라디언트 스톱은 SVG에서 직접 뽑았다. 기억으로 지어낸 값이 아니다.
+// S3 컨셉 (재구성). 참조 `frames/ref/Slide 16_9 - 103.svg`(1920x1080)를 브라우저에 렌더해
+// getBBox로 전 요소 좌표를 직접 실측했다. 기억으로 지어낸 값이 아니다(DESIGN 15절 출처 계약).
 //
-// 원본 실측(1920 기준):
-//   사진        rect x 556.8  y 77  w 1510.2  h 1005.2  → 우측과 하단으로 흘러 나간다
-//   사진 오버레이 rect x 724  w 1058  h 1080, 그라디언트 x1 1782 → x2 651.674(우 → 좌)
-//                stop 0 알파 0.1 / offset 0.6875 알파 0.822596 / offset 1 알파 1
-//                즉 **오른쪽은 거의 투명하고 왼쪽으로 갈수록 새까매진다.** 이게 이음매를 덮는 장치다
-//   인용        x 102.4  y(baseline) 446.098  size 27
-//   구분선      rect x 102.4  y 496.6  w 498.6  h 0  stroke 그라디언트
-//                #B3122C 알파 1(좌) → #B3122C 알파 0.1(우). **오른쪽으로 사라지는 선**
-//   글래스 박스  rect x 103.15  y 596.55  w 1039.79  h 175.7  **rx 87.85 = h/2 이므로 완전한 필**
-//                fill 그라디언트(알파 1 → 0.2)에 fill-opacity 0.3, stroke 그라디언트(알파 1 → 0.1) 1.5px
-//   본문        size 30, 2줄
-// 원본 레드는 #B3122C지만 브랜드 확정색 tokens.red(#E60D15)로 바꿔 쓴다.
+// 실측 좌표(1920x1080):
+//   외곽 글래스 원   cx 949.867 cy 540    r 367.968  stroke white 1.596  fill black 0.01
+//   내부 글래스 디스크 cx 948.219 cy 543.797 r 190.657  fill white 0.3  + ring stroke white 0.7
+//   가로 축선        x1 478.617 → x2 1436.17  y 539.521  stroke white 0.958
+//   조합 로고(logo_main, 흰색)  bbox center (948,548)  162x116  ← 원 안(내부 디스크 중앙)
+//   워드마크(black_wm 흰색)     bbox center (950,991)  520x62   ← 하단
+//   텍스트 좌 "소용돌이처럼 몰아치는" x60 / 우 "경기의 긴장감" x1728  baseline y548.736  SUIT 24
 //
-// 이전 판의 결함: 사진에 radial 마스크만 걸어 좌측에 하드한 사각 경계가 남았다(실측).
-// 원본은 마스크가 아니라 **좌→우 블랙 오버레이**로 덮는다. 그 구조를 그대로 가져오고
-// 사진 자체에도 좌측과 상하 페더링 마스크를 더해 두 겹으로 녹인다.
+// 배경 concept.png는 1920x1080 전체 배경(네이비 좌 + 마스크 + 우측 프로스트 밴드, 원만 없음)이라
+// 풀블리드로 깐다. 그 위에 위 요소를 좌표대로 얹는다.
+//
+// 좌표 매핑: 섹션 중앙 앵커(50%/50%) + 높이 스케일(vh) 오프셋. k = 100/1080 vh/ref-px.
+//   left = calc(50% + (x-960)*k vh), top = calc(50% + (y-540)*k vh), translate(-50%,-50%).
+//   50%는 섹션(콘텐츠) 중앙이라 세로 스크롤바 폭에 영향받지 않는다(50vw는 스크롤바를 포함해 우측으로 밀렸다).
+//   16:9에서 참조와 픽셀 일치, 타 비율에선 중앙을 유지하며 높이에 비례.
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { colors, typography, motion, inkA, bgA } from '../tokens.js';
-import { CONCEPT, CONCEPT_NAME } from '../copy.js';
+import { colors, typography, motion } from '../tokens.js';
+import { CONCEPT_SCENE } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { Eyebrow } from '../components/Bits.jsx';
 
-// 사진 자체의 페더링. 좌측을 55%부터 흐리고(지시), 상하 가장자리도 함께 녹인다(알파 마스크라 색은 무관).
-// 두 층을 intersect로 곱해 네 방향이 한 번에 정리된다.
-const PHOTO_MASK =
-  'linear-gradient(to left, #000 55%, transparent 100%), ' +
-  'linear-gradient(to bottom, transparent 0%, #000 10%, #000 90%, transparent 100%)';
+const K = 100 / 1080; // vh per ref-px (높이 기준 스케일)
+const vh = (refPx) => `${(refPx * K).toFixed(3)}vh`;
+// 참조 좌표(x,y)를 뷰포트 중앙 앵커 left/top으로. 요소는 translate(-50%,-50%)로 자기 중심 정렬.
+const at = (x, y) => ({
+  position: 'absolute',
+  left: `calc(50% + ${((x - 960) * K).toFixed(3)}vh)`,
+  top: `calc(50% + ${((y - 540) * K).toFixed(3)}vh)`,
+  transform: 'translate(-50%, -50%)',
+});
 
-// 사진 위 좌→우 라이트 오버레이. 좌측 텍스트 가독을 이 층이 책임진다(라이트 반전: 블랙 → bg).
-//   x 651.674 → 33.94%(불투명) / x 1004.8 → 52.33%(0.82) / x 1782 → 92.81%(0.1)
-const PHOTO_SCRIM =
-  `linear-gradient(to right,` +
-  ` ${colors.bg} 0%,` +
-  ` ${colors.bg} 33.94%,` +
-  ` ${bgA(0.82)} 52.33%,` +
-  ` ${bgA(0.1)} 92.81%,` +
-  ` ${bgA(0.08)} 100%)`;
+// 워드마크 흰색: black_wm.svg(잉크)를 흰색 CSS 마스크로 찍는다(SLogoGuide 조합형 워드마크와 같은 기법).
+const WM_MASK = {
+  background: colors.white,
+  WebkitMaskImage: 'url(/images/assets/black_wm.svg)',
+  maskImage: 'url(/images/assets/black_wm.svg)',
+  WebkitMaskRepeat: 'no-repeat',
+  maskRepeat: 'no-repeat',
+  WebkitMaskPosition: 'center',
+  maskPosition: 'center',
+  WebkitMaskSize: 'contain',
+  maskSize: 'contain',
+};
 
 export default function S3Concept({ active }) {
-  const photoRef = useRef(null);
-  const leftRef = useRef(null);
+  const bgRef = useRef(null);
+  const ringGroupRef = useRef(null); // 회전 그룹(외곽 원 + 축선 + 내부 디스크)
+  const logoRef = useRef(null);
+  const wmRef = useRef(null);
+  const textLRef = useRef(null);
+  const textRRef = useRef(null);
 
   useEffect(() => {
     if (!active) return undefined;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const photo = photoRef.current;
-    const left = leftRef.current;
-    if (!photo || !left) return undefined;
+    const bg = bgRef.current;
+    const ring = ringGroupRef.current;
+    const logo = logoRef.current;
+    const wm = wmRef.current;
+    const tL = textLRef.current;
+    const tR = textRRef.current;
+    if (!bg || !ring || !logo || !wm || !tL || !tR) return undefined;
 
     if (reduced) {
-      gsap.set(photo, { opacity: 1, y: 0 });
-      gsap.set(left, { opacity: 1, y: 0 });
+      gsap.set([bg, logo, wm, tL, tR], { opacity: 1, y: 0 });
+      gsap.set(ring, { opacity: 1, rotation: 0, scale: 1 });
       return undefined;
     }
 
-    gsap.set(photo, { opacity: 0, y: 34 });
-    gsap.set(left, { opacity: 0, y: 24 });
-    const tl = gsap.timeline();
-    tl.to(photo, { opacity: 1, y: 0, duration: 1.4, ease: motion.gsapOut });
-    tl.to(left, { opacity: 1, y: 0, duration: 0.9, ease: motion.gsapOut }, 0.2);
+    // 초기 상태
+    gsap.set(bg, { opacity: 0 });
+    gsap.set(ring, { opacity: 0, rotation: -260, scale: 0.9, transformOrigin: '50% 50%' });
+    gsap.set([logo, wm], { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
+    gsap.set([tL, tR], { opacity: 0, y: 12 });
 
-    return () => {
-      tl.kill();
-    };
+    const tl = gsap.timeline();
+    // ① 배경
+    tl.to(bg, { opacity: 1, duration: 0.7, ease: motion.gsapOut });
+    // ②③ 글래스 원 + 축선 회전 등장 → 수평 안착(소용돌이). 축이 자연스럽게 돌며 멈춘다.
+    tl.to(ring, { opacity: 1, rotation: 0, scale: 1, duration: 1.5, ease: 'power3.out' }, 0.15);
+    // ④ 로고 시그니처 + 워드마크(회전 마무리에 맞춰)
+    tl.to(logo, { opacity: 1, scale: 1, duration: 0.7, ease: motion.gsapOut }, 1.15);
+    tl.to(wm, { opacity: 1, scale: 1, duration: 0.7, ease: motion.gsapOut }, 1.32);
+    // ⑤ 텍스트 마지막
+    tl.to([tL, tR], { opacity: 1, y: 0, duration: 0.6, ease: motion.gsapOut, stagger: 0.12 }, 1.7);
+
+    return () => tl.kill();
   }, [active]);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* 사진. 원본처럼 우측과 하단으로 흘려보낸다(x 556.8 → 29%, y 77 → 7.1%). */}
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.ink }}>
+      {/* ① 배경 concept.png(원 없는 마스크 질감, 1920x1080 전체). 풀블리드. */}
+      <div ref={bgRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0, willChange: 'opacity' }}>
+        <AssetImage src="/images/concept/concept.png" fit="cover" />
+      </div>
+
+      {/* ②③ 회전 그룹: 외곽 글래스 원 + 축선 + 내부 디스크. 뷰포트 중앙을 축으로 회전. */}
+      <div ref={ringGroupRef} style={{ position: 'absolute', inset: 0, zIndex: 2, willChange: 'transform, opacity', pointerEvents: 'none' }}>
+        {/* 외곽 글래스 원. backdrop-filter로 굴절/서리 근사 + 흰 림 테두리(stroke 두께) + inset 하이라이트. */}
+        <div
+          style={{
+            ...at(949.867, 540),
+            width: vh(735.936),
+            height: vh(735.936),
+            boxSizing: 'border-box',
+            borderRadius: '50%',
+            background: 'rgba(0,0,0,0.01)',
+            border: '1.5px solid rgba(255,255,255,0.55)',
+            backdropFilter: 'blur(4px) saturate(1.1) brightness(1.03)',
+            WebkitBackdropFilter: 'blur(4px) saturate(1.1) brightness(1.03)',
+            boxShadow: 'inset 0 1.5px 1px rgba(255,255,255,0.28), inset 0 0 60px rgba(255,255,255,0.05), 0 0 40px rgba(0,0,0,0.15)',
+          }}
+        />
+        {/* 가로 축선. 그룹 회전으로 소용돌이처럼 돈다. */}
+        <div
+          style={{
+            ...at(957.39, 539.521),
+            width: vh(957.55),
+            height: '1px',
+            background: 'rgba(255,255,255,0.85)',
+          }}
+        />
+        {/* 내부 글래스 디스크 + 링. 로고 시그니처의 받침. */}
+        <div
+          style={{
+            ...at(948.219, 543.797),
+            width: vh(381.314),
+            height: vh(381.314),
+            boxSizing: 'border-box',
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.3)',
+            border: '1px solid rgba(255,255,255,0.7)',
+            backdropFilter: 'blur(3px) brightness(1.05)',
+            WebkitBackdropFilter: 'blur(3px) brightness(1.05)',
+          }}
+        />
+      </div>
+
+      {/* ④ 조합 로고(logo_main, 흰색). 내부 디스크 중앙. */}
+      <img
+        ref={logoRef}
+        src="/images/assets/logo_main.svg"
+        alt="VORTEX"
+        draggable="false"
+        style={{ ...at(948, 548), width: vh(162), height: 'auto', zIndex: 3, opacity: 0, userSelect: 'none', willChange: 'transform, opacity' }}
+      />
+
+      {/* ④ 워드마크(black_wm 흰색 마스크). 하단. */}
       <div
-        ref={photoRef}
+        ref={wmRef}
+        aria-hidden="true"
+        style={{ ...at(950, 991), width: vh(520), height: vh(62), zIndex: 3, opacity: 0, willChange: 'transform, opacity', ...WM_MASK }}
+      />
+
+      {/* ⑤ 텍스트: 좌 x60 / 우 x1728, 세로 중앙(y549). 좌측 정렬(자기 시작점 앵커). */}
+      <div
+        ref={textLRef}
         style={{
           position: 'absolute',
-          left: '29%',
-          top: '7.1%',
-          right: '-7.7%',
-          bottom: '-0.2%',
-          zIndex: 1,
+          left: `calc(50% + ${((60 - 960) * K).toFixed(3)}vh)`,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 4,
           opacity: 0,
-          maskImage: PHOTO_MASK,
-          WebkitMaskImage: PHOTO_MASK,
-          maskComposite: 'intersect',
-          WebkitMaskComposite: 'source-in',
+          fontFamily: typography.family,
+          fontSize: vh(24),
+          fontWeight: 500,
+          letterSpacing: '0em',
+          color: colors.white,
+          whiteSpace: 'nowrap',
           willChange: 'transform, opacity',
         }}
       >
-        <AssetImage src="/images/concept/duel.png" fit="cover" position="center right" />
+        {CONCEPT_SCENE.textLeft}
       </div>
-
-      {/* 사진 위 좌→우 블랙 오버레이. 좌측 텍스트 가독을 이 층이 책임진다. */}
       <div
-        aria-hidden="true"
+        ref={textRRef}
         style={{
           position: 'absolute',
-          inset: 0,
-          zIndex: 2,
-          background: PHOTO_SCRIM,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* 좌측 콘텐츠. 원본 좌측 여백 x 102.4 → 5.33vw.
-          중앙 정렬은 flex가 잡는다. 안쪽 div의 transform은 GSAP 전용이다
-          (인라인 transform과 겹치면 GSAP이 px로 분해해 덮어쓴다). */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 5,
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 'clamp(20px, 5.33vw, 130px)',
-          paddingRight: 'clamp(16px, 4vw, 90px)',
-          pointerEvents: 'none',
+          left: `calc(50% + ${((1728 - 960) * K).toFixed(3)}vh)`,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 4,
+          opacity: 0,
+          fontFamily: typography.family,
+          fontSize: vh(24),
+          fontWeight: 500,
+          letterSpacing: '0em',
+          color: colors.white,
+          whiteSpace: 'nowrap',
+          willChange: 'transform, opacity',
         }}
       >
-        <div
-          ref={leftRef}
-          style={{
-            width: 'min(62vw, 1050px)',
-            opacity: 0,
-            willChange: 'transform, opacity',
-          }}
-        >
-          {/* 1. CONCEPT (네이비 프라이머리) */}
-          <Eyebrow en={CONCEPT.label} tone={colors.navy} />
-
-          {/* 2. VORTEX 워드마크. 라이트 반전: 메탈릭/드롭섀도우를 걷고 잉크로 평평하게(질감 0). */}
-          <div
-            style={{
-              marginTop: 'clamp(10px, 1.8vh, 22px)',
-              // 제목 폰트 미정. displayFamily 한 키만 바꾸면 S1 워드마크와 함께 교체된다.
-              fontFamily: typography.displayFamily,
-              fontSize: typography.display.size,
-              fontWeight: 300,
-              letterSpacing: '0.005em',
-              lineHeight: 1,
-              color: colors.ink,
-            }}
-          >
-            {CONCEPT_NAME}
-          </div>
-
-          {/* 3. 인용. 원본 size 27 → 1.41vw */}
-          <div
-            style={{
-              marginTop: 'clamp(12px, 2.2vh, 28px)',
-              fontFamily: typography.family,
-              fontSize: typography.body.size,
-              fontWeight: 500,
-              letterSpacing: '-0.01em',
-              lineHeight: 1.5,
-              color: colors.text.secondary,
-            }}
-          >
-            {CONCEPT.quote}
-          </div>
-
-          {/* 4. 가로 구분선. 원본 w 498.6 → 25.97vw, 오른쪽으로 사라진다.
-              두께도 오른쪽으로 얇아지게 해 검끝 모티프를 살린다(원본은 알파만 뺀다). */}
-          <div
-            aria-hidden="true"
-            style={{
-              marginTop: 'clamp(14px, 2.6vh, 32px)',
-              width: 'min(25.97vw, 640px)',
-              height: 2,
-              // 라이트 반전: 레드 검끝 구분선을 잉크로. 오른쪽으로 사라진다.
-              background: `linear-gradient(to right, ${colors.ink} 0%, ${inkA(0.1)} 100%)`,
-              // 오른쪽 끝으로 갈수록 두께가 0에 수렴한다. 검끝처럼 뾰족해진다.
-              clipPath: 'polygon(0 0, 100% 45%, 100% 55%, 0 100%)',
-            }}
-          />
-
-          {/* 5. 필 글래스 박스. 원본은 rx = h/2 인 완전한 필이다. 라이트 반전: 레드 채움을 걷고
-              아주 옅은 잉크 글래스 + 잉크 링으로 바꾼다(레드 전역 금지). 링은 별도 레이어에 마스크로 그린다. */}
-          <div
-            style={{
-              position: 'relative',
-              marginTop: 'clamp(16px, 3vh, 36px)',
-              width: 'min(54.15vw, 1080px)',
-              padding: 'clamp(16px, 3.2vh, 34px) clamp(24px, 3.6vw, 62px)',
-              borderRadius: 999,
-              background: `linear-gradient(to right, ${inkA(0.05)} 0%, ${inkA(0.015)} 100%)`,
-              backdropFilter: 'blur(16px) saturate(1.2)',
-              WebkitBackdropFilter: 'blur(16px) saturate(1.2)',
-            }}
-          >
-            {/* 링 전용 레이어. 원본 stroke 1.5px, 잉크 알파 1 → 0.1. 마스크로 테두리만 남긴다. */}
-            <span
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: 999,
-                padding: 1.5,
-                background: `linear-gradient(to right, ${inkA(0.5)} 0%, ${inkA(0.08)} 100%)`,
-                WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
-                WebkitMaskComposite: 'xor',
-                mask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
-                maskComposite: 'exclude',
-                pointerEvents: 'none',
-              }}
-            />
-            {CONCEPT.body.map((line) => (
-              <div
-                key={line}
-                style={{
-                  fontFamily: typography.family,
-                  fontSize: typography.body.size,
-                  fontWeight: 500,
-                  letterSpacing: '-0.015em',
-                  lineHeight: 1.75,
-                  color: colors.text.primary,
-                }}
-              >
-                {line}
-              </div>
-            ))}
-          </div>
-        </div>
+        {CONCEPT_SCENE.textRight}
       </div>
     </div>
   );
