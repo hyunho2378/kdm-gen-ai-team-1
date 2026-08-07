@@ -377,6 +377,68 @@ export const DUELIST_STYLES = [
   },
 ];
 
+// AI 워크플로우 슬라이드(2개). 참조 frames/ref/2029(형태 탐색)·2030(구체화). 좌표·색 실측 재현.
+// **두 액센트 색이 두 제품 라인을 구분한다**(참조 실측: 연두=컨트롤러 라인, 자두=글라스 라인).
+//   연두 #0ED400/#1EFF00/#37FF00, 자두 #CD00BF/#FF00E6/#FF01FA. 라이트 배경 규칙과 별개인 전용 강조색.
+//   accent=캡션/라벨 텍스트(짙은 톤), tint=선택 하이라이트 프레임(밝은 톤).
+export const WORKFLOW_COLORS = {
+  controller: { accent: '#0ED400', tint: '#1EFF00' }, // 연두: 컨트롤러
+  glass: { accent: '#CD00BF', tint: '#FF01FA' },       // 자두: 글라스
+};
+
+export const WORKFLOW = {
+  // 2029: Midjourney 형태 탐색. 좌 마스크 몽타주 + 우 컨트롤러 몽타주 + 선택 하이라이트 + 툴카드(미드저니/비즈컴).
+  explore: {
+    eyebrow: { en: 'AI Workflow', ko: '형태 탐색' },
+    headline: 'Midjourney를 활용한 형태 탐색 및 디자인 디벨롭',
+    body: [
+      [
+        { t: '미드저니를 활용해 ' },
+        { t: '미래형 펜싱 글라스와 모션 컨트롤러의 다양한 조형 가능성을 탐색', b: true },
+        { t: '한 뒤, 형태 분석과 ' },
+        { t: '반복적인 디자인 디벨롭을 통해 제품의 구조, 비례, CMF를 발전', b: true },
+        { t: '시키며 최종 디자인을 완성했습니다.' },
+      ],
+    ],
+    toolsLabel: '사용한 툴',
+    tools: ['/images/workflow/midjourney.png', '/images/workflow/vizcom.png'],
+    images: {
+      mask: '/images/workflow/mj-mask-grid.png',
+      controller: '/images/workflow/mj-controller-grid.png',
+    },
+    // 우측 색 캡션(선택 방향 설명). axis로 색 결정.
+    captions: [
+      { axis: 'controller', text: '오픈 가드 구조와 메쉬 포인트 CMF를 적용해 미래형 XR 컨트롤러로 발전시켰습니다.' },
+      { axis: 'glass', text: '메쉬, 글라스, 레이어드 쉘을 XR 환경에 최적화된 글라스로 발전시켰습니다.' },
+    ],
+  },
+  // 2030: Vizcom 구체화. 좌 컨트롤러 보드 + 우 마스크 보드 + 선택 구간 하이라이트 + 라벨. 툴카드는 비즈컴 단독.
+  develop: {
+    eyebrow: { en: 'AI Workflow', ko: '디자인 구체화' },
+    headline: 'Vizcom을 활용한 디자인 디벨롭 및 구체화',
+    body: [
+      [
+        { t: '형태 디벨롭 이후 Vizcom을 활용하여 ' },
+        { t: '제품의 비례, 소재감, 디테일을 시각적으로 구체화', b: true },
+        { t: '했습니다. ' },
+        { t: '다양한 렌더링 결과를 비교·검토하며 디자인 완성도를 지속적으로 향상', b: true },
+        { t: '시키고, 최종 제품 디자인으로 발전시켰습니다.' },
+      ],
+    ],
+    toolsLabel: '사용한 툴',
+    tools: ['/images/workflow/vizcom.png'],
+    images: {
+      controller: '/images/workflow/vz-controller-board.png',
+      mask: '/images/workflow/vz-mask-board.png',
+    },
+    // 하단/우측 색 라벨. 참조 우측 라벨은 'controller' 복붙 오타라 글라스 축에 맞게 '글라스…'로 바로잡음.
+    labels: [
+      { axis: 'controller', text: '컨트롤러 시각화 구체화 과정' },
+      { axis: 'glass', text: '글라스 시각화 구체화 과정' },
+    ],
+  },
+};
+
 // 셸 섹션 목록. App.jsx가 이 배열로 섹션을 세운다.
 // **id는 의미 이름이다.** 예전에는 s1~s12 번호였는데 앞에 섹션을 끼울 때마다 전부 밀려
 // 위임과 렌더 분기가 같이 깨졌다. 이제 순서를 바꿔도 id는 그대로이고
@@ -395,6 +457,8 @@ export const SECTION_LABELS = [
   { id: 'controller', ko: '컨트롤러', en: 'CONTROLLER' },
   { id: 'mockup-a', ko: '목업', en: 'MOCKUP' },
   { id: 'mockup-b', ko: '목업', en: 'MOCKUP' },
+  { id: 'workflow-explore', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
+  { id: 'workflow-develop', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
   { id: 'experience', ko: '인터랙션', en: 'EXPERIENCE' },
   { id: 'duelist', ko: '유파', en: 'AI DUELIST' },
   { id: 'demo', ko: '데모', en: 'DEMO' },
