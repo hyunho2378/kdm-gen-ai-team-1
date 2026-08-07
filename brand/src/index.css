@@ -190,6 +190,169 @@ html { scrollbar-gutter: stable; }
   pointer-events: auto;
 }
 
+/* ── 히어로 표지 구도 (발표 표지 이식) ────────────────────────────────────
+   **이 구간만 블랙이다.** 페이지 전체는 라이트 그라디언트인데(html이 진다) 이 섹션이
+   그 위를 덮는다. 아래로 내려가면 라이트로 열리는 대비가 이 히어로의 절반이다.
+
+   마스크(좌)와 컨트롤러(우)가 중앙 로고를 향해 선다. 겹침은 격자가 아니라 절대 배치가
+   내는데, 셋의 크기를 vw에 묶어 어느 폭에서나 같은 구도가 되게 한다. */
+.vx-cover {
+  position: relative;
+  background: #000;
+  color: #FDFDFD;
+  padding-top: calc(var(--pnav-h, 52px) + 24px);
+  overflow: hidden;
+}
+/* 위 블랙은 부트스트랩 예외와 같은 지위다. 무대 색이라 tokens의 라이트 팔레트에 없다 */
+
+.vx-cover-stage {
+  position: relative;
+  width: 100%;
+  height: clamp(340px, 62dvh, 620px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vx-cover-mask,
+.vx-cover-controller,
+.vx-cover-logo {
+  position: absolute;
+  display: block;
+  height: auto;
+  /* 합성 레이어로 올려 등장 트윈이 리페인트를 안 만들게 한다 */
+  will-change: transform, opacity;
+}
+/* 인물은 좌측. 화면 절반 바깥으로 살짝 나가 잘린 채로 서는 것이 표지 구도다 */
+.vx-cover-mask {
+  left: 2%;
+  bottom: 0;
+  width: clamp(180px, 30vw, 430px);
+}
+/* 컨트롤러는 우측. 인물보다 작아 무게가 가운데 로고로 쏠린다 */
+.vx-cover-controller {
+  right: 3%;
+  bottom: 4%;
+  width: clamp(150px, 25vw, 360px);
+}
+.vx-cover-logo {
+  width: clamp(160px, 26vw, 380px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+/* 좁은 화면에서는 셋이 겹친다. 로고를 위로 올리고 둘을 아래로 내린다 */
+@media (max-width: 640px) {
+  .vx-cover-logo {
+    top: 34%;
+  }
+  .vx-cover-mask {
+    left: -4%;
+  }
+  .vx-cover-controller {
+    right: -3%;
+  }
+}
+
+.vx-cover-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 40px;
+}
+.vx-cover-sub {
+  margin: 0;
+  font-size: var(--cover-sub, 1.0625rem);
+  line-height: 1.5;
+  color: rgba(253, 253, 253, 0.78);
+  max-width: var(--measure);
+  word-break: keep-all;
+}
+.vx-cover-tail {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: rgba(253, 253, 253, 0.6);
+}
+/* 블랙에서 아래 라이트로 넘어가는 띠 */
+.vx-cover-fade {
+  position: relative;
+  background: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* ── 영상 캐러셀 (Apple 오버뷰 갤러리 실측 재현) ──────────────────────────
+   Apple `.scrolling-container`를 직접 열어 잰 값이다(1440).
+
+     컨테이너  clientW 1425, `scroll-snap-type: x mandatory`
+     영상 카드  820x530 (1.547:1)
+     화살표    36x36
+
+   **넘김은 스크롤이 진다.** 스냅을 걸면 트랙패드와 터치가 그대로 동작하고, 화살표는
+   마우스만 있는 사람을 위한 같은 일의 대응물이다. 캐러셀을 새로 짜지 않는다. */
+.vx-rail {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  /* 첫 카드와 마지막 카드가 거터에 맞아 떨어진다 */
+  padding-inline: var(--page-gutter);
+  scrollbar-width: none;
+}
+.vx-rail::-webkit-scrollbar {
+  display: none;
+}
+.vx-rail-card {
+  margin: 0;
+  flex: 0 0 auto;
+  width: min(820px, 82vw);
+  scroll-snap-align: start;
+}
+.vx-rail-media {
+  display: block;
+  width: 100%;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+}
+/* 자리표시일 때는 문구를 가운데 세운다. video면 이 규칙이 안 걸린다 */
+div.vx-rail-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 화살표. Apple 36x36이고 터치 타깃은 44px로 넓힌다 */
+.vx-rail-arrow {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-default);
+  border-radius: 999px;
+  background: transparent;
+  position: relative;
+  transition: border-color var(--dur-hover) var(--ease-out);
+}
+.vx-rail-arrow::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.vx-rail-arrow:hover:not(:disabled) {
+  border-color: var(--line-strong);
+}
+
+/* ── 수렴 영상 (풀블리드) ─────────────────────────────────────────────────
+   Apple도 풀블리드 영상 자리를 1425x848(1.68:1)로 쓴다(실측). 같은 비율로 간다. */
+.vx-converge {
+  display: block;
+  width: 100%;
+  background: var(--card-bg);
+}
+
 /* ── 스펙 면 (Apple Tech Specs 실측 재현) ─────────────────────────────────
    Apple `/apple-vision-pro/specs/`를 직접 열어 잰 값이다(1440).
 

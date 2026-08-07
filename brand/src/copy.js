@@ -53,6 +53,50 @@ export const HERO = {
   sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 훈련',
   scrollHint: '아래로 진입',
   team: '2026 KDM+ AI Workshop',
+  // 표지 구도의 두 요소. 장식이 아니라 제품이라 대체 텍스트를 준다
+  maskAlt: '마스크를 쓴 대전자',
+  controllerAlt: '손에 쥔 컨트롤러',
+};
+
+// ---------------------------------------------------------------------------
+// 영상 캐러셀(Apple 오버뷰 문법). **자동 재생 영상 + 설명 한 줄.**
+//
+// ── Apple 실측 (1440, 직접 열어 computed로) ─────────────────────────────────
+//   컨테이너   `.scrolling-container`, clientW 1425, `scroll-snap-type: x mandatory`
+//   영상 카드  820x530 (1.547:1)
+//   속성      muted, loop, playsInline. controls 없음
+//   **autoplay 속성이 없다.** 28개가 전부 `paused`로 대기하고 스크립트가 뷰포트
+//   진입에서 play()를 부른다. preload는 `none`이다
+//   화살표     36x36, `aria-label="Previous, <이름> gallery"`
+//
+// **구조만 옮긴다. Apple의 영상과 문구는 한 글자도 안 가져온다**(DESIGN 15절).
+//
+// `src`가 null이면 영상 자리표시가 선다. 파일이 오면 이 값만 채운다.
+// ---------------------------------------------------------------------------
+export const VIDEO_RAIL = {
+  label: '영상',
+  prev: '이전 영상',
+  next: '다음 영상',
+  items: [
+    {
+      key: 'mask-360',
+      src: '/images/home/mask-360.mp4',
+      line: '마스크가 한 바퀴 돈다. 쓰는 각도마다 시야가 어디로 열리는지 보인다.',
+    },
+    { key: 'controller', src: null, line: '컨트롤러를 쥔 손이 검이 되는 순간' },
+    { key: 'match', src: null, line: '거리를 재고 찌르는 한 합' },
+  ],
+};
+
+/**
+ * 흐림에서 선명으로 수렴하는 가로 영상. **캐러셀 아래 풀블리드 한 섹션이다.**
+ * Apple도 풀블리드 영상 자리를 1425x848(1.68:1)로 쓴다(실측).
+ */
+export const CONVERGE = {
+  src: '/images/home/man-blur.mp4',
+  eyebrow: { en: 'FOCUS', ko: '수렴' },
+  line: '흐릿하던 거리가 한 점으로 모인다',
+  body: '거리와 타이밍이 맞물리는 순간에만 결투가 성립한다. 그 수렴을 몸이 먼저 안다.',
 };
 
 /**
