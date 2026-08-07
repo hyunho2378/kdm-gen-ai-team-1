@@ -1,10 +1,13 @@
-// 문제점. 참조 `frames/ref/Slide 16_9 - 89.svg` 레이아웃. 상단 표기 없음.
+// 문제점 (프롤로그 반부활 인터랙션). 상단 표기 없음.
 //
 // **풀블리드 배경 사진(prb.png) + 어두운 오버레이 위 유리(글래스모피즘) 카드.**
-//   스텝0: 문제 3카드(Functional/Economic/Social)만 화면 중앙.
-//   스텝1: 방향키 한 번 더 → 문제 카드가 위로 + 폴리곤 화살표 등장 + 아래에 인사이트 3카드 등장.
-//   방향키 하위 스텝(위임). 경계(0에서 위 / 1에서 아래)에서만 셸이 섹션을 옮긴다.
-//   애니메이션은 transform과 opacity만. 네이비 위 흰 텍스트, 대비 확보.
+//   스텝0: 헤드 텍스트가 화면 중앙에 크게(프롤로그처럼). 문제/인사이트 카드 없음.
+//   스텝1: 방향키 → 헤드 텍스트가 2단 헤더의 헤드라인 자리로 올라가며 작아지고, 아이브로우가 뜬다.
+//          동시에 문제 3카드(Functional/Economic/Social)가 아래에서 올라온다.
+//   스텝2: 한 번 더 → 필요(인사이트) 3카드 + 폴리곤 화살표가 올라온다.
+//   방향키 하위 스텝(위임). 경계(0에서 위 / 2에서 아래)에서만 셸이 섹션을 옮긴다.
+//   애니메이션은 transform과 opacity 위주(헤드 텍스트 크기 전환만 fontSize 트윈 — 축소 시 텍스트가 또렷).
+//   네이비 위 흰 텍스트, 대비 확보.
 
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
@@ -13,7 +16,11 @@ import { PAINPOINT, PAINPOINT_COLUMNS } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { Eyebrow, StepDots } from '../components/Bits.jsx';
 
-const STEPS = 1;
+const STEPS = 2;
+
+// 헤드 텍스트 크기(rem, gsap가 트윈 가능한 단일 단위). 프롤로그(중앙 큰) ↔ 헤드라인(2단 좌상단).
+const HEAD_BIG = '2.8rem';
+const HEAD_SMALL = '1.4rem';
 
 // 유리 카드. 반투명 + 배경 블러 + 미세 테두리 빛 + 상단 림 하이라이트.
 const GLASS = {
@@ -52,6 +59,8 @@ function GlassCard({ title, lines, tone }) {
 export default function SPainPoint({ registerHandler, registerEnter }) {
   const [step, setStep] = useState(0);
   const stepRef = useRef(0);
+  const headRef = useRef(null);
+  const eyebrowRef = useRef(null);
   const problemsRef = useRef(null);
   const arrowsRef = useRef(null);
   const insightsRef = useRef(null);
@@ -59,16 +68,43 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // 헤드 텍스트를 2단 헤더 헤드라인 자리로 보낼 때 아이브로우를 비켜갈 좌측 여백(측정값 + 갭).
+    const headLeftPad = () => {
+      const e = eyebrowRef.current;
+      if (!e) return 200;
+      const gap = Math.min(96, Math.max(16, 0.04 * window.innerWidth));
+      return e.offsetWidth + gap;
+    };
+
+    const applyHead = (next, d) => {
+      const prologue = next === 0;
+      const head = headRef.current;
+      // textAlign은 트윈 대상이 아니라 전환 시작에 스냅한다.
+      head.style.textAlign = prologue ? 'center' : 'left';
+      gsap.to(head, {
+        y: prologue ? '43vh' : 0,
+        yPercent: prologue ? -50 : 0,
+        fontSize: prologue ? HEAD_BIG : HEAD_SMALL,
+        paddingLeft: prologue ? 0 : headLeftPad(),
+        duration: d,
+        ease: motion.gsapInOut,
+        overwrite: 'auto',
+      });
+      // 아이브로우는 프롤로그에서 숨고 헤더가 될 때(스텝1+) 뜬다.
+      gsap.to(eyebrowRef.current, { opacity: prologue ? 0 : 1, duration: d, ease: motion.gsapOut, overwrite: 'auto' });
+    };
+
     const apply = (next, instant) => {
-      const d = instant || reduced ? 0 : 0.7;
-      const open = next >= 1;
-      // 문제 카드: 스텝0 중앙(y 0) → 스텝1 위로(-20vh). yPercent -50은 base.
-      gsap.to(problemsRef.current, { y: open ? '-20vh' : '0vh', duration: d, ease: motion.gsapInOut, overwrite: 'auto' });
-      gsap.to(arrowsRef.current, { opacity: open ? 1 : 0, duration: d * 0.8, ease: motion.gsapOut, overwrite: 'auto' });
-      // 인사이트 글래스 카드는 **처음부터 블러(글래스)를 꽉 채워 등장**한다. 오파시티를 즉시 전환(페이드 없음)해
-      // 블러가 옅게 차오르지 않게 하고, 등장은 y 슬라이드로만 낸다.
-      gsap.set(insightsRef.current, { opacity: open ? 1 : 0 });
-      gsap.to(insightsRef.current, { y: open ? '0vh' : '8vh', duration: d, ease: motion.gsapOut, overwrite: 'auto' });
+      const d = instant || reduced ? 0 : 0.8;
+      applyHead(next, d);
+      const showP = next >= 1; // 문제 카드
+      const showI = next >= 2; // 필요(인사이트) 카드 + 화살표
+      // 글래스 카드는 오파시티를 즉시 전환(페이드 없음)해 블러가 옅게 차오르지 않게 하고, 등장은 y 슬라이드로만.
+      gsap.set(problemsRef.current, { opacity: showP ? 1 : 0 });
+      gsap.to(problemsRef.current, { y: showP ? '0vh' : '8vh', duration: d, ease: motion.gsapOut, overwrite: 'auto' });
+      gsap.set(insightsRef.current, { opacity: showI ? 1 : 0 });
+      gsap.to(insightsRef.current, { y: showI ? '0vh' : '8vh', duration: d, ease: motion.gsapOut, overwrite: 'auto' });
+      gsap.to(arrowsRef.current, { opacity: showI ? 1 : 0, duration: d * 0.8, ease: motion.gsapOut, overwrite: 'auto' });
     };
 
     const handleStep = (dir) => {
@@ -97,6 +133,11 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
     };
   }, [registerHandler, registerEnter]);
 
+  // 헤드 텍스트: 줄 하나에 볼드 조각 섞기(keep-all).
+  const headText = PAINPOINT.head.map((sg, i) => (
+    <span key={i} style={{ fontWeight: sg.b ? 700 : 400 }}>{sg.t}</span>
+  ));
+
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
       {/* 풀블리드 배경 사진 + 어두운 네이비 오버레이(가독). */}
@@ -105,20 +146,42 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${scrimA(0.42)} 0%, ${scrimA(0.5)} 100%)` }} />
       </div>
 
-      {/* 상단 좌측 아이브로우(네이비 배경이라 흰색). */}
-      <div style={{ position: 'absolute', left: grid.marginX, top: grid.marginTop, zIndex: 6, pointerEvents: 'none' }}>
+      {/* 상단 좌측 아이브로우(네이비 배경이라 흰색). 프롤로그에서 숨고 스텝1+에 뜬다. */}
+      <div ref={eyebrowRef} style={{ position: 'absolute', left: grid.marginX, top: grid.marginTop, zIndex: 6, opacity: 0, pointerEvents: 'none' }}>
         <Eyebrow en={PAINPOINT.label.en} ko={PAINPOINT.label.ko} tone={colors.white} onDark />
       </div>
 
-      {/* 문제 3카드(스텝0 중앙 → 스텝1 위로). 전체를 약간 아래로(위 정렬 보정). */}
-      <div ref={problemsRef} style={{ ...ROW, top: '54%', zIndex: 4 }}>
+      {/* 헤드 텍스트: 프롤로그(중앙 큰) → 스텝1+ 헤드라인(2단 좌상단). 콘텐츠 폭을 채운다. */}
+      <div
+        ref={headRef}
+        style={{
+          position: 'absolute',
+          left: grid.marginX,
+          right: grid.marginX,
+          top: grid.marginTop,
+          zIndex: 6,
+          fontFamily: typography.family,
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.45,
+          color: colors.white,
+          wordBreak: 'keep-all',
+          pointerEvents: 'none',
+          willChange: 'transform, font-size',
+        }}
+      >
+        {headText}
+      </div>
+
+      {/* 문제 3카드(스텝1 등장). */}
+      <div ref={problemsRef} style={{ ...ROW, top: '47%', zIndex: 4, opacity: 0 }}>
         {PAINPOINT_COLUMNS.map((c) => (
           <GlassCard key={c.key} title={c.title} lines={c.pain} tone={colors.white} />
         ))}
       </div>
 
-      {/* 폴리곤 화살표(열마다 하나, 스텝1 등장). */}
-      <div ref={arrowsRef} style={{ ...ROW, top: '53%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}>
+      {/* 폴리곤 화살표(열마다 하나, 스텝2 등장). */}
+      <div ref={arrowsRef} style={{ ...ROW, top: '63%', zIndex: 4, opacity: 0, pointerEvents: 'none' }}>
         {PAINPOINT_COLUMNS.map((c) => (
           <div key={c.key} style={{ display: 'flex', justifyContent: 'center' }}>
             <span
@@ -135,8 +198,8 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
         ))}
       </div>
 
-      {/* 인사이트 3카드(스텝1 등장). */}
-      <div ref={insightsRef} style={{ ...ROW, top: '73%', zIndex: 4, opacity: 0 }}>
+      {/* 필요(인사이트) 3카드(스텝2 등장). */}
+      <div ref={insightsRef} style={{ ...ROW, top: '76%', zIndex: 4, opacity: 0 }}>
         {PAINPOINT_COLUMNS.map((c) => (
           <GlassCard key={c.key} lines={c.insight} tone={colors.white} />
         ))}
