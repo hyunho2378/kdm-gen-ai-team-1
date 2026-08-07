@@ -202,6 +202,21 @@ Apple Vision Pro 페이지의 구조와 레이아웃을 그대로 따르고, 콘
 
 **좁은 화면에서는 라벨이 값 위로 올라간다.** 216px 열을 320에서 쥐면 값이 한 글자씩 꺾인다.
 
+### 2.4 제품 컨셉과 뷰 (MASK / CONTROLLER. 구현 완료)
+
+**우리 자체 제품 콘텐츠**(presentation-v2 마스크/컨트롤러 슬라이드와 같은 문구). Apple Tech Specs 문법(좌 라벨 / 우 값)으로 눕힌다.
+`copy.js`의 `PRODUCT_CONCEPT[slug]`, `ProductPage`의 "제품 컨셉" 섹션.
+
+| 행 | 좌 라벨 | 우 값 |
+|---|---|---|
+| 컨셉 | `컨셉` | 마스크 "펜싱 경험을 극대화 시킨, 몰입형 XR" / 컨트롤러 "펜싱의 상징적인 곡선을 재해석한 미래형 인터페이스 컨트롤러" |
+| 제품 컨셉 | `제품 컨셉` | 마스크 "기존 메쉬 시야 구조를 넓은 XR 글라스로 재해석…가볍고 역동적인 착용 경험을 제공." / 컨트롤러 "손을 자연스럽게 감싸는 인체공학적 그립으로…마스크와 통일된 CMF 아이덴티티 구현." |
+| 뷰 | `뷰` | **Side / Front / Top View 이미지 슬롯 3개**(HoverMedia 호버 재생 + WaveReveal 웨이브 등장). 이미지는 첨부 예정 |
+
+- **상단 표기(2026 KDM+ AI Workshop, Team 1, XR Fencing Glass VORTEX)는 웹사이트엔 안 넣는다**(발표 표지용).
+- 뷰 슬롯은 `HoverMedia`(BRAND_MEDIA_PLAN B)라 영상이 오면 `src`만 채운다. 확보된 렌더(front1/pro2 등)를 넣을 자리.
+- 대표 미디어는 `MediaSequence`(enter 1회 blur→sharp, BRAND_MEDIA_PLAN A)로 교체했다(정적 SpecMedia에서).
+
 ---
 
 ## 3. EXPERIENCE 페이지 (Apple visionOS 자리)

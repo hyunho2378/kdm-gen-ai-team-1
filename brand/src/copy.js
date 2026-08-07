@@ -251,6 +251,27 @@ export const PRODUCT_DEEPDIVE = {
   },
 };
 
+// 제품 컨셉과 뷰. **우리 자체 제품 콘텐츠**(presentation-v2 마스크/컨트롤러 슬라이드와 같은 문구).
+// Apple Tech Specs 문법(좌 라벨 / 우 값)으로 컨셉·제품 컨셉을 눕히고, 뷰는 Side/Front/Top 이미지 슬롯.
+// 상단 표기(2026 KDM+ AI Workshop 등)는 발표 표지용이라 웹에는 안 넣는다.
+export const PRODUCT_CONCEPT = {
+  conceptLabel: '컨셉',
+  productConceptLabel: '제품 컨셉',
+  viewsLabel: '뷰',
+  mask: {
+    concept: '펜싱 경험을 극대화 시킨, 몰입형 XR',
+    productConcept:
+      '기존 메쉬 시야 구조를 넓은 XR 글라스로 재해석하여 몰입감 있는 시야를 제공. 불필요한 부피를 줄이고 보호 구조를 재구성하여 가볍고 역동적인 착용 경험을 제공.',
+    views: ['Side View', 'Front View', 'Top View'],
+  },
+  controller: {
+    concept: '펜싱의 상징적인 곡선을 재해석한 미래형 인터페이스 컨트롤러',
+    productConcept:
+      '손을 자연스럽게 감싸는 인체공학적 그립으로 장시간 플레이에도 안정적인 그립과 조작성을 제공. 메쉬 인서트 패널을 적용하여 마스크와 통일된 CMF 아이덴티티 구현.',
+    views: ['Side View', 'Front View', 'Top View'],
+  },
+};
+
 // ---------------------------------------------------------------------------
 // 제품 사양과 특징. **`1f914ed`의 제품 상세에서 복구했다.**
 // 상세 페이지의 히어로 제목과 세로 탭과 되돌아가기 링크는 갈 곳이 없어 복구하지 않았다.

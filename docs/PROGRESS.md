@@ -1079,6 +1079,23 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **brand 히어로 인터랙션과 영상 캐러셀 작업중. 트랙 선점.** brand와 docs만.
+  A: 블랙 히어로. 인물(web-1) 중앙에서 좌로, 컨트롤러(web-2) 우하단에서 중앙, 로고 안착.
+  리본은 히어로에서 걷는다(라이트용 잉크라 블랙에서 안 보인다).
+  B: Apple 오버뷰 문법 영상 캐러셀(820x530, scroll-snap x mandatory, 화살표 36).
+  첫 영상 mask-360. C: man-blur 풀블리드. 커밋 2분할. 푸시 안 함.
+- **brand 미디어 인터랙션 3종과 제품 스펙 배치 완료(확인 대기). 트랙 선점 해제.** brand와 docs만. 푸시 안 함.
+  커밋 2분할([brand] 미디어 인터랙션 로직 3종 / [brand] 제품 스펙 배치).
+  - **파트A 프레임 시퀀스(`MediaSequence.jsx`):** 프레임 URL 배열. mode='scroll'(sticky 무대)·'enter'(진입 1회 흐림→선명, 마지막 프레임 고정).
+    프리로드, reduced=정지 프레임. 플레이스홀더(SVG data-URI). **sticky라 워프 충돌 없음.** 실측: 대표미디어 enter가 frame000(blur)→frame023(sharp) 1회 재생·고정 확인.
+    ffmpeg 파이프라인은 BRAND_MEDIA_PLAN A(영상→webp 프레임, fps/N 변수).
+  - **파트B 호버 재생(`HoverMedia.jsx`):** `<video muted playsInline loop>` 호버 play()/이탈 pause+리셋. **`data-cursor`로 R1 커서 연동**(위임, 자동). 영상 없어 대기 슬롯. reduced/터치 비활성.
+  - **파트C 웨이브(`WaveReveal.jsx`):** 앰비언트 WebGL 물결은 성능 부담→**요소 등장 웨이브**(stagger sine, data-beat 확장) 채택·보고. transform/opacity, reduced 비활성.
+  - **파트D 스펙 배치:** `copy.js PRODUCT_CONCEPT`(마스크/컨트롤러 컨셉+제품 컨셉+뷰 Side/Front/Top). ProductPage에 Apple 스펙 문법(좌 라벨/우 값) "제품 컨셉" 섹션.
+    대표미디어=MediaSequence(enter), 뷰 슬롯=HoverMedia+WaveReveal. 상단 표기(2026 KDM+ 등) 웹 미포함.
+  - **검증:** 마스크/컨트롤러 컨셉·뷰 실측, 뷰 슬롯 data-cursor 3개, enter 시퀀스 완주(스크린샷), **레드 탐지 0(r-b>40)**, 네이비 유지,
+    320/768/1440/3840 overflowX 0, **npm ci clean 4앱(arena/controller/presentation-v2/brand) 빌드 통과.**
+    스크롤 리빌(data-beat/WaveReveal)은 실제 스크롤 시 동작(헤드라인 opacity1 확인). 인앱 스크린샷은 JS 스크롤 시 ticker 정지로 리빌 미발화(환경 한계).
 - **presentation-v2 문제점 텍스트 줄바꿈과 등장 순서 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함.
   커밋 1건([presentation] 문제점 텍스트 줄바꿈과 등장 순서).
   - **파트1 줄바꿈:** `PAINPOINT.head`를 2줄 배열로(br). "~1:1 대결 스포츠다." 다음 줄바꿈, "이 때문에~" 둘째 줄. 볼드 3구간 유지. 실측 2줄 확인.

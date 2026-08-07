@@ -24,23 +24,27 @@
 // 베낄 대상 자체가 없고 구성품도 우리 것이다.
 
 import { spacing } from '../tokens.js';
-import { MEDIA_PENDING, PRODUCT_DEEPDIVE, PRODUCT_DETAIL } from '../copy.js';
-import { Dive, SpecMedia } from '../components/Blocks.jsx';
+import { MEDIA_PENDING, PRODUCT_CONCEPT, PRODUCT_DEEPDIVE, PRODUCT_DETAIL } from '../copy.js';
+import { Dive } from '../components/Blocks.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import ProductLayout from '../components/ProductLayout.jsx';
 import ProductViewer from '../components/ProductViewer.jsx';
+import MediaSequence from '../components/MediaSequence.jsx';
+import HoverMedia from '../components/HoverMedia.jsx';
+import WaveReveal from '../components/WaveReveal.jsx';
 import { bodyStyle, captionStyle, headingStyle, titleStyle } from '../components/typo.js';
 
 export default function ProductPage({ slug }) {
   const deep = PRODUCT_DEEPDIVE[slug];
   const rows = PRODUCT_DETAIL.spec[slug];
   const box = PRODUCT_DETAIL.box[slug];
+  const con = PRODUCT_CONCEPT[slug];
 
   return (
     <ProductLayout>
-      {/* 대표 미디어와 헤드라인. Apple 스펙 면도 이미지 하나와 제목으로 연다 */}
+      {/* 대표 미디어와 헤드라인. **프레임 시퀀스 진입 1회 재생**(흐림→선명, 마지막 프레임 고정). 실프레임은 slot. */}
       <section className="vx-shell" style={{ paddingBlock: 'var(--section-gap)' }}>
-        <SpecMedia pending={MEDIA_PENDING} />
+        <MediaSequence mode="enter" ratio="747 / 432" pending={MEDIA_PENDING} />
         <div data-beat style={{ marginTop: spacing.unit * 3, display: 'flex', flexDirection: 'column', gap: spacing.unit }}>
           <Eyebrow en={deep.eyebrow.en} ko={deep.eyebrow.ko} />
           <h1 style={titleStyle}>{deep.headline}</h1>
@@ -50,6 +54,31 @@ export default function ProductPage({ slug }) {
 
       {/* 딥다이브. 고정 3D 옆을 네 단계가 지나간다. 내용은 오버뷰 시절 비트 그대로다 */}
       <Dive label={deep.eyebrow} steps={deep.beats} media={<ProductViewer slug={slug} />} bare />
+
+      {/* ── 제품 컨셉. Apple 스펙 문법(좌 라벨 / 우 값). 뷰는 Side/Front/Top 호버 미디어 슬롯(웨이브 등장). ── */}
+      <section className="vx-shell" style={{ paddingBlock: 'var(--section-gap)' }}>
+        <h2 data-beat style={{ ...headingStyle, marginBottom: spacing.unit * 3 }}>제품 컨셉</h2>
+        <dl style={{ margin: 0 }}>
+          <div data-beat className="vx-spec-row">
+            <dt style={headingStyle}>{PRODUCT_CONCEPT.conceptLabel}</dt>
+            <dd style={{ margin: 0 }}><span style={bodyStyle}>{con.concept}</span></dd>
+          </div>
+          <div data-beat className="vx-spec-row">
+            <dt style={headingStyle}>{PRODUCT_CONCEPT.productConceptLabel}</dt>
+            <dd style={{ margin: 0 }}><span style={bodyStyle}>{con.productConcept}</span></dd>
+          </div>
+          <div className="vx-spec-row">
+            <dt data-beat style={headingStyle}>{PRODUCT_CONCEPT.viewsLabel}</dt>
+            <dd style={{ margin: 0 }}>
+              <WaveReveal className="vx-views">
+                {con.views.map((v) => (
+                  <HoverMedia key={v} pending={MEDIA_PENDING} label={v} ratio="4 / 3" />
+                ))}
+              </WaveReveal>
+            </dd>
+          </div>
+        </dl>
+      </section>
 
       {/* ── 사양. 좌 라벨 / 우 값 ─────────────────────────────────────────── */}
       <section className="vx-shell" style={{ paddingBlock: 'var(--section-gap)' }}>
