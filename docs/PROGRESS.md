@@ -1080,7 +1080,42 @@
 
 ## 진행중
 - **brand 홈 영어화와 컨트롤러 영상 수정과 스펙 작업중. 트랙 선점.** brand와 docs만.
-- **presentation-v2 UIUX 신설과 순서 조정과 줄바꿈 작업중. 트랙 선점.** presentation-v2와 docs만. brand 트랙과 겹치지 않는다.
+- **presentation-v2 UIUX 신설과 순서 조정과 줄바꿈 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만.
+  brand 트랙과 겹치지 않았다. 푸시 안 함. 커밋 분리 예정([presentation] UIUX 슬라이드와 순서 조정 /
+  [presentation] 전 슬라이드 설명 줄바꿈).
+
+  - **UIUX 슬라이드 신설(`SUIUX.jsx`, id `uiux`).** 참조 `frames/ref/14.svg`를 브라우저 렌더 +
+    getBBox 실측(DESIGN 15절). 카드 3개 x436/791.273/1146.55 y321 295.273×639 rx20, 라벨 y977.2.
+    앱 스크린샷 3장(`controller-vortex.vercel.app` 실촬영, 296×639)을 `frames/ref/image
+    1208091753~1755.png`에서 `images/uiux/{result,controller,records}.png`로 복사, 참조와
+    대조해 순서 확인(내 기록 → 컨트롤러 제어 → 승리). 설명 문단은 공용 2단 헤더 + PV2 role
+    토큰(참조 SUIT24 리터럴 대신), 볼드 4구간은 참조 실측 그대로.
+  - **위치: AI 워크플로우(develop) 다음, 데모 앞.** `SECTION_LABELS`에 추가, `App.jsx`에
+    `s.id === 'uiux'` 분기 삽입.
+
+  - **순서 조정.** 핵심 인터랙션(experience)과 AI 유파(duelist)를 AI 워크플로우 앞으로 당겼다.
+    `SECTION_LABELS` 배열 순서만 변경(id 기반 셸이라 위임/렌더 분기 무손상).
+    **최종 순서(19섹션, 실측):** `cover painpoint why target keyword logo-motif logo-guide
+    color concept mask controller mockup-a mockup-b experience duelist workflow-explore
+    workflow-develop uiux demo`.
+  - **방향키 실측으로 끝까지 걸었다.** CDP `Input.dispatchKeyEvent`로 진짜 ArrowDown을
+    82회 보내 표지부터 UIUX까지 도달 확인(위임 섹션 painpoint/keyword/duelist의 서브스텝도
+    같이 소비됨, 콘솔 예외 0). 순서가 지시대로 experience → duelist → workflow-explore →
+    workflow-develop → uiux임을 실제 키 입력으로 확인했다(스크롤 위치 추정이 아니다).
+
+  - **줄바꿈. 위반 하나만 찾았다(사전 구조 스캔).** `copy.js`의 body/desc/sub/head 전 항목을
+    노드 스크립트로 훑어 문단(줄배열)마다 마침표 개수를 셌다. `WORKFLOW.develop.body`
+    하나가 "...구체화했습니다."와 "다양한 렌더링 결과를...발전시켰습니다." 두 문장을
+    한 줄에 이어 붙이고 있었다(유일한 위반). 둘로 쪼갰다. **나머지는 손대지 않았다** —
+    이미 문장당 한 줄이거나(마침표 1개씩), 명사형 종결이라 마침표 자체가 없어 쪼갤
+    지점이 없다(CONTROLLER.desc, MASK.desc 등). 쉼표에서 줄을 나눈 한 문장짜리 텍스트
+    (LOGO_MOTIF.body, DUELIST.sub)도 문장 경계가 아니라 그대로 뒀다(지시는 "문장마다
+    줄바꿈"과 "한 줄에 여러 문장 금지"이지 모든 줄을 정확히 한 문장으로 강제하지 않는다).
+
+  - **검증.** UIUX 카드 3개 참조 좌표 일치(1920 실측, REF 스케일 정상 오차), 320/768에서
+    카드 마진 안·overflow 0, `workflow-develop` 문단 2개로 분리 확인(`querySelectorAll('p')`
+    실측), 320/768/1440/3840 전 19섹션 스윕 오버플로 **0**, 콘솔 예외 **0**,
+    `npm ci` clean 빌드 통과.
 - **presentation-v2 표지 로고 테두리와 중앙 완료(확인 대기). 트랙 선점 해제.** `presentation-v2/src/sections/S1Cover.jsx`와
   `docs/PRESENTATION_V2_FOUNDATION.md`만. brand 트랙과 겹치지 않는다. 푸시 안 함. 커밋 1건([presentation] 표지 로고 테두리 제거와 중앙 정렬).
   - **테두리 조사: 실측으로 "없음"을 확인했다.** CSS(`border/outline/box-shadow` 전부 `none`/`0`), SVG(`logo.svg`는

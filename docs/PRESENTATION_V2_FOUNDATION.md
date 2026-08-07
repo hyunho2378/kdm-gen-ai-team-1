@@ -301,3 +301,40 @@
 - 불릿 없음(원래도 리스트 불릿 0. 구분은 여백/타이포/판으로).
 - **미보수:** 루트 `build:all`은 구 `presentation`을 빌드한다(presentation-v2 미포함). 발표 경로가 v2로
   확정되면 그 한 줄을 바꾼다. 이번 트랙(presentation-v2 전용)에서는 루트 config를 안 건드렸다.
+
+## UIUX 슬라이드 신설 (참조 `frames/ref/14.svg`)
+
+**AI 워크플로우(develop) 바로 다음, 데모 앞.** `SUIUX.jsx`, id `uiux`. 컨트롤러 앱
+(`controller-vortex.vercel.app`)의 실제 스크린샷 3장을 참조 좌표에 안착시킨다. 상단 표기 없음.
+
+- **실측(1920x1080, getBBox·DESIGN 15절):** 카드 3개 rect x436/791.273/1146.55 y321,
+  295.273×639 rx20. 라벨(카드 중심 정렬 캡션) y977.2 — 내 기록/컨트롤러 제어/승리.
+  설명 문단 x402.664 y172.6, 2줄 SUIT24, 볼드 4구간.
+- **스크린샷 3장은 실제 앱을 찍은 것이다(296×639).** 참조 rect(295.273×639)와 거의 정확히
+  일치해 크롭 없이 앉는다. `frames/ref/image 1208091753~1755.png`에서 `images/uiux/`로
+  복사했다(`result.png`=승리 화면, `controller.png`=조작 설정, `records.png`=기록 도넛).
+  참조와 스크린샷 세 장을 나란히 대조해 순서를 확인했다: 내 기록 → 컨트롤러 제어 → 승리.
+- **설명 문단은 공용 2단 헤더(SlideHeader) + PV2 role 토큰이다.** 참조는 SUIT 24px 리터럴이지만
+  "전 슬라이드 헤드라인이 headline 하나를 쓴다"(PV2)를 따라 body role로 옮겼다. 볼드 4구간
+  (데이터 기록·분석 / 기준 자세와 조작 / 개인 맞춤 보정 / 지속적 향상 XR 펜싱 경험)은 참조
+  실측 그대로. 문장이 하나뿐이라(마침표 1개) 줄바꿈 규칙과 충돌 없이 한 줄로 둔다.
+- **카드는 컨셉/워크플로우와 같은 매핑 문법.** `REF = min(100vw/1920, 100vh/1080)` 중앙 앵커.
+  카드 라벨은 role 토큰(body 크기 + 700, 헤드라인이 아니다 — 카드 제목 위계 규칙과 동일).
+- **검증:** 1920에서 참조와 픽셀 대조 일치(카드 x428/784/1139 — REF 스케일 오차, 문서
+  스크롤바로 clientWidth가 1920보다 좁아 생기는 정상 편차), 320/768에서 카드가 마진 안에
+  들어오고 라벨이 두 줄로 접혀도 넘치지 않음, 320/768/1440/3840 전 섹션 스윕 오버플로 0,
+  예외 0.
+
+## 섹션 순서 조정 (핵심 인터랙션·AI 유파를 워크플로우 앞으로)
+
+**최종 순서:** ... → 목업(mockup-a/b) → **핵심 인터랙션(experience)** → **AI 유파(duelist)** →
+AI 워크플로우(explore/develop) → **UIUX(신설)** → 데모.
+
+이전에는 워크플로우 두 장이 experience/duelist보다 앞이었다. `SECTION_LABELS` 배열의 순서만
+바꿨고, 셸이 전부 id 기반(App.jsx가 인덱스를 어디에도 안 쓴다 — `SECTIONS[currentRef.current].id`
+로 위임을 조회하고 `document.getElementById(SECTIONS[next].id)`로 스크롤 대상을 찾는다)이라
+위임(`DELEGATE_IDS`의 `experience`/`duelist`는 애초에 위임 대상이 아니고, `painpoint`/`why`/
+`keyword`/`duelist`만 위임인데 그 넷 다 배열 순서와 무관하게 자기 id로 등록·조회된다)이 안 깨졌다.
+**검증(실측):** 전체 순서 `cover painpoint why target keyword logo-motif logo-guide color
+concept mask controller mockup-a mockup-b experience duelist workflow-explore workflow-develop
+uiux demo`(19섹션). 방향키로 처음부터 끝까지 이동 확인, 콘솔 예외 0.
