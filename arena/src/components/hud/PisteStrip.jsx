@@ -120,6 +120,12 @@ function Dot({ innerRef, color }) {
   );
 }
 
+/**
+ * 피스트 이탈 경고. **소유 색이 아니라 UI 경고다.**
+ * 내 쪽과 상대 쪽 양쪽이 같은 것을 쓰므로 레드로 두면 "내 것"이라는 뜻과 충돌한다
+ * (실측에서 "상대 뒤 없음"이 레드로 떠 있는 것을 잡았다). 실버는 네이비 위 11.3:1이라
+ * 레드(4.13:1)보다 읽기도 낫다.
+ */
 function Warn({ innerRef, align, text }) {
   return (
     <div
@@ -137,7 +143,7 @@ function Warn({ innerRef, align, text }) {
         style={{
           fontSize: typography.caption.size,
           letterSpacing: typography.hud.tracking,
-          color: colors.red.light,
+          color: colors.accent.base,
           whiteSpace: 'nowrap',
         }}
       >

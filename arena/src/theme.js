@@ -6,11 +6,13 @@ import { colors, glow, motion } from './tokens.js';
 
 export function applyThemeVars(root = document.documentElement) {
   const vars = {
-    '--red-light': colors.red.light,
-    '--red-fill': colors.red.fill,
-    '--red-press': colors.red.press,
+    // **UI 변수는 네이비와 실버다.** 소유 색(red, blue)은 CSS로 안 나간다.
+    // 그것은 컴포넌트가 tokens에서 직접 읽어 "나"와 "상대"를 가리키는 자리에만 쓴다
+    '--primary': colors.primary.fill,
+    '--primary-press': colors.primary.press,
+    '--accent': colors.accent.base,
     '--line-strong': colors.line.strong,
-    '--glow-red': glow.red,
+    '--glow-primary': glow.primary,
     '--ease-out': motion.easeOut,
     '--dur-press': `${motion.duration.press}ms`,
   };

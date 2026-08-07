@@ -62,7 +62,7 @@ export default function PoseTest({ poseChannel }) {
 
   const tilt = { pitchDeg: pitch, rollDeg: roll };
   const state = poseState(guarding, tilt);
-  const guardColor = guarding ? colors.red.light : colors.text.primary;
+  const guardColor = guarding ? colors.accent.base : colors.text.primary;
 
   const slider = (label, value, set, min, max) => (
     <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -74,7 +74,7 @@ export default function PoseTest({ poseChannel }) {
         step={1}
         value={value}
         onChange={(e) => set(Number(e.target.value))}
-        style={{ flex: 1, accentColor: colors.red.fill }}
+        style={{ flex: 1, accentColor: colors.primary.fill }}
       />
       <span
         style={{

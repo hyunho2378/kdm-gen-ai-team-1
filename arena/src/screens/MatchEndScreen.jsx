@@ -27,6 +27,7 @@ export default function MatchEndScreen({ winner, score, schoolName, focusedSchoo
         justifyContent: 'center',
         gap: spacing.unit * 3,
         padding: spacing.gutter,
+        // 네이비 스크림(tokens에서 값이 바뀌었다). 캔버스 렌더는 안 건드린다
         background: colors.bg.overlay,
         textAlign: 'center',
       }}

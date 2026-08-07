@@ -64,7 +64,7 @@ export default function CamDebug({ face, rendererRef, reduced = false }) {
       <div style={{ display: 'flex', gap: 12 }}>
         <span style={cell}>
           캠{' '}
-          <span style={{ ...num, color: ok ? colors.text.primary : colors.red.light }}>
+          <span style={{ ...num, color: ok ? colors.text.primary : colors.accent.base }}>
             {CAM_LABEL[v.status]}
           </span>
         </span>
@@ -95,11 +95,11 @@ export default function CamDebug({ face, rendererRef, reduced = false }) {
         </span>
         <span>
           팽창{' '}
-          <span style={{ ...num, color: v.focused ? colors.text.primary : colors.red.light }}>
+          <span style={{ ...num, color: v.focused ? colors.text.primary : colors.accent.base }}>
             {v.focused === null ? '근사 폴백' : v.focused ? '충족' : '미충족'}
           </span>
         </span>
-        {reduced ? <span style={{ color: colors.red.light }}>모션 감소로 꺼짐</span> : null}
+        {reduced ? <span style={{ color: colors.accent.base }}>모션 감소로 꺼짐</span> : null}
       </div>
     </div>
   );

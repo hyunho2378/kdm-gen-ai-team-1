@@ -27,7 +27,7 @@ export default function FpsMeter({ perf, rendererRef }) {
   const inset = frameInset(w);
   const low = v.fps < MIN_FPS;
   const cell = { color: colors.text.dim };
-  const num = { color: low ? colors.red.light : colors.text.primary, fontVariantNumeric: 'tabular-nums' };
+  const num = { color: low ? colors.accent.base : colors.text.primary, fontVariantNumeric: 'tabular-nums' };
 
   return (
     <div

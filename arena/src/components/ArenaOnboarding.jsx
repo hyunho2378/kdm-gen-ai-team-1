@@ -71,8 +71,8 @@ export default function ArenaOnboarding({ onDone }) {
             fontSize: 'clamp(6rem, 22vw, 14rem)',
             fontWeight: 800,
             lineHeight: 1,
-            color: colors.red.light,
-            textShadow: glow.red,
+            color: colors.accent.base,
+            textShadow: glow.primary,
             animation: reduced ? 'none' : 'vortexPop 0.8s ease-out',
           }}
         >
@@ -103,8 +103,8 @@ export default function ArenaOnboarding({ onDone }) {
           width: `${s.target.w}%`,
           height: `${s.target.h}%`,
           borderRadius: radius.md,
-          border: `2px solid ${colors.red.light}`,
-          boxShadow: `0 0 0 9999px ${colors.bg.overlay}, ${glow.red}`,
+          border: `2px solid ${colors.accent.base}`,
+          boxShadow: `0 0 0 9999px ${colors.bg.overlay}, ${glow.primary}`,
           transition: reduced ? 'none' : 'all 220ms ease',
           pointerEvents: 'none',
         }}
@@ -122,7 +122,7 @@ export default function ArenaOnboarding({ onDone }) {
           padding: '18px 20px',
           background: colors.bg.raised,
           border: `1px solid ${colors.line.strong}`,
-          borderTop: `2px solid ${colors.red.light}`,
+          borderTop: `2px solid ${colors.accent.base}`,
           clipPath: OCTAGON,
           display: 'flex',
           flexDirection: 'column',
@@ -137,7 +137,7 @@ export default function ArenaOnboarding({ onDone }) {
                 width: 6,
                 height: 6,
                 borderRadius: '50%',
-                background: i === step ? colors.red.light : colors.line.strong,
+                background: i === step ? colors.accent.base : colors.line.strong,
               }}
             />
           ))}
@@ -197,7 +197,7 @@ const fillBtn = {
   padding: '8px 20px',
   borderRadius: radius.pill,
   border: 'none',
-  background: colors.red.fill,
+  background: colors.primary.fill,
   color: colors.text.onFill,
   fontFamily: typography.family,
   fontSize: typography.body.size,

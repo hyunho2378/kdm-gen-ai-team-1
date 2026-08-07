@@ -112,7 +112,7 @@ export default function GlassFrame({ reduced = false }) {
       />
 
       {/* 코너 액센트. 장식은 컷에만 두고 변 중앙은 비운다 */}
-      <g stroke={colors.red.light} strokeWidth="2" strokeLinecap="square" fill="none" opacity="0.9">
+      <g stroke={colors.accent.base} strokeWidth="2" strokeLinecap="square" fill="none" opacity="0.9">
         {cuts.map(([a, b], i) => (
           <path key={i} d={accentPath(a, b, cx, cy)} vectorEffect="non-scaling-stroke" />
         ))}

@@ -33,8 +33,8 @@ export function ButtonPrimary({ children, onPointerDown, onClick, ...rest }) {
         ...base,
         fontWeight: 600,
         color: colors.text.onFill,
-        background: colors.red.fill,
-        border: `1px solid ${colors.red.fill}`,
+        background: colors.primary.fill,
+        border: `1px solid ${colors.primary.fill}`,
       }}
       onPointerDown={onPointerDown}
       onClick={onClick}
@@ -66,4 +66,4 @@ export function ButtonGhost({ children, onPointerDown, onClick, ...rest }) {
   );
 }
 
-export const BUTTON_GLOW = glow.red;
+export const BUTTON_GLOW = glow.primary;

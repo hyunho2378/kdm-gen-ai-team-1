@@ -22,7 +22,7 @@ export default function StatusChip({ label, value, degraded = false }) {
       }}
     >
       <span style={{ color: colors.text.dim }}>{label}</span>
-      <span style={{ color: degraded ? colors.red.light : colors.text.primary }}>{value}</span>
+      <span style={{ color: degraded ? colors.accent.base : colors.text.primary }}>{value}</span>
     </div>
   );
 }

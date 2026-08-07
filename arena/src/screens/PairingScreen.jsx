@@ -28,6 +28,10 @@ export default function PairingScreen({ status, code, controllerUrl, calibrating
       style={{
         position: 'fixed',
         inset: 0,
+        // **메뉴는 네이비 판 위에 선다.** 이 화면은 경기가 아니라 UI라 캔버스가 그대로
+        // 비치면 글자가 3D 위에 얹힌다(밝은 크롬 면이 지나가면 대비가 그 순간에만 무너진다).
+        // 판은 DOM 층이고 캔버스 렌더는 안 건드린다(canvas/WebGL 예외는 그대로다)
+        background: colors.bg.overlay,
         zIndex: zIndex.header,
         display: 'flex',
         flexDirection: 'column',
@@ -52,7 +56,7 @@ export default function PairingScreen({ status, code, controllerUrl, calibrating
           fontSize: typography.hud.size,
           fontWeight: typography.hud.weight,
           letterSpacing: typography.hud.tracking,
-          color: colors.red.light,
+          color: colors.accent.base,
         }}
       >
         {calibrating ? '폰 준비 중' : '폰을 검으로 연결'}
