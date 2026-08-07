@@ -1079,6 +1079,7 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **brand 홈 영어화와 컨트롤러 영상 수정과 스펙 작업중. 트랙 선점.** brand와 docs만.
 - **presentation-v2 AI 워크플로우 슬라이드 재구성 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함. 커밋 1건([presentation] AI 워크플로우 슬라이드 재구성).
   - **삭제됐던 워크플로우 슬라이드를 참조 2개대로 되살림.** `SWorkflow.jsx`(공용, slide='explore'|'develop'), 참조 `frames/ref/2029`(형태 탐색)·`2030`(구체화) getBBox 실측 재현.
     섹션 순서 `mockup-b → workflow-explore → workflow-develop → experience`(**18섹션**). 배경 흰색(라이트), 공용 2단 헤더(PV 타이포), 상단 표기 0.
