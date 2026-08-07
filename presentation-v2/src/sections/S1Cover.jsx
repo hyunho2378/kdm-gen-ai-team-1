@@ -24,6 +24,11 @@ import { COVER } from '../copy.js';
 // 1 ref-px를 contain-fit 단위로(min 가로/세로 배율). 16:9에서 참조와 픽셀 일치.
 const REF = 'min(100vw / 1920, 100vh / 1080)';
 const vh = (refPx) => `calc(${refPx} * ${REF})`;
+// 배경 렌더 블러. **로고와 텍스트는 제외** — 좌우 제품 렌더(person/controller)만 흐려
+// 중앙 흰 심볼이 도드라지게(참조 톤: 형태는 알아보되 확실히 흐림). REF에 비례해 어느 뷰포트에서도
+// 동일 인상(고정 px는 3840에서 약해 보임). vh(18)=min(18*100vw/1920, 18*100vh/1080)의 직접형
+// (blur() 안에서 `number * min(length)` 곱은 일부 엔진이 0으로 죽여서 동치 min()으로 쓴다). 1920 기준 ≈18px.
+const BG_BLUR = 'blur(min(0.9375vw, 1.667vh))';
 // 중앙 앵커 + 자기중심 정렬(이미지/로고).
 const at = (x, y) => ({
   position: 'absolute',
@@ -99,7 +104,7 @@ export default function S1Cover() {
         src="/images/cover/person.png"
         alt=""
         draggable="false"
-        style={{ ...at(500, 580), width: vh(919), height: vh(1000), objectFit: 'cover', zIndex: 1, userSelect: 'none', willChange: 'transform, opacity' }}
+        style={{ ...at(500, 580), width: vh(919), height: vh(1000), objectFit: 'cover', filter: BG_BLUR, zIndex: 1, userSelect: 'none', willChange: 'transform, opacity' }}
       />
       {/* 우 컨트롤러 렌더 */}
       <img
@@ -107,7 +112,7 @@ export default function S1Cover() {
         src="/images/cover/controller.png"
         alt=""
         draggable="false"
-        style={{ ...at(1419.75, 539.75), width: vh(919.5), height: vh(919.5), objectFit: 'cover', zIndex: 1, userSelect: 'none', willChange: 'transform, opacity' }}
+        style={{ ...at(1419.75, 539.75), width: vh(919.5), height: vh(919.5), objectFit: 'cover', filter: BG_BLUR, zIndex: 1, userSelect: 'none', willChange: 'transform, opacity' }}
       />
 
       {/* 중앙 흰 볼텍스 심볼(logo.svg). path bbox center (960,540) w497. */}

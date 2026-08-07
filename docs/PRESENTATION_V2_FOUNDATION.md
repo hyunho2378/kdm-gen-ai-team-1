@@ -241,6 +241,10 @@
     우상 'Team 1 / 김다영, 주현호, 윤소희'(x1682, start 정렬), 우하 '2026 KDM+ All Rights Reserved.'(x1612.7 fs17.27). SUIT 20/흰색.
   - 진입: 좌우 렌더 페이드+스케일-인 → 중앙 로고 → 상단 표기 순(GSAP, transform/opacity). fencer 패널·OGL 궤적·서브카피 폐기.
   - 검증: 표지 스크린샷이 참조 1.svg와 일치. 320/768/1440/3840 overflow 0. (구 `LOGO_MASK`/`COVER.sub`는 미사용, 표기만 잔존.)
+  - **배경 블러(참조대로):** 좌우 제품 렌더(person/controller)에만 `filter: blur`로 흐림 — 중앙 흰 심볼(z3)과 상하단 텍스트(z4)는
+    블러 없이 선명, 배경(z1)만 흐려 로고가 도드라진다. 강도는 렌더 크기에 비례(`blur(min(0.9375vw, 1.667vh))` = vh(18) 직접형,
+    16:9 1920 기준 ≈18px / 3840 36px / 320 3px). blur()에서 `number * min(length)` 곱이 일부 엔진에서 0으로 죽어 동치 min()으로 썼다.
+    filter는 layout·scrollWidth에 영향 없어 overflow 불변(320/768/1440/3840 = 0).
 
 ## 사진 슬라이드 규칙 (라이트 위)
 

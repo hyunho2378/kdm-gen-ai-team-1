@@ -1079,6 +1079,10 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **presentation-v2 표지 배경 블러 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함. 커밋 1건([presentation] 표지 배경 블러).
+  - **배경만 블러:** 표지 좌우 제품 렌더(person/controller, z1)에만 `filter: blur` 적용. 중앙 흰 심볼(logo.svg, z3)·상단 표기·하단 카피(z4)는 블러 없이 선명 → 로고가 도드라진다.
+  - **강도:** 렌더 크기 비례 `blur(min(0.9375vw, 1.667vh))`(=vh(18) 직접형, 1920 기준 ≈18px / 3840 36px / 320 3px). blur()에서 `number * min(length)` 곱이 일부 엔진에서 0으로 죽어 동치 min()으로 우회.
+  - **검증:** 브라우저 정착 스크린샷 — 배경 두 렌더 흐림·로고와 전체 텍스트 선명(참조 톤 일치). 320/768/1440/3840 overflow 0(filter는 layout 무관). npm ci clean + build 통과(1.73s).
 - **presentation-v2 표지 교체와 목업 페이지 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함.
   커밋 2분할([presentation] 표지 교체 / [presentation] 컨트롤러 목업 페이지).
   - **파트1 표지 교체:** 라이트 로고-중앙 표지 폐기, **참조 frames/ref/1.svg(1920x1080) 블랙 포스터로 교체**(참조가 새 표지라 병합 아닌 교체 판단).
