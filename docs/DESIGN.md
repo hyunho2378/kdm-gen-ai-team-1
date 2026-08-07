@@ -370,6 +370,33 @@ lucide-react만. 크기 16, 20, 24, 32, 48. 색은 text 토큰과 red.light만. 
 
 ---
 
+## 14.5 controller 네이비 시스템 (앱 전면 재설계에서 확정)
+
+**controller는 arena와 다른 무대를 쓴다.** arena는 블랙 + 레드 경기 화면이고, 폰 앱은 네이비다. `controller/src/tokens.js`가 `shared/tokens.js`를 재수출한 뒤 바뀌는 것만 덮는다(brand가 라이트로 뒤집는 것과 같은 규약). **shared는 안 고친다.**
+
+| 역할 | 값 | 근거 |
+|---|---|---|
+| 배경 | `#101925` | 그라디언트 어두운 끝. `pageGradient`가 `#101925 → #16233A → #1E3149` |
+| 프라이머리 | `#263E5F` | presentation-v2와 brand가 쓰는 브랜드 네이비와 **같은 값** |
+| 텍스트 | `#FDFDFD` | 배경 위 **17.2:1** |
+| 강조 | `#C4C4C4`(실버) | 레드가 지던 "눈이 먼저 가는" 자리 |
+| 판 | `primary` 알파 0.55 | 배경 위 한 단계 뜬 카드 표면 |
+
+**레드 그룹을 통째로 걷었다.** 값만 네이비로 바꾸면 `colors.red`라는 이름이 거짓말이 되므로 그룹째 `primary`와 `accent`로 갈았다. 호출부 10개 파일을 의미별로 옮겼다.
+
+```
+colors.red.fill   -> colors.primary.fill    채움 버튼과 강조 면
+colors.red.light  -> colors.accent.base     강조 텍스트와 상태 표시
+colors.red.tonal  -> colors.primary.tonal
+glow.red          -> glow.primary
+```
+
+**얼굴은 SUIT 가변폰트다.** presentation-v2와 brand가 쓰는 것과 같은 CDN 같은 버전(`sun-typeface/SUIT@2.0.5` variable woff2)이라 세 앱의 얼굴이 같다. 축 100~900이 실제라 굵기를 합성하지 않는다.
+
+**스테이터스 바까지 네이비로 덮는다.** `theme-color`가 사파리 상단 바를 칠하고 `apple-mobile-web-app-status-bar-style: black-translucent`가 웹뷰를 상태바 아래까지 민다. **배경은 `html`이 진다.** body에만 두면 스크롤 바운스에서 뒤가 검게 비치고 safe-area 바깥이 안 덮인다. 안쪽 여백은 `ScreenContainer`의 `env(safe-area-inset-top)`이 잡는다.
+
+---
+
 ## 15. 코드 출처 계약 (위반 시 작업 무효)
 
 추론이나 자체 재현으로 만들지 않는다. 우리 편에 실제 파일이 있는 것만 쓴다. 없으면 안 쓴다. 비슷하게 짜지도 않는다.

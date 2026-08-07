@@ -1,8 +1,8 @@
 // TabBar — 하단 3탭. 강릉페이 DESIGN.md 바텀탭 명세 이식.
 //
 // 원본 수치 그대로: 아이콘 24px, 레이블 11px(ig.caption2), 바 높이 49px + safe area,
-// 활성/비활성을 색으로만 가르지 않고 굵기도 같이 올린다. 색만 VORTEX(활성 red.light,
-// 비활성 text.dim). 강릉페이는 5개 고정이고 여기는 3개인데 개수만 다르고 규칙은 같다.
+// 활성/비활성을 색으로만 가르지 않고 굵기도 같이 올린다. 색만 VORTEX 네이비
+// (활성 accent.base, 비활성 text.dim). 강릉페이는 5개 고정이고 여기는 3개인데 규칙은 같다.
 //
 // Nielsen: #1 상태 가시성(활성 탭), #4 일관성. Shneiderman: #1 일관성.
 // 아이콘은 lucide-react만 쓴다(이모지 금지). 터치 타깃은 44px 이상.
@@ -56,9 +56,10 @@ export default function TabBar({ active, onChange }) {
               touchAction: 'manipulation',
             }}
           >
-            {/* **액센트는 아이콘이 진다.** 레이블은 11px라 절대 대형 텍스트가 될 수 없는데
-                red.light는 bg.base 위 4.02:1이라 본문 기준 4.5:1에 못 미친다. 아이콘은 텍스트가
-                아니라 비텍스트 기준 3.0:1이 적용되어 같은 red가 통과한다(4.02) */}
+            {/* **액센트는 아이콘이 진다.** 레이블은 11px라 절대 대형 텍스트가 될 수 없어서
+                액센트 색을 얹으면 본문 기준 4.5:1을 봐야 한다. 실버(#C4C4C4)는 네이비 배경 위
+                11.3:1이라 사실 통과하지만, 레이블은 흰색으로 두어 활성과 비활성이
+                굵기와 아이콘 색 둘로 갈리게 남긴다(색 단독 구분 금지) */}
             <Icon size={ICON_SIZE} color={on ? colors.accent.base : colors.text.dim} aria-hidden="true" />
             {/* 색 단독 구분 금지라 활성은 굵기로도 갈린다 */}
             <span
