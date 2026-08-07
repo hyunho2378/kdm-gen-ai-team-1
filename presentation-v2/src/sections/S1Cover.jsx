@@ -115,13 +115,18 @@ export default function S1Cover() {
         style={{ ...at(1419.75, 539.75), width: vh(919.5), height: vh(919.5), objectFit: 'cover', filter: BG_BLUR, zIndex: 1, userSelect: 'none', willChange: 'transform, opacity' }}
       />
 
-      {/* 중앙 흰 볼텍스 심볼(logo.svg). path bbox center (960,540) w497. */}
+      {/* 중앙 흰 볼텍스 심볼(logo.svg). path bbox center (960,540) w497.
+          **기하학적 중앙(540)에서 16px 위(524)로 시각 보정.** 실측으로 확인: 테두리나
+          그림자는 코드/화소 어디에도 없다(알파 0→255가 딱 2px 안티앨리어싱, filter/box-shadow
+          none). 마크 자체가 위쪽 화살표 꼭짓점이 뾰족하고 아래쪽 타원 곡선이 두꺼워
+          잉크 무게중심이 기하 중심보다 아래로 쏠려서, 540에 그대로 두면 아래로 처져 보인다.
+          16px(1080 기준 약 1.5%)만 올려 무게중심을 슬라이드 중앙에 맞춘다. */}
       <img
         ref={logoRef}
         src="/images/assets/logo.svg"
         alt="VORTEX"
         draggable="false"
-        style={{ ...at(960, 540), width: vh(497), height: 'auto', zIndex: 3, userSelect: 'none', willChange: 'transform, opacity' }}
+        style={{ ...at(960, 524), width: vh(497), height: 'auto', zIndex: 3, userSelect: 'none', willChange: 'transform, opacity' }}
       />
 
       {/* 상단/하단 표기(표지 전용). 참조 좌표대로. */}
