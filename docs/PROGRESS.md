@@ -1079,7 +1079,37 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **brand 홈 영어화와 컨트롤러 영상 수정과 스펙 작업중. 트랙 선점.** brand와 docs만.
+- **brand 홈 영어화와 컨트롤러 영상 수정과 스펙 완료(확인 대기). 트랙 선점 해제.** brand와 docs만. 푸시 안 함.
+  커밋 분리 예정([brand] 홈 영어화와 섹션 정리 / [brand] 컨트롤러 영상과 페이지 영어화와 스펙).
+  - **파트A 홈 영어화(국문 잔존 0):** `HERO`/`VIDEO_RAIL`/`CONVERGE`/`CLOSING`/`ABOUT`/`PRODUCT_NAV` 전부 영어.
+    히어로는 표지 구도(마스크/컨트롤러/로고) 유지 + 국문 아이브로우·서브카피 삭제 + **`IMMERSIVE FENCING XR`
+    한 줄 중앙 정렬·확대**(clamp 1.5rem→3.25rem). **삭제(지시):** "두 장치가 하나로 움직인다" 섹션, "원칙"
+    문단(`ABOUT.principles` 자체를 걷음, 참조처 없어짐). 나비 바(Book a demo/Buy 등)도 전 페이지 공용이라 영어화.
+  - **파트B man-mak을 위로:** 삭제된 "두 장치" 섹션의 미디어 자리를 이어받아, 오버뷰 맨 끝이던 닫는 영상
+    (마스크를 내리는 장면)이 수렴 섹션 바로 다음으로 이동. **판단·보고:** 저장소엔 `man-mask.mp4`가 아니라
+    `man-mak.mp4`(오타 아님, 기존 파일명) 하나뿐이고 이미 CLOSING이 그 파일을 쓰고 있어, 새로 심지 않고
+    위치만 옮겨 중복 재생을 피했다.
+  - **파트C 컨트롤러 프레임 시퀀스:** `con-360.mp4`(mask-360과 동일 1920x1920/5.08초)에서 ffmpeg+cwebp로
+    30장 추출(760x760, `public/frames/con-360/frame-000~029.webp`, 544KB) → `PRODUCT_MEDIA.controller.frames`
+    추가만으로 `ProductPage.jsx`의 기존 분기가 자동으로 정지 사진 대신 프레임 진입(마스크와 동일 문법)을 태움.
+    뷰 슬롯(Side/Front/Top)은 그대로.
+  - **파트D 마스크/컨트롤러 영어화:** `PRODUCT_DEEPDIVE`/`PRODUCT_CONCEPT`/`PRODUCT_MEDIA` alt 전부 영어.
+    `ProductPage.jsx` 하드코딩 "제품 컨셉"→"Product Concept". **판단·보고:** 태스크가 지목한 스펙 라벨
+    (IMMERSIVE XR/MARKERLESS TRACKING/DETERMINISTIC JUDGEMENT/TIME DILATION/제품 상세보기)은 실제로는
+    마스크·컨트롤러 페이지가 아니라 **홈 수렴 섹션(CONVERGE)**의 문구였다(코드 실측으로 확인) — 파트A에서
+    이미 영어화됐다.
+  - **파트E 스펙 예시 값:** `TODO_MARK`(확정 예정) 12건(마스크 7 + 컨트롤러 3 + In the Box 2)을 `EXAMPLE_MARK`
+    (`(example)`) 딱지 붙여 그럴듯한 수치로 채움(해상도/주사율/시야각/오디오/배터리/무게/크기 등). 실제
+    확정값 아님, 교체는 `copy.js` 값만.
+  - **파트F 푸터 보고:** 기존 푸터(`FOOTER`)는 이미 영어 톤이었으나 credit의 `강원 지부`와 team의 국문
+    이름 3개가 남아 있었다. `강원 지부`→`Gangwon Chapter`, 팀명→로마자(`Dayoung Kim, Hyunho Ju, Sohee Yoon`)로 정리.
+  - **검증:** 홈/마스크/컨트롤러 `get_page_text` 국문 잔존 0 확인. 320/768/1440/3840 overflow 0(홈+컨트롤러 320 실측).
+    컨트롤러 페이지 스크린샷으로 프레임 진입 확인(정지 사진 아님). 4앱(brand/presentation-v2/arena/controller)
+    npm ci clean + build 전부 통과. 콘솔 에러는 브라우저 탭 콘솔 버퍼가 stale HMR을 누적하는 이 환경의
+    기존 한계(새 탭에서 재확인해 실에러 0 확인, 진단 과정 상세는 세션 로그 참조).
+  - **미완/보고:** 이전 세션에서 요청된 "brand 헤더 VISION EXPERIENCE 삭제와 체험하기" 작업은 이번 회차
+    범위 밖이라 착수하지 않았다(현재도 5탭 그대로, demo 라벨은 영어화만 하고 arena 링크는 안 붙임). 필요하면
+    별도 세션으로.
 - **presentation-v2 UIUX 신설과 순서 조정과 줄바꿈 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만.
   brand 트랙과 겹치지 않았다. 푸시 안 함.
 

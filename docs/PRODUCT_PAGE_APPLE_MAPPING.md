@@ -191,10 +191,15 @@ Apple Vision Pro 페이지의 구조와 레이아웃을 그대로 따르고, 콘
 
 **카테고리는 우리 제품의 것이다.**
 
-- 마스크: 디스플레이, 시야각, 트래킹, 시간 처리, 오디오, 배터리, 무게, 크기, 연결
-- 컨트롤러: 입력, 감지 축, 변환, 햅틱, 배터리, 무게, 크기, 연결
+- 마스크: Display, Field of View, Tracking, Time Processing, Audio, Battery, Weight, Dimensions, Connectivity
+- 컨트롤러: Input, Sensing Axes, Translation, Haptics, Battery, Weight, Dimensions, Connectivity
 
-**값도 우리 것이고 실제 하드웨어 수치는 지어낼 수 없어 자리표시로 둔다.** 확정되면 `copy.js`의 `PRODUCT_DETAIL.spec` 배열만 고치고 참조처는 안 건드린다.
+**값도 우리 것이고 실제 하드웨어 수치는 지어낼 수 없었다 — 개정: 이제 추측 예시 값을 채웠다.**
+`PRODUCT_DETAIL.spec`의 자리표시(`확정 예정` 12건: 해상도/주사율/시야각/오디오/배터리/무게/크기×2제품,
+In the Box 구성품×2)를 `EXAMPLE_MARK`(`(example)`) 딱지를 붙인 그럴듯한 수치로 채웠다(예: 마스크 무게 420g,
+컨트롤러 배터리 8시간). **실제 확정값이 아니다.** 확정되면 `copy.js`의 `PRODUCT_DETAIL.spec`/`box` 값과
+`(example)` 표시를 함께 지우면 되고 참조처(`ProductPage.jsx`)는 안 건드린다.
+라벨/값 전부 영어다(마스크·컨트롤러 페이지 전면 영어화, BRAND_MEDIA_PLAN F절).
 
 ### 2.3 In the Box (벤토 그리드)
 
