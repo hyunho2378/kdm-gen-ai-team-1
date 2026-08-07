@@ -17,6 +17,9 @@ export const APP_NAME = 'VORTEX Brand';
 // 확정되면 이 상수의 값만 바꾼다. 참조처는 손대지 않는다.
 // ---------------------------------------------------------------------------
 const TODO_MARK = '확정 예정';
+// **추측 예시 값 표시.** 스펙 표의 '확정 예정' 자리를 그럴듯한 예시 수치로 채우면서,
+// 그 값이 실제 확정값이 아니라는 것을 값 옆에 남긴다. 확정되면 값과 이 표시를 함께 지운다.
+const EXAMPLE_MARK = '(example)';
 
 // 사양이 비어 있는 동안 대신 뜨는 문장. **특징 목록은 걷었다.** 딥다이브 비트가
 // 같은 사실을 이미 문장으로 펴고 있어서 한 탭 안에서 두 번 읽혔다
@@ -24,9 +27,9 @@ export const TODO_PRODUCT_SPEC = `제품 스펙 ${TODO_MARK}`;
 // **3D 모델 자리표시를 걷었다.** 뷰어가 사라지면서 이 문구를 읽는 곳이 없어졌다
 // 이미지와 영상이 아직 없는 자리. **빈 박스나 다크 사각형을 두지 않는다**(REBOOT_PLAN 2.1).
 // 자리표시 문구만 dim으로 둔다. 에셋이 들어오면 이 상수를 참조하는 자리가 이미지로 바뀐다
-export const MEDIA_PENDING = '이미지 첨부 예정';
+export const MEDIA_PENDING = 'Image pending';
 // 영상 자리. Apple은 열두 섹션 중 하나를 영상 풀블리드로 쓴다(실측). 우리는 EXPERIENCE가 그 자리다
-export const VIDEO_PENDING = '영상 첨부 예정';
+export const VIDEO_PENDING = 'Video pending';
 
 // ---------------------------------------------------------------------------
 // arena로 나가는 CTA. **예전에는 `/experience` 페이지의 문구 묶음이었다.**
@@ -124,12 +127,15 @@ export const CONVERGE = {
  * 말한 뒤, 이 자리가 겨루기 이후를 남긴다. 바로 뒤에 오는 원칙("장비가 아니라 감각을
  * 남긴다")이 이 장면의 문장이라 둘이 붙어 하나로 읽힌다.
  */
+// **홈 영어화.** AFTER THE DUEL은 유지하고 나머지 국문을 자연스러운 영어로 옮겼다.
+// **위로 올렸다.** 예전엔 오버뷰 맨 끝(원칙 문단 직전)이었는데, 그 자리와 "두 장치" 섹션이
+// 함께 삭제되면서 이 영상(man-mak, 마스크를 내리는 장면)이 수렴 섹션 바로 다음으로 올라왔다.
 export const CLOSING = {
   src: '/images/home/man-mak.mp4',
   ratio: '2576 / 1440',
-  eyebrow: { en: 'AFTER THE DUEL', ko: '한 합 뒤' },
-  line: '마스크를 내리는 순간의 잔상',
-  body: '거리와 타이밍의 기억이 몸에 남는다. 훈련이 남기는 것은 기록이 아니라 감각이다.',
+  eyebrow: { en: 'AFTER THE DUEL' },
+  line: 'The afterimage of lowering the mask',
+  body: 'The memory of distance and timing stays in the body. What training leaves behind is not a record, but a sense.',
 };
 
 /**
@@ -152,19 +158,14 @@ export const STATEMENTS = [
 // 브랜드 소개. **`/about`에서 복구했다(`46ef601`).** 네이밍 의미, 원칙, 팀 셋.
 // OVERVIEW 탭 아래쪽이 이 자리를 받는다. 제품을 보기 전에 왜 만드는지가 먼저 온다
 // ---------------------------------------------------------------------------
+// **홈 영어화.** naming을 영어로 옮겼다. **원칙 섹션은 삭제했다**(지시) — "몸으로 익히는
+// 거리감 / 판정은 결정적으로, 연출은 몰입적으로 / 장비가 아니라 감각을 남긴다" 문단이 통째로
+// 나갔고 렌더하는 곳이 없어져 `principles` 자체를 걷었다.
 export const ABOUT = {
   naming: {
-    eyebrow: { en: 'ABOUT', ko: '소개' },
-    title: '왜 VORTEX인가',
-    body: '소용돌이는 중심으로 빨아들인다. 검과 검 사이의 거리와 타이밍이 한 점으로 수렴하는 순간, 결투가 성립한다. VORTEX는 그 수렴의 감각을 훈련으로 만든다.',
-  },
-  principles: {
-    title: '우리가 지키는 것',
-    items: [
-      '몸으로 익히는 거리감',
-      '판정은 결정적으로, 연출은 몰입적으로',
-      '장비가 아니라 감각을 남긴다',
-    ],
+    eyebrow: { en: 'ABOUT' },
+    title: 'Why VORTEX',
+    body: 'A vortex draws everything toward its center. The moment distance and timing between two blades converge to a single point, the duel begins. VORTEX turns that sense of convergence into training.',
   },
   // **팀 블록은 없다.** 크레딧과 팀 이름은 푸터가 이미 같은 말로 이고 있어서
   // 한 페이지 안에서 두 번 읽혔다
@@ -237,8 +238,9 @@ export const EXPERIENCE = {
 //
 // **탭은 앵커 섹션이다.** 라우트를 새로 파지 않고 한 페이지 안에서 자리로 간다.
 // ---------------------------------------------------------------------------
+// **영어화.** label/demo/buy/buyPending은 나비 바 안에서 매 페이지(홈 포함)에 렌더된다.
 export const PRODUCT_NAV = {
-  label: '제품 정보',
+  label: 'Product information',
   /**
    * **5탭이다.** Apple의 Tech Specs 한 자리를 마스크와 컨트롤러 둘로 쪼갰다.
    * 제품이 둘뿐이라 각각 자기 탭을 가지는 편이 스펙을 깊게 펴기 좋다.
@@ -255,11 +257,11 @@ export const PRODUCT_NAV = {
     { key: 'vision', label: 'VISION', ko: '비전화면', to: '/vision' },
     { key: 'experience', label: 'EXPERIENCE', ko: '경험하기', to: '/experience' },
   ],
-  demo: '체험 예약',
-  buy: '구매',
+  demo: 'Book a demo',
+  buy: 'Buy',
   // Buy는 아직 갈 곳이 없다. 눌러도 아무 일이 없는 버튼이 제일 나쁜 실패라
   // 비활성으로 두고 사유를 옆에 적는다(ArenaCta가 쓰는 것과 같은 규율)
-  buyPending: '판매 준비 중',
+  buyPending: 'Coming soon',
 };
 
 // 각 탭에서 아직 안 채운 자리. **다섯 다 "내용 준비 중"이던 것을 걷었다.**
@@ -286,7 +288,8 @@ export const PRODUCT_SITE = {
    * 딥다이브 쪽이 리드가 한 문장 더 길어서 그쪽을 남겼다.
    */
   sections: {
-    overview: { title: '두 장치가 하나로 움직인다', line: '마스크가 보고 컨트롤러가 쥔다. 둘이 같은 시계를 본다.' },
+    // **overview 키를 걷었다.** "두 장치가 하나로 움직인다" 섹션이 지시로 삭제되면서
+    // 이 값을 읽는 곳이 없어졌다(Overview.jsx).
     vision: { title: '시야가 판정을 말한다', line: '거리와 타이밍과 명중이 화면 위에서 읽힌다.' },
     experience: { title: '지금 거리 안으로 들어선다', line: '노트북과 폰 하나로 결투를 시작한다.' },
   },
@@ -303,27 +306,28 @@ export const PRODUCT_SITE = {
 // **브리지는 위 PRODUCT_SITE.bridge로 복구했다.** 아웃로는 사라진 제품 상세로 보내는
 // 자리라 갈 곳이 없어 복구하지 않았다.
 // ---------------------------------------------------------------------------
+// **마스크/컨트롤러 페이지 영어화.** eyebrow.ko를 걷고 headline/lead/beats를 영어로 옮겼다.
 export const PRODUCT_DEEPDIVE = {
   mask: {
-    eyebrow: { en: 'MASK', ko: '마스크' },
-    headline: '보는 것이 곧 겨루는 것',
-    lead: '검끝과 거리를 시야 안에서 읽는다. 눈이 먼저 알고 몸이 뒤따른다.',
+    eyebrow: { en: 'MASK' },
+    headline: 'To see is to duel',
+    lead: 'Blade tip and distance, read within the field of view. The eye knows first, the body follows.',
     beats: [
-      { title: '검끝 추적', body: '마커 없이 검끝의 위치와 속도를 읽어 시야에 겹친다.' },
-      { title: '명중 표시', body: '닿은 순간을 시야 안에서 알려 판정을 눈으로 확인한다.' },
-      { title: '시간 팽창', body: '최적 타이밍에 시야가 늘어나 결정의 순간이 길어진다.' },
-      { title: '유파 식별', body: '마주 선 상대의 유파를 시야에 세워 대응을 미리 고른다.' },
+      { title: 'Blade Tracking', body: 'Reads the blade tip\'s position and speed without markers, overlaid on the field of view.' },
+      { title: 'Touch Indicator', body: 'Marks the instant of contact in view, so the call is confirmed by sight.' },
+      { title: 'Time Dilation', body: 'The view stretches at the optimal moment, lengthening the decisive instant.' },
+      { title: 'Style Recognition', body: 'Places the opponent\'s fencing style in view, so a response is chosen in advance.' },
     ],
   },
   controller: {
-    eyebrow: { en: 'CONTROLLER', ko: '컨트롤러' },
-    headline: '손안의 검',
-    lead: '폰이 검이 된다. 쥔 손의 각도와 속도가 그대로 검의 움직임이다.',
+    eyebrow: { en: 'CONTROLLER' },
+    headline: 'The blade in hand',
+    lead: 'The phone becomes the blade. The angle and speed of the grip become the blade\'s motion.',
     beats: [
-      { title: '모션 입력', body: '가속도와 자이로 두 축으로 쥔 자세와 찌르기를 읽는다.' },
-      { title: '속도 변환', body: '찌르기의 속도와 방향을 검끝의 궤적으로 옮긴다.' },
-      { title: '타격 반동', body: '명중 순간 손잡이가 떨려 닿았다는 것을 손이 안다.' },
-      { title: '거리 환산', body: '전진과 후퇴를 간합으로 바꿔 발이 거리를 만든다.' },
+      { title: 'Motion Input', body: 'Reads grip posture and thrusts across two axes, acceleration and gyro.' },
+      { title: 'Speed Translation', body: 'Converts the speed and direction of a thrust into the blade tip\'s trajectory.' },
+      { title: 'Impact Feedback', body: 'The grip vibrates on contact, so the hand knows the touch landed.' },
+      { title: 'Distance Mapping', body: 'Turns advances and retreats into engagement distance, so footwork builds distance.' },
     ],
   },
 };
@@ -331,14 +335,15 @@ export const PRODUCT_DEEPDIVE = {
 // 제품 컨셉과 뷰. **우리 자체 제품 콘텐츠**(presentation-v2 마스크/컨트롤러 슬라이드와 같은 문구).
 // Apple Tech Specs 문법(좌 라벨 / 우 값)으로 컨셉·제품 컨셉을 눕히고, 뷰는 Side/Front/Top 이미지 슬롯.
 // 상단 표기(2026 KDM+ AI Workshop 등)는 발표 표지용이라 웹에는 안 넣는다.
+// **마스크/컨트롤러 페이지 영어화.** 라벨과 컨셉 문장을 영어로 옮겼다.
 export const PRODUCT_CONCEPT = {
-  conceptLabel: '컨셉',
-  productConceptLabel: '제품 컨셉',
-  viewsLabel: '뷰',
+  conceptLabel: 'Concept',
+  productConceptLabel: 'Product Concept',
+  viewsLabel: 'Views',
   mask: {
-    concept: '펜싱 경험을 극대화 시킨, 몰입형 XR',
+    concept: 'Immersive XR, built to maximize the fencing experience',
     productConcept:
-      '기존 메쉬 시야 구조를 넓은 XR 글라스로 재해석하여 몰입감 있는 시야를 제공. 불필요한 부피를 줄이고 보호 구조를 재구성하여 가볍고 역동적인 착용 경험을 제공.',
+      'Reinterprets the conventional mesh field of view as a wide XR glass for immersive vision. Trims unnecessary bulk and reworks the protective structure for a light, dynamic wearing experience.',
     // **실제 렌더다.** 발표에 쓴 것과 같은 원본에서 왔다. 마스크는 탑 뷰 렌더가 아직
     // 없어 그 자리만 대기 표면으로 남는다(지어내지 않는다)
     views: [
@@ -348,9 +353,9 @@ export const PRODUCT_CONCEPT = {
     ],
   },
   controller: {
-    concept: '펜싱의 상징적인 곡선을 재해석한 미래형 인터페이스 컨트롤러',
+    concept: 'A future interface controller, reinterpreting fencing\'s iconic curve',
     productConcept:
-      '손을 자연스럽게 감싸는 인체공학적 그립으로 장시간 플레이에도 안정적인 그립과 조작성을 제공. 메쉬 인서트 패널을 적용하여 마스크와 통일된 CMF 아이덴티티 구현.',
+      'An ergonomic grip that wraps the hand naturally, holding stable grip and control through long play. A mesh insert panel carries the same CMF identity as the mask.',
     views: [
       { label: 'Side View', src: '/images/product/con-side.jpg' },
       { label: 'Front View', src: '/images/product/con-front.jpg' },
@@ -373,6 +378,11 @@ export const PRODUCT_CONCEPT = {
 // 1200px JPEG로 내려 `images/product/`에 둔다(다섯 합 692KB).
 // ---------------------------------------------------------------------------
 const MASK_FRAME_COUNT = 30;
+// **컨트롤러도 이제 프레임 시퀀스다.** `con-360.mp4`(1920x1920, 5.08초, mask-360과 동일 규격)에서
+// ffmpeg+cwebp로 30장을 뽑아 마스크와 같은 문법으로 심었다(`public/frames/con-360/frame-000~029.webp`).
+// 정지 사진(con-front 등)이 서던 대표 미디어 자리가 이제 진입 1회전 시퀀스로 바뀐다.
+// 뷰 슬롯(Side/Front/Top, PRODUCT_CONCEPT.controller.views)은 그대로 정지 렌더를 쓴다 — 건드리지 않는다.
+const CONTROLLER_FRAME_COUNT = 30;
 
 export const PRODUCT_MEDIA = {
   mask: {
@@ -382,13 +392,15 @@ export const PRODUCT_MEDIA = {
     ),
     // 소스가 정사각이라 시퀀스도 정사각이다
     leadRatio: '1 / 1',
-    dive: { src: '/images/product/mask-front.jpg', alt: '마스크 정면 렌더' },
+    dive: { src: '/images/product/mask-front.jpg', alt: 'Mask front render' },
   },
   controller: {
-    // 컨트롤러는 회전 영상이 없다. 대표 미디어가 정면 렌더 한 장이다
-    lead: { src: '/images/product/con-front.jpg', alt: '컨트롤러 정면 렌더' },
+    frames: Array.from(
+      { length: CONTROLLER_FRAME_COUNT },
+      (_, i) => `/frames/con-360/frame-${String(i).padStart(3, '0')}.webp`
+    ),
     leadRatio: '1 / 1',
-    dive: { src: '/images/product/con-side.jpg', alt: '컨트롤러 측면 렌더' },
+    dive: { src: '/images/product/con-side.jpg', alt: 'Controller side render' },
   },
 };
 
@@ -408,27 +420,32 @@ export const PRODUCT_DETAIL = {
    * **값은 우리 것이고, 실제 하드웨어 수치는 지어낼 수 없어 자리표시로 둔다.**
    * 확정되면 이 배열의 값만 바꾸고 참조처는 안 건드린다.
    */
+  /**
+   * **값은 추측 예시다(TODO_MARK 대신).** 실제 하드웨어 수치가 아직 없어 XR 펜싱 마스크/
+   * 컨트롤러에 그럴듯한 값을 넣어 자리를 채운다. 확정되면 이 배열의 값만 바꾸고
+   * 참조처는 안 건드린다 — 그래서 `EXAMPLE_MARK`로 값 끝에 표시해 예시임을 남긴다.
+   */
   spec: {
     mask: [
-      { label: '디스플레이', values: [`해상도 ${TODO_MARK}`, `주사율 ${TODO_MARK}`] },
-      { label: '시야각', values: [TODO_MARK] },
-      { label: '트래킹', values: ['마커리스 검끝 추적', '상대 유파 식별', '명중 순간 시야 표시'] },
-      { label: '시간 처리', values: ['최적 타이밍에 시야 팽창'] },
-      { label: '오디오', values: [TODO_MARK] },
-      { label: '배터리', values: [TODO_MARK] },
-      { label: '무게', values: [TODO_MARK] },
-      { label: '크기', values: [TODO_MARK] },
-      { label: '연결', values: ['무선'] },
+      { label: 'Display', values: [`Resolution 2160 x 2160 per eye ${EXAMPLE_MARK}`, `Refresh rate 90Hz ${EXAMPLE_MARK}`] },
+      { label: 'Field of View', values: [`110° diagonal ${EXAMPLE_MARK}`] },
+      { label: 'Tracking', values: ['Markerless blade-tip tracking', 'Opponent style recognition', 'In-view touch indicator'] },
+      { label: 'Time Processing', values: ['View dilation at the optimal moment'] },
+      { label: 'Audio', values: [`Built-in spatial audio ${EXAMPLE_MARK}`] },
+      { label: 'Battery', values: [`3 hours continuous use ${EXAMPLE_MARK}`] },
+      { label: 'Weight', values: [`420g ${EXAMPLE_MARK}`] },
+      { label: 'Dimensions', values: [`260 x 220 x 300mm ${EXAMPLE_MARK}`] },
+      { label: 'Connectivity', values: ['Wireless'] },
     ],
     controller: [
-      { label: '입력', values: ['모션 센서'] },
-      { label: '감지 축', values: ['가속도', '자이로'] },
-      { label: '변환', values: ['찌르기 속도와 방향을 검끝 궤적으로', '전진과 후퇴를 간합으로'] },
-      { label: '햅틱', values: ['진동 피드백'] },
-      { label: '배터리', values: [TODO_MARK] },
-      { label: '무게', values: [TODO_MARK] },
-      { label: '크기', values: [TODO_MARK] },
-      { label: '연결', values: ['무선'] },
+      { label: 'Input', values: ['Motion sensor'] },
+      { label: 'Sensing Axes', values: ['Accelerometer', 'Gyroscope'] },
+      { label: 'Translation', values: ['Thrust speed and direction to blade-tip trajectory', 'Advance and retreat to engagement distance'] },
+      { label: 'Haptics', values: ['Vibration feedback'] },
+      { label: 'Battery', values: [`8 hours continuous use ${EXAMPLE_MARK}`] },
+      { label: 'Weight', values: [`180g ${EXAMPLE_MARK}`] },
+      { label: 'Dimensions', values: [`180 x 60 x 60mm ${EXAMPLE_MARK}`] },
+      { label: 'Connectivity', values: ['Wireless'] },
     ],
   },
   /**
@@ -438,13 +455,13 @@ export const PRODUCT_DETAIL = {
    */
   boxLabel: 'In the Box',
   box: {
-    mask: ['마스크 본체', '충전 케이블', `구성품 ${TODO_MARK}`],
-    controller: ['컨트롤러 본체', '충전 케이블', `구성품 ${TODO_MARK}`],
+    mask: ['Mask unit', 'Charging cable', `Carrying case ${EXAMPLE_MARK}`],
+    controller: ['Controller unit', 'Charging cable', `Wrist strap ${EXAMPLE_MARK}`],
   },
-  specLabel: '사양',
+  specLabel: 'Specifications',
   // **viewer 문구 묶음을 걷었다.** 3D 뷰어가 사라지면서 조작 안내("드래그해 돌린다")와
   // WebGL 실패 안내가 가리킬 대상이 없어졌다. 제품 면은 이제 스펙과 렌더만 이고 있다
-  cta: '체험하기',
+  cta: 'Experience it',
 };
 
 // ---------------------------------------------------------------------------
@@ -452,10 +469,11 @@ export const PRODUCT_DETAIL = {
 // 사이트가 한 페이지로 줄면서 랜딩이 사라졌고, 그대로 두면 크레딧과 팀과 저작권이
 // 사이트에서 통째로 없어진다. **메뉴 줄만 뺐다.** 갈 페이지가 남지 않았다
 // ---------------------------------------------------------------------------
+// **영어화(개정).** 크레딧의 '강원 지부'를 영어로, 팀 이름을 로마자 표기로 옮겼다.
 export const FOOTER = {
   wordmark: BRAND,
-  credit: '2026 KDM+ Generative AI Workshop 강원 지부',
-  team: '김다영 주현호 윤소희',
+  credit: '2026 KDM+ Generative AI Workshop, Gangwon Chapter',
+  team: 'Dayoung Kim, Hyunho Ju, Sohee Yoon',
   copyright: '© 2026 VORTEX',
 };
 

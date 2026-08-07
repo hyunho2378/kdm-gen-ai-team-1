@@ -83,18 +83,11 @@ export default function HeroCover() {
         />
       </div>
 
+      {/* **영어화(개정): 중앙에 IMMERSIVE FENCING XR 한 줄만.** 국문 아이브로우와 서브카피를
+          걷었다. 공용 Eyebrow를 안 쓰는 이유는 그대로다 — 라이트 팔레트용이라 블랙 위에서
+          안 보인다(실측: 네이비 1.9:1, 잉크 dim 1.1:1). 이 섹션만 무대가 반대라 흰 계열로 세운다 */}
       <div className="vx-shell vx-cover-copy">
-        {/* **공용 Eyebrow를 안 쓴다.** 그것은 라이트 팔레트라 영문이 네이비(#263E5F),
-            국문이 잉크 60퍼센트인데 **블랙 위에서 둘 다 안 보인다**(실측: 네이비가 1.9:1,
-            잉크 dim은 1.1:1). 이 섹션만 무대가 반대라 여기서 흰 계열로 세운다 */}
-        <div data-cover="text" className="vx-cover-eyebrow">
-          <span>{HERO.eyebrow.en}</span>
-          <span>{HERO.eyebrow.ko}</span>
-        </div>
-        {/* **워크숍 표기와 스크롤 안내를 걷었다.** 둘 다 제품이 아니라 이 페이지가 만들어진
-            사정을 말하는 문구였다. 크레딧은 푸터가 이미 이고 있고, 스크롤 안내는 아래에
-            콘텐츠가 있다는 사실을 글로 다시 적는 자리라 표지의 정적을 깬다 */}
-        <p data-cover="text" className="vx-cover-sub">{HERO.sub}</p>
+        <div data-cover="text" className="vx-cover-title">{HERO.eyebrow.en}</div>
       </div>
 
       {/* 블랙에서 아래 라이트로 넘어가는 띠. 경계가 칼로 자른 선으로 안 보이게 한다 */}

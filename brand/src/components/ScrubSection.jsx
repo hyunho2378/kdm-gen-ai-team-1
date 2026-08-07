@@ -107,14 +107,14 @@ export default function ScrubSection() {
   );
 }
 
-/** 여백에 서는 정보 한 줄기. 영문이 위, 국문이 아래다(사이트의 아이브로우 규약). */
+/** 여백에 서는 정보 한 줄기. 용어가 위, 영어 부제가 아래다(영어화 이후 en/sub 스택). */
 function Aside({ items, on, align }) {
   return (
     <div className="vx-scrub-aside" data-align={align}>
       {items.map((a) => (
         <div key={a.en} className="vx-scrub-item" data-on={on(a.i) ? 'true' : 'false'}>
           <span className="vx-scrub-en">{a.en}</span>
-          <span className="vx-scrub-ko">{a.ko}</span>
+          <span className="vx-scrub-ko">{a.sub}</span>
         </div>
       ))}
     </div>

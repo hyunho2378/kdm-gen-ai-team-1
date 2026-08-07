@@ -64,7 +64,7 @@ export default function ProductPage({ slug }) {
             ratio={media.leadRatio}
             className="vx-prod-stage"
             style={{ maxWidth: 520 }}
-            alt={`${deep.eyebrow.ko} 회전 시퀀스`}
+            alt={`${deep.eyebrow.en} rotation sequence`}
           />
         ) : (
           <div
@@ -98,7 +98,7 @@ export default function ProductPage({ slug }) {
 
       {/* ── 제품 컨셉. Apple 스펙 문법(좌 라벨 / 우 값). 뷰는 Side/Front/Top 호버 미디어 슬롯(웨이브 등장). ── */}
       <section className="vx-shell" style={{ paddingBlock: 'var(--section-gap)' }}>
-        <h2 data-beat style={{ ...headingStyle, marginBottom: spacing.unit * 3 }}>제품 컨셉</h2>
+        <h2 data-beat style={{ ...headingStyle, marginBottom: spacing.unit * 3 }}>Product Concept</h2>
         <dl style={{ margin: 0 }}>
           <div data-beat className="vx-spec-row">
             <dt style={headingStyle}>{PRODUCT_CONCEPT.conceptLabel}</dt>

@@ -416,11 +416,16 @@ export const WORKFLOW = {
   develop: {
     eyebrow: { en: 'AI Workflow', ko: '디자인 구체화' },
     headline: 'Vizcom을 활용한 디자인 디벨롭 및 구체화',
+    // **두 문장을 두 줄로 나눴다(전 슬라이드 문장당 줄바꿈 회차).** 원래 한 배열(한 문단)
+    // 안에 "...구체화했습니다."와 "다양한 렌더링 결과를...발전시켰습니다." 두 문장이
+    // 이어져 있었다. 마침표가 문장 끝에 오면 그 자리에서 줄을 자른다.
     body: [
       [
         { t: '형태 디벨롭 이후 Vizcom을 활용하여 ' },
         { t: '제품의 비례, 소재감, 디테일을 시각적으로 구체화', b: true },
-        { t: '했습니다. ' },
+        { t: '했습니다.' },
+      ],
+      [
         { t: '다양한 렌더링 결과를 비교·검토하며 디자인 완성도를 지속적으로 향상', b: true },
         { t: '시키고, 최종 제품 디자인으로 발전시켰습니다.' },
       ],
@@ -437,6 +442,36 @@ export const WORKFLOW = {
       { axis: 'glass', text: '글라스 시각화 구체화 과정' },
     ],
   },
+};
+
+// UIUX 슬라이드 (참조 frames/ref/14.svg를 브라우저 렌더 + getBBox 실측). 컨트롤러 앱 스크린샷 3장.
+// 아이브로우 'UIUX'/'앱 연동'. 우측 열에 설명 한 문단(참조 원문, 볼드 4구간). 하단 카드 3개(rx20).
+//
+// 실측 좌표(1920x1080):
+//   설명 문단  x402.664~1288.4 y172.6~247.6(2줄, SUIT24) — 공용 헤더 role 토큰으로 옮긴다(PV2)
+//   카드 3개   x436/791.273/1146.55 y321, 295.273x639, rx20(앱 스크린샷 실제 비율과 거의 일치)
+//   카드 라벨  카드 중심에 정렬된 캡션(내 기록/컨트롤러 제어/승리), y977.2
+export const UIUX = {
+  label: { en: 'UIUX', ko: '앱 연동' },
+  // **줄 배열이 곧 br.** 원문은 한 문장이라 굳이 안 쪼갠다(마침표 1개, 줄바꿈 규칙과 충돌 없음).
+  // 볼드 4구간은 참조 실측 그대로: 데이터 기록/분석, 기준 자세와 조작, 개인 맞춤 보정, 지속적 향상 XR 펜싱 경험.
+  body: [
+    [
+      { t: 'Claude Code를 사용하여 경기 데이터를 기록하고 분석', b: true },
+      { t: '한 뒤, 컨트롤러의 ' },
+      { t: '기준 자세와 조작을', b: true },
+      { t: ' ' },
+      { t: '개인에게 맞게 보정', b: true },
+      { t: '하여 다음 경기의 퍼포먼스를 ' },
+      { t: '지속적으로 향상시키는 XR 펜싱 경험', b: true },
+      { t: '을 제공합니다.' },
+    ],
+  ],
+  cards: [
+    { key: 'records', label: '내 기록', img: '/images/uiux/records.png' },
+    { key: 'controller', label: '컨트롤러 제어', img: '/images/uiux/controller.png' },
+    { key: 'result', label: '승리', img: '/images/uiux/result.png' },
+  ],
 };
 
 // 셸 섹션 목록. App.jsx가 이 배열로 섹션을 세운다.
@@ -457,10 +492,14 @@ export const SECTION_LABELS = [
   { id: 'controller', ko: '컨트롤러', en: 'CONTROLLER' },
   { id: 'mockup-a', ko: '목업', en: 'MOCKUP' },
   { id: 'mockup-b', ko: '목업', en: 'MOCKUP' },
-  { id: 'workflow-explore', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
-  { id: 'workflow-develop', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
+  // **순서 조정(2026-08-07).** 핵심 인터랙션(experience)과 AI 유파(duelist)를 AI 워크플로우
+  // 앞으로 당겼다. 최종 순서: 목업 → 인터랙션 → 유파 → 워크플로우(2장) → UIUX(신설) → 데모.
+  // id 기반 셸이라 배열 순서만 바꾸면 되고 위임(subHandlers/subEnters)도 id로 그대로 따라온다.
   { id: 'experience', ko: '인터랙션', en: 'EXPERIENCE' },
   { id: 'duelist', ko: '유파', en: 'AI DUELIST' },
+  { id: 'workflow-explore', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
+  { id: 'workflow-develop', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
+  { id: 'uiux', ko: '앱 연동', en: 'UIUX' },
   { id: 'demo', ko: '데모', en: 'DEMO' },
 ];
 

@@ -1080,6 +1080,7 @@
 
 ## 진행중
 - **brand 홈 영어화와 컨트롤러 영상 수정과 스펙 작업중. 트랙 선점.** brand와 docs만.
+- **presentation-v2 UIUX 신설과 순서 조정과 줄바꿈 작업중. 트랙 선점.** presentation-v2와 docs만. brand 트랙과 겹치지 않는다.
 - **presentation-v2 표지 로고 테두리와 중앙 완료(확인 대기). 트랙 선점 해제.** `presentation-v2/src/sections/S1Cover.jsx`와
   `docs/PRESENTATION_V2_FOUNDATION.md`만. brand 트랙과 겹치지 않는다. 푸시 안 함. 커밋 1건([presentation] 표지 로고 테두리 제거와 중앙 정렬).
   - **테두리 조사: 실측으로 "없음"을 확인했다.** CSS(`border/outline/box-shadow` 전부 `none`/`0`), SVG(`logo.svg`는
