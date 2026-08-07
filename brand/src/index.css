@@ -262,6 +262,79 @@ html { scrollbar-gutter: stable; }
   }
 }
 
+/* ── 미디어 프레임 시퀀스 (MediaSequence) ─────────────────────────────────
+   이미지 시퀀스 재생. enter는 제자리 1회, scroll은 sticky 무대. 표면은 카드와 같다 */
+.vx-seq,
+.vx-seq-sticky {
+  position: relative;
+  width: 100%;
+  max-width: 747px;
+  margin-inline: auto;
+  overflow: hidden;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+}
+.vx-seq-sticky {
+  position: sticky;
+  top: var(--pnav-h, 52px);
+}
+.vx-seq-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: filter;
+}
+.vx-seq-pending {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--ink-dim, rgba(16, 16, 16, 0.5));
+}
+
+/* ── 호버 자동재생 (HoverMedia) ───────────────────────────────────────────
+   호버하면 위 영상이 재생. data-cursor로 커스텀 커서가 커진다. 영상 없으면 대기 표면 */
+.vx-hover-media {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vx-hover-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vx-hover-pending {
+  padding: 12px;
+  text-align: center;
+  color: var(--ink-dim, rgba(16, 16, 16, 0.5));
+}
+.vx-hover-label {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  font: 500 12px/1 var(--font-body, 'SUIT', sans-serif);
+  letter-spacing: 0.02em;
+  color: var(--ink, #101010);
+  opacity: 0.72;
+}
+/* 뷰 슬롯 3개(Side/Front/Top). 좁으면 한 열, 넓으면 나란히 */
+.vx-views {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
 /* ── 제품 서브내비 (PRODUCT_PAGE_APPLE_MAPPING) ───────────────────────────
    Apple 실측: nav가 sticky top 0, 높이 52px, 전폭. 좌측 제품명, 우측 탭과 CTA.
 

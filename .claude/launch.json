@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "cwd": "presentation-v2",
       "port": 5177
+    },
+    {
+      "name": "brand",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "brand",
+      "port": 5176
     }
   ]
 }
