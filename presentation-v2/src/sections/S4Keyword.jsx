@@ -135,7 +135,6 @@ export default function S4Keyword({ active, registerHandler, registerEnter }) {
       <div ref={headRef} style={{ flexShrink: 0 }}>
         <SlideHeader
           eyebrow={{ en: KEYWORD.label.en, ko: KEYWORD.label.ko }}
-          headline={KEYWORD.headline}
           sub={[
             <span
               key="lead"

@@ -114,7 +114,7 @@ export const TARGET_ITEMS = [
 // 원본 라벨은 'Desigh Keyword'로 오타가 있다. 지시 문구대로 'Design Keyword'를 쓴다.
 export const KEYWORD = {
   label: { en: 'Design Keyword', ko: '디자인 키워드' },
-  headline: '빠르게 움직이고, 정확하게 판단하며, 끝까지 몰입한다',
+  // 헤드라인("빠르게 움직이고…몰입한다") 삭제. lead(큰 줄) + body(본문)만 유지.
   // 헤드라인 아래 큰 줄(lead) + 본문(body). 본문은 줄 배열(각 줄이 조각 배열, b:true만 볼드).
   // "~펜싱 경험이다." 다음에 줄바꿈(br) 후 "VORTEX는 ~ 설계한다."가 온다.
   lead: '새로운 훈련을 시작하고, 스스로 성장하며, 현실을 넘어 몰입한다.',
@@ -225,6 +225,31 @@ export const CONCEPT_SCENE = {
   textRight: '경기의 긴장감',
 };
 
+// 컨트롤러 제품 슬라이드 (참조 Slide 16_9 - 113.svg). 텍스트는 참조 SVG에서 그대로 읽었다(임의 창작 아님).
+// 참조 아이브로우 'Solution/솔루션'은 다른 슬라이드 템플릿 잔재라 슬라이드 주제 'Controller/컨트롤러'로 둔다.
+export const CONTROLLER = {
+  label: { en: 'Controller', ko: '컨트롤러' },
+  headline: ['펜싱의 상징적인 곡선을 재해석한', '미래형 인터페이스 컨트롤러'],
+  // 설명 2문단. b:true 조각만 볼드(참조의 강조 구간).
+  desc: [
+    [
+      { t: '손을 자연스럽게 감싸는 ' },
+      { t: '인체공학적 그립', b: true },
+      { t: '으로 장시간 플레이에도 안정적인 그립과 조작성을 제공' },
+    ],
+    [
+      { t: '메쉬 인서트 패널을 적용', b: true },
+      { t: '하여 마스크와 통일된 CMF 아이덴티티 구현' },
+    ],
+  ],
+  bg: '/images/pro/pro-con1.png', // 손에 쥔 컨트롤러 큰 렌더(풀블리드 배경)
+  // 뷰 이미지(글래스 카드 안). 라벨은 참조 SVG 원문.
+  views: [
+    { label: 'Front View', img: '/images/pro/front1.png' }, // 정면 뷰(세로)
+    { label: 'Top View', img: '/images/pro/pro2.png' }, // 상면 뷰(가로)
+  ],
+};
+
 // 인터랙션 4종 (원본 `바인더1.pdf` 6페이지의 4카드 그리드).
 // icon은 lucide-react 아이콘 이름. 컴포넌트가 이름으로 골라 쓴다.
 // name과 desc의 각 줄은 전부 문자열이다.
@@ -332,6 +357,7 @@ export const SECTION_LABELS = [
   { id: 'logo-guide', ko: '로고 가이드', en: 'LOGO GUIDE' },
   { id: 'color', ko: '컬러 시스템', en: 'COLOR SYSTEM' },
   { id: 'concept', ko: '컨셉', en: 'CONCEPT' },
+  { id: 'controller', ko: '컨트롤러', en: 'CONTROLLER' },
   { id: 'experience', ko: '인터랙션', en: 'EXPERIENCE' },
   { id: 'duelist', ko: '유파', en: 'AI DUELIST' },
   { id: 'workflow', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
