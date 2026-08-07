@@ -393,6 +393,8 @@ export const SECTION_LABELS = [
   { id: 'concept', ko: '컨셉', en: 'CONCEPT' },
   { id: 'mask', ko: '제품 컨셉', en: 'MASK' },
   { id: 'controller', ko: '컨트롤러', en: 'CONTROLLER' },
+  { id: 'mockup-a', ko: '목업', en: 'MOCKUP' },
+  { id: 'mockup-b', ko: '목업', en: 'MOCKUP' },
   { id: 'experience', ko: '인터랙션', en: 'EXPERIENCE' },
   { id: 'duelist', ko: '유파', en: 'AI DUELIST' },
   { id: 'demo', ko: '데모', en: 'DEMO' },

@@ -1079,6 +1079,18 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **presentation-v2 표지 교체와 목업 페이지 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함.
+  커밋 2분할([presentation] 표지 교체 / [presentation] 컨트롤러 목업 페이지).
+  - **파트1 표지 교체:** 라이트 로고-중앙 표지 폐기, **참조 frames/ref/1.svg(1920x1080) 블랙 포스터로 교체**(참조가 새 표지라 병합 아닌 교체 판단).
+    **표지는 라이트 규칙의 어두운 예외**(bg #000001, 좌우 실버 렌더가 순수 블랙 위 — 라이트로 옮기면 깨짐). 구도 실측:
+    좌 인물 center(500,580) 919×1000, 우 컨트롤러 center(1419.75,539.75) 919.5², 중앙 흰 심볼 logo.svg center(960,540) w497.
+    contain 단위 매핑. 두 렌더는 1.svg base64 임베드(31MB)라 스크립트 추출·리사이즈(≤1400px)→`public/images/cover/{person,controller}.png`.
+    **표지 전용 4모서리 표기 복귀**(좌상 2026 KDM+/AI Workshop x60, 중상 XR Fencing Glass/: VORTEX x798, 우상 Team 1/김다영,주현호,윤소희 x1682, 우하 카피 x1613). SUIT 20/흰색.
+  - **파트2 목업:** `SMockup.jsx`(공용), 컨트롤러 다음에 **풀블리드 실사 목업 2장**(12.png, 13.png) 각 한 슬라이드. 텍스트 없음, object-fit cover, 옅은 스케일-인.
+    SECTION_LABELS+App 분기에 mockup-a/mockup-b 삽입 → 16섹션(cover→…→controller→mockup-a→mockup-b→experience→…).
+  - **검증:** 표지 스크린샷 참조 1.svg와 일치(블랙/좌마스크/우컨트롤러/중앙흰로고/4모서리표기). 목업 2장 DOM 풀블리드(cover, natW 1920, 섹션 opacity1/visible).
+    320/768/1440/3840 overflowX 0. **npm ci clean + build 통과(2.12s)**. 콘솔 실에러 0(S3Concept/S5Duelist 'K/Badge undefined'는 동시 브랜드 트랙 HMR 잔상, 내 파일 무관·App 정상 렌더).
+    목업 슬라이드 직접 스크린샷은 셸의 딥스크롤 캡처 제약으로 공백(렌더는 DOM으로 확인). 실화면 확인 권장.
 - **presentation-v2 타이포 통일과 전체화면과 유파와 섹션삭제 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함.
   커밋 2분할([presentation] 타이포 통일과 전체화면 스케일 / [presentation] 문구와 유파와 섹션삭제와 ENTER).
   - **파트1 타이포 통일:** 실측 전 슬라이드 헤드라인 동일(fs 19.44/ls -0.389/lh 29.16/700), 설명 동일(14.976). S3Target 설명 리터럴(본문+4pt)→`typography.body.size`.

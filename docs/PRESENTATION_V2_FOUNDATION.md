@@ -255,8 +255,11 @@
 
 - **프롤로그·브랜드 네이밍 슬라이드 삭제.** `SECTION_LABELS`에서 제거, 컴포넌트(SPrologue/S5Naming)와
   copy(PROLOGUE/NAMING) 정리. **방향키 셸은 전부 id 기반**이라 삭제로 순서/위임이 안 깨진다
-  (실측: **14섹션** `cover→painpoint→…→concept→mask→controller→experience→duelist→demo`, 순서 유지, 오버플로 0, 콘솔 에러 0).
+  (실측: 순서 유지, 오버플로 0, 콘솔 에러 0).
   **AI 워크플로우·산출물 슬라이드 삭제**(SECTION_LABELS에서 제거). 셸이 전부 id 기반이라 삭제로 순서/위임 안 깨짐.
+- **목업 풀블리드 2장(컨트롤러 다음).** `SMockup.jsx`(공용, `src`만 받음), 섹션 `controller → mockup-a(12.png) → mockup-b(13.png) → experience`.
+  실사 목업(1920x1080 정확 16:9)이 화면을 꽉 채우는 주인공. **텍스트 없음**(하이엔드 톤), `object-fit:cover` 풀블리드, 배경 #000001,
+  진입 시 옅은 스케일-인 1회. 이 삽입으로 **16섹션** `cover→…→controller→mockup-a→mockup-b→experience→duelist→demo`.
 - **타이포 통일 재확인(전 슬라이드 역할 토큰만).** 헤드라인은 전 슬라이드 동일(실측 1440에서 fs 19.44 / ls -0.389 / lh 29.16 / 700),
   설명(body)도 동일(fs 14.976 / lh 24.71). S3Target 설명이 body보다 4pt 큰 리터럴이었어 `typography.body.size`로 통일했다.
   배지/특수 좌표 텍스트(GlassBadge, 컨셉 씬, painpoint 프롤로그, ENTER display)는 역할 밖이라 자기 값 유지.

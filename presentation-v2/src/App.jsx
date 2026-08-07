@@ -20,6 +20,7 @@ import S6ColorSystem from './sections/S6ColorSystem.jsx';
 import S3Concept from './sections/S3Concept.jsx';
 import SMask from './sections/SMask.jsx';
 import SController from './sections/SController.jsx';
+import SMockup from './sections/SMockup.jsx';
 import S4Experience from './sections/S4Experience.jsx';
 import S5Duelist from './sections/S5Duelist.jsx';
 import S7Demo from './sections/S7Demo.jsx';
@@ -196,6 +197,10 @@ export default function App() {
               <SMask />
             ) : s.id === 'controller' ? (
               <SController />
+            ) : s.id === 'mockup-a' ? (
+              <SMockup src="/images/mockup/12.png" active={current === i} />
+            ) : s.id === 'mockup-b' ? (
+              <SMockup src="/images/mockup/13.png" active={current === i} />
             ) : s.id === 'experience' ? (
               <S4Experience active={current === i} />
             ) : s.id === 'duelist' ? (
