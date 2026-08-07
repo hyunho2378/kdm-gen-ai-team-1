@@ -29,7 +29,6 @@ import { useEffect, useRef } from 'react';
 import { spacing, typography } from '../tokens.js';
 import { HERO } from '../copy.js';
 import { gsap, isReduced } from '../lib/motion.js';
-import Eyebrow from './Eyebrow.jsx';
 
 export default function HeroCover() {
   const ref = useRef(null);
@@ -85,8 +84,12 @@ export default function HeroCover() {
       </div>
 
       <div className="vx-shell vx-cover-copy">
-        <div data-cover="text">
-          <Eyebrow en={HERO.eyebrow.en} ko={HERO.eyebrow.ko} />
+        {/* **공용 Eyebrow를 안 쓴다.** 그것은 라이트 팔레트라 영문이 네이비(#263E5F),
+            국문이 잉크 60퍼센트인데 **블랙 위에서 둘 다 안 보인다**(실측: 네이비가 1.9:1,
+            잉크 dim은 1.1:1). 이 섹션만 무대가 반대라 여기서 흰 계열로 세운다 */}
+        <div data-cover="text" className="vx-cover-eyebrow">
+          <span>{HERO.eyebrow.en}</span>
+          <span>{HERO.eyebrow.ko}</span>
         </div>
         <p data-cover="text" className="vx-cover-sub">{HERO.sub}</p>
         <div data-cover="text" className="vx-cover-tail">
