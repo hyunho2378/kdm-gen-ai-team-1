@@ -1079,6 +1079,14 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
+- **presentation-v2 문제점 텍스트 줄바꿈과 등장 순서 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함.
+  커밋 1건([presentation] 문제점 텍스트 줄바꿈과 등장 순서).
+  - **파트1 줄바꿈:** `PAINPOINT.head`를 2줄 배열로(br). "~1:1 대결 스포츠다." 다음 줄바꿈, "이 때문에~" 둘째 줄. 볼드 3구간 유지. 실측 2줄 확인.
+  - **파트2 등장 순서:** step0→step1에서 **헤드 축소(0.8s) 완료 뒤 문제 3카드 등장**(동시→지연). `apply`에 prev 추적,
+    `setCard`가 새로 등장할 때만 지연(headDur) 후 opacity 즉시+y 슬라이드, 이미 뜬 카드는 유지(재-히드 방지). 인사이트는 step2(지연 없음).
+    실측: 전환 직후 문제 opacity 0(헤드 24px 축소 중) → 완료 후 헤드 19.2px·top7%, 문제 opacity 1 → step2 인사이트·화살표 opacity 1.
+  - **검증:** 순서(텍스트 축소 → 문제 3 → 인사이트 3) 실측, 320/768/1440/3840 overflowX 0, 상단 표기 0, npm ci+build 통과.
+    스크린샷은 비-0 스크롤 캡처 불가라 DOM 실측. 콘솔 에러는 지난 세션 HMR stale 이력(현재 소스 무관).
 - **presentation-v2 마스크 제품 슬라이드 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함.
   커밋 1건([presentation] 마스크 제품 슬라이드 신설).
   - 신규 `SMask.jsx`(컨트롤러와 동일 문법). 참조 `Slide 16_9 - 125.svg` getBBox 실측 좌표. 섹션 순서 concept→mask→controller.

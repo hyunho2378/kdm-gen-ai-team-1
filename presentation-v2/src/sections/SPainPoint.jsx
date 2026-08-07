@@ -95,37 +95,54 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
       gsap.to(eyebrowRef.current, { opacity: prologue ? 0 : 1, duration: d, ease: motion.gsapOut, overwrite: 'auto' });
     };
 
-    const apply = (next, instant) => {
+    // 카드(문제/인사이트) 등장·유지·숨김. **새로 등장할 때만** 오파시티 즉시 전환(블러 페이드 방지) + y 슬라이드,
+    // appearDelay만큼 늦춰 앞 연출(헤드 축소)이 끝난 뒤 뜨게 한다. 이미 떠 있으면 유지(재-히드 안 함).
+    const setCard = (ref, showPrev, showNext, appearDelay, instant, d) => {
+      if (showNext && !showPrev) {
+        gsap.killTweensOf(ref);
+        gsap.set(ref, { opacity: 0, y: '8vh' });
+        const rd = instant ? 0 : appearDelay;
+        gsap.to(ref, { opacity: 1, duration: 0.001, delay: rd, overwrite: 'auto' });
+        gsap.to(ref, { y: '0vh', duration: instant ? 0 : 0.6, delay: rd, ease: motion.gsapOut, overwrite: 'auto' });
+      } else if (showNext && showPrev) {
+        gsap.set(ref, { opacity: 1, y: '0vh' }); // 유지
+      } else {
+        gsap.to(ref, { opacity: 0, duration: d, overwrite: 'auto' });
+        gsap.to(ref, { y: '8vh', duration: d, ease: motion.gsapOut, overwrite: 'auto' });
+      }
+    };
+
+    const apply = (next, instant, prev) => {
       const d = instant || reduced ? 0 : 0.8;
       applyHead(next, d);
-      const showP = next >= 1; // 문제 카드
-      const showI = next >= 2; // 필요(인사이트) 카드 + 화살표
-      // 글래스 카드는 오파시티를 즉시 전환(페이드 없음)해 블러가 옅게 차오르지 않게 하고, 등장은 y 슬라이드로만.
-      gsap.set(problemsRef.current, { opacity: showP ? 1 : 0 });
-      gsap.to(problemsRef.current, { y: showP ? '0vh' : '8vh', duration: d, ease: motion.gsapOut, overwrite: 'auto' });
-      gsap.set(insightsRef.current, { opacity: showI ? 1 : 0 });
-      gsap.to(insightsRef.current, { y: showI ? '0vh' : '8vh', duration: d, ease: motion.gsapOut, overwrite: 'auto' });
-      gsap.to(arrowsRef.current, { opacity: showI ? 1 : 0, duration: d * 0.8, ease: motion.gsapOut, overwrite: 'auto' });
+      const pShowPrev = prev >= 1, pShowNext = next >= 1; // 문제 카드
+      const iShowPrev = prev >= 2, iShowNext = next >= 2; // 필요(인사이트) 카드 + 화살표
+      // **순서: 텍스트 축소(d) 완료 → 문제 3카드 등장.** 문제 카드 등장을 헤드 duration만큼 지연한다.
+      setCard(problemsRef.current, pShowPrev, pShowNext, d, instant, d);
+      // 인사이트는 그다음 스텝에서(헤드 안 움직임 → 지연 없음).
+      setCard(insightsRef.current, iShowPrev, iShowNext, 0, instant, d);
+      gsap.to(arrowsRef.current, { opacity: iShowNext ? 1 : 0, duration: d * 0.8, ease: motion.gsapOut, overwrite: 'auto' });
     };
 
     const handleStep = (dir) => {
-      const next = stepRef.current + dir;
+      const prev = stepRef.current;
+      const next = prev + dir;
       if (next < 0 || next > STEPS) return false;
       stepRef.current = next;
       setStep(next);
-      apply(next, false);
+      apply(next, false, prev);
       return true;
     };
     const handleEnter = (dir) => {
       const next = dir > 0 ? 0 : STEPS;
       stepRef.current = next;
       setStep(next);
-      apply(next, true);
+      apply(next, true, -1); // 진입은 즉시(아무것도 안 뜬 상태에서 필요분만 스냅)
     };
 
     gsap.set(problemsRef.current, { yPercent: -50 });
     gsap.set(insightsRef.current, { yPercent: -50 });
-    apply(0, true);
+    apply(0, true, -1);
     registerHandler(handleStep);
     registerEnter(handleEnter);
     return () => {
@@ -134,9 +151,13 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
     };
   }, [registerHandler, registerEnter]);
 
-  // 헤드 텍스트: 줄 하나에 볼드 조각 섞기(keep-all).
-  const headText = PAINPOINT.head.map((sg, i) => (
-    <span key={i} style={{ fontWeight: sg.b ? 700 : 400 }}>{sg.t}</span>
+  // 헤드 텍스트: 줄 배열이 곧 br(각 줄 display:block). 줄 안에 볼드 조각 섞기(keep-all).
+  const headText = PAINPOINT.head.map((line, li) => (
+    <span key={li} style={{ display: 'block' }}>
+      {line.map((sg, si) => (
+        <span key={si} style={{ fontWeight: sg.b ? 700 : 400 }}>{sg.t}</span>
+      ))}
+    </span>
   ));
 
   return (
