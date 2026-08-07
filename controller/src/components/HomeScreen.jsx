@@ -89,7 +89,7 @@ export default function HomeScreen({ onGuest }) {
           padding: '0 16px 24px',
         }}
       >
-        <Button variant="filled" size="lg" onClick={onGuest} style={{ boxShadow: glow.red }}>
+        <Button variant="filled" size="lg" onClick={onGuest} style={{ boxShadow: glow.primary }}>
           {HOME.guest}
         </Button>
         <Button variant="text" size="md" onClick={() => setLoginOpen(true)}>

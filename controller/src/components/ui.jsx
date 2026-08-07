@@ -64,7 +64,7 @@ export function TopBarBack({ title, onBack }) {
   );
 }
 
-/** COMPONENTS.md ButtonPrimary. red.fill 배경, pill, press scale(0.97), 최소 44px. */
+/** COMPONENTS.md ButtonPrimary. primary.fill(네이비) 배경, pill, press scale(0.97), 최소 44px. */
 export function ButtonPrimary({ children, onPointerDown, onClick, style, ...rest }) {
   return (
     <button
@@ -76,7 +76,7 @@ export function ButtonPrimary({ children, onPointerDown, onClick, style, ...rest
         padding: '14px 28px',
         borderRadius: radius.pill,
         border: 'none',
-        background: colors.red.fill,
+        background: colors.primary.fill,
         color: colors.text.onFill,
         fontFamily: typography.family,
         fontSize: typography.body.size,
@@ -137,7 +137,7 @@ export function Spinner({ size = 40 }) {
         height: size,
         borderRadius: '50%',
         border: `3px solid ${colors.line.default}`,
-        borderTopColor: colors.red.light,
+        borderTopColor: colors.accent.base,
         animation: 'vortexSpin 0.9s linear infinite',
       }}
     >
@@ -168,7 +168,7 @@ export function StatusChip({ label, value, degraded = false }) {
       }}
     >
       <span style={{ color: colors.text.dim }}>{label}</span>
-      <span style={{ color: degraded ? colors.red.light : colors.text.primary }}>{value}</span>
+      <span style={{ color: degraded ? colors.accent.base : colors.text.primary }}>{value}</span>
     </span>
   );
 }

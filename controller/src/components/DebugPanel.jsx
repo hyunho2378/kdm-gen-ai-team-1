@@ -59,7 +59,7 @@ export default function DebugPanel({ pipeline, log }) {
         const thr = last?.threshold ?? DEFAULTS.thrust;
         const top = Math.max(thr * 2.6, 30);
         // 임계선
-        g.strokeStyle = colors.red.light;
+        g.strokeStyle = colors.accent.base;
         g.globalAlpha = 0.7;
         g.beginPath();
         const ty = H - (thr / top) * H;

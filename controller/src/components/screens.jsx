@@ -56,7 +56,7 @@ export function ConnectScreen({ initialCode, onDone, onBack, connecting, linkSta
           {failed ? (
             <>
               <Title>연결되지 않았다</Title>
-              <Body tone={colors.red.light}>{LINK_REASON_TEXT[linkError] ?? '알 수 없는 이유로 끊겼다.'}</Body>
+              <Body tone={colors.accent.base}>{LINK_REASON_TEXT[linkError] ?? '알 수 없는 이유로 끊겼다.'}</Body>
               <div style={{ display: 'flex', gap: 10 }}>
                 <ButtonGhost onClick={onCancel}>코드 다시 입력</ButtonGhost>
                 <ButtonPrimary onClick={onRetry}>재시도</ButtonPrimary>
@@ -95,7 +95,7 @@ export function ConnectScreen({ initialCode, onDone, onBack, connecting, linkSta
                 justifyContent: 'center',
                 borderRadius: radius.md,
                 background: colors.bg.raised,
-                border: `1px solid ${code.length === i ? colors.red.light : colors.line.default}`,
+                border: `1px solid ${code.length === i ? colors.accent.base : colors.line.default}`,
                 fontFamily: typography.family,
                 fontSize: typography.heading.size,
                 fontWeight: 700,
@@ -169,7 +169,7 @@ export function PermissionScreen({ needsPrompt, onRequest, denied, onTapMode, on
       </Body>
       {denied ? (
         <>
-          <Body tone={colors.red.light}>센서를 쓸 수 없다. 탭 버튼으로도 경기가 된다.</Body>
+          <Body tone={colors.accent.base}>센서를 쓸 수 없다. 탭 버튼으로도 경기가 된다.</Body>
           <ButtonPrimary onClick={onTapMode}>탭 버튼 모드로 시작</ButtonPrimary>
         </>
       ) : (
@@ -217,7 +217,7 @@ export function CalibrationScreen({ onDone, onBack }) {
           <circle
             r={R}
             fill="none"
-            stroke={colors.red.light}
+            stroke={colors.accent.base}
             strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={C}
@@ -368,7 +368,7 @@ export function LinkErrorScreen({ reason, onRetry, onBack }) {
       }}
     >
       <Title>연결되지 않았다</Title>
-      <Body tone={colors.red.light}>{LINK_REASON_TEXT[reason] ?? '알 수 없는 이유로 끊겼다.'}</Body>
+      <Body tone={colors.accent.base}>{LINK_REASON_TEXT[reason] ?? '알 수 없는 이유로 끊겼다.'}</Body>
       <div style={{ display: 'flex', gap: 10 }}>
         <ButtonGhost onClick={onBack}>코드 다시 입력</ButtonGhost>
         <ButtonPrimary onClick={onRetry}>재시도</ButtonPrimary>
@@ -435,7 +435,7 @@ export function HapticFlash({ flash }) {
         inset: 0,
         zIndex: 90,
         pointerEvents: 'none',
-        background: on === 'parry' ? colors.steel.mid : colors.red.fill,
+        background: on === 'parry' ? colors.steel.mid : colors.primary.fill,
         opacity: 0.55,
         transition: `opacity 140ms ${motion.easeOut}`,
       }}

@@ -21,7 +21,7 @@ function Eyebrow({ children }) {
         fontSize: ig.caption1.size,
         fontWeight: 700,
         letterSpacing: '0.08em',
-        color: colors.red.light,
+        color: colors.accent.base,
       }}
     >
       {children}
@@ -35,7 +35,7 @@ function DuelistCard({ card, expanded, onToggle, onConfirm }) {
       style={{
         flexShrink: 0,
         borderRadius: radius.card,
-        border: `1px solid ${expanded ? colors.red.light : colors.line.default}`,
+        border: `1px solid ${expanded ? colors.accent.base : colors.line.default}`,
         background: colors.bg.raised,
         overflow: 'hidden',
         transition: 'border-color 160ms',
@@ -61,7 +61,7 @@ function DuelistCard({ card, expanded, onToggle, onConfirm }) {
           aria-hidden="true"
           style={{
             height: 96,
-            background: `linear-gradient(135deg, ${colors.bg.raised} 0%, ${colors.bg.deep} 60%, ${colors.red.tonal} 140%)`,
+            background: `linear-gradient(135deg, ${colors.bg.raised} 0%, ${colors.bg.deep} 60%, ${colors.primary.tonal} 140%)`,
             borderBottom: `1px solid ${colors.line.default}`,
           }}
         />

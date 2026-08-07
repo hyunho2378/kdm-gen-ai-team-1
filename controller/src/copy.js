@@ -13,7 +13,9 @@ export const PLAY_COACH = [
 
 export const HOME = {
   sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 XR',
-  guest: '게스트로 시작',
+  guest: '게스트 로그인',
+  // **게스트 다음이 곧 코드 입력이다.** 연결이 안 되면 탭 셋이 할 일이 없다
+  guestHint: '다음 화면에서 방 코드를 입력한다',
   login: '로그인',
   loginSheetTitle: '로그인',
   loginSheetBody: '데모 버전은 게스트로 진행합니다. 별도 계정 없이 바로 시작할 수 있습니다.',
@@ -31,29 +33,79 @@ export const MAIN = {
   ],
   connect: '연결',
   connected: '연결됨',
-  start: '대전 시작',
-  // CONTROLLER 탭. 폰이 곧 컨트롤러라는 것이 이 앱의 제품 서사다
+  /**
+   * CONTROLLER 탭. 폰이 곧 컨트롤러라는 것이 이 앱의 제품 서사다.
+   *
+   * **두 문구를 능동 명사형으로 다듬었다(문구 수정 지시).** 뜻과 길이는 유지했다.
+   *   전: 손에 든 폰이 곧 검이다
+   *   후: 손에 쥔 폰이 검이 된다                      (상태 서술 -> 동작)
+   *   전: 자이로와 가속도로 검끝의 자세와 찌르기를 읽는다. 세로로 세워 쥔 자세가
+   *       앙가르드이고, 그 기준을 대전 직전에 매번 다시 잡는다.
+   *   후: 자이로와 가속도가 검끝의 자세와 찌르기를 읽는다. 세로로 세워 쥐면 앙가르드이고,
+   *       대전 직전에 그 기준을 다시 잡는다.          (수동 도구격 -> 주어, 명사절 -> 조건절)
+   */
   productName: 'VORTEX BLADE',
-  productLine: '손에 든 폰이 곧 검이다',
-  productBody: '자이로와 가속도로 검끝의 자세와 찌르기를 읽는다. 세로로 세워 쥔 자세가 앙가르드이고, 그 기준을 대전 직전에 매번 다시 잡는다.',
+  productLine: '손에 쥔 폰이 검이 된다',
+  productBody: '자이로와 가속도가 검끝의 자세와 찌르기를 읽는다. 세로로 세워 쥐면 앙가르드이고, 대전 직전에 그 기준을 다시 잡는다.',
+  // 조작 설정. **대전 시작 버튼이 아니라 설정과 보정이 이 탭의 일이다.**
+  // 값은 shared/protocol.js와 pipeline.js가 실제로 쓰는 것이고 지어낸 수치가 없다
+  setupTitle: '조작 설정',
   productSpecs: [
-    { label: '자세 갱신', value: '30Hz' },
-    { label: '기준 자세', value: '세로 홀드 3초' },
-    { label: '이산 입력', value: '찌르기 · 가드 · 전진 · 후퇴' },
+    { label: '자세 갱신', value: '30Hz', note: '연속 채널. 검 렌더 전용이라 판정에 안 닿는다' },
+    { label: '기준 자세', value: '세로 홀드 3초', note: '앙가르드. 대전 직전마다 다시 잡는다' },
+    { label: '이산 입력', value: '찌르기, 가드, 전진, 후퇴', note: '판정으로 가는 유일한 채널' },
+  ],
+  calibTitle: '기준 자세 보정',
+  calibBody: '폰을 세로로 세워 쥐고 3초간 멈춘다. 그 자세가 앙가르드 기준이 된다.',
+  calibAction: '지금 보정',
+  calibDone: '보정 완료',
+  sensorTitle: '센서 상태',
+  sensorNone: '센서를 못 얻었다. 탭 버튼으로도 경기가 된다.',
+  tapModeLabel: '탭 모드',
+  tapModeBody: '센서 대신 화면 버튼으로 찌르기와 가드를 낸다.',
+  guideTitle: '조작',
+  guides: [
+    { key: 'thrust', label: '찌르기', body: '세워 쥔 폰을 앞으로 눕히며 지른다' },
+    { key: 'guard', label: '가드', body: '폰을 좌우 아무 쪽으로나 기울인다. 세로로 돌아오면 풀린다' },
+    { key: 'step', label: '전진과 후퇴', body: '화면 하단을 위아래로 민다' },
   ],
   // 기록 탭. 서버가 신원별로 누적하고 앱은 읽기만 한다.
   // 서버가 기록을 못 받는 상태면 그 사실을 그대로 적는다(N1 상태 가시성)
-  recordsEmpty: '아직 치른 경기가 없다.',
-  recordsEmptyHint: '대전을 마치면 여기에 쌓인다.',
   recordsNote: '이 기기의 익명 신원으로 누적된다. 브라우저 데이터를 지우면 신원이 바뀐다.',
   recordsOffTitle: '기록이 저장되지 않는다.',
-  recordsOffBody: '서버에 기록 저장소가 연결되지 않았다. 경기는 그대로 진행되고 결과 화면도 나온다.',
+  recordsOffBody: '서버에 기록 저장소가 연결되지 않았다. 아래 이력은 화면 확인용 예시이고 실제 저장분이 아니다.',
   recordsWin: '승',
   recordsLose: '패',
   recordsDraw: '무',
-  // 연습 모델 탭. 선택은 대전 직전 화면에서 하고 여기서는 정보만 본다
-  opponentNote: '대전을 시작하면 이 중에서 고른다.',
+  recordsRateLabel: '승률',
+  recordsTrendLabel: '점수 추이',
+  recordsHistoryLabel: '경기 이력',
+  recordsSampleBadge: '예시',
+  // OPPONENT 탭. **선택이 여기서 끝난다.** 예전에는 보기만 되는 목록과 선택 화면이 갈려 있었다
+  opponentNote: '카드를 탭하면 상세가 열린다.',
+  opponentPickedNote: '선택한 상대로 대전을 시작한다.',
 };
+
+/**
+ * RECORDS 탭 예시 이력. **실제 저장분이 아니다.**
+ *
+ * 서버에 기록 저장소가 붙기 전에도 화면이 무엇을 보여줄지 확인할 수 있게 두는 표본이다.
+ * `records`가 비었을 때만 이 배열이 화면에 서고, 그때 `예시` 배지와 안내 문구가 함께 뜬다
+ * (N1 상태 가시성. 저장된 것처럼 보이게 하지 않는다).
+ *
+ * 스키마는 서버가 주는 것과 같다(`server/src/db.js`의 match_records).
+ * outcome은 win/lose/draw, score는 [나, 상대].
+ */
+export const SAMPLE_RECORDS = [
+  { id: -1, school_name: '이탈리아 세이버 유파', outcome: 'win', score_me: 5, score_ai: 3 },
+  { id: -2, school_name: '프랑스 에페 유파', outcome: 'lose', score_me: 2, score_ai: 5 },
+  { id: -3, school_name: '헝가리안 유파', outcome: 'win', score_me: 5, score_ai: 4 },
+  { id: -4, school_name: 'MIXED 통합', outcome: 'lose', score_me: 4, score_ai: 5 },
+  { id: -5, school_name: '이탈리아 세이버 유파', outcome: 'win', score_me: 5, score_ai: 1 },
+  { id: -6, school_name: '프랑스 에페 유파', outcome: 'win', score_me: 5, score_ai: 2 },
+  { id: -7, school_name: '헝가리안 유파', outcome: 'draw', score_me: 4, score_ai: 4 },
+  { id: -8, school_name: 'MIXED 통합', outcome: 'win', score_me: 5, score_ai: 3 },
+];
 
 // AI 대전자 유파. **카피는 VORTEX 3.11 원문 그대로**(presentation-v2 DUELIST_STYLES와 문자 일치, 인용문 포함).
 // school은 shared/protocol.js SCHOOL 값. fact는 FENCING_RULES 근거 한 줄(표시 전용).
@@ -62,6 +114,8 @@ export const SELECT = {
   title: 'AI 대전자 선택',
   sub: '유파별 거리 습관을 가진 별도의 인격이다. 탭하면 상세가 열린다.',
   duel: '이 상대와 대전',
+  back: '목록으로',
+  picked: '선택됨',
   cards: [
     {
       school: 'sabre',

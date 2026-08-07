@@ -38,15 +38,15 @@ export default function Button({
     }
     switch (variant) {
       case 'tonal':
-        return { backgroundColor: colors.red.tonal, color: colors.red.light, border: 'none', boxShadow: 'none' };
+        return { backgroundColor: colors.primary.tonal, color: colors.accent.base, border: 'none', boxShadow: 'none' };
       case 'outlined':
         return { backgroundColor: 'transparent', color: colors.text.primary, border: `1px solid ${colors.line.strong}`, boxShadow: 'none' };
       case 'text':
-        return { backgroundColor: 'transparent', color: colors.red.light, border: 'none', boxShadow: 'none' };
+        return { backgroundColor: 'transparent', color: colors.accent.base, border: 'none', boxShadow: 'none' };
       case 'filled':
       default:
         // 주 CTA. 다크 무대라 그림자 대신 red glow가 강조를 만든다(Android는 톤이라 생략)
-        return { backgroundColor: colors.red.fill, color: colors.text.onFill, border: 'none', boxShadow: isAndroid ? 'none' : glow.red };
+        return { backgroundColor: colors.primary.fill, color: colors.text.onFill, border: 'none', boxShadow: isAndroid ? 'none' : glow.primary };
     }
   })();
 

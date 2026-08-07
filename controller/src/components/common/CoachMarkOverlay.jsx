@@ -85,7 +85,7 @@ export default function CoachMarkOverlay({ targetRef, message, step, totalSteps,
             height: rel.height + 12,
             borderRadius: radius.card,
             boxShadow: `0 0 0 9999px ${colors.bg.overlay}`,
-            border: `2px solid ${colors.red.light}`,
+            border: `2px solid ${colors.accent.base}`,
             pointerEvents: 'none',
           }}
         />
@@ -100,10 +100,10 @@ export default function CoachMarkOverlay({ targetRef, message, step, totalSteps,
           </div>
         ) : null}
 
-        <div style={{ background: colors.bg.raised, border: `1px solid ${colors.line.default}`, borderTop: `2px solid ${colors.red.light}`, borderRadius: radius.card, padding: 20 }}>
+        <div style={{ background: colors.bg.raised, border: `1px solid ${colors.line.default}`, borderTop: `2px solid ${colors.accent.base}`, borderRadius: radius.card, padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             {Array.from({ length: totalSteps }, (_, i) => (
-              <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i + 1 === step ? colors.red.light : colors.line.strong }} />
+              <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i + 1 === step ? colors.accent.base : colors.line.strong }} />
             ))}
             <span style={{ marginLeft: 'auto', fontSize: ig.caption1.size, color: colors.text.dim }}>
               {step} / {totalSteps}
@@ -118,7 +118,7 @@ export default function CoachMarkOverlay({ targetRef, message, step, totalSteps,
             <button type="button" onClick={onSkip} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: ig.subhead.size, color: colors.text.dim, padding: '8px 0', fontFamily: typography.family, minHeight: 44 }}>
               건너뛰기
             </button>
-            <button type="button" onClick={onNext} style={{ background: colors.red.fill, border: 'none', borderRadius: radius.pill, color: colors.text.onFill, fontSize: ig.subhead.size, fontWeight: 600, padding: '10px 22px', cursor: 'pointer', minHeight: 44, fontFamily: typography.family }}>
+            <button type="button" onClick={onNext} style={{ background: colors.primary.fill, border: 'none', borderRadius: radius.pill, color: colors.text.onFill, fontSize: ig.subhead.size, fontWeight: 600, padding: '10px 22px', cursor: 'pointer', minHeight: 44, fontFamily: typography.family }}>
               {step === totalSteps ? '시작' : '다음'}
             </button>
           </div>

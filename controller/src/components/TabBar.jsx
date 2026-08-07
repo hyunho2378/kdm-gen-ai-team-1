@@ -59,7 +59,7 @@ export default function TabBar({ active, onChange }) {
             {/* **액센트는 아이콘이 진다.** 레이블은 11px라 절대 대형 텍스트가 될 수 없는데
                 red.light는 bg.base 위 4.02:1이라 본문 기준 4.5:1에 못 미친다. 아이콘은 텍스트가
                 아니라 비텍스트 기준 3.0:1이 적용되어 같은 red가 통과한다(4.02) */}
-            <Icon size={ICON_SIZE} color={on ? colors.red.light : colors.text.dim} aria-hidden="true" />
+            <Icon size={ICON_SIZE} color={on ? colors.accent.base : colors.text.dim} aria-hidden="true" />
             {/* 색 단독 구분 금지라 활성은 굵기로도 갈린다 */}
             <span
               style={{

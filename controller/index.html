@@ -3,6 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- **스테이터스 바까지 네이비로 덮는다.** iOS 사파리는 `theme-color`를 상단 바에 쓰고,
+         `black-translucent`가 웹뷰를 상태바 아래까지 밀어 넣는다. safe-area 여백은
+         ScreenContainer가 `env(safe-area-inset-top)`으로 잡으므로 글자가 안 가린다. -->
+    <meta name="theme-color" content="#101925" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- 웹폰트. **SUIT가 본문이고 Pretendard는 폴백이다**(tokens의 family가 그 순서다).
+         presentation-v2와 brand가 쓰는 것과 같은 CDN 같은 버전이라 세 앱의 얼굴이 같다.
+         가변 축이 정상이라 굵기를 합성하지 않는다(합성 굵기는 글자를 찌그러뜨린다). -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css"
+    />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"

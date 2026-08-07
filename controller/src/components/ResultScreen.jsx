@@ -28,7 +28,7 @@ function Row({ label, value, accent }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
       <span style={{ fontFamily: typography.family, fontSize: ig.subhead.size, color: colors.text.secondary }}>{label}</span>
-      <span style={{ fontFamily: typography.family, fontSize: ig.callout.size, fontWeight: 600, color: accent ? colors.red.light : colors.text.primary, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+      <span style={{ fontFamily: typography.family, fontSize: ig.callout.size, fontWeight: 600, color: accent ? colors.accent.base : colors.text.primary, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
     </div>
   );
 }
@@ -42,7 +42,7 @@ function Bar({ label, value, max }) {
         <span style={{ fontVariantNumeric: 'tabular-nums', color: colors.text.dim }}>{value}</span>
       </div>
       <div style={{ height: 8, borderRadius: radius.small, background: colors.bg.base, overflow: 'hidden' }}>
-        <div style={{ width: pct(w), height: '100%', background: colors.red.fill, borderRadius: radius.small }} />
+        <div style={{ width: pct(w), height: '100%', background: colors.primary.fill, borderRadius: radius.small }} />
       </div>
     </div>
   );
@@ -57,7 +57,7 @@ export default function ResultScreen({ result, onAgain, onHome }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 8px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* 헤더: 승패 + 스코어 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <h1 style={{ margin: 0, fontFamily: typography.family, fontSize: ig.largeTitle.size, fontWeight: ig.largeTitle.weight, letterSpacing: ig.largeTitle.tracking, color: result?.win ? colors.red.light : colors.text.primary }}>
+          <h1 style={{ margin: 0, fontFamily: typography.family, fontSize: ig.largeTitle.size, fontWeight: ig.largeTitle.weight, letterSpacing: ig.largeTitle.tracking, color: result?.win ? colors.accent.base : colors.text.primary }}>
             {result ? (result.win ? '승리' : '패배') : '경기 종료'}
           </h1>
           {result ? (

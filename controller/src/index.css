@@ -2,9 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body { background: #101010; color: #FDFDFD; }
-/* 위 두 값은 부트스트랩 시점의 유일한 예외. 첫 페인트 깜빡임 방지용.
-   컴포넌트 레벨에서는 반드시 tokens 경유. */
+/* **부트스트랩 시점의 유일한 HEX 예외.** 첫 페인트 깜빡임 방지용이고
+   컴포넌트 레벨에서는 반드시 tokens 경유다.
+   값은 tokens의 `bg.base`(#101925)와 `text.primary`(#FDFDFD)와 같다.
+
+   **html이 배경을 진다.** body에만 두면 스크롤 바운스에서 뒤가 검게 비치고,
+   safe-area 바깥(상태바 아래)도 이 색으로 안 덮인다. */
+html { background: #101925; }
+html, body { color: #FDFDFD; }
+body { margin: 0; min-height: 100dvh; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
