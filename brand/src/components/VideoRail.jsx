@@ -34,9 +34,30 @@ export default function VideoRail() {
    * 15로 떨어진다**(재생 0/1/2/3장 사다리를 실측했고 절벽은 정확히 두 장째다).
    * 디코더 자체는 멀쩡하다(dropped 0). 무너지는 것은 프레임 예산이다.
    *
-   * 그래서 레일 자신을 기준(root)으로 카드가 얼마나 보이는지를 재고 **제일 많이 보이는
-   * 한 장만** 돌린다. 스냅 캐러셀이라 어차피 한 장이 자리를 잡고, 옆 카드는 첫 프레임에
-   * 멈춰 선다. 넘기면 그 자리가 바로 넘어간다.
+   * **동률 버그를 실측으로 잡았다.** `IntersectionObserver`의 `intersectionRatio`로
+   * "제일 많이 보이는 한 장"을 고르던 예전 로직은, 1440처럼 카드 두 장이 처음부터 나란히
+   * 전부(1.0) 보이는 폭에서 **`con-360` 카드가 영원히 재생권을 못 받는** 결함이 있었다.
+   * `r > max`가 엄격 부등호라 동률(1.0 vs 1.0)에서는 먼저 Map에 들어간 첫 카드가 계속
+   * 이긴다 — 스크롤이 한 번도 안 걸리면 둘 다 영원히 1.0으로 묶여 둘째 카드는 `paused
+   * true readyState 0`로 못 벗어난다(실측으로 재현: `con-360.mp4`가 어느 스크롤 위치에서도
+   * 재생되지 않았다).
+   *
+   * **좌표 기반 두 시도가 이 카드 수에서 다 깨졌다(실측, 순서대로 시도하고 버린 기록).**
+   * (1) `scrollLeft` vs 카드 `offsetLeft`: 카드가 셋뿐이라 콘텐츠 총폭(1681)이 뷰포트(1425)를
+   * 겨우 256px 넘는다. `scrollLeft` 최댓값이 256이라 화살표를 끝까지 눌러도 `con-360`의
+   * `offsetLeft`(581)엔 못 닿아 여전히 mask-360이 가깝다고 판정됐다.
+   * (2) 카드 중심과 레일 중심의 거리(뷰포트 좌표): 이번엔 반대로 **스크롤 전이든 후든 항상
+   * 가운데 카드(con-360)가 레일 전체 폭의 기하학적 중심에 가장 가까워** 정지 상태에서도
+   * con-360이 이겨 버렸다. 카드 셋이 뷰포트에 거의 다 들어와 "중심에 가장 가까운 카드"가
+   * "지금 스냅된 카드"와 다른 뜻이 됐다.
+   *
+   * **좌표를 버리고 히스테리시스로 바꿨다.** `intersectionRatio`는 그대로 쓰되, "전체에서
+   * 제일 큰 값"이 아니라 **"지금 재생권을 쥔 카드보다 더 많이 보이는 카드가 있는가"만** 본다.
+   * 동률(둘 다 1.0)에서는 아무도 현재 카드보다 "더" 보이지 않으므로 그대로 유지된다 —
+   * 정지 상태에서 mask-360이 계속 재생권을 쥔다. 화살표를 눌러 스크롤하면 mask-360이
+   * 화면 밖으로 밀리며 실제 노출 비율이 내려가고(실측 0.579), 그 순간 con-360(1.0)이
+   * "현재보다 더 보임"으로 이겨 재생권이 넘어간다. 좌표의 절대값이 아니라 **현재 대비
+   * 상대적 변화**를 보므로 스크롤 범위가 짧아도 깨지지 않는다.
    */
   useEffect(() => {
     const rail = railRef.current;
@@ -45,12 +66,14 @@ export default function VideoRail() {
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) ratios.set(e.target.dataset.railCard, e.intersectionRatio);
-        let best = null;
-        let max = 0;
-        for (const [key, r] of ratios) {
-          if (r > max) { max = r; best = key; }
-        }
-        if (best) setLive(best);
+        setLive((cur) => {
+          let best = cur;
+          let bestRatio = ratios.get(cur) ?? 0;
+          for (const [key, r] of ratios) {
+            if (r > bestRatio) { bestRatio = r; best = key; }
+          }
+          return best;
+        });
       },
       { root: rail, threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
