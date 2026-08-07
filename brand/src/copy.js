@@ -49,13 +49,14 @@ export const ARENA_CTA = {
 // **워크숍 표기와 스크롤 안내를 걷었다.** 둘 다 제품이 아니라 이 페이지가 만들어진
 // 사정을 말하는 문구였다. 워크숍 크레딧은 푸터가 이미 이고 있고, 스크롤 안내는
 // 아래에 콘텐츠가 있다는 사실을 글로 다시 적는 자리라 표지의 정적을 깬다.
+// **홈 영어화(개정).** 히어로는 이제 중앙에 IMMERSIVE FENCING XR 한 줄만 선다.
+// ko/sub는 표지 구도 자체가 걷혀 더는 화면에 안 뜨지만, alt 텍스트 계약은 유지한다.
 export const HERO = {
-  eyebrow: { en: 'IMMERSIVE FENCING XR', ko: '몰입형 펜싱 XR' },
+  eyebrow: { en: 'IMMERSIVE FENCING XR' },
   wordmark: BRAND,
-  sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 훈련',
-  // 표지 구도의 두 요소. 장식이 아니라 제품이라 대체 텍스트를 준다
-  maskAlt: '마스크를 쓴 대전자',
-  controllerAlt: '손에 쥔 컨트롤러',
+  // 표지 구도의 두 요소. 장식이 아니라 제품이라 대체 텍스트를 준다(영어)
+  maskAlt: 'Fencer wearing the mask',
+  controllerAlt: 'Controller in hand',
 };
 
 // ---------------------------------------------------------------------------
@@ -80,9 +81,9 @@ export const HERO = {
 // 넣으면 위아래가 잘려 마스크가 깎인다(실측). 소스 비율을 그대로 쓴다.
 // `rate`는 재생 속도다. 1보다 작으면 느리게 돈다.
 export const VIDEO_RAIL = {
-  label: '제품 영상',
-  prev: '이전 영상',
-  next: '다음 영상',
+  label: 'Product films',
+  prev: 'Previous film',
+  next: 'Next film',
   items: [
     { key: 'mask-360', src: '/images/home/mask-360.mp4', line: 'Vortex Mask', ratio: '1 / 1', rate: 0.5 },
     // 작업 중에 도착한 파일이다. mask-360과 같은 규격(1920x1920, 5.08초)이라 같은 값을 준다
@@ -100,18 +101,19 @@ export const VIDEO_RAIL = {
  *
  * `asides`는 좌우로 갈라 세운다. 짝수가 왼쪽, 홀수가 오른쪽이다.
  */
+// **홈 영어화.** eyebrow/asides의 ko는 영어 부제로 바꿨다(필드명은 그대로 두되 내용만 영문).
 export const CONVERGE = {
   src: '/images/home/man-blur.mp4',
   ratio: '2576 / 1440',
-  eyebrow: { en: 'FOCUS', ko: '수렴' },
-  line: '흐릿하던 거리가 한 점으로 모인다',
+  eyebrow: { en: 'FOCUS' },
+  line: 'Blurred distance converges to a single point',
   asides: [
-    { en: 'IMMERSIVE XR', ko: '시야 전체를 쓰는 몰입' },
-    { en: 'DETERMINISTIC JUDGEMENT', ko: '결정적 판정' },
-    { en: 'MARKERLESS TRACKING', ko: '마커 없는 검끝 추적' },
-    { en: 'TIME DILATION', ko: '결정의 순간 확장' },
+    { en: 'IMMERSIVE XR', sub: 'Full field-of-view immersion' },
+    { en: 'DETERMINISTIC JUDGEMENT', sub: 'Calls decided, not guessed' },
+    { en: 'MARKERLESS TRACKING', sub: 'Blade tracked without markers' },
+    { en: 'TIME DILATION', sub: 'The decisive instant, extended' },
   ],
-  cta: '제품 상세보기',
+  cta: 'View product details',
   ctaTo: '/mask',
 };
 
