@@ -4,10 +4,13 @@
 // Nielsen: #8 심미성과 최소주의(워드마크 + 부제 + 버튼 하나), #10 도움말(로그인 스텁이 데모 성격을 정직히 안내).
 // Shneiderman: #1 일관성, #3 정보성 피드백(로그인 누르면 데모 안내).
 //
-// 배경 펜서 사진은 라이선스 미확인이라 반입하지 않는다. 부재 시 다크 그라디언트 플레이스홀더로 내려앉는다.
+// 배경 펜서 사진은 라이선스 미확인이라 반입하지 않는다. 부재 시 네이비 그라디언트로 내려앉는다.
+//
+// **워드마크가 글자가 아니라 로고 파일이다.** presentation-v2의 `logo.svg`를 그대로 복사해 왔고
+// 원본이 `fill="white"` 하나뿐이라 어두운 무대에 그대로 얹힌다(별도 흰색 변환이 필요 없었다).
 
 import { useState } from 'react';
-import { colors, glow, ig, steelText, typography } from '../tokens.js';
+import { colors, glow, ig, typography } from '../tokens.js';
 import { BRAND, HOME } from '../copy.js';
 import Button from './common/Button.jsx';
 import BottomSheet from './common/BottomSheet.jsx';
@@ -50,19 +53,12 @@ export default function HomeScreen({ onGuest }) {
           textAlign: 'center',
         }}
       >
-        <h1
-          style={{
-            margin: 0,
-            fontFamily: typography.family,
-            fontSize: 'clamp(44px, 16vw, 64px)',
-            fontWeight: 800,
-            letterSpacing: '-0.03em',
-            lineHeight: 1.02,
-            ...steelText,
-          }}
-        >
-          {BRAND}
-        </h1>
+        {/* 로고. **글자로 다시 그리지 않는다.** 브랜드 자산이 이미 파일로 있다 */}
+        <img
+          src="/logo.svg"
+          alt={BRAND}
+          style={{ width: 'min(62vw, 220px)', height: 'auto', display: 'block' }}
+        />
         <p
           style={{
             margin: 0,
@@ -89,6 +85,16 @@ export default function HomeScreen({ onGuest }) {
           padding: '0 16px 24px',
         }}
       >
+        {/* **다음이 코드 입력이라는 것을 미리 말한다.** 버튼을 누르고 나서 알면 늦다(N1) */}
+        <span
+          style={{
+            fontFamily: typography.family,
+            fontSize: ig.caption1.size,
+            color: colors.text.dim,
+          }}
+        >
+          {HOME.guestHint}
+        </span>
         <Button variant="filled" size="lg" onClick={onGuest} style={{ boxShadow: glow.primary }}>
           {HOME.guest}
         </Button>

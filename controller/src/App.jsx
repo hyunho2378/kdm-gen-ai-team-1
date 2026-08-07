@@ -1,9 +1,19 @@
-// controller 루트 = VORTEX 폰 앱. 화면 상태 머신 SPLASH → HOME(게스트/로그인 게이트) →
-// MAIN(앱 셸, 3탭) → CONNECT → SELECT → PERMISSION → CALIBRATION → PLAY → RESULT.
-// 강릉페이 시스템 이식(ScreenContainer 프레임 + HIG).
+// controller 루트 = VORTEX 폰 앱.
+//
+// **연결이 먼저다(흐름 재편).** 화면 상태 머신은
+// `SPLASH → HOME(게스트 로그인) → CONNECT(방 코드) → MAIN(3탭) → PERMISSION → CALIBRATION → PLAY → RESULT`.
+//
+// 예전에는 게스트로 시작하면 MAIN이 먼저 뜨고 거기서 "대전 시작"을 눌러야 페어링으로 갔다.
+// **그러면 연결 전 세 탭이 아무 일도 못 하는 채로 서 있었다.** 기록도 못 읽고 상대를 골라도
+// 보낼 곳이 없다. 이제 코드 입력을 지나야 탭이 뜬다.
+//
+// **SELECT 단계를 걷었다.** 상대 선택은 MAIN의 OPPONENT 탭이 한다. 별도 화면과 탭이
+// 같은 카드 넷을 두 벌로 그리던 것을 하나로 접었다.
+//
+// 강릉페이 시스템 이식(ScreenContainer 프레임 + HIG). 색은 controller/src/tokens.js가 쥔다(네이비).
 //
 // **센서(C2)와 소켓(C3) 로직은 무변경이다.** 아래 pipeline/link 배선과 핸들러는 그대로 옮겨 왔고,
-// 화면 계층(phase 순서, HOME/SELECT/RESULT 신설, ScreenContainer 래핑)만 확장했다.
+// 화면 계층(phase 순서, HOME/MAIN/RESULT, ScreenContainer 래핑)만 바꿨다.
 //
 // **센서와 연결은 서로를 막지 않는다.** 서버가 안 붙어도 센서 준비는 진행되고, 센서가 없어도
 // 탭 모드로 연결은 산다(PATTERNS 8절 우아한 저하).
@@ -26,7 +36,6 @@ import CoachMarkOverlay from './components/common/CoachMarkOverlay.jsx';
 import HomeScreen from './components/HomeScreen.jsx';
 import MainScreen from './components/MainScreen.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
-import SelectScreen from './components/SelectScreen.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
 import { PLAY_COACH } from './copy.js';
 import {
@@ -44,9 +53,8 @@ import {
 const PHASE = {
   SPLASH: 'SPLASH',
   HOME: 'HOME',
-  MAIN: 'MAIN',
   CONNECT: 'CONNECT',
-  SELECT: 'SELECT',
+  MAIN: 'MAIN',
   PERMISSION: 'PERMISSION',
   CALIBRATION: 'CALIBRATION',
   PLAY: 'PLAY',
@@ -54,12 +62,12 @@ const PHASE = {
 };
 
 // 뒤로가기(N3 사용자 제어) 대상. PLAY는 경기 중이라 뒤로가기가 없다.
-// **CONNECT와 RESULT는 게이트가 아니라 MAIN으로 돌아간다.** 게이트는 세션당 한 번 지나는
-// 문이라 되돌아가면 게스트 선택을 다시 하게 된다.
+//
+// **CONNECT의 뒤는 HOME이다.** 연결이 앞에 서면서 그 뒤가 게이트가 됐다. 여기서 나가면
+// 게스트 선택부터 다시인데, 그 화면이 버튼 하나뿐이라 되돌아가는 비용이 작다.
 const BACK_OF = {
-  [PHASE.CONNECT]: PHASE.MAIN,
-  [PHASE.SELECT]: PHASE.MAIN,
-  [PHASE.PERMISSION]: PHASE.SELECT,
+  [PHASE.CONNECT]: PHASE.HOME,
+  [PHASE.PERMISSION]: PHASE.MAIN,
   [PHASE.CALIBRATION]: PHASE.PERMISSION,
   [PHASE.RESULT]: PHASE.MAIN,
 };
@@ -136,6 +144,10 @@ export default function App() {
   const [matchResult, setMatchResult] = useState(null);
   // MAIN 활성 탭. 기본은 가운데 CONTROLLER다
   const [tab, setTab] = useState('CONTROLLER');
+  // 확정한 상대. OPPONENT 카드에 선택 표시를 남긴다(메모리만)
+  const [picked, setPicked] = useState(null);
+  // 기준 자세를 한 번이라도 잡았나. CONTROLLER 탭 보정 버튼의 라벨이 이걸 읽는다
+  const [calibrated, setCalibrated] = useState(false);
   // 누적 기록. **서버가 준 것이다.** 앱은 저장하지 않고 읽기만 한다.
   // 신원은 httpOnly 쿠키에 있어서 여기서 id를 들고 다니지 않는다(localStorage 금지).
   const [records, setRecords] = useState([]);
@@ -292,9 +304,12 @@ export default function App() {
     link.sendCalib(pipeline.getBaseline());
     // 센서가 아예 안 붙는 기기는 여기서 탭 모드로 내려간다
     if (pipeline.getSupport() === SUPPORT.NONE) setTapMode(true);
+    setCalibrated(true);
     resetPhoneStats();
-    setPhase(PHASE.PLAY);
-  }, [pipeline, link, push, resetPhoneStats]);
+    // **상대를 안 고르고 보정만 한 경우는 경기로 안 넘긴다.** CONTROLLER 탭의 보정 액션이
+    // 그 경로이고, 그때는 설정 화면으로 되돌아가는 것이 맞다
+    setPhase(picked ? PHASE.PLAY : PHASE.MAIN);
+  }, [pipeline, link, push, resetPhoneStats, picked]);
 
   const startTapMode = useCallback(() => {
     setTapMode(true);
@@ -307,7 +322,7 @@ export default function App() {
   }, [pipeline, link, resetPhoneStats]);
 
   // CONNECT에서 코드 확정 → 접속. **화면은 CONNECT에 머물며 접속 중 상태를 보인다.**
-  // paired가 되면 아래 효과가 SELECT로 넘긴다(무한 스피너 금지, 상태 가시성 N1/N9).
+  // paired가 되면 아래 효과가 MAIN으로 넘긴다(무한 스피너 금지, 상태 가시성 N1/N9).
   const onConnect = useCallback(
     (c) => {
       setCode(c);
@@ -317,33 +332,38 @@ export default function App() {
     [link]
   );
 
-  // 게이트에서 게스트 시작 → MAIN. **여기서 코드 입력으로 보내지 않는다.**
-  // 첫 얼굴이 페어링 폼이 되면 앱이 무엇인지 말할 기회가 없다. 연결은 MAIN의 액션 뒤에 있다.
+  // 게이트에서 게스트 로그인 → **곧장 코드 입력.** 연결이 안 되면 탭 셋이 할 일이 없다.
   //
-  // ?room= 자동 주입이면 조용히 뒤에서 붙인다. 접속 화면을 띄우지 않으므로 connecting은
-  // 세우지 않고, 붙으면 MAIN 상단이 "연결됨"으로 바뀌는 것으로만 알린다.
+  // ?room= 자동 주입이면 접속을 미리 걸어 둔다. 화면은 그대로 CONNECT에 서고,
+  // 붙는 즉시 아래 효과가 MAIN으로 넘긴다(무한 스피너 금지, N1/N9).
   const onGuest = useCallback(() => {
-    setPhase(PHASE.MAIN);
-    if (roomFromUrl.length === 4) link.connect(roomFromUrl);
+    setPhase(PHASE.CONNECT);
+    if (roomFromUrl.length === 4) {
+      setConnecting(true);
+      link.connect(roomFromUrl);
+    }
   }, [roomFromUrl, link]);
 
-  // MAIN의 주 액션. 이미 붙어 있으면 유파 선택으로 직행하고, 아니면 코드 입력을 먼저 거친다.
-  const onStart = useCallback(() => {
-    setPhase(linkStatus === LINK.PAIRED ? PHASE.SELECT : PHASE.CONNECT);
-  }, [linkStatus]);
-
-  const toConnect = useCallback(() => setPhase(PHASE.CONNECT), []);
   const toMain = useCallback(() => setPhase(PHASE.MAIN), []);
 
-  // paired 수신 → SELECT. **사용자가 그 화면에서 접속을 건 경우에만 넘긴다.**
-  // CONNECT에 있다는 것만으로 넘기면, ?room=으로 이미 붙은 상태에서 상단 연결 액션을 눌러
-  // 코드 화면을 연 순간 곧바로 튕겨 나간다. connecting이 그 구분이다.
-  useEffect(() => {
-    if (linkStatus === LINK.PAIRED && phase === PHASE.CONNECT && connecting) {
-      setConnecting(false);
-      setPhase(PHASE.SELECT);
+  /** CONTROLLER 탭의 보정 액션. 권한이 있으면 곧장 보정, 없으면 권한부터 받는다. */
+  const onCalibrate = useCallback(() => {
+    if (sensorReadyRef.current) {
+      pipeline.beginCalibration();
+      setPhase(PHASE.CALIBRATION);
+      return;
     }
-  }, [linkStatus, phase, connecting]);
+    if (!motionSupported()) setDenied(true);
+    setPhase(PHASE.PERMISSION);
+  }, [pipeline]);
+
+  // paired 수신 → MAIN. **연결이 곧 탭 활성이다.** 여기 오기 전에는 탭이 없다.
+  useEffect(() => {
+    if (linkStatus === LINK.PAIRED && phase === PHASE.CONNECT) {
+      setConnecting(false);
+      setPhase(PHASE.MAIN);
+    }
+  }, [linkStatus, phase]);
 
   // PLAY 첫 진입에 코치마크 2종을 한 번만 띄운다(둘째 판부터 생략).
   useEffect(() => {
@@ -358,7 +378,7 @@ export default function App() {
     setConnecting(false);
   }, [link]);
 
-  // SELECT에서 유파 확정 → arena로 선택 전송(A3 진입점에 꽂힌다).
+  // OPPONENT 탭에서 유파 확정 → arena로 선택 전송(A3 진입점에 꽂힌다).
   //
   // **둘째 판부터는 PERMISSION을 건너뛴다.** 센서 권한은 세션당 한 번 받으면 끝인데
   // 매 판 같은 설명 화면을 다시 탭하게 하면 다시 대전이 느려진다. 이미 센서가 돌고 있으면
@@ -367,6 +387,7 @@ export default function App() {
   const onSelect = useCallback(
     (school) => {
       link.sendSelect(school);
+      setPicked(school);
       if (sensorReadyRef.current) {
         pipeline.beginCalibration();
         setPhase(PHASE.CALIBRATION);
@@ -406,8 +427,13 @@ export default function App() {
             records={records}
             recordsEnabled={recordsEnabled}
             paired={linkStatus === LINK.PAIRED}
-            onConnect={toConnect}
-            onStart={onStart}
+            support={pipeline.getSupport()}
+            tapMode={tapMode}
+            calibrated={calibrated}
+            onCalibrate={onCalibrate}
+            onSelect={onSelect}
+            onFocus={onFocus}
+            picked={picked}
           />
         ) : null}
 
@@ -426,8 +452,6 @@ export default function App() {
             onCancel={onConnectCancel}
           />
         ) : null}
-
-        {phase === PHASE.SELECT ? <SelectScreen onConfirm={onSelect} onFocus={onFocus} onBack={back} /> : null}
 
         {phase === PHASE.PERMISSION ? (
           <PermissionScreen
@@ -458,7 +482,14 @@ export default function App() {
         ) : null}
 
         {phase === PHASE.RESULT ? (
-          <ResultScreen result={matchResult} onAgain={() => setPhase(PHASE.SELECT)} onHome={toMain} />
+          <ResultScreen
+            result={matchResult}
+            onAgain={() => {
+              setTab('OPPONENT');
+              setPhase(PHASE.MAIN);
+            }}
+            onHome={toMain}
+          />
         ) : null}
 
         {/* PLAY 첫 진입 코치마크(강릉페이 S7). 제스처 안내라 중앙 툴팁. 둘째 판부터 생략 */}

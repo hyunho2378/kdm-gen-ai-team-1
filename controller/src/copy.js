@@ -29,7 +29,9 @@ export const MAIN = {
   tabs: [
     { key: 'RECORDS', label: 'RECORDS', title: '내 기록' },
     { key: 'CONTROLLER', label: 'CONTROLLER', title: '컨트롤러' },
-    { key: 'OPPONENT', label: 'OPPONENT', title: '연습 모델' },
+    // **'연습 모델'에서 '상대'로 바꿨다.** 이 탭이 정보 열람에서 선택으로 바뀌면서
+    // 고르는 대상의 이름이 화면 제목이어야 한다
+    { key: 'OPPONENT', label: 'OPPONENT', title: '상대' },
   ],
   connect: '연결',
   connected: '연결됨',
