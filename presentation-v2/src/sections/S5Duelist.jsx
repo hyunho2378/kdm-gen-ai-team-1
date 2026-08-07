@@ -11,19 +11,47 @@
 // (43~47행 circDist, 83~88행 lock)에서 가져왔다. 안무(가로 3슬롯 중앙 강조)는 이 섹션에 맞게 새로 짰다.
 
 import { useEffect, useRef, useState } from 'react';
-import { colors, typography, grid, bgA } from '../tokens.js';
+import { colors, typography, grid, bgA, whiteA } from '../tokens.js';
 import { DUELIST, DUELIST_STYLES } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
-import { SlideHeader, Badge } from '../components/Bits.jsx';
+import { SlideHeader } from '../components/Bits.jsx';
 
 const N = DUELIST_STYLES.length; // 3
 const STATES = N; // 상태 0/1/2 = 각 유파가 중앙(순환)
 
 // 슬롯 위치(중앙 기준 대칭). d = 원형 최단거리. 중앙 50%, 우 75%, 좌 25%.
 const slotX = (d) => 50 + d * 25;
-const FOCUS_SCALE = 1.12; // 중앙 무대 강조
+const FOCUS_SCALE = 1.08; // 중앙 무대 강조
 const SIDE_SCALE = 0.78; // 옆 카드는 물러난다
 const SIDE_OPACITY = 0.5; // 흐리게(블러 아님, opacity만)
+// 프라이머리 네이비(colors.navy #263E5F = rgb 38,62,95)의 반투명. 옆 유파 배지 글래스에 쓴다.
+const NAVY_GLASS = 'rgba(38, 62, 95, 0.72)';
+
+// Ver 배지: 글래스(반투명 + backdrop blur + 테두리 빛). 중앙=라이트 글래스(잉크 글자),
+// 옆(비중앙)=프라이머리 네이비 글래스(흰 글자)로 강조.
+function GlassBadge({ text, center }) {
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '6px 16px',
+        borderRadius: 999,
+        fontFamily: typography.family,
+        fontSize: 'clamp(0.66rem, 1vw, 0.8rem)',
+        fontWeight: 700,
+        letterSpacing: '0.2em',
+        backdropFilter: 'blur(10px) saturate(1.2)',
+        WebkitBackdropFilter: 'blur(10px) saturate(1.2)',
+        background: center ? whiteA(0.5) : NAVY_GLASS,
+        border: `1px solid ${center ? whiteA(0.7) : whiteA(0.28)}`,
+        boxShadow: `inset 0 1px 0 ${whiteA(0.4)}`, // 상단 림(테두리 빛)
+        color: center ? colors.text.primary : colors.white,
+      }}
+    >
+      {text}
+    </span>
+  );
+}
 
 // StackCarousel 43~47행 그대로. 원형 최단거리.
 const circDist = (i, activePos, n) => {
@@ -103,9 +131,10 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
             style={{
               position: 'absolute',
               left: `${x}%`,
-              bottom: 0,
-              height: '84%',
-              width: 'clamp(160px, 26vw, 540px)',
+              // 바닥에 안 붙게 위로 올려 세로 여백 확보. 폭·높이를 줄여 인물 사진 겹침 해소.
+              bottom: 'clamp(48px, 9vh, 104px)',
+              height: '56%',
+              width: 'clamp(128px, 18vw, 360px)',
               zIndex: z,
               opacity: isCenter ? 1 : SIDE_OPACITY,
               transform: `translateX(-50%) scale(${scale})`,
@@ -150,7 +179,7 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
               >
                 {s.school}
               </span>
-              <Badge text={s.badge} filled={isCenter} />
+              <GlassBadge text={s.badge} center={isCenter} />
 
               {/* 중앙 카드만: 스타일 한 줄 + 인용 한 줄. */}
               {isCenter && (

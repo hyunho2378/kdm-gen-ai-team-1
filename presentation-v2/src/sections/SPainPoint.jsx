@@ -19,8 +19,9 @@ import { Eyebrow, StepDots } from '../components/Bits.jsx';
 const STEPS = 2;
 
 // 헤드 텍스트 크기(rem, gsap가 트윈 가능한 단일 단위). 프롤로그(중앙 큰) ↔ 헤드라인(2단 좌상단).
-const HEAD_BIG = '2.8rem';
-const HEAD_SMALL = '1.4rem';
+// 헤드 텍스트가 너무 커 절반 수준으로 축소(지시). 프롤로그 2.8→1.5rem, 헤드라인 1.4→1.2rem.
+const HEAD_BIG = '1.5rem';
+const HEAD_SMALL = '1.2rem';
 
 // 유리 카드. 반투명 + 배경 블러 + 미세 테두리 빛 + 상단 림 하이라이트.
 const GLASS = {
