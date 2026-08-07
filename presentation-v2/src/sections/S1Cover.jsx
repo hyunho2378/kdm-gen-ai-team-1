@@ -1,107 +1,137 @@
-// S1 표지. 포스터 문법. **라이트 반전: 배경 #F6F6F6.**
-// fencer 다크 사진 패널을 제거했고, 그 사진 위에 얹던 OGL 커서 궤적(VortexLine)도 함께 걷었다
-// (로고가 화면 중앙으로 오면서 궤적의 idle 나선이 로고를 관통해 아티팩트로 보였다).
-// 시그니처 로고를 화면 정중앙(가로/세로)에 두고, 서브카피는 그 바로 아래, 팀/행사 표기는
-// 상단 두 모서리에 둔다(중앙 로고를 프레임하는 균형).
+// S1 표지. **참조 frames/ref/1.svg(1920x1080) 재현.** 브라우저에 렌더해 좌표를 실측했다(DESIGN 15절 출처 계약).
 //
-// **시그니처는 logo_main.svg를 잉크(#101010)로 평평하게 찍는다(질감/섀도우 0).**
-// SVG 도형이 흰 채움이라 CSS mask로 알파만 취해 잉크 박스를 그 모양으로 오려낸다.
-// 그래서 원본 에셋을 안 건드리고도 정확히 #101010 단색 로고가 된다. 크기는 PV2 display 스케일(대형).
+// **표지는 어두운 예외다.** 나머지 슬라이드는 라이트(#F6F6F6)지만 표지는 블랙 포스터다(참조 배경 #000001,
+// 좌우 실버 렌더가 순수 블랙 위에 떠 있어 라이트로 옮기면 렌더가 깨진다). 표지 성격상 예외로 판단·확정.
+// **표지는 상단 표기를 넣는 유일한 슬라이드다**(다른 슬라이드는 상단 표기 제거, 표지만 예외).
+//
+// 실측 구도(1920x1080):
+//   좌 인물 렌더  rect x40.5 y80 w919 h1000  → center (500, 580)      [person.png, 다크배경 실버 마스크]
+//   우 컨트롤러   rect x960 y80 w919.5²        → center (1419.75, 539.75) [controller.png, 블랙배경 실버]
+//   중앙 흰 로고  path bbox center (960,540) 497x243  ← logo.svg(흰 볼텍스 심볼) 정중앙
+//   상단 표기 3블록(좌 x60 / 중 x798.4 / 우 x1682, 모두 start 정렬, y82.3/112.3, SUIT 20)
+//   우하 카피라이트 x1612.7 y1022.3 SUIT 17.27
+//   (fs100 '엔딩' 플레이스홀더는 블랙 위 블랙, 디자이너 메모라 건너뜀)
+//
+// 이미지 2개는 참조 1.svg에 base64로 임베드돼 있어(31MB) 스크립트로 추출·리사이즈(≤1400px)해
+// public/images/cover/{person,controller}.png로 뽑았다. 좌표 매핑은 S3Concept와 동일한 contain 단위 REF
+// (전체화면 종횡비가 16:9가 아니어도 구도가 통째로 들어와 무잘림).
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { colors, typography, motion } from '../tokens.js';
-import { TITLE, COVER } from '../copy.js';
+import { COVER } from '../copy.js';
 
-// 시그니처 로고를 잉크로 찍는 mask 세트. 원본 SVG(흰 도형/투명 배경)의 알파를 마스크로 쓴다.
-const LOGO_MASK = {
-  background: colors.ink,
-  WebkitMaskImage: 'url(/images/assets/logo_main.svg)',
-  maskImage: 'url(/images/assets/logo_main.svg)',
-  WebkitMaskRepeat: 'no-repeat',
-  maskRepeat: 'no-repeat',
-  WebkitMaskPosition: 'center',
-  maskPosition: 'center',
-  WebkitMaskSize: 'contain',
-  maskSize: 'contain',
+// 1 ref-px를 contain-fit 단위로(min 가로/세로 배율). 16:9에서 참조와 픽셀 일치.
+const REF = 'min(100vw / 1920, 100vh / 1080)';
+const vh = (refPx) => `calc(${refPx} * ${REF})`;
+// 중앙 앵커 + 자기중심 정렬(이미지/로고).
+const at = (x, y) => ({
+  position: 'absolute',
+  left: `calc(50% + ${(x - 960).toFixed(3)} * ${REF})`,
+  top: `calc(50% + ${(y - 540).toFixed(3)} * ${REF})`,
+  transform: 'translate(-50%, -50%)',
+});
+// 좌측정렬 텍스트(start): 시작점 x를 좌상단에 앵커. yTop은 첫 줄 상단(베이스라인 - 20 근사).
+const atL = (x, yTop) => ({
+  position: 'absolute',
+  left: `calc(50% + ${(x - 960).toFixed(3)} * ${REF})`,
+  top: `calc(50% + ${(yTop - 540).toFixed(3)} * ${REF})`,
+});
+
+const markStyle = {
+  fontFamily: typography.family,
+  fontSize: vh(20),
+  lineHeight: vh(30), // 두 줄 baseline 간격 30(82.3→112.3)
+  fontWeight: 500,
+  letterSpacing: '0em',
+  color: colors.white,
+  whiteSpace: 'pre',
 };
 
 export default function S1Cover() {
-  const markRef = useRef(null);
+  const personRef = useRef(null);
+  const controllerRef = useRef(null);
+  const logoRef = useRef(null);
+  const marksRef = useRef(null);
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const mark = markRef.current;
-    if (!mark) return undefined;
+    const person = personRef.current;
+    const controller = controllerRef.current;
+    const logo = logoRef.current;
+    const marks = marksRef.current ? Array.from(marksRef.current.children) : [];
+    if (!person || !controller || !logo) return undefined;
 
     if (reduced) {
-      gsap.set(mark, { opacity: 1, y: 0 });
+      gsap.set([person, controller, logo, ...marks], { opacity: 1, scale: 1, y: 0 });
       return undefined;
     }
 
-    // 중앙 시그니처 묶음 페이드업. transform과 opacity만 만진다.
-    gsap.set(mark, { opacity: 0, yPercent: 6 });
-    const tl = gsap.timeline();
-    tl.to(mark, { opacity: 1, yPercent: 0, duration: 1, ease: motion.gsapOut }, 0.2);
+    gsap.set([person, controller], { opacity: 0, scale: 1.04, transformOrigin: '50% 50%' });
+    gsap.set(logo, { opacity: 0, scale: 0.92, transformOrigin: '50% 50%' });
+    gsap.set(marks, { opacity: 0, y: 8 });
 
-    return () => {
-      tl.kill();
-    };
+    const tl = gsap.timeline();
+    // ① 좌우 렌더가 블랙에서 떠오른다.
+    tl.to([person, controller], { opacity: 1, scale: 1, duration: 1.1, ease: 'power3.out', stagger: 0.12 });
+    // ② 중앙 시그니처.
+    tl.to(logo, { opacity: 1, scale: 1, duration: 0.8, ease: motion.gsapOut }, 0.5);
+    // ③ 상단 표기 마지막.
+    tl.to(marks, { opacity: 1, y: 0, duration: 0.6, ease: motion.gsapOut, stagger: 0.06 }, 0.9);
+
+    return () => tl.kill();
   }, []);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* **상단 표기(팀/행사)는 전 슬라이드 제거 규칙에 따라 표지에서도 걷었다.** 로고 + 서브카피만 남긴다. */}
-
-      {/* 정중앙: 시그니처 로고 + 서브카피.
-          **로고를 정확히 화면 중앙에 둔다.** 서브카피는 out-of-flow(absolute)라 로고 위치를 밀지 않고
-          로고 바로 아래에 걸린다. 그래서 로고 자체가 가로/세로 정중앙에 온다. */}
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#000001' }}>
+      {/* 중앙 로고를 앉히는 아주 옅은 중앙 발광(참조 paint0_linear 0.1 근사). */}
       <div
-        ref={markRef}
+        aria-hidden="true"
         style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 3,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'none',
+          position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+          background: 'radial-gradient(60% 55% at 50% 50%, rgba(255,255,255,0.05), rgba(0,0,0,0) 70%)',
         }}
-      >
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-          {/* 시그니처. logo_main.svg를 잉크로 평평하게(질감/드롭섀도우/그라디언트 0).
-              PV2 display 스케일에 준하는 대형 — 다른 슬라이드 VORTEX 워드마크와 같은 존재감. */}
-          <div
-            role="img"
-            aria-label={TITLE}
-            style={{
-              ...LOGO_MASK,
-              width: 'clamp(240px, 34vw, 520px)',
-              aspectRatio: '250 / 180',
-            }}
-          />
-          {/* 서브카피. 로고 바로 아래 중앙. absolute라 로고를 중앙에서 밀지 않는다. */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: 'clamp(12px, 2.2vh, 28px)',
-              // 명시 폭. 자연폭(약 321px)보다 넉넉해 넓은 화면에선 한 줄, 좁은 화면(320)에선 90vw로 줄바꿈.
-              width: 'min(90vw, 380px)',
-              wordBreak: 'keep-all', // 한글이 단어 중간에서 끊기지 않게(몰입형이 몰입/형으로 갈리던 문제)
-              fontFamily: typography.family,
-              fontSize: typography.body.size,
-              fontWeight: 500,
-              letterSpacing: '0.1em',
-              lineHeight: 1.6,
-              color: colors.text.secondary,
-              textAlign: 'center',
-            }}
-          >
-            {COVER.sub}
-          </div>
+      />
+
+      {/* 좌 인물 렌더 */}
+      <img
+        ref={personRef}
+        src="/images/cover/person.png"
+        alt=""
+        draggable="false"
+        style={{ ...at(500, 580), width: vh(919), height: vh(1000), objectFit: 'cover', zIndex: 1, userSelect: 'none', willChange: 'transform, opacity' }}
+      />
+      {/* 우 컨트롤러 렌더 */}
+      <img
+        ref={controllerRef}
+        src="/images/cover/controller.png"
+        alt=""
+        draggable="false"
+        style={{ ...at(1419.75, 539.75), width: vh(919.5), height: vh(919.5), objectFit: 'cover', zIndex: 1, userSelect: 'none', willChange: 'transform, opacity' }}
+      />
+
+      {/* 중앙 흰 볼텍스 심볼(logo.svg). path bbox center (960,540) w497. */}
+      <img
+        ref={logoRef}
+        src="/images/assets/logo.svg"
+        alt="VORTEX"
+        draggable="false"
+        style={{ ...at(960, 540), width: vh(497), height: 'auto', zIndex: 3, userSelect: 'none', willChange: 'transform, opacity' }}
+      />
+
+      {/* 상단/하단 표기(표지 전용). 참조 좌표대로. */}
+      <div ref={marksRef}>
+        <div style={{ ...atL(60, 62), ...markStyle, zIndex: 4 }}>
+          {COVER.mark.topLeft.join('\n')}
+        </div>
+        <div style={{ ...atL(798.422, 62), ...markStyle, zIndex: 4 }}>
+          {COVER.mark.topCenter.join('\n')}
+        </div>
+        <div style={{ ...atL(1682, 62), ...markStyle, zIndex: 4 }}>
+          {COVER.mark.topRight.join('\n')}
+        </div>
+        <div style={{ ...atL(1612.73, 1002), ...markStyle, fontSize: vh(17.2736), zIndex: 4 }}>
+          {COVER.mark.bottomRight}
         </div>
       </div>
     </div>

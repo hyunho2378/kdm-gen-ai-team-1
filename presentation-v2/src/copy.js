@@ -16,6 +16,14 @@ export const COVER = {
   event: '2026 KDM+ AI Workshop',
   // 히어로 서브. **brand LANDING.hero.sub 확정본과 통일**(두 사이트 문구 일치). 'XR' → '훈련'
   sub: '거리와 타이밍을 몸으로 익히는 몰입형 펜싱 훈련',
+  // 표지 상단/하단 표기(**표지 전용**. 다른 슬라이드는 상단 표기 제거, 표지만 예외).
+  // 참조 1.svg 좌표: 좌상 x60 / 중상 x798 / 우상 x1682(우측정렬) / 우하 x1613. SUIT 20(우하 17.27).
+  mark: {
+    topLeft: ['2026 KDM+', 'AI Workshop'],
+    topCenter: ['XR Fencing Glass', ': VORTEX'],
+    topRight: ['Team 1', '김다영, 주현호, 윤소희'],
+    bottomRight: '2026 KDM+ All Rights Reserved.',
+  },
 };
 
 // 인사이트 PAIN POINT (원본 1.svg)
