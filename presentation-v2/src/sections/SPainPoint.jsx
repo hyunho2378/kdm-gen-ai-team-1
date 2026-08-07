@@ -126,9 +126,9 @@ export default function SPainPoint({ registerHandler, registerEnter }) {
               style={{
                 width: 0,
                 height: 0,
-                borderLeft: '7px solid transparent',
-                borderRight: '7px solid transparent',
-                borderTop: `11px solid ${whiteA(0.72)}`,
+                borderLeft: '16px solid transparent',
+                borderRight: '16px solid transparent',
+                borderTop: `24px solid ${whiteA(0.78)}`,
               }}
             />
           </div>

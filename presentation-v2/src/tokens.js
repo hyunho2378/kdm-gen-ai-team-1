@@ -90,9 +90,13 @@ export const brandGradientStops = [colors.white, colors.red, colors.redDeep, col
 
 // **새 색 체계(컬러 시스템 견본 전용). 브랜딩 네이비 / 브랜딩 실버 두 그라디언트.**
 // 이 슬라이드는 색 견본이 내용이라 여기서만 네이비/실버가 보인다(전역 라이트 규칙과 별개).
-export const brandNavyGradient = 'linear-gradient(150deg, #101925 0%, #3C5E8B 100%)';
+// **단색 시작 + 우하단 은은한 radial.** 대각선 그라디언트를 폐기하고, 기본은 어두운 단색(#101925/#FDFDFD)이며
+// 우하단 모서리에서 나머지 색(#3C5E8B/#C4C4C4)이 은은하게 차오른다. 주인공이 되지 않게 코너에만 옅게.
+export const brandNavyGradient =
+  'radial-gradient(85% 85% at 100% 100%, #3C5E8B 0%, #101925 62%)';
 export const brandNavyStops = ['#101925', '#3C5E8B'];
-export const brandSilverGradient = 'linear-gradient(150deg, #FDFDFD 0%, #C4C4C4 100%)';
+export const brandSilverGradient =
+  'radial-gradient(85% 85% at 100% 100%, #C4C4C4 0%, #FDFDFD 62%)';
 export const brandSilverStops = ['#FDFDFD', '#C4C4C4'];
 
 /** '#E60D15' → '230, 13, 21'. 컬러 시스템이 RGB 표기를 토큰에서 유도하게 하는 유일한 통로. */

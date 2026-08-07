@@ -47,7 +47,7 @@ function Panel({ left, badge, caption, img, filled, gray, panelRef }) {
       style={{
         position: 'absolute',
         left,
-        top: '46%',
+        top: '55%',
         width: '40vw',
         height: 'min(56vh, 500px)',
         borderRadius: 20,
