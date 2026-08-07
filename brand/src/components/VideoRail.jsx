@@ -12,7 +12,7 @@
 //
 // **Apple의 영상과 문구는 한 글자도 안 가져온다**(DESIGN 15절). 치수와 스냅 문법만이다.
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { colors, spacing } from '../tokens.js';
 import { MEDIA_PENDING, VIDEO_RAIL } from '../copy.js';
@@ -23,6 +23,40 @@ export default function VideoRail() {
   const railRef = useRef(null);
   // 양 끝에서는 그쪽 화살표를 끈다. 눌러도 아무 일이 없는 버튼이 제일 나쁜 실패다
   const [edge, setEdge] = useState({ start: true, end: false });
+  // **한 번에 한 장만 돈다.** 아래 관찰자가 지금 보고 있는 카드를 고른다
+  const [live, setLive] = useState(VIDEO_RAIL.items[0].key);
+
+  /**
+   * 재생권을 한 장에게만 준다. **성능 때문이다(실측).**
+   *
+   * 1440에서 이 레일은 카드 두 장을 통째로 보여 준다(520 + 24 + 520 = 1064 < 1425).
+   * 그런데 소스가 1920x1920이라 **둘이 동시에 디코드되면 스크롤 중 p50이 59.9에서
+   * 15로 떨어진다**(재생 0/1/2/3장 사다리를 실측했고 절벽은 정확히 두 장째다).
+   * 디코더 자체는 멀쩡하다(dropped 0). 무너지는 것은 프레임 예산이다.
+   *
+   * 그래서 레일 자신을 기준(root)으로 카드가 얼마나 보이는지를 재고 **제일 많이 보이는
+   * 한 장만** 돌린다. 스냅 캐러셀이라 어차피 한 장이 자리를 잡고, 옆 카드는 첫 프레임에
+   * 멈춰 선다. 넘기면 그 자리가 바로 넘어간다.
+   */
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return undefined;
+    const ratios = new Map();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) ratios.set(e.target.dataset.railCard, e.intersectionRatio);
+        let best = null;
+        let max = 0;
+        for (const [key, r] of ratios) {
+          if (r > max) { max = r; best = key; }
+        }
+        if (best) setLive(best);
+      },
+      { root: rail, threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    for (const card of rail.querySelectorAll('[data-rail-card]')) io.observe(card);
+    return () => io.disconnect();
+  }, []);
 
   const readEdge = useCallback(() => {
     const el = railRef.current;
@@ -57,7 +91,7 @@ export default function VideoRail() {
 
       <div ref={railRef} className="vx-rail" onScroll={readEdge}>
         {VIDEO_RAIL.items.map((item) => (
-          <figure key={item.key} data-rail-card className="vx-rail-card">
+          <figure key={item.key} data-rail-card={item.key} className="vx-rail-card">
             {/* **비율은 소스가 정한다.** Apple 카드는 820x530(1.547:1)인데 우리 mask-360은
                 1920x1920 정사각이라 그 틀에 넣으면 위아래가 잘려 마스크가 깎인다(실측).
                 치수 문법은 카드 폭이 지고 비율은 소재가 진다 */}
@@ -67,6 +101,7 @@ export default function VideoRail() {
               pending={MEDIA_PENDING}
               ratio={item.ratio}
               rate={item.rate}
+              active={live === item.key}
             />
             {/* 영상과 이름 사이. **12에서 32로 벌렸다.** 붙어 있으면 이름이 영상의
                 자막처럼 읽힌다. 떨어져야 그것이 제품 이름으로 선다 */}
