@@ -21,6 +21,7 @@ import S3Concept from './sections/S3Concept.jsx';
 import SMask from './sections/SMask.jsx';
 import SController from './sections/SController.jsx';
 import SMockup from './sections/SMockup.jsx';
+import SWorkflow from './sections/SWorkflow.jsx';
 import S4Experience from './sections/S4Experience.jsx';
 import S5Duelist from './sections/S5Duelist.jsx';
 import S7Demo from './sections/S7Demo.jsx';
@@ -201,6 +202,10 @@ export default function App() {
               <SMockup src="/images/mockup/12.png" active={current === i} />
             ) : s.id === 'mockup-b' ? (
               <SMockup src="/images/mockup/13.png" active={current === i} />
+            ) : s.id === 'workflow-explore' ? (
+              <SWorkflow slide="explore" />
+            ) : s.id === 'workflow-develop' ? (
+              <SWorkflow slide="develop" />
             ) : s.id === 'experience' ? (
               <S4Experience active={current === i} />
             ) : s.id === 'duelist' ? (

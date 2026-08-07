@@ -263,7 +263,19 @@
   **AI 워크플로우·산출물 슬라이드 삭제**(SECTION_LABELS에서 제거). 셸이 전부 id 기반이라 삭제로 순서/위임 안 깨짐.
 - **목업 풀블리드 2장(컨트롤러 다음).** `SMockup.jsx`(공용, `src`만 받음), 섹션 `controller → mockup-a(12.png) → mockup-b(13.png) → experience`.
   실사 목업(1920x1080 정확 16:9)이 화면을 꽉 채우는 주인공. **텍스트 없음**(하이엔드 톤), `object-fit:cover` 풀블리드, 배경 #000001,
-  진입 시 옅은 스케일-인 1회. 이 삽입으로 **16섹션** `cover→…→controller→mockup-a→mockup-b→experience→duelist→demo`.
+  진입 시 옅은 스케일-인 1회. 이 삽입으로 16섹션이 됐고, 이후 AI 워크플로우 2장 삽입으로 **18섹션**(아래 참조).
+- **AI 워크플로우 슬라이드 2장(재구성, 목업 다음).** `SWorkflow.jsx`(공용, `slide` prop = 'explore'|'develop'), 참조 `frames/ref/2029`(형태 탐색)·`2030`(구체화)를
+  브라우저 렌더+getBBox 실측 재현(DESIGN 15절). 섹션 `mockup-b → workflow-explore → workflow-develop → experience`(**18섹션**).
+  삭제됐던 워크플로우 슬라이드를 참조대로 되살림. 배경 흰색(라이트), 헤더는 공용 2단 헤더(PV 타이포), 상단 표기 없음.
+  - **두 액센트 색 = 두 제품 라인**(실측): **연두 `#0ED400`/`#1EFF00`(컨트롤러)**, **자두 `#CD00BF`/`#FF01FA`(글라스)**. `WORKFLOW_COLORS`.
+    라이트 규칙과 별개인 워크플로우 전용 강조색. accent=캡션/라벨 텍스트, tint=선택 하이라이트 프레임(반투명 + 실선). 태스크의 "AI/사람" 프레이밍이
+    아니라 참조 실측이 컨트롤러/글라스 두 라인을 색으로 나눈다(캡션 내용도 각각 컨트롤러 CMF·글라스 발전 설명).
+  - **explore(2029):** 좌 마스크 몽타주(mj-mask-grid, x60 y451 760×568)·우 컨트롤러 몽타주(mj-controller-grid, x842 y452 763×568), 연두 하이라이트(컨트롤러 셀 x1228 y644)·
+    자두 하이라이트(마스크 셀 x246 y827), 툴카드(미드저니+비즈컴), 우측 연두/자두 캡션(x1620).
+  - **develop(2030):** 좌 컨트롤러 보드(vz-controller-board, x60 y446 928×573)·우 마스크 보드(vz-mask-board, x1005 y446 855×573), 연두 하이라이트(x97 y749)+라벨·
+    자두 하이라이트(x1354 y468)+라벨, 툴카드(비즈컴 단독). **참조 우측 라벨은 '컨트롤러…' 복붙 오타라 글라스 축에 맞게 '글라스 시각화 구체화 과정'으로 바로잡음.**
+  - 이미지 자산은 `frames/ref`(스크래치)에서 `public/images/workflow/`로 복사(mj-mask-grid/mj-controller-grid/vz-controller-board/vz-mask-board/midjourney/vizcom).
+  - **삽입 위치는 목업 다음(제품 공개 후 메이킹오프)으로 판단** — 셸이 id 기반이라 이동 자유. 검증: 양 슬라이드 참조 일치, 320/768/1440/3840 overflow 0, npm ci clean+build 통과.
 - **타이포 통일 재확인(전 슬라이드 역할 토큰만).** 헤드라인은 전 슬라이드 동일(실측 1440에서 fs 19.44 / ls -0.389 / lh 29.16 / 700),
   설명(body)도 동일(fs 14.976 / lh 24.71). S3Target 설명이 body보다 4pt 큰 리터럴이었어 `typography.body.size`로 통일했다.
   배지/특수 좌표 텍스트(GlassBadge, 컨셉 씬, painpoint 프롤로그, ENTER display)는 역할 밖이라 자기 값 유지.

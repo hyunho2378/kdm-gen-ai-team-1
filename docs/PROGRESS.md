@@ -1079,7 +1079,17 @@
      모델이 실제로 올라갔다는 증거다. 우리 에러가 아니다)
 
 ## 진행중
-- **presentation-v2 AI 워크플로우 슬라이드 재구성 작업중. 트랙 선점.** presentation-v2와 docs만.
+- **presentation-v2 AI 워크플로우 슬라이드 재구성 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함. 커밋 1건([presentation] AI 워크플로우 슬라이드 재구성).
+  - **삭제됐던 워크플로우 슬라이드를 참조 2개대로 되살림.** `SWorkflow.jsx`(공용, slide='explore'|'develop'), 참조 `frames/ref/2029`(형태 탐색)·`2030`(구체화) getBBox 실측 재현.
+    섹션 순서 `mockup-b → workflow-explore → workflow-develop → experience`(**18섹션**). 배경 흰색(라이트), 공용 2단 헤더(PV 타이포), 상단 표기 0.
+  - **두 액센트 색 = 두 제품 라인**(참조 실측): 연두 `#0ED400`/`#1EFF00`=컨트롤러, 자두 `#CD00BF`/`#FF01FA`=글라스(`WORKFLOW_COLORS`). accent=캡션/라벨, tint=선택 하이라이트 프레임.
+    태스크의 'AI/사람' 프레이밍이 아니라 참조는 컨트롤러/글라스 두 라인을 색으로 구분(캡션 내용도 각각 그러함) — 판단·보고.
+  - **이미지:** 1.png→mj-mask-grid, 2.png→mj-controller-grid, 3.png→vz-controller-board, image4→vz-mask-board, mid→midjourney, viz→vizcom. `frames/ref`(스크래치)→`public/images/workflow/` 복사.
+  - **explore:** 좌 마스크몽타주+우 컨트롤러몽타주, 연두(컨트롤러셀)/자두(마스크셀) 하이라이트, 툴카드(미드저니+비즈컴), 우측 색 캡션.
+  - **develop:** 좌 컨트롤러보드+우 마스크보드, 연두(x97)+자두(x1354) 하이라이트·라벨, 툴카드(비즈컴 단독). **참조 우측 라벨 '컨트롤러' 복붙 오타→'글라스 시각화 구체화 과정'으로 교정.**
+  - **판단·보고:** ①두 참조=두 슬라이드(한 상태 아님). ②두 색은 컨트롤러/글라스 라인 구분(참조 실측이 그러함). ③삽입 위치=목업 다음(메이킹오프), 셸 id 기반이라 이동 자유.
+  - **검증:** 양 슬라이드 격리 스크린샷이 참조 2029/2030과 일치(헤더·몽타주/보드·연두/자두 하이라이트·색 캡션/라벨·툴카드). 상단 표기 0. 320/768/1440/3840 overflow 0. npm ci clean+build 통과(1.82s).
+    (워크플로우는 깊은 슬라이드라 셸 딥스크롤 캡처 제약 → 앞 섹션 임시 display:none으로 첫 화면에 올려 촬영, 비파괴·새로고침 원복.)
 - **presentation-v2 표지 배경 블러 완료(확인 대기). 트랙 선점 해제.** presentation-v2와 docs만. 푸시 안 함. 커밋 1건([presentation] 표지 배경 블러).
   - **배경만 블러:** 표지 좌우 제품 렌더(person/controller, z1)에만 `filter: blur` 적용. 중앙 흰 심볼(logo.svg, z3)·상단 표기·하단 카피(z4)는 블러 없이 선명 → 로고가 도드라진다.
   - **강도:** 렌더 크기 비례 `blur(min(0.9375vw, 1.667vh))`(=vh(18) 직접형, 1920 기준 ≈18px / 3840 36px / 320 3px). blur()에서 `number * min(length)` 곱이 일부 엔진에서 0으로 죽어 동치 min()으로 우회.
