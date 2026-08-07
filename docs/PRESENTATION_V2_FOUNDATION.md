@@ -134,11 +134,13 @@
   cx948.219 cy543.797 r190.657 fill white0.3 + ring stroke white0.7 / 가로 축선 x478.617→1436.17 y539.521 /
   조합 로고(logo_main 흰색) center(948,548) 162x116 원 안 / 워드마크(black_wm 흰색 마스크) center(950,991) 520x62 하단 /
   텍스트 좌 "소용돌이처럼 몰아치는" x60·우 "경기의 긴장감" x1728 y549 SUIT24(copy `CONCEPT_SCENE`).
-- **좌표 매핑(전 요소 공통):** 섹션 중앙 앵커 `50%`/`50%` + 높이 스케일 vh 오프셋. `k = 100/1080` vh/ref-px.
-  `left=calc(50% + (x-960)*k vh)`, `top=calc(50% + (y-540)*k vh)`, `translate(-50%,-50%)`. 크기도 ref*k vh.
-  **`50%`는 섹션 콘텐츠 중앙이라 세로 스크롤바 무관**(50vw는 스크롤바 폭만큼 우측으로 밀렸다 — 실측 x+10 드리프트 확인 후 교체).
-  이 매핑은 concept.png의 height-cover 배치와 정확히 일치해 오버플로 폭에 무관하게 오버레이가 배경에 정합.
-  **실측: 16:9와 4K(3840)에서 원 cx949.8 r368.0 등 참조와 픽셀 일치.**
+- **좌표 매핑(전 요소 공통, 개정 — 전체화면 잘림 방지):** 섹션 중앙 앵커 `50%`/`50%` + **contain-fit 단위**
+  `REF = min(100vw / 1920, 100vh / 1080)`(1 ref-px). `left=calc(50% + (x-960)*REF)`, `top=calc(50% + (y-540)*REF)`,
+  크기도 `refPx*REF`. **`min(가로,세로)`이라 전체화면 종횡비가 16:9가 아니어도(16:10 등) 1920×1080 구도가 통째로 들어와 안 잘린다.**
+  이전엔 높이 단위(`k vh`) 고정이라 16:10에서 좌우 텍스트("소용돌이처럼 몰아치는/경기의 긴장감")·마스크/컨트롤러 좌측 라벨이
+  마진 밖으로 잘렸다(실측: 16:10 좌 -42/우 +27px). **16:9에선 `min`의 두 항이 같아 이전 vh 기준과 동일**(실측 3840 원 cx949.8 유지).
+  `50%`는 섹션 콘텐츠 중앙이라 세로 스크롤바 무관. concept.png/mask-back/pro-con1의 cover 배경과 16:9에서 정합(타 비율은 contain 축소).
+  적용: `S3Concept`/`SMask`/`SController` 세 슬라이드. 커버 서브카피 "잘림"은 등장 애니(mark yPercent 6) 초기 상태 프리즈 아티팩트였고 실제 잘림 아님.
 - **글래스 재현(Figma Glass 근사):** 외곽 원 `backdrop-filter: blur(4px) saturate(1.1) brightness(1.03)`(Frost≈4) +
   흰 림 테두리 1.5px(stroke 두께) + inset 하이라이트(두께감). 내부 디스크 blur(3px)+white0.3+ring. `boxSizing:border-box`로
   테두리 포함 반지름 정확. **완벽 일치가 아니라 유리처럼 보이게**(지시).
@@ -246,7 +248,14 @@
 
 - **프롤로그·브랜드 네이밍 슬라이드 삭제.** `SECTION_LABELS`에서 제거, 컴포넌트(SPrologue/S5Naming)와
   copy(PROLOGUE/NAMING) 정리. **방향키 셸은 전부 id 기반**이라 삭제로 순서/위임이 안 깨진다
-  (실측: 16섹션 `cover→painpoint→…→concept→mask→controller→experience→…→demo`, 순서 유지, 오버플로 0, 콘솔 에러 0).
+  (실측: **14섹션** `cover→painpoint→…→concept→mask→controller→experience→duelist→demo`, 순서 유지, 오버플로 0, 콘솔 에러 0).
+  **AI 워크플로우·산출물 슬라이드 삭제**(SECTION_LABELS에서 제거). 셸이 전부 id 기반이라 삭제로 순서/위임 안 깨짐.
+- **타이포 통일 재확인(전 슬라이드 역할 토큰만).** 헤드라인은 전 슬라이드 동일(실측 1440에서 fs 19.44 / ls -0.389 / lh 29.16 / 700),
+  설명(body)도 동일(fs 14.976 / lh 24.71). S3Target 설명이 body보다 4pt 큰 리터럴이었어 `typography.body.size`로 통일했다.
+  배지/특수 좌표 텍스트(GlassBadge, 컨셉 씬, painpoint 프롤로그, ENTER display)는 역할 밖이라 자기 값 유지.
+- **ENTER VORTEX(데모):** 헤드라인 `colors.navy`(#263E5F). 우하단 CTA 원 버튼은 브랜드 사이트(`https://brand-rho-liart.vercel.app/`) 새 탭 이동.
+- **유파 정렬(개정):** 카드를 키우고(height 64%, width clamp 150~400) 인물을 상단으로 올려 **하단 캡션 영역을 비워** 나라별 유파
+  라벨과 안 겹치게(실측 3카드 인물 하단이 라벨 상단 위). 중앙은 스타일/인용까지 있어 더 비운다. 순환 구조 유지.
 - **디자인 키워드 흰 카드 실측 재확인:** 카드 서브트리에 흰/라이트 배경 요소 0(슬라이드 자체 `#F6F6F6`만).
   카드는 사진 + 하단 스크림 + 흰 텍스트뿐. 예전 흰 판은 현행 코드에 없다(구 배포 잔상이었다).
 - **헤드라인↔본문 간격 일관화(정제).** SlideHeader 서브 `marginTop`을 `clamp(10px,1.6vh,20px)`로

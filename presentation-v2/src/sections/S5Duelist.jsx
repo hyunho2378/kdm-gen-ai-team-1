@@ -11,7 +11,7 @@
 // (43~47행 circDist, 83~88행 lock)에서 가져왔다. 안무(가로 3슬롯 중앙 강조)는 이 섹션에 맞게 새로 짰다.
 
 import { useEffect, useRef, useState } from 'react';
-import { colors, typography, grid, bgA, whiteA } from '../tokens.js';
+import { colors, typography, grid, whiteA } from '../tokens.js';
 import { DUELIST, DUELIST_STYLES } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { SlideHeader } from '../components/Bits.jsx';
@@ -63,9 +63,6 @@ const circDist = (i, activePos, n) => {
 const EASE = 'cubic-bezier(0.22,1,0.36,1)';
 const DUR = 620;
 const trans = `transform ${DUR}ms ${EASE}, opacity ${DUR}ms ease`;
-
-// 중앙 카드 하단 가독 스크림(라이트). 잉크 텍스트가 인물 위에 올 때 받친다(FOUNDATION 사진 규칙).
-const CENTER_SCRIM = `linear-gradient(to top, ${bgA(0.92)} 0%, ${bgA(0.72)} 26%, ${bgA(0.2)} 52%, ${bgA(0)} 72%)`;
 
 export default function S5Duelist({ registerHandler, registerEnter }) {
   const [state, setState] = useState(0);
@@ -131,10 +128,10 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
             style={{
               position: 'absolute',
               left: `${x}%`,
-              // 바닥에 안 붙게 위로 올려 세로 여백 확보. 폭·높이를 줄여 인물 사진 겹침 해소.
-              bottom: 'clamp(48px, 9vh, 104px)',
-              height: '56%',
-              width: 'clamp(128px, 18vw, 360px)',
+              // 바닥에 안 붙게 위로. 카드를 키워(사진 확대) 인물은 상단, 캡션은 하단으로 자리를 가른다.
+              bottom: 'clamp(36px, 6vh, 84px)',
+              height: '64%',
+              width: 'clamp(150px, 20vw, 400px)',
               zIndex: z,
               opacity: isCenter ? 1 : SIDE_OPACITY,
               transform: `translateX(-50%) scale(${scale})`,
@@ -144,15 +141,11 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
               willChange: 'transform, opacity',
             }}
           >
-            {/* 인물. 바닥 정렬 contain이라 폭은 각자 자연 비율대로 앉는다. */}
-            <div style={{ position: 'absolute', inset: 0 }}>
+            {/* 인물. **하단 캡션 영역을 비워 위로 올린다**(라벨과 안 겹침). 그 안에서 바닥 정렬 contain.
+                중앙은 스타일/인용까지 있어 더 비운다. */}
+            <div style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: isCenter ? 'clamp(134px, 19.5vh, 215px)' : 'clamp(86px, 11.6vh, 144px)' }}>
               <AssetImage src={s.img} fit="contain" position="center bottom" />
             </div>
-
-            {/* 중앙 카드: 하단 스크림 + 유파 정보(스타일/인용). 옆 카드: 유파명 + 배지만. */}
-            {isCenter && (
-              <div aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '46%', background: CENTER_SCRIM }} />
-            )}
             <div
               style={{
                 position: 'absolute',

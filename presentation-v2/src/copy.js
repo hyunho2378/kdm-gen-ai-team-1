@@ -73,11 +73,11 @@ export const WHY = {
   headline: ['공간의 제약을 넘어,', '일상의 공간이 현장이 되는 순간'],
   asis: {
     badge: 'AS-IS',
-    caption: ['도복과 마스크와 전용 피스트가 있어야 첫 합', '초심자가 겨루기까지 수개월의 기초 반복'],
+    caption: ['도복과 마스크와 전용 피스트가 있어야 첫 합 가능', '초심자가 겨루기까지 수개월의 기초 반복'],
   },
   tobe: {
     badge: 'TO-BE',
-    caption: ['폰 하나를 검으로 쥐고 그 자리에서 대련', '거리와 타이밍을 화면이 실시간으로 해설'],
+    caption: ['컨트롤러 하나를 검으로 쥐고 그 자리에서 대련', '거리와 타이밍을 화면이 실시간으로 해설'],
   },
 };
 
@@ -387,8 +387,6 @@ export const SECTION_LABELS = [
   { id: 'controller', ko: '컨트롤러', en: 'CONTROLLER' },
   { id: 'experience', ko: '인터랙션', en: 'EXPERIENCE' },
   { id: 'duelist', ko: '유파', en: 'AI DUELIST' },
-  { id: 'workflow', ko: 'AI 워크플로우', en: 'AI WORKFLOW' },
-  { id: 'outputs', ko: '산출물', en: 'OUTPUTS' },
   { id: 'demo', ko: '데모', en: 'DEMO' },
 ];
 

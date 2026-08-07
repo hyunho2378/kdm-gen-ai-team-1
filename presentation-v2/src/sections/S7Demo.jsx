@@ -19,7 +19,8 @@ import { colors, typography, motion, grid, inkA } from '../tokens.js';
 import { DEMO } from '../copy.js';
 import { Eyebrow } from '../components/Bits.jsx';
 
-const ARENA_URL = import.meta.env.VITE_ARENA_URL || '';
+// ENTER VORTEX 버튼은 브랜드 사이트로 연결한다(지시 URL).
+const BRAND_URL = 'https://brand-rho-liart.vercel.app/';
 
 export default function S7Demo({ active }) {
   const labelRef = useRef(null);
@@ -56,12 +57,8 @@ export default function S7Demo({ active }) {
   }, [active]);
 
   const openArena = () => {
-    if (!ARENA_URL) {
-      // 상수가 없으면 이동하지 않는다. 발표 중 빈 탭이 열리는 것을 막는다.
-      console.warn('[demo] VITE_ARENA_URL 미설정. 이동을 건너뛴다.');
-      return;
-    }
-    window.open(ARENA_URL, '_blank', 'noopener,noreferrer');
+    // 브랜드 사이트로 새 탭 이동.
+    window.open(BRAND_URL, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -106,7 +103,8 @@ export default function S7Demo({ active }) {
                 fontWeight: 300,
                 letterSpacing: '-0.01em',
                 lineHeight: 1.06,
-                color: colors.text.primary,
+                // ENTER THE VORTEX 헤드라인을 프라이머리 네이비로(지시). 라이트 배경 대비 5.97:1.
+                color: colors.navy,
                 opacity: 0,
                 willChange: 'transform, opacity',
               }}
