@@ -1,43 +1,29 @@
-// 유파별 AI. 서브 진행 6단계(0 인트로 → 1 카드1 → 2 복귀 → 3 카드2 → 4 복귀 → 5 카드3).
+// 유파별 AI (순환 캐러셀). 상단 표기 없음.
 //
-// --- 레이아웃 출처 ---
-// `Slide 16_9 - 7.svg`(1920x1080)를 Chromium으로 렌더해 기준으로 삼고 좌표를 SVG에서 직접 뽑았다.
-//   인물 3장  x 581.1 w 609.4 h 934.8 / x 1153.1 w 290.1 h 987.0 / x 1504.6 w 196.7 h 987.0
-//     → **원본은 인물 폭이 제각각이다.** 런지 자세가 넓고 서 있는 둘은 좁다. 높이를 맞추고 폭은 놔둔다
-//   배지 3개  y 936.575  h 60.35  rx 30.17(= h/2 필). x 787.7 w 190.3 / x 1188.2 w 220 / x 1521.9 w 220
-//   레드 글로우 ellipse cx 1165.5 cy 718 rx 997.1 ry 730
-//     원본 스톱은 알파 0.9에서 시작하고 주황(#D93E16 #EA520C #FF6A00)으로 번진다.
-//     **브랜드 팔레트에 주황이 없고 지시가 저알파 radial이라 tokens.red 한 색으로 낮은 알파만 쓴다.**
+// **3개 유파를 중앙 기준으로 놓고, 중앙 카드를 무대처럼 크게 강조한다.**
+//   방향키를 누르면 중앙 카드가 옆으로 나오고 다음 유파가 중앙으로 온다(ver1→ver2→ver3, 순환식).
+//   상태 0/1/2 = 각 유파가 중앙. 경계(0에서 위 / 2에서 아래)에서만 셸이 섹션을 옮긴다.
+//   **상세 영상/블러/상세 패널 없음.** 중앙(강조) 카드에 유파의 스타일 한 줄 + 인용 한 줄을 얹는다.
+//   옆 카드는 작게·흐리게(opacity만, 블러 없음). transform과 opacity 위주.
 //
-// --- 카드 인터랙션 출처 ---
-// 포폴 저장소 `client/src/components/work/StackCarousel.jsx`(26-portfolio-hyunho)를 실제로 열고
-// 아래 메커니즘을 가져왔다. 추론이 아니다.
-//   - circDist(i, activePos, N): 원형 최단거리. 모듈로 두 번으로 음수를 접고 N/2 넘으면 반대편으로(43~47행)
-//   - isActive = absD < 0.5 (214행)
-//   - z 정렬  z = Math.round(100 - absD) (217행)
-//   - dim 계산 absD < 0.02면 0, 아니면 Math.min(0.35, absD * 0.12) (225~227행)
-//   - 락 기반 한 칸 스텝 go(dir) + lockRef (83~88행)
-//   - transition 패턴 'transform ...ms cubic-bezier(0.22,1,0.36,1), opacity ...ms ease' (230~232행)
-// **안무는 다르다.** StackCarousel은 아치형 팬 캐러셀이고 여기는 가로 일렬에서 한 장이 앞으로 나온다.
-// 위 계산식 위에 이 섹션의 안무를 새로 짰다.
+// --- 좌표/캐러셀 출처 ---
+// 원형 최단거리 circDist와 락 기반 한 칸 스텝은 포폴 `client/src/components/work/StackCarousel.jsx`
+// (43~47행 circDist, 83~88행 lock)에서 가져왔다. 안무(가로 3슬롯 중앙 강조)는 이 섹션에 맞게 새로 짰다.
 
 import { useEffect, useRef, useState } from 'react';
-import { colors, typography, motion, grid } from '../tokens.js';
+import { colors, typography, grid, bgA } from '../tokens.js';
 import { DUELIST, DUELIST_STYLES } from '../copy.js';
 import AssetImage from '../components/AssetImage.jsx';
 import { SlideHeader, Badge } from '../components/Bits.jsx';
 
-const N = DUELIST_STYLES.length;
-const STATES = N * 2; // 0 인트로 + (전진, 복귀) x 3 → 마지막 복귀는 없으므로 0~5
-// 상태 → 앞으로 나온 카드. null이면 인트로/복귀(가로 일렬).
-const FOCUS_BY_STATE = [null, 0, null, 1, null, 2];
+const N = DUELIST_STYLES.length; // 3
+const STATES = N; // 상태 0/1/2 = 각 유파가 중앙(순환)
 
-// 인트로에서 카드가 앉는 x 중심. 원본 인물 중심 885.7 / 1298.2 / 1602.9 을 1920으로 나눈 값.
-const REST_X = [46.1, 67.6, 83.5];
-// 포커스된 카드가 이동하는 x 중심. 좌측으로 빠지고 우측을 상세에 내준다.
-const FOCUS_X = 25;
-const FOCUS_SCALE = 1.16;
-const REST_SCALE = 0.86; // 포커스 상태에서 나머지 카드가 물러나는 배율
+// 슬롯 위치(중앙 기준 대칭). d = 원형 최단거리. 중앙 50%, 우 75%, 좌 25%.
+const slotX = (d) => 50 + d * 25;
+const FOCUS_SCALE = 1.12; // 중앙 무대 강조
+const SIDE_SCALE = 0.78; // 옆 카드는 물러난다
+const SIDE_OPACITY = 0.5; // 흐리게(블러 아님, opacity만)
 
 // StackCarousel 43~47행 그대로. 원형 최단거리.
 const circDist = (i, activePos, n) => {
@@ -46,44 +32,39 @@ const circDist = (i, activePos, n) => {
   return d;
 };
 
-// StackCarousel 230~232행의 곡선을 그대로 쓰고 길이만 이 안무에 맞춘다.
-// 커지는 전환 0.6s, 복귀는 더 느리게(0.9s).
 const EASE = 'cubic-bezier(0.22,1,0.36,1)';
-const trans = (ms) => `transform ${ms}ms ${EASE}, opacity ${Math.round(ms * 0.8)}ms ease, filter ${ms}ms ease`;
+const DUR = 620;
+const trans = `transform ${DUR}ms ${EASE}, opacity ${DUR}ms ease`;
+
+// 중앙 카드 하단 가독 스크림(라이트). 잉크 텍스트가 인물 위에 올 때 받친다(FOUNDATION 사진 규칙).
+const CENTER_SCRIM = `linear-gradient(to top, ${bgA(0.92)} 0%, ${bgA(0.72)} 26%, ${bgA(0.2)} 52%, ${bgA(0)} 72%)`;
 
 export default function S5Duelist({ registerHandler, registerEnter }) {
   const [state, setState] = useState(0);
   const stateRef = useRef(0);
-  const lockRef = useRef(false); // StackCarousel 83~88행의 락을 그대로 가져왔다
-  const growingRef = useRef(false); // 커지는 중인지 복귀 중인지. 전환 길이를 가른다
+  const lockRef = useRef(false); // StackCarousel 83~88행의 락
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 락으로 한 번에 한 칸만. 연타로 안무가 건너뛰지 않는다.
-    // 원본은 260ms 전환에 90ms 락이지만 이 안무는 600~900ms라 그에 맞춰 늘렸다.
     const go = (dir) => {
       const next = stateRef.current + dir;
       if (next < 0 || next >= STATES) return false; // 경계 → 셸이 S4/S6로 옮긴다
-      growingRef.current = FOCUS_BY_STATE[next] !== null;
       stateRef.current = next;
       setState(next);
       if (!reduced) {
         lockRef.current = true;
-        setTimeout(() => { lockRef.current = false; }, growingRef.current ? 620 : 920);
+        setTimeout(() => { lockRef.current = false; }, DUR);
       }
       return true;
     };
 
     const handleStep = (dir) => {
-      // 전환 중 입력은 삼킨다(consume). 안 그러면 애니메이션 도중에 섹션이 넘어간다.
-      if (lockRef.current) return true;
+      if (lockRef.current) return true; // 전환 중 입력은 삼킨다
       return go(dir);
     };
-
     const handleEnter = (dir) => {
-      const next = dir > 0 ? 0 : STATES - 1;
-      growingRef.current = FOCUS_BY_STATE[next] !== null;
+      const next = dir > 0 ? 0 : STATES - 1; // 아래로 진입 ver1, 위로 진입 ver3
       stateRef.current = next;
       setState(next);
       lockRef.current = false;
@@ -97,52 +78,24 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
     };
   }, [registerHandler, registerEnter]);
 
-  const focus = FOCUS_BY_STATE[state];
-  const focused = focus !== null;
-  const growing = growingRef.current;
-  const dur = growing ? 600 : 900; // 커지는 전환 0.6s, 복귀는 더 느리게
-
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: colors.bg }}>
-      {/* 상단 좌측 헤더. 아이브로우는 전역 그리드 좌상단. 포커스 상태에서는 헤드라인/서브를 물린다. */}
-      <div
-        style={{
-          position: 'absolute',
-          left: grid.marginX,
-          top: grid.marginTop,
-          width: 'min(52vw, 900px)',
-          zIndex: 6,
-          pointerEvents: 'none',
-        }}
-      >
-        {/* 공용 2단 헤더. 포커스 상태에서는 우측 열(헤드라인/서브)만 물리고 아이브로우는 남는다. */}
+      {/* 상단 2단 헤더(항상 표시). 아이브로우 좌 네이비 | 헤드라인 + 서브 우. PV 타이포. */}
+      <div style={{ position: 'absolute', left: grid.marginX, right: grid.marginX, top: grid.marginTop, zIndex: 6, pointerEvents: 'none' }}>
         <SlideHeader
           eyebrow={{ en: DUELIST.label.en, ko: DUELIST.label.ko, tone: colors.navy }}
           headline={DUELIST.headline}
           sub={DUELIST.sub}
-          rightStyle={{
-            opacity: focused ? 0 : 1,
-            transform: focused ? 'translateY(-8px)' : 'translateY(0)',
-            transition: `opacity ${dur}ms ease, transform ${dur}ms ${EASE}`,
-          }}
         />
       </div>
 
-      {/* 카드 3장. 인트로는 가로 일렬, 포커스 상태는 한 장이 좌측으로 나오고 나머지는 blur로 물러난다. */}
+      {/* 카드 3장. 중앙(active)은 크게 강조 + 스타일/인용, 옆은 작게 흐리게. */}
       {DUELIST_STYLES.map((s, i) => {
-        // StackCarousel의 원형 최단거리. 포커스가 없으면 자기 자신을 중심으로 둬 d = 0.
-        const d = circDist(i, focused ? focus : i, N);
-        const absD = Math.abs(d);
-        const isActive = focused && absD < 0.5; // StackCarousel 214행
-
-        // dim: StackCarousel 225~227행의 식. 카드가 3장뿐이라 absD 상한이 1이고
-        // 그대로 쓰면 0.12까지만 어두워진다. 포커스 상태에서만 배수를 걸되 **원본 상한 0.35를 지킨다.**
-        const dim = absD < 0.02 ? 0 : Math.min(0.35, absD * 0.12 * (focused ? 3 : 1));
-        const blur = focused ? Math.min(6, absD * 6) : 0;
-        const z = Math.round(100 - absD); // StackCarousel 217행
-
-        const x = isActive ? FOCUS_X : REST_X[i];
-        const scale = focused ? (isActive ? FOCUS_SCALE : REST_SCALE) : 1;
+        const d = circDist(i, state, N);
+        const isCenter = d === 0;
+        const x = slotX(d);
+        const scale = isCenter ? FOCUS_SCALE : SIDE_SCALE;
+        const z = 100 - Math.abs(d) * 10; // 중앙이 위, 옆은 아래(감싸는 카드는 중앙 뒤로 지난다)
 
         return (
           <div
@@ -151,156 +104,88 @@ export default function S5Duelist({ registerHandler, registerEnter }) {
               position: 'absolute',
               left: `${x}%`,
               bottom: 0,
-              height: '91%',
-              width: 'clamp(160px, 30vw, 620px)',
+              height: '84%',
+              width: 'clamp(160px, 26vw, 540px)',
               zIndex: z,
+              opacity: isCenter ? 1 : SIDE_OPACITY,
               transform: `translateX(-50%) scale(${scale})`,
               transformOrigin: 'center bottom',
-              filter: `blur(${blur}px)`,
-              transition: trans(dur),
+              transition: trans,
               pointerEvents: 'none',
-              willChange: 'transform, filter',
+              willChange: 'transform, opacity',
             }}
           >
-            {/* 인물. 원본처럼 바닥 정렬 contain이라 폭은 각자 자연 비율대로 앉는다. */}
-            <div style={{ position: 'absolute', inset: '0 0 20% 0' }}>
+            {/* 인물. 바닥 정렬 contain이라 폭은 각자 자연 비율대로 앉는다. */}
+            <div style={{ position: 'absolute', inset: 0 }}>
               <AssetImage src={s.img} fit="contain" position="center bottom" />
-              {/* 비활성 카드를 물린다. 라이트 반전: 검은 막 → bg 막으로 옅게 밀어낸다. */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: colors.bg,
-                  opacity: dim,
-                  transition: `opacity ${dur}ms ease`,
-                  pointerEvents: 'none',
-                }}
-              />
             </div>
 
-            {/* 유파명 + Ver 배지. 원본 배지는 y 936.575, rx = h/2 인 필이다.
-                하단 진행 도트와 겹치지 않게 띄운다(실측에서 유파명이 도트와 부딪혔다). */}
+            {/* 중앙 카드: 하단 스크림 + 유파 정보(스타일/인용). 옆 카드: 유파명 + 배지만. */}
+            {isCenter && (
+              <div aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '46%', background: CENTER_SCRIM }} />
+            )}
             <div
               style={{
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                bottom: 'clamp(38px, 5.4vh, 62px)',
+                bottom: isCenter ? 'clamp(16px, 2.6vh, 34px)' : 'clamp(28px, 4vh, 50px)',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 'clamp(5px, 0.9vh, 11px)',
+                gap: 'clamp(6px, 1vh, 12px)',
                 textAlign: 'center',
+                padding: '0 clamp(8px, 1vw, 18px)',
               }}
             >
               <span
                 style={{
                   fontFamily: typography.family,
-                  fontSize: typography.caption.size,
-                  fontWeight: 500,
-                  letterSpacing: '-0.01em',
-                  color: colors.text.secondary,
+                  fontSize: typography.body.size,
+                  fontWeight: 700,
+                  letterSpacing: '-0.02em',
+                  color: colors.text.primary,
                   whiteSpace: 'nowrap',
                 }}
               >
                 {s.school}
               </span>
-              <Badge text={s.badge} filled={isActive} />
+              <Badge text={s.badge} filled={isCenter} />
+
+              {/* 중앙 카드만: 스타일 한 줄 + 인용 한 줄. */}
+              {isCenter && (
+                <>
+                  <span
+                    style={{
+                      marginTop: 'clamp(2px, 0.6vh, 8px)',
+                      fontFamily: typography.family,
+                      fontSize: typography.body.size,
+                      fontWeight: 400,
+                      lineHeight: 1.5,
+                      color: colors.text.secondary,
+                      wordBreak: 'keep-all',
+                    }}
+                  >
+                    {s.style}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: typography.family,
+                      fontSize: typography.body.size,
+                      fontWeight: 600,
+                      lineHeight: 1.5,
+                      color: colors.text.primary,
+                      wordBreak: 'keep-all',
+                    }}
+                  >
+                    “{s.quote}”
+                  </span>
+                </>
+              )}
             </div>
           </div>
         );
       })}
-
-      {/* 우측 상세. 포커스 상태에서만 뜬다.
-          **카드보다 위에 둔다.** 카드 z는 100 - absD(StackCarousel 217행)라 99~100이고
-          그대로 두면 흐린 카드가 미디어 슬롯을 덮는다(실측). */}
-      <div
-        style={{
-          position: 'absolute',
-          right: 'clamp(20px, 4vw, 96px)',
-          top: '50%',
-          zIndex: 110,
-          width: 'min(40vw, 660px)',
-          transform: `translateY(-50%) translateX(${focused ? 0 : 26}px)`,
-          opacity: focused ? 1 : 0,
-          transition: `opacity ${dur}ms ease, transform ${dur}ms ${EASE}`,
-          pointerEvents: 'none',
-        }}
-      >
-        {focused ? (
-          <>
-            {/* 스타일 2줄 */}
-            <div
-              style={{
-                fontFamily: typography.family,
-                // 상세 제목. 본문 크기 + 700로 위계를 굵기로.
-                fontSize: typography.body.size,
-                fontWeight: 700,
-                letterSpacing: '-0.025em',
-                lineHeight: 1.45,
-                color: colors.text.primary,
-              }}
-            >
-              {DUELIST_STYLES[focus].school}
-            </div>
-            <div
-              style={{
-                marginTop: 4,
-                fontFamily: typography.family,
-                fontSize: typography.body.size,
-                fontWeight: typography.body.weight,
-                lineHeight: typography.body.leading,
-                color: colors.text.secondary,
-              }}
-            >
-              {DUELIST_STYLES[focus].style}
-            </div>
-
-            {/* 인용 */}
-            <div
-              style={{
-                marginTop: 'clamp(12px, 2.2vh, 26px)',
-                paddingLeft: 'clamp(10px, 1vw, 16px)',
-                borderLeft: `2px solid ${colors.navy}`,
-                fontFamily: typography.family,
-                fontSize: typography.body.size,
-                fontWeight: 500,
-                lineHeight: 1.6,
-                color: colors.text.primary,
-              }}
-            >
-              {DUELIST_STYLES[focus].quote}
-            </div>
-
-            {/* 상세 미디어 슬롯. 실제 영상이 없어 다크 플레이스홀더로 자리만 잡는다. */}
-            <div
-              style={{
-                marginTop: 'clamp(14px, 2.6vh, 30px)',
-                aspectRatio: '16 / 9',
-                borderRadius: 14,
-                background: `linear-gradient(155deg, ${colors.raised} 0%, ${colors.bg} 100%)`,
-                boxShadow: `inset 0 0 0 1px ${colors.line.faint}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: typography.family,
-                  fontSize: typography.caption.size,
-                  fontWeight: 500,
-                  letterSpacing: '0.16em',
-                  color: colors.text.faint,
-                }}
-              >
-                {DUELIST.mediaPending}
-              </span>
-            </div>
-          </>
-        ) : null}
-      </div>
     </div>
   );
 }

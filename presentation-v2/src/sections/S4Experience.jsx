@@ -81,13 +81,13 @@ export default function S4Experience({ active }) {
         <SlideHeader
           eyebrow={{ en: EXPERIENCE.label.en, ko: EXPERIENCE.label.ko, tone: colors.navy }}
           headline={EXPERIENCE.headline}
-          sub={[
-            <span key="body">
-              {EXPERIENCE.body.map((seg, i) => (
+          sub={EXPERIENCE.body.map((line, li) => (
+            <span key={li}>
+              {line.map((seg, i) => (
                 <span key={i} style={{ fontWeight: seg.b ? 700 : 400 }}>{seg.t}</span>
               ))}
-            </span>,
-          ]}
+            </span>
+          ))}
         />
       </div>
 
