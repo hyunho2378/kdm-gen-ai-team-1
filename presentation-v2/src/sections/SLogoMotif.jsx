@@ -106,9 +106,7 @@ export default function SLogoMotif({ active }) {
           willChange: 'transform, opacity',
         }}
       >
-        {/* id: App의 트래블링 오버레이가 이 rect를 출발점으로 재고, 전환 시작 때 이 로고를 숨긴다. */}
         <img
-          id="motif-flight-logo"
           src={LOGO_MOTIF.symbol}
           alt={LOGO_MOTIF.label.en}
           draggable="false"
