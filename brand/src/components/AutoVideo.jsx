@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from 'react';
 import { isReduced } from '../lib/motion.js';
 import { captionStyle } from './typo.js';
 
-export default function AutoVideo({ src, pending, ratio = '1425 / 848', rate, active = true, className, style }) {
+export default function AutoVideo({ src, poster, pending, ratio = '1425 / 848', rate, active = true, className, style }) {
   const ref = useRef(null);
   // 자동 재생이 거부됐거나 모션 감소면 컨트롤을 켠다. 사람이 누를 길이 남아야 한다
   const [manual, setManual] = useState(false);
@@ -101,6 +101,7 @@ export default function AutoVideo({ src, pending, ratio = '1425 / 848', rate, ac
       className={className}
       style={{ ...style, aspectRatio: ratio, objectFit: 'cover' }}
       src={src}
+      poster={poster}
       muted
       loop
       playsInline

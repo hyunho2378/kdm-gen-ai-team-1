@@ -118,14 +118,26 @@ export default function VideoRail() {
             {/* **비율은 소스가 정한다.** Apple 카드는 820x530(1.547:1)인데 우리 mask-360은
                 1920x1920 정사각이라 그 틀에 넣으면 위아래가 잘려 마스크가 깎인다(실측).
                 치수 문법은 카드 폭이 지고 비율은 소재가 진다 */}
-            <AutoVideo
-              className="vx-rail-media"
-              src={item.src}
-              pending={MEDIA_PENDING}
-              ratio={item.ratio}
-              rate={item.rate}
-              active={live === item.key}
-            />
+            {item.image ? (
+              // 정지 화면 카드. 영상이 아니라 재생권과 무관하다
+              <img
+                className="vx-rail-media"
+                src={item.image}
+                alt={item.alt}
+                loading="lazy"
+                style={{ aspectRatio: item.ratio, objectFit: 'cover' }}
+              />
+            ) : (
+              <AutoVideo
+                className="vx-rail-media"
+                src={item.src}
+                poster={item.poster}
+                pending={MEDIA_PENDING}
+                ratio={item.ratio}
+                rate={item.rate}
+                active={live === item.key}
+              />
+            )}
             {/* 영상과 이름 사이. **12에서 32로 벌렸다.** 붙어 있으면 이름이 영상의
                 자막처럼 읽힌다. 떨어져야 그것이 제품 이름으로 선다 */}
             <figcaption style={{ ...bodyStyle, marginTop: spacing.unit * 4 }}>{item.line}</figcaption>

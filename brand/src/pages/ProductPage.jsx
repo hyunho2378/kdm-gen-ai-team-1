@@ -115,7 +115,7 @@ export default function ProductPage({ slug }) {
                   슬롯도 1:1이다(4:3에 넣으면 위아래가 잘린다). 마스크 탑 뷰만 렌더가
                   아직 없어 대기 표면으로 남는다 */}
               <WaveReveal className="vx-views">
-                {con.views.map((v) => (
+                {con.views.filter((v) => v.src).map((v) => (
                   <HoverMedia
                     key={v.label}
                     image={v.src}
@@ -156,10 +156,13 @@ export default function ProductPage({ slug }) {
           {PRODUCT_DETAIL.boxLabel}
         </h2>
         <ul data-beat className="vx-bento">
-          {box.map((item) => (
-            <li key={item} className="vx-bento-cell">
-              {/* 구성품 이미지 자리. **빈 박스가 아니라 표면이다.** 이미지가 오면 덮는다 */}
-              <span style={captionStyle}>{MEDIA_PENDING}</span>
+          {box.map((item, i) => (
+            <li key={item} className="vx-bento-cell" data-media={i === 0 ? 'true' : undefined}>
+              {/* 본체 칸만 실제 렌더가 선다. 케이블과 케이스는 사진이 없어 이름만 둔다
+                  (예전의 Image pending 문구를 걷었다) */}
+              {i === 0 ? (
+                <img className="vx-bento-img" src={media.dive.src} alt={media.dive.alt} loading="lazy" />
+              ) : null}
               <span style={{ ...bodyStyle, marginTop: 'auto' }}>{item}</span>
             </li>
           ))}

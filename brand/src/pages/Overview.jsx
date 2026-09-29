@@ -25,6 +25,7 @@ import HeroCover from '../components/HeroCover.jsx';
 import ProductLayout from '../components/ProductLayout.jsx';
 import ScrubSection from '../components/ScrubSection.jsx';
 import VideoRail from '../components/VideoRail.jsx';
+import { Finale, InterfaceShowcase, Problem, Process, Scenarios } from '../components/Story.jsx';
 import { bodyStyle, titleStyle } from '../components/typo.js';
 
 export default function Overview() {
@@ -67,6 +68,14 @@ export default function Overview() {
         </WideMedia>
         <SectionHead label={naming.eyebrow} title={naming.title} line={naming.body} />
       </section>
+
+      {/* ── 스토리 섹션. 팀이 만든 산출물을 브랜드 사이트에 올린다 ───────────
+          문제 제기, 사용 장면, 대전 화면, 제작 과정, 체험 관문 순서다 */}
+      <Problem />
+      <Scenarios />
+      <InterfaceShowcase />
+      <Process />
+      <Finale />
     </ProductLayout>
   );
 }

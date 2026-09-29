@@ -4,7 +4,7 @@
 // arena로 나가는 유일한 출구이기도 하다(BRAND_SITE_GUIDE 0절).
 
 import { spacing } from '../tokens.js';
-import { EXPERIENCE, PRODUCT_DETAIL, PRODUCT_NAV, PRODUCT_SITE, VIDEO_PENDING } from '../copy.js';
+import { EXPERIENCE, PRODUCT_DETAIL, PRODUCT_NAV, PRODUCT_SITE } from '../copy.js';
 import { SectionHead, WideMedia } from '../components/Blocks.jsx';
 import ArenaCta from '../components/ArenaCta.jsx';
 import ProductLayout from '../components/ProductLayout.jsx';
@@ -17,7 +17,10 @@ export default function ExperiencePage() {
   return (
     <ProductLayout>
       <section style={{ paddingBlock: 'var(--section-gap)' }}>
-        <WideMedia pending={VIDEO_PENDING} />
+        {/* 영상이 오기 전까지 실제 대전 장면 한 장이 이 자리를 진다 */}
+        <WideMedia>
+          <img className="vx-fill-img" src={EXPERIENCE.hero.src} alt={EXPERIENCE.hero.alt} />
+        </WideMedia>
         <SectionHead label={{ en: TAB.label, ko: TAB.ko }} title={copy.title} line={copy.line} as="h1" />
       </section>
 

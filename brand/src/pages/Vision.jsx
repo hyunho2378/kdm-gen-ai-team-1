@@ -4,10 +4,9 @@
 // 나란한 세 카드가 곧 카드 나열이라 고정 미디어 옆을 차례로 지나가는 문법으로 옮겼다.
 // 유파와 성향과 스타일과 인용은 그대로다.
 
-import { DUELISTS, MEDIA_PENDING, PRODUCT_NAV, PRODUCT_SITE } from '../copy.js';
+import { DUELISTS, PRODUCT_NAV, PRODUCT_SITE, VISION_MEDIA } from '../copy.js';
 import { Dive, SectionHead, WideMedia } from '../components/Blocks.jsx';
 import ProductLayout from '../components/ProductLayout.jsx';
-import { captionStyle } from '../components/typo.js';
 
 const TAB = PRODUCT_NAV.tabs.find((t) => t.key === 'vision');
 
@@ -23,14 +22,17 @@ export default function Vision() {
   return (
     <ProductLayout>
       <section style={{ paddingBlock: 'var(--section-gap)' }}>
-        <WideMedia pending={MEDIA_PENDING} />
+        {/* 대전 중 시야. **자리표시를 실제 화면으로 바꿨다** */}
+        <WideMedia>
+          <img className="vx-fill-img" src={VISION_MEDIA.hero.src} alt={VISION_MEDIA.hero.alt} />
+        </WideMedia>
         <SectionHead label={{ en: TAB.label, ko: TAB.ko }} title={copy.title} line={copy.line} as="h1" />
       </section>
 
       <Dive
         label={DUELISTS.header.eyebrow}
         steps={steps}
-        media={<span style={captionStyle}>{MEDIA_PENDING}</span>}
+        media={<img className="vx-fill-img" src={VISION_MEDIA.dive.src} alt={VISION_MEDIA.dive.alt} loading="lazy" />}
       />
     </ProductLayout>
   );

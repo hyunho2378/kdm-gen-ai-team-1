@@ -38,9 +38,9 @@ export const VIDEO_PENDING = 'Video pending';
 // 그 탭의 문구로 읽힌다
 // ---------------------------------------------------------------------------
 export const ARENA_CTA = {
-  label: '데모 시작',
+  label: 'Start the demo',
   // 주소가 없을 때 화면에 낼 말. 조용히 죽지 않고 사람이 고칠 곳을 알린다
-  unavailable: '데모 주소가 아직 설정되지 않았다',
+  unavailable: 'Demo link is not set yet',
 };
 
 // ---------------------------------------------------------------------------
@@ -88,10 +88,13 @@ export const VIDEO_RAIL = {
   prev: 'Previous film',
   next: 'Next film',
   items: [
-    { key: 'mask-360', src: '/images/home/mask-360.mp4', line: 'Vortex Mask', ratio: '1 / 1', rate: 0.5 },
+    // **poster가 있다.** 재생권을 못 받은 카드가 빈 회색 판으로 서는 것을 막는다(실측: 두 번째 카드가
+    // 스크롤 전에는 영상이 안 떠서 비어 보였다). poster는 영상에서 뽑은 프레임 시퀀스의 마지막 장이다
+    { key: 'mask-360', src: '/images/home/mask-360.mp4', poster: '/frames/mask-360/frame-029.webp', line: 'Vortex Mask', ratio: '1 / 1', rate: 0.5 },
     // 작업 중에 도착한 파일이다. mask-360과 같은 규격(1920x1920, 5.08초)이라 같은 값을 준다
-    { key: 'controller', src: '/images/home/con-360.mp4', line: 'Vortex Controller', ratio: '1 / 1', rate: 0.5 },
-    { key: 'match', src: null, line: 'Vortex Duel', ratio: '1 / 1' },
+    { key: 'controller', src: '/images/home/con-360.mp4', poster: '/frames/con-360/frame-029.webp', line: 'Vortex Controller', ratio: '1 / 1', rate: 0.5 },
+    // **자리표시였던 Vortex Duel 카드를 걷고 실제 화면 한 장으로 바꿨다.** 마스크 안에서 보이는 시야다
+    { key: 'vision', image: '/images/story/parry-pov.jpg', alt: 'View from inside the mask during a parry', line: 'Vortex Vision', ratio: '16 / 9' },
   ],
 };
 
@@ -179,41 +182,41 @@ export const ABOUT = {
 // ---------------------------------------------------------------------------
 export const DUELISTS = {
   header: {
-    eyebrow: { en: 'AI DUELIST', ko: '유파별 AI' },
-    title: '당신과 마주 서는 것은, 매번 다른 유파',
-    sub: 'AI 대전자는 유파별 거리 습관을 가진 별도의 인격이다. 사용자의 패턴을 학습해 세 스타일을 조합하고 진화한다.',
+    eyebrow: { en: 'AI DUELIST' },
+    title: 'A different school stands across from you every time',
+    sub: 'Each AI duelist is a separate personality with its own habits of distance. It learns your patterns, blends the three styles and evolves.',
   },
   cards: [
     {
       key: 'sabre',
       ver: 'Ver.1',
-      name: '이탈리아 세이버 유파',
-      trait: '공격형',
-      style: '빠른 풋워크로 거칠게 좁혀오는 스타일',
-      quote: '긴장감을 조성해 실수를 유발한다',
+      name: 'Italian Sabre School',
+      trait: 'Aggressive',
+      style: 'Closes the distance roughly with fast footwork.',
+      quote: 'It builds tension until you make a mistake.',
     },
     {
       key: 'epee',
       ver: 'Ver.2',
-      name: '프랑스 에페 유파',
-      trait: '카운터형',
-      style: '거리를 일정하게 유지하며 상대를 기다리는 스타일',
-      quote: '먼저 움직이면 불리해진다',
+      name: 'French Epee School',
+      trait: 'Counter',
+      style: 'Holds a steady distance and waits for you to move.',
+      quote: 'Whoever moves first is at a disadvantage.',
     },
     {
       key: 'hungarian',
       ver: 'Ver.3',
-      name: '헝가리안 유파',
-      trait: '심리전형',
-      style: '페인트와 리듬 브레이크로 판단을 교란하는 스타일',
-      quote: '침착한 관찰이 곧 승리다',
+      name: 'Hungarian School',
+      trait: 'Mind game',
+      style: 'Disrupts your judgement with feints and broken rhythm.',
+      quote: 'Calm observation is the win.',
     },
   ],
   selection: {
-    guide: '유파를 선택한다',
-    enter: '겨루기',
+    guide: 'Choose a school',
+    enter: 'Duel',
     // 대전 진입은 아직 연결되지 않았다. 버튼 옆에 사유를 적어 둔다
-    pending: '대전 진입 준비 중',
+    pending: 'Duel entry coming soon',
   },
 };
 
@@ -222,11 +225,12 @@ export const DUELISTS = {
 // **cta는 없다.** 버튼 라벨은 위 ARENA_CTA 하나가 쥔다(두 벌로 두면 갈린다)
 // ---------------------------------------------------------------------------
 export const EXPERIENCE = {
-  title: '거리 안으로 들어선다',
-  body: '설치 없이 브라우저에서 겨룬다. 노트북은 도장이 되고 폰은 검이 된다. 방 코드로 둘을 잇고 결투를 시작한다.',
+  title: 'Step inside the distance',
+  body: 'Duel in the browser with nothing to install. The laptop becomes the dojo and the phone becomes the blade. Pair the two with a room code and begin.',
   // **셋을 목록으로 눕히지 않는다**(카드 나열 금지). 한 줄 흐름으로 읽는다
-  flow: '접속, 캘리브레이션, 결투',
-  notice: `데모 주의 사항 ${TODO_MARK}`,
+  flow: 'Connect, calibrate, duel',
+  hero: { src: '/images/story/scene-bout.jpg', alt: 'A fencer in mid lunge against the player, seen from behind' },
+  notice: 'Demo notes coming soon',
 };
 
 // ---------------------------------------------------------------------------
@@ -290,8 +294,8 @@ export const PRODUCT_SITE = {
   sections: {
     // **overview 키를 걷었다.** "두 장치가 하나로 움직인다" 섹션이 지시로 삭제되면서
     // 이 값을 읽는 곳이 없어졌다(Overview.jsx).
-    vision: { title: '시야가 판정을 말한다', line: '거리와 타이밍과 명중이 화면 위에서 읽힌다.' },
-    experience: { title: '지금 거리 안으로 들어선다', line: '노트북과 폰 하나로 결투를 시작한다.' },
+    vision: { title: 'The view calls the touch', line: 'Distance, timing and hits are read right on the screen.' },
+    experience: { title: 'Step inside the distance', line: 'Start a duel with one laptop and one phone.' },
   },
 };
 
@@ -482,7 +486,95 @@ export const FOOTER = {
 // ---------------------------------------------------------------------------
 export const NOT_FOUND = {
   code: '404',
-  title: '없는 주소다',
-  line: '거리를 벗어났다',
-  home: '처음으로',
+  title: 'Page not found',
+  line: 'You are out of distance.',
+  home: 'Back to start',
+};
+
+// ---------------------------------------------------------------------------
+// 오버뷰 스토리 섹션. **팀이 실제로 만든 것을 사이트에 올린다.**
+// 수치와 출처는 발표 패널(포스터)에 실린 그대로다. 새 숫자를 만들지 않는다.
+// ---------------------------------------------------------------------------
+
+/** 문제 제기. 펜싱은 접할 인프라가 적다. 값은 패널 Background 절과 같다. */
+export const PROBLEM = {
+  eyebrow: { en: 'BACKGROUND' },
+  title: 'Fencing is hard to reach',
+  line: 'Few clubs, long distances and little coaching keep most people off the strip. VORTEX brings the strip to them.',
+  clubs: {
+    label: 'Registered clubs by sport',
+    rows: [
+      { name: 'Badminton', value: 5852 },
+      { name: 'Soccer', value: 4054 },
+      { name: 'Fencing', value: 78 },
+    ],
+    source: 'Source: Kim & Kim (2021), based on Lee (2021) and National Sports Promotion Foundation (2018).',
+  },
+  barriers: {
+    label: 'What keeps people from fencing',
+    rows: [
+      { name: 'Distance to a club', value: 45.0 },
+      { name: 'Lack of suitable training', value: 42.5 },
+      { name: 'Access to coaching', value: 35.0 },
+      { name: 'Injury and other', value: 32.6 },
+      { name: 'Financial cost', value: 28.8 },
+    ],
+    source: 'Source: Fencing Ireland, Women in Irish Fencing Survey Report (2021), n=80, multiple responses.',
+  },
+};
+
+/** 사용 시나리오 4장. 이미지는 팀이 생성한 장면이다. */
+export const SCENARIOS = {
+  eyebrow: { en: 'HOW IT WORKS' },
+  title: 'From putting it on to the final point',
+  items: [
+    { n: '01', title: 'Put on the mask, pick up the controller', body: 'The XR mask sits like a real fencing mask. The controller, a reworked bell guard, fits the hand.', src: '/images/story/scene-wear.jpg', alt: 'A person putting on the VORTEX mask while holding the controller' },
+    { n: '02', title: 'Choose your opponent and difficulty', body: 'Three AI duelists wait in view, each with a different style and level.', src: '/images/story/scene-select.jpg', alt: 'View from inside the mask showing three AI duelists to choose from' },
+    { n: '03', title: 'Duel a virtual opponent', body: 'Distance and timing play out against a virtual opponent, with the controller acting as your blade.', src: '/images/story/scene-bout.jpg', alt: 'A fencer in mid lunge against the player, seen from behind' },
+    { n: '04', title: 'Review the result and finish', body: 'Score, distance and timing come back as a replay so the next bout starts sharper.', src: '/images/story/result.jpg', alt: 'Post-bout analysis showing motion traces, distance and timing charts' },
+  ],
+};
+
+/** 인터페이스 소개. 실제 대전 중 시야에 얹히는 네 가지 표시. */
+export const INTERFACE = {
+  eyebrow: { en: 'UX / UI' },
+  title: 'Everything you need, in the corner of your eye',
+  src: '/images/story/parry-pov.jpg',
+  alt: 'In-view interface showing the live score, a PARRY call and a RIPOSTE guide',
+  items: [
+    { title: 'Live score', body: 'The current score sits at the top of the view, so the flow of the bout reads at a glance.' },
+    { title: 'Opponent tracking', body: 'A frame follows the opponent so your eyes stay on them.' },
+    { title: 'Motion recognition, PARRY', body: 'Your defensive move is recognised in real time and fed back as a call.' },
+    { title: 'Next move guide, RIPOSTE', body: 'After a parry, the follow-up such as a riposte is suggested.' },
+  ],
+};
+
+/** 제작 과정. 형태 탐색과 구체화에 쓴 도구와 결과물. */
+export const PROCESS = {
+  eyebrow: { en: 'MADE WITH AI' },
+  title: 'Shaped through generative AI',
+  line: 'Form exploration in Midjourney, then refinement in Vizcom, for both the mask and the controller.',
+  items: [
+    { tool: 'Midjourney', title: 'Mask exploration', body: 'Wide sweeps of silhouettes to find the form.', src: '/images/story/mj-mask.jpg', alt: 'Grid of Midjourney mask explorations' },
+    { tool: 'Midjourney', title: 'Controller exploration', body: 'A curve drawn from the fencing bell guard.', src: '/images/story/mj-controller.jpg', alt: 'Grid of Midjourney controller explorations' },
+    { tool: 'Vizcom', title: 'Mask refinement', body: 'The chosen form developed into a working design.', src: '/images/story/vz-mask.jpg', alt: 'Vizcom board refining the mask design' },
+    { tool: 'Vizcom', title: 'Controller refinement', body: 'The chosen form developed into a working design.', src: '/images/story/vz-controller.jpg', alt: 'Vizcom board refining the controller design' },
+  ],
+};
+
+/** 오버뷰를 닫는 관문. */
+export const FINALE = {
+  eyebrow: { en: 'EXPERIENCE' },
+  title: 'Step inside the distance',
+  line: 'One laptop and one phone are enough to begin.',
+  cta: 'Go to Experience',
+  to: '/experience',
+  src: '/images/story/mask-controller-light.jpg',
+  alt: 'The VORTEX mask and controller, the controller projecting a beam of light',
+};
+
+// Vision 면의 미디어. 대전 중 시야(패리 장면)와 상대 선택 화면.
+export const VISION_MEDIA = {
+  hero: { src: '/images/story/parry-pov.jpg', alt: 'In-view interface showing the live score, a PARRY call and a RIPOSTE guide' },
+  dive: { src: '/images/story/scene-select.jpg', alt: 'Three AI duelists shown in view, each with a different style' },
 };

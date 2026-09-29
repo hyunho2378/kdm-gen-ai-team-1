@@ -317,12 +317,16 @@ html { scrollbar-gutter: stable; }
 .vx-rail-card {
   margin: 0;
   flex: 0 0 auto;
-  width: min(520px, 74vw);
+  /* **폭이 아니라 높이가 같다.** 소재마다 비율이 달라(정사각 영상, 16:9 정지 화면)
+     폭을 고정하면 카드 높이가 들쭉날쭉해진다. 높이를 맞추고 폭은 비율이 정한다 */
+  width: auto;
   scroll-snap-align: start;
 }
 .vx-rail-media {
   display: block;
-  width: 100%;
+  width: auto;
+  height: min(520px, 74vw);
+  max-width: 88vw;
   background: var(--card-bg);
   border-radius: var(--card-radius);
   overflow: hidden;
@@ -623,6 +627,16 @@ div.vx-rail-media {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
 }
+.vx-bento-img {
+  width: 100%;
+  height: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: var(--card-radius);
+}
+.vx-bento-cell[data-media='true'] {
+  align-items: stretch;
+}
 .vx-bento-cell {
   display: flex;
   flex-direction: column;
@@ -841,4 +855,189 @@ div.vx-rail-media {
   .vx-stage-step {
     transform: none;
   }
+}
+
+
+/* ── 오버뷰 스토리 섹션 (Story.jsx) ─────────────────────────────────────────
+   문제 제기 통계, 사용 장면, 대전 화면, 제작 과정, 체험 관문.
+   어두운 두 판(iface, finale)은 `.vx-closing`의 네이비 무대를 그대로 물려받는다. */
+.vx-problem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 24px;
+}
+.vx-problem-card {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: clamp(24px, 3vw, 40px);
+}
+.vx-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.vx-bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'name value' 'track track';
+  align-items: baseline;
+  gap: 8px 16px;
+}
+.vx-bar-row > :nth-child(1) { grid-area: name; }
+.vx-bar-row > :nth-child(2) { grid-area: track; }
+.vx-bar-row > :nth-child(3) { grid-area: value; }
+.vx-bar-track {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--card-bg);
+  overflow: hidden;
+}
+.vx-bar-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left center;
+  transition: transform 900ms var(--ease-out);
+}
+
+.vx-scenes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(48px, 7vw, 112px);
+}
+.vx-scene {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 72px);
+}
+.vx-scene[data-flip='true'] .vx-scene-img { order: 2; }
+.vx-scene-img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
+  display: block;
+}
+.vx-scene-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vx-scene-n {
+  font-size: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+@media (max-width: 800px) {
+  .vx-scene { grid-template-columns: minmax(0, 1fr); }
+  .vx-scene[data-flip='true'] .vx-scene-img { order: 0; }
+}
+
+.vx-iface { padding-block: clamp(56px, 7vw, 120px); }
+.vx-iface-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--card-radius);
+}
+.vx-iface-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: clamp(24px, 3vw, 48px);
+}
+.vx-iface-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(253, 253, 253, 0.28);
+}
+
+.vx-process {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: clamp(20px, 2.5vw, 40px);
+}
+.vx-process-item {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.vx-process-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  /* 캡처 보드라 잘리면 내용이 사라진다. 전부 보이게 두고 남는 자리는 소재 바탕색이 채운다 */
+  object-fit: contain;
+  border-radius: var(--card-radius);
+  background: #141414;
+}
+.vx-process-cap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vx-finale { padding-block: clamp(56px, 8vw, 128px); }
+.vx-finale-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 96px);
+}
+.vx-finale-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: var(--card-radius);
+}
+.vx-finale-cta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: #FDFDFD;
+  color: #1E2F46;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--dur-press) var(--ease-out);
+}
+.vx-finale-cta:active { transform: scale(0.97); }
+@media (max-width: 800px) {
+  .vx-finale-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vx-bar-fill { transition: none; }
+}
+
+/* 와이드 미디어 슬롯을 꽉 채우는 이미지. 늘리지 않고 cover로 덮는다 */
+.vx-fill-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
 }
