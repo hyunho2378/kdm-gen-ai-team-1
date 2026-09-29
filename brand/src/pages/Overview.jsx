@@ -25,7 +25,7 @@ import HeroCover from '../components/HeroCover.jsx';
 import ProductLayout from '../components/ProductLayout.jsx';
 import ScrubSection from '../components/ScrubSection.jsx';
 import VideoRail from '../components/VideoRail.jsx';
-import { Finale, InterfaceShowcase, Problem, Process, Scenarios } from '../components/Story.jsx';
+import { InterfaceShowcase, Problem, Process, Scenarios } from '../components/Story.jsx';
 import { bodyStyle, titleStyle } from '../components/typo.js';
 
 export default function Overview() {
@@ -75,7 +75,6 @@ export default function Overview() {
       <Scenarios />
       <InterfaceShowcase />
       <Process />
-      <Finale />
     </ProductLayout>
   );
 }

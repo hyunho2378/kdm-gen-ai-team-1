@@ -94,7 +94,7 @@ export const VIDEO_RAIL = {
     // 작업 중에 도착한 파일이다. mask-360과 같은 규격(1920x1920, 5.08초)이라 같은 값을 준다
     { key: 'controller', src: '/images/home/con-360.mp4', poster: '/frames/con-360/frame-029.webp', line: 'Vortex Controller', ratio: '1 / 1', rate: 0.5 },
     // **자리표시였던 Vortex Duel 카드를 걷고 실제 화면 한 장으로 바꿨다.** 마스크 안에서 보이는 시야다
-    { key: 'vision', image: '/images/story/parry-pov.jpg', alt: 'View from inside the mask during a parry', line: 'Vortex Vision', ratio: '16 / 9' },
+    { key: 'vision', image: '/images/story/duel-pov.jpg', alt: 'View from inside the mask during a parry', line: 'Vortex Vision', ratio: '16 / 9' },
   ],
 };
 
@@ -229,7 +229,6 @@ export const EXPERIENCE = {
   body: 'Duel in the browser with nothing to install. The laptop becomes the dojo and the phone becomes the blade. Pair the two with a room code and begin.',
   // **셋을 목록으로 눕히지 않는다**(카드 나열 금지). 한 줄 흐름으로 읽는다
   flow: 'Connect, calibrate, duel',
-  hero: { src: '/images/story/scene-bout.jpg', alt: 'A fencer in mid lunge against the player, seen from behind' },
   notice: 'Demo notes coming soon',
 };
 
@@ -259,7 +258,6 @@ export const PRODUCT_NAV = {
     { key: 'mask', label: 'MASK', ko: '마스크', to: '/mask' },
     { key: 'controller', label: 'CONTROLLER', ko: '컨트롤러', to: '/controller' },
     { key: 'vision', label: 'VISION', ko: '비전화면', to: '/vision' },
-    { key: 'experience', label: 'EXPERIENCE', ko: '경험하기', to: '/experience' },
   ],
   demo: 'Book a demo',
   buy: 'Buy',
@@ -526,12 +524,10 @@ export const PROBLEM = {
 /** 사용 시나리오 4장. 이미지는 팀이 생성한 장면이다. */
 export const SCENARIOS = {
   eyebrow: { en: 'HOW IT WORKS' },
-  title: 'From putting it on to the final point',
+  title: 'From putting it on to the duel',
   items: [
     { n: '01', title: 'Put on the mask, pick up the controller', body: 'The XR mask sits like a real fencing mask. The controller, a reworked bell guard, fits the hand.', src: '/images/story/scene-wear.jpg', alt: 'A person putting on the VORTEX mask while holding the controller' },
     { n: '02', title: 'Choose your opponent and difficulty', body: 'Three AI duelists wait in view, each with a different style and level.', src: '/images/story/scene-select.jpg', alt: 'View from inside the mask showing three AI duelists to choose from' },
-    { n: '03', title: 'Duel a virtual opponent', body: 'Distance and timing play out against a virtual opponent, with the controller acting as your blade.', src: '/images/story/scene-bout.jpg', alt: 'A fencer in mid lunge against the player, seen from behind' },
-    { n: '04', title: 'Review the result and finish', body: 'Score, distance and timing come back as a replay so the next bout starts sharper.', src: '/images/story/result.jpg', alt: 'Post-bout analysis showing motion traces, distance and timing charts' },
   ],
 };
 
@@ -539,7 +535,7 @@ export const SCENARIOS = {
 export const INTERFACE = {
   eyebrow: { en: 'UX / UI' },
   title: 'Everything you need, in the corner of your eye',
-  src: '/images/story/parry-pov.jpg',
+  src: '/images/story/duel-pov.jpg',
   alt: 'In-view interface showing the live score, a PARRY call and a RIPOSTE guide',
   items: [
     { title: 'Live score', body: 'The current score sits at the top of the view, so the flow of the bout reads at a glance.' },
@@ -562,42 +558,9 @@ export const PROCESS = {
   ],
 };
 
-/** 오버뷰를 닫는 관문. */
-export const FINALE = {
-  eyebrow: { en: 'EXPERIENCE' },
-  title: 'Step inside the distance',
-  line: 'One laptop and one phone are enough to begin.',
-  cta: 'Go to Experience',
-  to: '/experience',
-  src: '/images/story/mask-controller-light.jpg',
-  alt: 'The VORTEX mask and controller, the controller projecting a beam of light',
-};
 
 // Vision 면의 미디어. 대전 중 시야(패리 장면)와 상대 선택 화면.
 export const VISION_MEDIA = {
-  hero: { src: '/images/story/parry-pov.jpg', alt: 'In-view interface showing the live score, a PARRY call and a RIPOSTE guide' },
+  hero: { src: '/images/story/duel-pov.jpg', alt: 'In-view interface showing the live score, a PARRY call and a RIPOSTE guide' },
   dive: { src: '/images/story/scene-select.jpg', alt: 'Three AI duelists shown in view, each with a different style' },
-};
-
-// Experience 갤러리. **아레나 장면을 만든 이미지들이다.** big이 true인 칸은 두 칸 폭을 쓴다.
-export const GALLERY = {
-  eyebrow: { en: 'INSIDE THE ARENA' },
-  title: 'What you see once the mask is on',
-  line: 'First-person views, third-person coverage and the gear, all from the arena we built.',
-  items: [
-    { src: '/images/gallery/pov-parry.jpg', alt: 'First-person view: a PARRY call and a RIPOSTE arrow appear in the visor', cap: 'Parry and riposte', big: true },
-    { src: '/images/gallery/pov-countdown.jpg', alt: 'First-person view: the en garde countdown at 0 to 0', cap: 'En garde' },
-    { src: '/images/gallery/pov-first-point.jpg', alt: 'First-person view: the first touch, 1 to 0', cap: 'First touch' },
-    { src: '/images/gallery/pov-feint.jpg', alt: 'First-person view: a feint read by the style recognition, 2 to 3', cap: 'Feint detected' },
-    { src: '/images/gallery/pov-victory.jpg', alt: 'First-person view: the victory screen at 5 to 4', cap: 'Victory' },
-    { src: '/images/gallery/pov-analysis.jpg', alt: 'Post-bout analysis panels for reaction, distance and timing', cap: 'After the bout', big: true },
-    { src: '/images/gallery/salute.jpg', alt: 'A fencer in white salutes before the bout', cap: 'The salute' },
-    { src: '/images/gallery/fleche.jpg', alt: 'A fencer in white in mid flèche against a light-drawn opponent', cap: 'Flèche', big: true },
-    { src: '/images/gallery/topview.jpg', alt: 'Top-down drone view of two fencers on a spiralling strip', cap: 'Top view' },
-    { src: '/images/gallery/dissolve.jpg', alt: 'The opponent dissolves into particles after the final point', cap: 'The opponent dissolves' },
-    { src: '/images/gallery/mask-hero.jpg', alt: 'The VORTEX mask from the front, framed by a ring of light', cap: 'The mask' },
-    { src: '/images/gallery/visor-hud.jpg', alt: 'The interface reflected in the mask visor', cap: 'Inside the visor' },
-    { src: '/images/gallery/flatlay.jpg', alt: 'Mask, jacket and controller laid flat', cap: 'The kit' },
-    { src: '/images/gallery/studio-light.jpg', alt: 'A fencer in a bright silver studio with a blue opponent', cap: 'Studio', big: true },
-  ],
 };

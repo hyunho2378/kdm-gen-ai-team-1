@@ -39,7 +39,6 @@ import { PRODUCT_NAV } from './copy.js';
 import Overview from './pages/Overview.jsx';
 import ProductPage from './pages/ProductPage.jsx';
 import Vision from './pages/Vision.jsx';
-import ExperiencePage from './pages/ExperiencePage.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 /**
@@ -132,7 +131,8 @@ export default function App() {
           <Route path="/mask" element={<ProductPage slug="mask" />} />
           <Route path="/controller" element={<ProductPage slug="controller" />} />
           <Route path="/vision" element={<Vision />} />
-          <Route path="/experience" element={<ExperiencePage />} />
+          {/* EXPERIENCE는 숨겼다(이미지 화질 문제). 주소로 들어와도 홈으로 보낸다 */}
+          <Route path="/experience" element={<Navigate to="/" replace />} />
 
           {/* 나갔던 주소를 살린다 */}
           <Route path="/overview" element={<Navigate to="/" replace />} />

@@ -45,7 +45,6 @@ import { bodyStyle, captionStyle, headingStyle, titleStyle } from '../components
 export default function ProductPage({ slug }) {
   const deep = PRODUCT_DEEPDIVE[slug];
   const rows = PRODUCT_DETAIL.spec[slug];
-  const box = PRODUCT_DETAIL.box[slug];
   const con = PRODUCT_CONCEPT[slug];
   const media = PRODUCT_MEDIA[slug];
 
@@ -141,25 +140,6 @@ export default function ProductPage({ slug }) {
             </div>
           ))}
         </dl>
-      </section>
-
-      {/* ── In the Box. 벤토 그리드 ───────────────────────────────────────── */}
-      <section className="vx-shell" style={{ paddingBlock: 'var(--section-gap)' }}>
-        <h2 data-beat style={{ ...headingStyle, marginBottom: spacing.unit * 3 }}>
-          {PRODUCT_DETAIL.boxLabel}
-        </h2>
-        <ul data-beat className="vx-bento">
-          {box.map((item, i) => (
-            <li key={item} className="vx-bento-cell" data-media={i === 0 ? 'true' : undefined}>
-              {/* 본체 칸만 실제 렌더가 선다. 케이블과 케이스는 사진이 없어 이름만 둔다
-                  (예전의 Image pending 문구를 걷었다) */}
-              {i === 0 ? (
-                <img className="vx-bento-img" src={media.dive.src} alt={media.dive.alt} loading="lazy" />
-              ) : null}
-              <span style={{ ...bodyStyle, marginTop: 'auto' }}>{item}</span>
-            </li>
-          ))}
-        </ul>
       </section>
     </ProductLayout>
   );

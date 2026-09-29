@@ -11,10 +11,8 @@
 // 모션을 줄여 달라고 했으면 처음부터 다 자란 채로 서고 CSS의 reduce 분기가 전환을 끈다.
 
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import { colors, spacing } from '../tokens.js';
-import { FINALE, INTERFACE, PROBLEM, PROCESS, SCENARIOS } from '../copy.js';
+import { INTERFACE, PROBLEM, PROCESS, SCENARIOS } from '../copy.js';
 import Eyebrow from './Eyebrow.jsx';
 import { bodyStyle, captionStyle, headingStyle, titleStyle } from './typo.js';
 
@@ -166,25 +164,6 @@ export function Process() {
           </li>
         ))}
       </ul>
-    </section>
-  );
-}
-
-export function Finale() {
-  return (
-    <section className="vx-bleed vx-closing vx-finale" aria-label={FINALE.title}>
-      <div className="vx-shell vx-finale-grid">
-        <div data-beat style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 2 }}>
-          <span className="vx-closing-en">{FINALE.eyebrow.en}</span>
-          <h2 style={{ ...titleStyle, color: 'inherit' }}>{FINALE.title}</h2>
-          <p style={{ ...bodyStyle, color: 'rgba(253, 253, 253, 0.78)' }}>{FINALE.line}</p>
-          <Link to={FINALE.to} className="vx-finale-cta">
-            {FINALE.cta}
-            <ArrowRight size={18} aria-hidden="true" />
-          </Link>
-        </div>
-        <img data-beat className="vx-finale-img" src={FINALE.src} alt={FINALE.alt} loading="lazy" />
-      </div>
     </section>
   );
 }
