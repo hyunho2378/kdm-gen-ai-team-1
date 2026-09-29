@@ -36,11 +36,7 @@ export default function Footer() {
         {FOOTER.wordmark}
       </span>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 0.5 }}>
-        <span style={metaStyle}>{FOOTER.credit}</span>
-        <span style={metaStyle}>{FOOTER.team}</span>
-      </div>
-
+      {/* 워크숍 크레딧과 팀 이름 두 줄은 지시로 걷었다(FOOTER.credit, FOOTER.team는 copy.js에 남겨 둔다) */}
       <span style={metaStyle}>{FOOTER.copyright}</span>
     </footer>
   );
