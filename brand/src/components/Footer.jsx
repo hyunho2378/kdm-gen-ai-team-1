@@ -36,7 +36,7 @@ export default function Footer() {
         {FOOTER.wordmark}
       </span>
 
-      {/* 워크숍 크레딧과 팀 이름 두 줄은 지시로 걷었다(FOOTER.credit, FOOTER.team는 copy.js에 남겨 둔다) */}
+      {/* 워크숍 크레딧과 팀 이름은 사이트에 싣지 않는다(지시). copy.js에서도 지웠다 */}
       <span style={metaStyle}>{FOOTER.copyright}</span>
     </footer>
   );

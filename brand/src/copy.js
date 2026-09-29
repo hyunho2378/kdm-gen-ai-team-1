@@ -476,8 +476,6 @@ export const PRODUCT_DETAIL = {
 // **영어화(개정).** 크레딧의 '강원 지부'를 영어로, 팀 이름을 로마자 표기로 옮겼다.
 export const FOOTER = {
   wordmark: BRAND,
-  credit: '2026 KDM+ Generative AI Workshop, Gangwon Chapter',
-  team: 'Dayoung Kim, Hyunho Ju, Sohee Yoon',
   copyright: '© 2026 VORTEX',
 };
 
