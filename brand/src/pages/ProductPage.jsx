@@ -34,10 +34,10 @@
 
 import { spacing } from '../tokens.js';
 import { MEDIA_PENDING, PRODUCT_CONCEPT, PRODUCT_DEEPDIVE, PRODUCT_DETAIL, PRODUCT_MEDIA } from '../copy.js';
-import { Dive } from '../components/Blocks.jsx';
+import { Beats } from '../components/Blocks.jsx';
+import AutoVideo from '../components/AutoVideo.jsx';
 import Eyebrow from '../components/Eyebrow.jsx';
 import ProductLayout from '../components/ProductLayout.jsx';
-import MediaSequence from '../components/MediaSequence.jsx';
 import HoverMedia from '../components/HoverMedia.jsx';
 import WaveReveal from '../components/WaveReveal.jsx';
 import { bodyStyle, captionStyle, headingStyle, titleStyle } from '../components/typo.js';
@@ -56,25 +56,18 @@ export default function ProductPage({ slug }) {
           흐림에서 선명으로 한 바퀴 돌고 마지막 프레임에 선다. 컨트롤러는 회전 소스가
           없어 정면 렌더 한 장이 같은 자리를 진다 */}
       <section className="vx-shell" style={{ paddingBlock: 'var(--section-gap)' }}>
-        {media.frames ? (
-          <MediaSequence
-            mode="enter"
-            frames={media.frames}
-            fps={16}
+        {/* 맨 위는 영상이다. **회전 영상이 자동 재생으로 계속 돈다.**
+            예전에는 프레임 시퀀스가 한 번 돌고 멈췄다. 포스터는 마지막 프레임이라 재생 전에도 빈 판이 안 뜬다 */}
+        <div data-beat className="vx-prod-hero">
+          <AutoVideo
+            className="vx-prod-hero-video"
+            src={media.video}
+            poster={media.frames[media.frames.length - 1]}
             ratio={media.leadRatio}
-            className="vx-prod-stage"
-            style={{ maxWidth: 520 }}
-            alt={`${deep.eyebrow.en} rotation sequence`}
+            rate={0.5}
+            pending={MEDIA_PENDING}
           />
-        ) : (
-          <div
-            data-beat
-            className="vx-seq vx-prod-stage"
-            style={{ aspectRatio: media.leadRatio, maxWidth: 520 }}
-          >
-            <img className="vx-seq-img" src={media.lead.src} alt={media.lead.alt} />
-          </div>
-        )}
+        </div>
         <div data-beat style={{ marginTop: spacing.unit * 3, display: 'flex', flexDirection: 'column', gap: spacing.unit }}>
           <Eyebrow en={deep.eyebrow.en} ko={deep.eyebrow.ko} />
           <h1 style={titleStyle}>{deep.headline}</h1>
@@ -82,8 +75,8 @@ export default function ProductPage({ slug }) {
         </div>
       </section>
 
-      {/* 딥다이브. 고정 렌더 옆을 네 단계가 지나간다. 내용은 오버뷰 시절 비트 그대로다 */}
-      <Dive
+      {/* 네 비트가 스크롤 없이 한 번에 펼쳐진다. 내용은 오버뷰 시절 비트 그대로다 */}
+      <Beats
         label={deep.eyebrow}
         steps={deep.beats}
         media={

@@ -137,3 +137,29 @@ export function Dive({ label, steps, media, bare, headingOnFirst }) {
     </div>
   );
 }
+
+/**
+ * 딥다이브를 한 번에 펼친 판. **스크롤로 단계가 바뀌지 않는다.**
+ * 미디어가 위에 서고 단계 전부가 그 아래 격자로 한꺼번에 놓인다. 등장은 data-beat 하나로
+ * 부드럽게 오르지만 내용을 숨기지 않는다.
+ */
+export function Beats({ label, steps, media }) {
+  return (
+    <section className="vx-shell" style={{ paddingBlock: 'var(--section-gap)', display: 'flex', flexDirection: 'column', gap: spacing.unit * 5 }}>
+      <div data-beat className="vx-beats-media">{media}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit * 2 }}>
+        {label ? <div data-beat><Eyebrow en={label.en} ko={label.ko} /></div> : null}
+        <ul className="vx-beats">
+          {steps.map((s) => (
+            <li key={s.title} data-beat className="vx-beat">
+              {s.kicker ? <p style={captionStyle}>{s.kicker}</p> : null}
+              <h3 style={headingStyle}>{s.title}</h3>
+              <p style={bodyStyle}>{s.body}</p>
+              {s.note ? <p style={captionStyle}>{s.note}</p> : null}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}

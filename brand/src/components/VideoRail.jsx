@@ -25,6 +25,7 @@ export default function VideoRail() {
   const [edge, setEdge] = useState({ start: true, end: false });
   // **한 번에 한 장만 돈다.** 아래 관찰자가 지금 보고 있는 카드를 고른다
   const [live, setLive] = useState(VIDEO_RAIL.items[0].key);
+  const ratiosRef = useRef(new Map());
 
   /**
    * 재생권을 한 장에게만 준다. **성능 때문이다(실측).**
@@ -62,7 +63,7 @@ export default function VideoRail() {
   useEffect(() => {
     const rail = railRef.current;
     if (!rail) return undefined;
-    const ratios = new Map();
+    const ratios = ratiosRef.current;
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) ratios.set(e.target.dataset.railCard, e.intersectionRatio);
@@ -77,8 +78,31 @@ export default function VideoRail() {
       },
       { root: rail, threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
-    for (const card of rail.querySelectorAll('[data-rail-card]')) io.observe(card);
+    // 정지 화면 카드(영상이 아님)는 재생권 경쟁에서 뺀다
+    const videoKeys = new Set(VIDEO_RAIL.items.filter((i) => i.src).map((i) => i.key));
+    for (const card of rail.querySelectorAll('[data-rail-card]')) {
+      if (videoKeys.has(card.dataset.railCard)) io.observe(card);
+    }
     return () => io.disconnect();
+  }, []);
+
+  /**
+   * **차례로 넘겨 준다.** 카드 둘이 동시에 디코드되면 프레임 예산이 무너져(위 실측) 한 장만
+   * 돌린다. 그런데 한 장에 재생권이 붙박이면 다른 카드 영상이 영영 안 도는 것처럼 보인다
+   * (컨트롤러 카드가 그랬다). 화면에 절반 이상 보이는 영상 카드끼리 한 바퀴(5.08초 / 0.5배속
+   * = 약 10초)마다 재생권을 넘긴다. 재생권을 뺏긴 카드는 그 자리에서 멈춘다.
+   */
+  useEffect(() => {
+    const id = setInterval(() => {
+      const videos = VIDEO_RAIL.items.filter((i) => i.src).map((i) => i.key);
+      setLive((cur) => {
+        const seen = videos.filter((k) => (ratiosRef.current.get(k) ?? 0) >= 0.5);
+        if (seen.length < 2) return cur;
+        const at = seen.indexOf(cur);
+        return seen[(at + 1) % seen.length];
+      });
+    }, 10400);
+    return () => clearInterval(id);
   }, []);
 
   const readEdge = useCallback(() => {

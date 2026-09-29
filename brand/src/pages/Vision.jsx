@@ -5,7 +5,7 @@
 // 유파와 성향과 스타일과 인용은 그대로다.
 
 import { DUELISTS, PRODUCT_NAV, PRODUCT_SITE, VISION_MEDIA } from '../copy.js';
-import { Dive, SectionHead, WideMedia } from '../components/Blocks.jsx';
+import { Beats, SectionHead, WideMedia } from '../components/Blocks.jsx';
 import ProductLayout from '../components/ProductLayout.jsx';
 
 const TAB = PRODUCT_NAV.tabs.find((t) => t.key === 'vision');
@@ -29,7 +29,7 @@ export default function Vision() {
         <SectionHead label={{ en: TAB.label, ko: TAB.ko }} title={copy.title} line={copy.line} as="h1" />
       </section>
 
-      <Dive
+      <Beats
         label={DUELISTS.header.eyebrow}
         steps={steps}
         media={<img className="vx-fill-img" src={VISION_MEDIA.dive.src} alt={VISION_MEDIA.dive.alt} loading="lazy" />}

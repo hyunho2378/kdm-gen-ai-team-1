@@ -4,11 +4,12 @@
 // arena로 나가는 유일한 출구이기도 하다(BRAND_SITE_GUIDE 0절).
 
 import { spacing } from '../tokens.js';
-import { EXPERIENCE, PRODUCT_DETAIL, PRODUCT_NAV, PRODUCT_SITE } from '../copy.js';
+import { EXPERIENCE, GALLERY, PRODUCT_DETAIL, PRODUCT_NAV, PRODUCT_SITE } from '../copy.js';
+import Eyebrow from '../components/Eyebrow.jsx';
 import { SectionHead, WideMedia } from '../components/Blocks.jsx';
 import ArenaCta from '../components/ArenaCta.jsx';
 import ProductLayout from '../components/ProductLayout.jsx';
-import { bodyStyle, captionStyle } from '../components/typo.js';
+import { bodyStyle, captionStyle, titleStyle } from '../components/typo.js';
 
 const TAB = PRODUCT_NAV.tabs.find((t) => t.key === 'experience');
 
@@ -35,6 +36,26 @@ export default function ExperiencePage() {
           <ArenaCta label={PRODUCT_DETAIL.cta} />
         </div>
         <p data-beat style={captionStyle}>{EXPERIENCE.notice}</p>
+      </section>
+
+      {/* 아레나를 만든 이미지 모음. 사이트에서 이미지가 가장 많이 모이는 자리다 */}
+      <section
+        className="vx-shell"
+        style={{ paddingBottom: 'var(--section-gap)', display: 'flex', flexDirection: 'column', gap: spacing.unit * 4 }}
+      >
+        <div data-beat style={{ display: 'flex', flexDirection: 'column', gap: spacing.unit }}>
+          <Eyebrow en={GALLERY.eyebrow.en} />
+          <h2 style={titleStyle}>{GALLERY.title}</h2>
+          <p style={bodyStyle}>{GALLERY.line}</p>
+        </div>
+        <ul className="vx-gallery">
+          {GALLERY.items.map((g) => (
+            <li key={g.src} data-beat className="vx-gallery-item" data-big={g.big ? 'true' : undefined}>
+              <img src={g.src} alt={g.alt} loading="lazy" />
+              <span className="vx-gallery-cap">{g.cap}</span>
+            </li>
+          ))}
+        </ul>
       </section>
     </ProductLayout>
   );

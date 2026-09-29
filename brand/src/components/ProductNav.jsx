@@ -34,7 +34,6 @@ import { useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { colors, typography, weight } from '../tokens.js';
 import { HERO, PRODUCT_NAV } from '../copy.js';
-import { arenaUrl } from './ArenaCta.jsx';
 
 const TABS = PRODUCT_NAV.tabs;
 
@@ -48,7 +47,6 @@ const itemText = {
 };
 
 export default function ProductNav() {
-  const demo = arenaUrl();
   const { pathname } = useLocation();
   const ref = useRef(null);
 
@@ -131,39 +129,7 @@ export default function ProductNav() {
             );
           })}
 
-          {/* Book a demo 자리. **arena로 나가는 출구다.**
-              주소가 없으면 비활성으로 두고 사유를 옆에 적는다(ArenaCta와 같은 규율).
-              눌러도 아무 일이 없는 버튼이 제일 나쁜 실패다 */}
-          {demo ? (
-            <a
-              href={demo}
-              target="_blank"
-              rel="noreferrer"
-              className="vx-pnav-pill"
-              style={{ ...itemText, color: colors.accent.base, borderColor: colors.accent.base }}
-            >
-              {PRODUCT_NAV.demo}
-            </a>
-          ) : (
-            <span
-              className="vx-pnav-pill"
-              aria-disabled="true"
-              style={{ ...itemText, color: colors.text.dim, borderColor: colors.line.default }}
-            >
-              {PRODUCT_NAV.demo}
-            </span>
-          )}
-
-          {/* Buy 자리. 아직 갈 곳이 없어 비활성이다. Apple은 파란 채움이고
-              **우리는 네이비 채움이다**(#263E5F 위 흰 글자 10.74) */}
-          <span
-            className="vx-pnav-pill vx-pnav-pill-fill"
-            aria-disabled="true"
-            title={PRODUCT_NAV.buyPending}
-            style={{ ...itemText, color: colors.text.onFill }}
-          >
-            {PRODUCT_NAV.buy}
-          </span>
+          {/* Book a demo와 Buy 알약은 지시로 걷었다. 체험 출구는 EXPERIENCE 탭이 맡는다 */}
         </div>
       </div>
     </nav>

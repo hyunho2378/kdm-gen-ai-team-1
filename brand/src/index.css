@@ -1041,3 +1041,89 @@ div.vx-rail-media {
   object-fit: cover;
   object-position: center 30%;
 }
+
+/* ── 제품 면 맨 위 영상 ─────────────────────────────────────────────────── */
+.vx-prod-hero {
+  width: 100%;
+  max-width: min(760px, 100%);
+  margin-inline: auto;
+}
+.vx-prod-hero-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--card-radius);
+  background: #000;
+}
+
+/* ── 한 번에 펼친 비트 (Blocks.jsx Beats) ─────────────────────────────── */
+.vx-beats-media {
+  width: 100%;
+  max-width: min(760px, 100%);
+  margin-inline: auto;
+}
+.vx-beats-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--card-radius);
+}
+.vx-beats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: clamp(24px, 3vw, 48px);
+}
+.vx-beat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line-strong);
+}
+
+/* ── Experience 갤러리 ─────────────────────────────────────────────────── */
+.vx-gallery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: clamp(12px, 1.5vw, 20px);
+}
+.vx-gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--card-radius);
+  background: #0B1018;
+  aspect-ratio: 16 / 10;
+}
+.vx-gallery-item[data-big='true'] { grid-column: span 2; aspect-ratio: auto; }
+.vx-gallery-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vx-gallery-cap {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(16, 16, 16, 0.62);
+  color: #FDFDFD;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+@media (max-width: 900px) {
+  .vx-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .vx-gallery { grid-template-columns: minmax(0, 1fr); }
+  .vx-gallery-item[data-big='true'] { grid-column: auto; aspect-ratio: 16 / 10; }
+}

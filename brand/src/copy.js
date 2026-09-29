@@ -395,6 +395,7 @@ export const PRODUCT_MEDIA = {
       (_, i) => `/frames/mask-360/frame-${String(i).padStart(3, '0')}.webp`
     ),
     // 소스가 정사각이라 시퀀스도 정사각이다
+    video: '/images/home/mask-360.mp4',
     leadRatio: '1 / 1',
     dive: { src: '/images/product/mask-front.jpg', alt: 'Mask front render' },
   },
@@ -403,6 +404,7 @@ export const PRODUCT_MEDIA = {
       { length: CONTROLLER_FRAME_COUNT },
       (_, i) => `/frames/con-360/frame-${String(i).padStart(3, '0')}.webp`
     ),
+    video: '/images/home/con-360.mp4',
     leadRatio: '1 / 1',
     dive: { src: '/images/product/con-side.jpg', alt: 'Controller side render' },
   },
@@ -575,4 +577,27 @@ export const FINALE = {
 export const VISION_MEDIA = {
   hero: { src: '/images/story/parry-pov.jpg', alt: 'In-view interface showing the live score, a PARRY call and a RIPOSTE guide' },
   dive: { src: '/images/story/scene-select.jpg', alt: 'Three AI duelists shown in view, each with a different style' },
+};
+
+// Experience 갤러리. **아레나 장면을 만든 이미지들이다.** big이 true인 칸은 두 칸 폭을 쓴다.
+export const GALLERY = {
+  eyebrow: { en: 'INSIDE THE ARENA' },
+  title: 'What you see once the mask is on',
+  line: 'First-person views, third-person coverage and the gear, all from the arena we built.',
+  items: [
+    { src: '/images/gallery/pov-parry.jpg', alt: 'First-person view: a PARRY call and a RIPOSTE arrow appear in the visor', cap: 'Parry and riposte', big: true },
+    { src: '/images/gallery/pov-countdown.jpg', alt: 'First-person view: the en garde countdown at 0 to 0', cap: 'En garde' },
+    { src: '/images/gallery/pov-first-point.jpg', alt: 'First-person view: the first touch, 1 to 0', cap: 'First touch' },
+    { src: '/images/gallery/pov-feint.jpg', alt: 'First-person view: a feint read by the style recognition, 2 to 3', cap: 'Feint detected' },
+    { src: '/images/gallery/pov-victory.jpg', alt: 'First-person view: the victory screen at 5 to 4', cap: 'Victory' },
+    { src: '/images/gallery/pov-analysis.jpg', alt: 'Post-bout analysis panels for reaction, distance and timing', cap: 'After the bout', big: true },
+    { src: '/images/gallery/salute.jpg', alt: 'A fencer in white salutes before the bout', cap: 'The salute' },
+    { src: '/images/gallery/fleche.jpg', alt: 'A fencer in white in mid flèche against a light-drawn opponent', cap: 'Flèche', big: true },
+    { src: '/images/gallery/topview.jpg', alt: 'Top-down drone view of two fencers on a spiralling strip', cap: 'Top view' },
+    { src: '/images/gallery/dissolve.jpg', alt: 'The opponent dissolves into particles after the final point', cap: 'The opponent dissolves' },
+    { src: '/images/gallery/mask-hero.jpg', alt: 'The VORTEX mask from the front, framed by a ring of light', cap: 'The mask' },
+    { src: '/images/gallery/visor-hud.jpg', alt: 'The interface reflected in the mask visor', cap: 'Inside the visor' },
+    { src: '/images/gallery/flatlay.jpg', alt: 'Mask, jacket and controller laid flat', cap: 'The kit' },
+    { src: '/images/gallery/studio-light.jpg', alt: 'A fencer in a bright silver studio with a blue opponent', cap: 'Studio', big: true },
+  ],
 };
